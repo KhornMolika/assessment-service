@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-heading: "DM Serif Display", serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-khmer: "Koh Santepheap", serif;
+
+  /* NBFSA Brand Colors */
+  --color-p: #1b4332;
+  --color-pl: #2d6a4f;
+  --color-pm: #40916c;
+  --color-sage: #52796f;
+  --color-sagl: #84a98c;
+  --color-acc: #74c69d;
+  --color-accp: #d8f3dc;
+  --color-accl: #b7e4c7;
+
+  /* Surfaces */
+  --color-bg: #f7f5f0;
+  --color-card: #ffffff;
+  --color-muted: #f0ede6;
+  --color-bdr: #ddd9d0;
+
+  /* Text */
+  --color-ink: #1c1917;
+  --color-inkm: #44403c;
+  --color-inkd: #78716c;
+  --color-inkl: #a8a29e;
+
+  /* Status */
+  --color-danger: #dc2626;
+  --color-warn: #d97706;
+  --color-info: #1e40af;
+
+  /* Shadcn-style Semantic Mappings */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-ink);
+  --color-primary: var(--color-p);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-pm);
+  --color-secondary-foreground: #ffffff;
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--color-bdr);
+  --color-input: transparent;
+  --color-ring: var(--color-pm);
+
+  /* Charts */
+  --color-chart-1: var(--color-pm);
+  --color-chart-2: var(--color-acc);
+  --color-chart-3: var(--color-sage);
+  --color-chart-4: var(--color-accp);
+  --color-chart-5: var(--color-pl);
+
+  /* Sidebar */
+  --color-sidebar: var(--color-p);
+  --color-sidebar-foreground: #ffffff;
+  --color-sidebar-primary: var(--color-acc);
+  --color-sidebar-primary-foreground: var(--color-p);
+  --color-sidebar-accent: var(--color-pl);
+  --color-sidebar-accent-foreground: #ffffff;
+  --color-sidebar-border: var(--color-pl);
+  --color-sidebar-ring: var(--color-acc);
+
+  /* Radii */
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* Base Variable Overrides */
+:root {
+  --radius: 0.5rem;
+  --font-size: 16px;
+}
+
+.dark {
+  --color-background: #0f1512;
+  --color-foreground: #f5f5f4;
+  --color-primary: var(--color-pm);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: var(--color-sage);
+  --color-secondary-foreground: #ffffff;
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: #ffffff;
+  --color-border: #2d4a3e;
+  --color-input: #2d4a3e;
+  --color-ring: var(--color-acc);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+  /* Khmer text support */
+  [lang="km"] {
+    @apply font-khmer;
+  }
+}
