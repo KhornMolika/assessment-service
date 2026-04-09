@@ -1,5 +1,7 @@
 import { DM_Serif_Display, DM_Sans, Koh_Santepheap } from "next/font/google";
-import './globals.css'
+import './globals.css';
+import ClientLayout from "../shared/components/layout/ClientLayout";
+import { SidebarProvider } from "../shared/context/sidebar-context";
 
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
@@ -18,17 +20,17 @@ const kohSantepheap = Koh_Santepheap({
   variable: "--font-khmer",
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       className={`${dmSerif.variable} ${dmSans.variable} ${kohSantepheap.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <SidebarProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </SidebarProvider>
+      </body>
     </html>
   );
 }

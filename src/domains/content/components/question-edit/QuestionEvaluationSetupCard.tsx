@@ -2,16 +2,19 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
+import { supportsAiGradingInstructions } from "@/src/domains/content/utils/question-ai-grading";
 
 function ToggleRow({
   title,
   description,
   checked,
+  disabled = false,
   onToggle,
 }: {
   title: string;
   description: string;
   checked: boolean;
+  disabled?: boolean;
   onToggle: () => void;
 }) {
   return (
@@ -23,8 +26,9 @@ function ToggleRow({
       <button
         type="button"
         onClick={onToggle}
+        disabled={disabled}
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-          checked ? "bg-acc" : "bg-gray-300"
+          disabled ? "cursor-not-allowed bg-gray-200" : checked ? "bg-acc" : "bg-gray-300"
         }`}
         aria-pressed={checked}
       >
@@ -48,6 +52,8 @@ export default function QuestionEvaluationSetupCard({
     value: QuestionFormData[K],
   ) => void;
 }) {
+  const supportsAiScoring = supportsAiGradingInstructions(formData.questionType);
+
   return (
     <Card>
       <CardHeader>
@@ -59,8 +65,13 @@ export default function QuestionEvaluationSetupCard({
       <CardContent className="space-y-4">
         <ToggleRow
           title="AI scoring assist"
-          description="Use guided scoring suggestions for open responses."
+          description={
+            supportsAiScoring
+              ? "Use a default AI grading template or customize the instructions for open responses."
+              : "AI-assisted grading is available for Short Answer, Essay, and File Upload questions."
+          }
           checked={formData.aiScoring}
+          disabled={!supportsAiScoring}
           onToggle={() => onChange("aiScoring", !formData.aiScoring)}
         />
         <ToggleRow
@@ -73,4 +84,3 @@ export default function QuestionEvaluationSetupCard({
     </Card>
   );
 }
-

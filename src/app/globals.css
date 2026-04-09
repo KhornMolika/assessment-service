@@ -101,7 +101,7 @@
     @apply font-heading;
   }
   /* Khmer text support */
-  [lang="km"] {
+  [lang="kh"] {
     @apply font-khmer;
   }
 }

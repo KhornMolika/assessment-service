@@ -3,12 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
-import QuestionRubricField from "@/src/domains/content/components/question-common/QuestionRubricField";
+import QuestionRubricSettings from "@/src/domains/content/components/question-common/QuestionRubricSettings";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/domains/content/components/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/domains/content/components/question-form/QuestionTypeSettingsCard";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
-import { supportsAiGradingInstructions } from "@/src/domains/content/utils/question-ai-grading";
+import {
+  supportsAiGradingInstructions,
+  syncAiGradingFormState,
+} from "@/src/domains/content/utils/question-ai-grading";
 import QuestionNewHeader from "./QuestionNewHeader";
 
 const createFormId = "question-new-form";
@@ -42,19 +45,27 @@ const initialFormData: QuestionFormData = {
   fileUploadMaxFiles: 1,
   fileUploadInstructions: "",
   aiScoring: false,
+  aiGradingMode: "default",
   manualModeration: false,
   rubric: "",
 };
 
 export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuestionFormData>(initialFormData);
+  const [formData, setFormData] = useState<QuestionFormData>(() => syncAiGradingFormState(initialFormData));
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
     value: QuestionFormData[K],
   ) => {
-    setFormData((current) => ({ ...current, [field]: value }));
+    setFormData((current) => {
+      const next = {
+        ...current,
+        [field]: value,
+      } as QuestionFormData;
+
+      return syncAiGradingFormState(next);
+    });
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -63,7 +74,7 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
     router.push("/questions");
   };
 
-  const showAiGradingInstructions = supportsAiGradingInstructions(formData.questionType);
+  const showAiGradingInstructions = formData.aiScoring && supportsAiGradingInstructions(formData.questionType);
 
   return (
     <div className="space-y-6">
@@ -85,10 +96,10 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
                     <div className="space-y-1">
                       <h3 className="text-sm font-semibold text-primary">AI Grading Instructions</h3>
                       <p className="text-sm text-inkd">
-                        Add instructions to guide AI-assisted scoring for open response questions.
+                        Start with a default template, then customize it when this question needs more specific grading guidance.
                       </p>
                     </div>
-                    <QuestionRubricField formData={formData} onChange={handleChange} />
+                    <QuestionRubricSettings formData={formData} onChange={handleChange} />
                   </div>
                 ) : null
               }
@@ -100,5 +111,3 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
     </div>
   );
 }
-
-

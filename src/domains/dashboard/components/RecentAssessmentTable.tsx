@@ -1,0 +1,97 @@
+import Link from "next/link";
+import type {
+  AssessmentStatus,
+  RecentAssessment,
+} from "@/src/domains/dashboard/types/dashboard.types";
+import { Badge } from "@/src/shared/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/shared/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/src/shared/components/ui/card";
+
+function getStatusVariant(status: AssessmentStatus) {
+  switch (status) {
+    case "Published":
+      return "success" as const;
+    case "Active":
+      return "info" as const;
+    case "Completed":
+      return "secondary" as const;
+    case "Scheduled":
+      return "pending" as const;
+    case "Pending":
+      return "warning" as const;
+    default:
+      return "default" as const;
+  }
+}
+
+export default function RecentAssessmentTable({
+  items,
+}: {
+  items: RecentAssessment[];
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <CardTitle>Recent assessments</CardTitle>
+          <CardDescription>
+            The latest creator-facing assessments and their current lifecycle.
+          </CardDescription>
+        </div>
+        <Link href="/assessments" className="text-sm font-medium text-primary hover:underline">
+          Open all assessments
+        </Link>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Assessment</TableHead>
+              <TableHead>Delivery</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-center">Questions</TableHead>
+              <TableHead className="text-center">Participants</TableHead>
+              <TableHead className="text-center">Pass Rate</TableHead>
+              <TableHead className="text-right">Last Modified</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((assessment) => (
+              <TableRow key={assessment.id}>
+                <TableCell>
+                  <div className="in-w-55">
+                    <div className="font-semibold text-primary">
+                      <Link href={`/assessments/${assessment.id}`}>{assessment.title}</Link>
+                    </div>
+                    <div className="text-xs text-inkd">{assessment.bank}</div>
+                  </div>
+                </TableCell>
+                <TableCell>{assessment.mode}</TableCell>
+                <TableCell>
+                  <Badge variant={getStatusVariant(assessment.status)}>{assessment.status}</Badge>
+                </TableCell>
+                <TableCell className="text-center">{assessment.questions}</TableCell>
+                <TableCell className="text-center">{assessment.participants}</TableCell>
+                <TableCell className="text-center">{assessment.passRate}</TableCell>
+                <TableCell className="text-right text-inkd">{assessment.lastModified}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}

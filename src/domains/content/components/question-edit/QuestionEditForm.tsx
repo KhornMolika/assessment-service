@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
-import { supportsAiGradingInstructions } from "@/src/domains/content/utils/question-ai-grading";
+import { supportsAiGradingInstructions, syncAiGradingFormState } from "@/src/domains/content/utils/question-ai-grading";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
 import QuestionRubricCard from "@/src/domains/content/components/question-common/QuestionRubricCard";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
@@ -24,13 +24,22 @@ export default function QuestionEditForm({
   initialFormData: QuestionFormData;
 }) {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuestionFormData>(initialFormData);
+  const [formData, setFormData] = useState<QuestionFormData>(() =>
+    syncAiGradingFormState(initialFormData),
+  );
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
     value: QuestionFormData[K],
   ) => {
-    setFormData((current) => ({ ...current, [field]: value }));
+    setFormData((current) => {
+      const next = {
+        ...current,
+        [field]: value,
+      } as QuestionFormData;
+
+      return syncAiGradingFormState(next);
+    });
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -39,7 +48,7 @@ export default function QuestionEditForm({
     router.push(`/questions/${questionId}`);
   };
 
-  const showAiGradingInstructions = supportsAiGradingInstructions(formData.questionType);
+  const showAiGradingInstructions = formData.aiScoring && supportsAiGradingInstructions(formData.questionType);
 
   return (
     <div className="space-y-6">
@@ -80,6 +89,3 @@ export default function QuestionEditForm({
     </div>
   );
 }
-
-
-

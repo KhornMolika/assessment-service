@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { correctAnswerSchema } from "./question.schema";
+import { correctAnswerSchema } from "../../content/schemas/correct-answer.schema";
 
 export const questionSnapshotSchema = z.object({
   id: z.string(),
@@ -22,7 +22,7 @@ export const answerEntrySchema = z.object ({
   sheet_id: z.string(),
   question_id: z.string(),
 
-  response: z.record(z.any()),
+  response: z.record(z.any(), z.any()),
   question_snapshot: questionSnapshotSchema,
 
   is_correct: z.boolean(),

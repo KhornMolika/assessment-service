@@ -10,6 +10,8 @@ export type QuestionFormType =
   | "Rating Scale"
   | "File Upload";
 
+export type AiGradingMode = "default" | "custom";
+
 export interface MatchingPairFormValue {
   left: string;
   right: string;
@@ -45,7 +47,7 @@ export interface QuestionFormData {
   fileUploadMaxFiles: number;
   fileUploadInstructions: string;
   aiScoring: boolean;
+  aiGradingMode: AiGradingMode;
   manualModeration: boolean;
   rubric: string;
 }
-

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
-import QuestionRubricField from "./QuestionRubricField";
+import QuestionRubricSettings from "./QuestionRubricSettings";
 
 export default function QuestionRubricCard({
   formData,
@@ -19,13 +19,12 @@ export default function QuestionRubricCard({
       <CardHeader>
         <CardTitle>AI Grading Instructions</CardTitle>
         <CardDescription>
-          Add instructions to guide AI-assisted scoring for open response questions.
+          Start with a default template, then customize it when the grading criteria need more precision.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <QuestionRubricField formData={formData} onChange={onChange} />
+        <QuestionRubricSettings formData={formData} onChange={onChange} />
       </CardContent>
     </Card>
   );
 }
-
