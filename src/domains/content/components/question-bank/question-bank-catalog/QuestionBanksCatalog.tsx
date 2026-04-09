@@ -10,6 +10,7 @@ import QuestionBanksHeader from "./QuestionBanksHeader";
 import QuestionBanksStats from "./QuestionBanksStats";
 
 export default function QuestionBanksCatalog({ banks }: { banks: Bank[] }) {
+  const [bankItems, setBankItems] = useState(banks);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
@@ -18,15 +19,15 @@ export default function QuestionBanksCatalog({ banks }: { banks: Bank[] }) {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
     if (!normalizedQuery) {
-      return banks;
+      return bankItems;
     }
 
-    return banks.filter((bank) => {
+    return bankItems.filter((bank) => {
       const haystacks = [bank.name, bank.description, bank.visibility, ...bank.tags];
 
       return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
     });
-  }, [banks, searchQuery]);
+  }, [bankItems, searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredBanks.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
@@ -36,45 +37,49 @@ export default function QuestionBanksCatalog({ banks }: { banks: Bank[] }) {
   );
 
   const totalQuestions = useMemo(
-    () => banks.reduce((sum, bank) => sum + bank.question_count, 0),
-    [banks],
+    () => bankItems.reduce((sum, bank) => sum + bank.question_count, 0),
+    [bankItems],
   );
 
   const largestBank = useMemo(() => {
-    return banks.reduce<Bank | undefined>((largest, bank) => {
+    return bankItems.reduce<Bank | undefined>((largest, bank) => {
       if (!largest || bank.question_count > largest.question_count) {
         return bank;
       }
 
       return largest;
     }, undefined);
-  }, [banks]);
+  }, [bankItems]);
 
   const publicBankCount = useMemo(
-    () => banks.filter((bank) => bank.visibility === "PUBLIC").length,
-    [banks],
+    () => bankItems.filter((bank) => bank.visibility === "PUBLIC").length,
+    [bankItems],
   );
 
   const recentlyCreatedCount = useMemo(() => {
     const now = new Date();
 
-    return banks.filter((bank) => {
+    return bankItems.filter((bank) => {
       const createdAt = new Date(bank.created_at);
       const diffInDays = Math.floor(
         (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24),
       );
       return diffInDays <= 31;
     }).length;
-  }, [banks]);
+  }, [bankItems]);
 
   const handlePageSizeChange = (size: number) => {
     setItemsPerPage(size);
     setCurrentPage(1);
   };
 
+  const handleDeleteBank = (bankId: string) => {
+    setBankItems((current) => current.filter((bank) => bank.id !== bankId));
+  };
+
   return (
     <div className="space-y-6 px-4 py-4">
-      <QuestionBanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
+      <QuestionBanksHeader bankCount={bankItems.length} totalQuestions={totalQuestions} />
 
       <QuestionBanksStats
         largestBank={largestBank}
@@ -104,15 +109,11 @@ export default function QuestionBanksCatalog({ banks }: { banks: Bank[] }) {
                 className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
               />
             </div>
-
-            <div className="text-sm text-inkd">
-              Showing {paginatedBanks.length} of {filteredBanks.length} banks
-            </div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
             {paginatedBanks.map((bank) => (
-              <QuestionBankCard key={bank.id} bank={bank} />
+              <QuestionBankCard key={bank.id} bank={bank} onDelete={handleDeleteBank} />
             ))}
           </div>
 

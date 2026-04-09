@@ -639,6 +639,19 @@ export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
   return mockQuestions;
 }
 
+export async function getMockBankDetailPageData(id: string): Promise<{
+  bank: Bank | undefined;
+  recentQuestions: QuestionCatalogItem[];
+}> {
+  const bank = mockBanks.find((item) => item.id === id);
+  const recentQuestions = mockQuestions.filter((question) => question.bank_id === id).slice(0, 5);
+
+  return {
+    bank,
+    recentQuestions,
+  };
+}
+
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
   return {
     banks: mockBanks,

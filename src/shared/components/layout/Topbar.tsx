@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Menu } from "lucide-react";
+import { Globe, Menu, Search } from "lucide-react";
 import { useSidebar } from "../../context/sidebar-context";
 
 export default function Topbar() {
@@ -18,11 +18,14 @@ export default function Topbar() {
       </button>
 
       <div className="min-w-0 flex-1">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="w-full rounded-lg border border-border px-4 py-2 focus:border-acc focus:ring-2 focus:ring-acc sm:max-w-80"
-        />
+        <div className="relative w-full max-w-xl">
+          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
+          <input
+            type="text"
+            placeholder="Search banks, descriptions, tags, or visibility..."
+            className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">

@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { QuestionDetailData } from "@/src/domains/content/types/question-detail.types";
 
 function getDifficultyColor(difficulty: string) {
@@ -52,6 +53,18 @@ export default function QuestionDetailHero({
   return (
     <div className="bg-linear-to-br from-[#2D6A4F] via-[#2D6A4F] to-[#40916C] px-4 pb-6 pt-2 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-5xl">
+        <div className="flex items-center mb-4">
+          <Link
+            href="/questions"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 text-white transition hover:bg-white/10"
+            aria-label="Back to questions"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            
+          </Link>
+          <h1 className="text-2xl font-bold text-white ml-3">Question Detail</h1>
+        </div>
+
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3">
