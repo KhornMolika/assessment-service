@@ -6,3 +6,10 @@ export interface NewQuestionBankFormData {
   tags: string;
   visibility: BankVisibility;
 }
+
+export interface EditQuestionBankFormData {
+  name: string;
+  description: string;
+  tags: string;
+  visibility: BankVisibility;
+}

@@ -631,6 +631,10 @@ export async function getMockBanks(): Promise<Bank[]> {
   return mockBanks;
 }
 
+export async function getMockBankById(id: string): Promise<Bank | undefined> {
+  return mockBanks.find((bank) => bank.id === id);
+}
+
 export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
   return mockQuestions;
 }

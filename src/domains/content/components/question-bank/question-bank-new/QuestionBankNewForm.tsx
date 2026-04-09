@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { NewQuestionBankFormData } from "@/src/domains/content/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import QuestionBankNewHeader from "./QuestionBankNewHeader";
+import { NewQuestionBankFormData } from "../../../types/question-bank-form.types";
 
 const createFormId = "question-bank-new-form";
 
