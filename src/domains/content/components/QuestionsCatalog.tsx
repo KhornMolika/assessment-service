@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Copy,
   Download,
@@ -61,9 +62,10 @@ export default function QuestionsCatalog({
   banks: Bank[];
   initialQuestions: QuestionCatalogItem[];
 }) {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("All Types");
-  const [bankFilter, setBankFilter] = useState<string>("All Banks");
+  const [manualBankFilter, setManualBankFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [questions, setQuestions] = useState(initialQuestions);
@@ -74,6 +76,19 @@ export default function QuestionsCatalog({
     () => Object.fromEntries(banks.map((bank) => [bank.id, bank])),
     [banks],
   );
+
+  const bankFilter = useMemo(() => {
+    if (manualBankFilter !== null) {
+      return manualBankFilter;
+    }
+
+    const bankId = searchParams.get("bank");
+    if (!bankId) {
+      return "All Banks";
+    }
+
+    return bankMap[bankId]?.name ?? "All Banks";
+  }, [bankMap, manualBankFilter, searchParams]);
 
   const availableTypes = useMemo(
     () => Array.from(new Set(questions.map((question) => question.type))).sort(),
@@ -189,7 +204,7 @@ export default function QuestionsCatalog({
         <select
           value={bankFilter}
           onChange={(event) => {
-            setBankFilter(event.target.value);
+            setManualBankFilter(event.target.value);
             setCurrentPage(1);
           }}
           className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
