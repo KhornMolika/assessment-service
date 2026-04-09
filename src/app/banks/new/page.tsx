@@ -1,7 +1,5 @@
-import React from 'react'
+import QuestionBankNewForm from "@/src/domains/content/components/question-bank/question-bank-new/QuestionBankNewForm";
 
-export default function NewQuestionbanks() {
-  return (
-    <div>New Question banks</div>
-  )
+export default function NewQuestionBanksPage() {
+  return <QuestionBankNewForm />;
 }
