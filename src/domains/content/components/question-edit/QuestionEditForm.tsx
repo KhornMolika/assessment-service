@@ -41,7 +41,7 @@ export default function QuestionEditForm({
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log("Updating question:", questionId, formData);
     router.push(`/questions/${questionId}`);
@@ -88,3 +88,4 @@ export default function QuestionEditForm({
     </div>
   );
 }
+

@@ -68,7 +68,7 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log("Creating question:", formData);
     router.push("/questions");
@@ -111,3 +111,4 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
     </div>
   );
 }
+

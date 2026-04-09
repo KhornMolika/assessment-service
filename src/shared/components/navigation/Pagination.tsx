@@ -59,7 +59,7 @@ export default function Pagination({
 
   return (
     <div className="flex flex-col gap-4 border-t border-border px-4 py-4 sm:px-6">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex gap-3 flex-row items-center justify-between">
         <div className="flex flex-wrap items-center gap-2 text-sm text-inkd">
           <span>Show</span>
           <select
@@ -85,8 +85,8 @@ export default function Pagination({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center justify-center gap-2 sm:justify-start">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1 || isSinglePage}
@@ -120,6 +120,22 @@ export default function Pagination({
             ))}
           </div>
 
+          <div className="hidden flex-wrap items-center gap-2 sm:flex">
+            {visiblePages.map((pageNumber) => (
+              <button
+                key={pageNumber}
+                onClick={() => onPageChange(pageNumber)}
+                className={`flex h-10 w-10 items-center justify-center rounded-xl font-semibold transition ${
+                  currentPage === pageNumber
+                    ? "bg-primary text-white"
+                    : "border border-border hover:bg-muted"
+                }`}
+              >
+                {pageNumber}
+              </button>
+            ))}
+          </div>
+
           <button
             onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages || isSinglePage}
@@ -132,56 +148,6 @@ export default function Pagination({
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages || isSinglePage}
             className="hidden h-9 w-9 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
-            aria-label="Last page"
-          >
-            <ChevronsRight className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="hidden flex-wrap items-center justify-center gap-2 sm:flex sm:justify-end">
-          <button
-            onClick={() => onPageChange(1)}
-            disabled={currentPage === 1 || isSinglePage}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="First page"
-          >
-            <ChevronsLeft className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1 || isSinglePage}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Previous page"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-
-          {visiblePages.map((pageNumber) => (
-            <button
-              key={pageNumber}
-              onClick={() => onPageChange(pageNumber)}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl font-semibold transition ${
-                currentPage === pageNumber
-                  ? "bg-primary text-white"
-                  : "border border-border hover:bg-muted"
-              }`}
-            >
-              {pageNumber}
-            </button>
-          ))}
-
-          <button
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages || isSinglePage}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Next page"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onPageChange(totalPages)}
-            disabled={currentPage === totalPages || isSinglePage}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Last page"
           >
             <ChevronsRight className="h-4 w-4" />
