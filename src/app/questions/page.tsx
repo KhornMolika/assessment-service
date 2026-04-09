@@ -1,4 +1,4 @@
-﻿import QuestionsCatalog from "@/src/domains/content/components/QuestionsCatalog";
+import QuestionsCatalog from "@/src/domains/content/components/question/catalog/QuestionsCatalog";
 import { getQuestionCatalogPageData } from "@/src/domains/content/api/content.api";
 
 export default async function QuestionsPage() {
@@ -6,3 +6,4 @@ export default async function QuestionsPage() {
 
   return <QuestionsCatalog banks={banks} initialQuestions={questions} />;
 }
+

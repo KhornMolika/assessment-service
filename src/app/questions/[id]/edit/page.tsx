@@ -1,5 +1,5 @@
-﻿import { getMockQuestionEditPageData } from "@/src/domains/content/api/content.api";
-import QuestionEditForm from "@/src/domains/content/components/question-edit/QuestionEditForm";
+import { getMockQuestionEditPageData } from "@/src/domains/content/api/content.api";
+import QuestionEditForm from "@/src/domains/content/components/question/edit/QuestionEditForm";
 
 export default async function EditQuestionPage({
   params,
@@ -11,3 +11,4 @@ export default async function EditQuestionPage({
 
   return <QuestionEditForm questionId={id} banks={banks} initialFormData={formData} />;
 }
+

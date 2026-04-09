@@ -1,5 +1,5 @@
-﻿import { getMockQuestionDetail } from "@/src/domains/content/api/content.api";
-import QuestionDetailView from "@/src/domains/content/components/question-detail/QuestionDetailView";
+import { getMockQuestionDetail } from "@/src/domains/content/api/content.api";
+import QuestionDetailView from "@/src/domains/content/components/question/detail/QuestionDetailView";
 
 export default async function QuestionDetailPage({
   params,
@@ -11,3 +11,4 @@ export default async function QuestionDetailPage({
 
   return <QuestionDetailView question={question} />;
 }
+
