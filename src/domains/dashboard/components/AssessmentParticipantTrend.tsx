@@ -23,7 +23,7 @@ export default function AssessmentParticipantTrend({
       description="A quick pulse on session volume and participant reach over the last reporting windows."
       className="xl:col-span-2"
     >
-      <div className="h-72 w-full sm:h-80">
+      <div className="h-72 min-h-72 w-full min-w-0 sm:h-80 sm:min-h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />

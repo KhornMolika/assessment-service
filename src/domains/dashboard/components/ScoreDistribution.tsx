@@ -22,7 +22,7 @@ export default function ScoreDistribution({
       title="Score distribution"
       description="Latest score spread from completed assessments."
     >
-      <div className="h-72 w-full sm:h-80">
+      <div className="h-72 min-h-72 w-full min-w-0 sm:h-80 sm:min-h-80">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ left: -20, right: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />

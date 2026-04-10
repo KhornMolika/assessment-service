@@ -35,7 +35,7 @@ export default function Topbar() {
         </div>
 
         <div className="hidden sm:flex items-center space-x-2 rounded-full px-0 py-1 transition hover:bg-accl sm:px-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-r from-pl to-acc text-sm font-bold text-card">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-card">
             {user.initials}
           </div>
           <span className="hidden font-medium lg:inline">{user.name}</span>

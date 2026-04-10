@@ -2,9 +2,9 @@
 
 @theme {
   /* Typography */
-  --font-heading: "DM Serif Display", serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-khmer: "Koh Santepheap", serif;
+  --font-heading: var(--font-heading-family), serif;
+  --font-sans: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
+  --font-khmer: var(--font-khmer-family), serif;
 
   /* NBFSA Brand Colors */
   --color-p: #1b4332;

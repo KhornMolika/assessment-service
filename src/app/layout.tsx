@@ -6,18 +6,19 @@ import { SidebarProvider } from "../shared/context/sidebar-context";
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-heading",
+  variable: "--font-heading-family",
 });
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-sans-family",
 });
 
 const kohSantepheap = Koh_Santepheap({
   subsets: ["khmer"],
   weight: ["400", "700"],
-  variable: "--font-khmer",
+  preload: false,
+  variable: "--font-khmer-family",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

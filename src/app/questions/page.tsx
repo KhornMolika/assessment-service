@@ -6,4 +6,3 @@ export default async function QuestionsPage() {
 
   return <QuestionsCatalog banks={banks} initialQuestions={questions} />;
 }
-

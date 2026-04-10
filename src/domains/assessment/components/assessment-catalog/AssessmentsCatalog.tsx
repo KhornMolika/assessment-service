@@ -3,13 +3,19 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import type { AssessmentDeliveryMode } from "@/src/domains/assessment/types/assessment.types";
 import type {
   AssessmentCatalogItem,
-  AssessmentDeliveryMode,
-} from "@/src/domains/assessment/types/assessment.types";
-import type { AssessmentCatalogStats } from "@/src/domains/assessment/types/assessment-catalog.types";
+  AssessmentCatalogStats,
+} from "@/src/domains/assessment/types/assessment-catalog.types";
 import Pagination from "@/src/shared/components/navigation/Pagination";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/src/shared/components/ui/card";
 import AssessmentsHeader from "./AssessmentsHeader";
 import AssessmentsStats from "./AssessmentsStats";
 import AssessmentsTable from "./AssessmentsTable";
@@ -30,7 +36,10 @@ export default function AssessmentsCatalog({
   assessments: AssessmentCatalogItem[];
   stats: AssessmentCatalogStats;
 }) {
-  const [deliveryFilter, setDeliveryFilter] = useState<"ALL" | AssessmentDeliveryMode>("ALL");
+  const [catalogAssessments, setCatalogAssessments] = useState(assessments);
+  const [deliveryFilter, setDeliveryFilter] = useState<
+    "ALL" | AssessmentDeliveryMode
+  >("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -38,8 +47,11 @@ export default function AssessmentsCatalog({
   const filteredAssessments = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
-    return assessments.filter((assessment) => {
-      if (deliveryFilter !== "ALL" && assessment.delivery_mode !== deliveryFilter) {
+    return catalogAssessments.filter((assessment) => {
+      if (
+        deliveryFilter !== "ALL" &&
+        assessment.delivery_mode !== deliveryFilter
+      ) {
         return false;
       }
 
@@ -47,12 +59,21 @@ export default function AssessmentsCatalog({
         return true;
       }
 
-      const haystacks = [assessment.title, assessment.question_bank_name, assessment.description ?? ""];
-      return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
+      const haystacks = [
+        assessment.title,
+        assessment.question_bank_name,
+        assessment.description ?? "",
+      ];
+      return haystacks.some((value) =>
+        value.toLowerCase().includes(normalizedQuery),
+      );
     });
-  }, [assessments, deliveryFilter, searchQuery]);
+  }, [catalogAssessments, deliveryFilter, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredAssessments.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAssessments.length / itemsPerPage),
+  );
   const activePage = Math.min(currentPage, totalPages);
   const paginatedAssessments = filteredAssessments.slice(
     (activePage - 1) * itemsPerPage,
@@ -62,6 +83,12 @@ export default function AssessmentsCatalog({
   const handlePageSizeChange = (pageSize: number) => {
     setItemsPerPage(pageSize);
     setCurrentPage(1);
+  };
+
+  const handleDeleteAssessment = (assessmentId: string) => {
+    setCatalogAssessments((currentAssessments) =>
+      currentAssessments.filter((assessment) => assessment.id !== assessmentId),
+    );
   };
 
   return (
@@ -76,16 +103,10 @@ export default function AssessmentsCatalog({
             <div className="space-y-1">
               <CardTitle>Assessment catalog</CardTitle>
               <CardDescription>
-                Track readiness, delivery mode, and performance signals across the workspace.
+                Track readiness, delivery mode, and performance signals across
+                the workspace.
               </CardDescription>
             </div>
-
-            <Link
-              href="/assessments/new"
-              className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted"
-            >
-              Create from scratch
-            </Link>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -129,7 +150,10 @@ export default function AssessmentsCatalog({
             </div>
           </div>
 
-          <AssessmentsTable assessments={paginatedAssessments} />
+          <AssessmentsTable
+            assessments={paginatedAssessments}
+            onDeleteAssessment={handleDeleteAssessment}
+          />
 
           <Pagination
             currentPage={activePage}

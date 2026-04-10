@@ -2,6 +2,13 @@ import type {
   AssessmentCatalogItem,
   AssessmentCatalogPageData,
 } from "@/src/domains/assessment/types/assessment-catalog.types";
+import type {
+  AssessmentDetailPageData,
+  AssessmentDetailRecord,
+} from "@/src/domains/assessment/types/assessment-detail.types";
+import type { NewAssessmentFormData } from "@/src/domains/assessment/types/assessment-form.types";
+import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
+import { getMockBanks, getMockQuestions } from "@/src/domains/content/api/content.api";
 
 const mockAssessments: AssessmentCatalogItem[] = [
   {
@@ -186,6 +193,7 @@ const mockAssessments: AssessmentCatalogItem[] = [
   },
 ];
 
+
 function getStartOfWeek(date: Date) {
   const startOfWeek = new Date(date);
   const day = startOfWeek.getDay();
@@ -225,6 +233,178 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
 
         return startsAt >= startOfWeek && startsAt < endOfWeek;
       }).length,
+    },
+  };
+}
+
+export async function getAssessmentCatalogItemById(id: string): Promise<AssessmentCatalogItem | null> {
+  return mockAssessments.find((assessment) => assessment.id === id) ?? null;
+}
+
+function buildAssessmentDetailRecord(assessment: AssessmentCatalogItem): AssessmentDetailRecord {
+  const participantCount = assessment.participant_count;
+  const completedCount =
+    participantCount === 0
+      ? 0
+      : Math.max(0, Math.min(participantCount, participantCount - Math.max(1, Math.round(participantCount * 0.09))));
+  const inProgressCount = Math.max(0, participantCount - completedCount);
+  const averageScorePercent =
+    assessment.average_score === "-" ? 0 : Number.parseInt(assessment.average_score, 10);
+  const passRatePercent =
+    assessment.pass_rate === "-" ? 0 : Number.parseInt(assessment.pass_rate, 10);
+  const sourceBank = assessment.question_bank_name;
+
+  return {
+    ...assessment,
+    subtitle:
+      assessment.description ?? `${assessment.title} delivery details and performance overview.`,
+    source_bank: sourceBank,
+    completed_count: completedCount,
+    in_progress_count: inProgressCount,
+    average_score_percent: averageScorePercent,
+    pass_rate_percent: passRatePercent,
+    live_sessions: assessment.delivery_mode === "REAL_TIME" ? 1 : 0,
+    active_sessions: assessment.delivery_mode === "REAL_TIME" ? Math.max(1, inProgressCount) : 0,
+    total_points: assessment.question_count * 4,
+    time_limit_minutes: assessment.delivery_mode === "REAL_TIME" ? 60 : 45,
+    created_by: "Admin User",
+    question_selection: assessment.delivery_mode === "REAL_TIME" ? "Dynamic" : "Manual",
+    shuffle_questions: true,
+    allow_going_back: assessment.delivery_mode === "SELF_PACED",
+    pass_mark: assessment.delivery_mode === "REAL_TIME" ? 70 : 60,
+    show_results:
+      assessment.delivery_mode === "SELF_PACED"
+        ? "Immediately after submit"
+        : "After the live session closes",
+    grade_scale: [
+      { grade: "A", minPercent: 90 },
+      { grade: "B", minPercent: 80 },
+      { grade: "C", minPercent: 70 },
+      { grade: "D", minPercent: 60 },
+      { grade: "E", minPercent: 50 },
+      { grade: "F", minPercent: 0 },
+    ],
+  };
+}
+
+function buildTopPerformers(assessment: AssessmentCatalogItem) {
+  return [
+    { name: "Emma Wilson", score: 98, time: "45 min" },
+    { name: "David Park", score: 95, time: "52 min" },
+    { name: "Lisa Zhang", score: 92, time: "48 min" },
+    { name: "Michael Kim", score: 90, time: "55 min" },
+    { name: "Sarah Chen", score: assessment.delivery_mode === "REAL_TIME" ? 88 : 91, time: "60 min" },
+  ];
+}
+
+function buildRecentActivity(assessment: AssessmentCatalogItem) {
+  return [
+    { name: "John Smith", action: "completed" as const, time: "5 min ago", score: 85 },
+    { name: "Anna Lee", action: "started" as const, time: "12 min ago", score: null },
+    { name: "Tom Brown", action: "completed" as const, time: "25 min ago", score: 92 },
+    { name: "Jane Doe", action: "completed" as const, time: "1 hour ago", score: assessment.delivery_mode === "REAL_TIME" ? 78 : 83 },
+  ];
+}
+
+function buildAssessmentQuestions(
+  assessment: AssessmentCatalogItem,
+  questions: QuestionCatalogItem[],
+): AssessmentDetailPageData["questions"] {
+  const matchingQuestions = questions
+    .filter((question) => question.bank_id.toLowerCase().includes(assessment.question_bank_name.toLowerCase()))
+    .slice(0, 8);
+
+  const fallbackQuestions = questions.slice(0, 8);
+  const selectedQuestions = matchingQuestions.length > 0 ? matchingQuestions : fallbackQuestions;
+
+  return selectedQuestions.map((question, index) => ({
+    id: `${assessment.id}-question-${index + 1}`,
+    question: question.text,
+    type: question.type,
+    points: question.points,
+  }));
+}
+
+export async function getAssessmentDetailPageData(
+  id: string,
+): Promise<AssessmentDetailPageData | null> {
+  const assessment = await getAssessmentCatalogItemById(id);
+
+  if (!assessment) {
+    return null;
+  }
+
+  const questions = await getMockQuestions();
+
+  return {
+    assessment: buildAssessmentDetailRecord(assessment),
+    topPerformers: buildTopPerformers(assessment),
+    recentActivity: buildRecentActivity(assessment),
+    questions: buildAssessmentQuestions(assessment, questions),
+  };
+}
+
+export async function getNewAssessmentPageData(): Promise<{
+  banks: Bank[];
+  questions: QuestionCatalogItem[];
+}> {
+  const [banks, questions] = await Promise.all([getMockBanks(), getMockQuestions()]);
+
+  return {
+    banks,
+    questions,
+  };
+}
+
+export async function getEditAssessmentPageData(id: string): Promise<{
+  assessmentId: string;
+  banks: Bank[];
+  questions: QuestionCatalogItem[];
+  initialFormData: NewAssessmentFormData;
+}> {
+  const [banks, questions] = await Promise.all([getMockBanks(), getMockQuestions()]);
+  const selectedBank = banks[0];
+  const selectedQuestions = questions
+    .filter((question) => question.bank_id === selectedBank?.id)
+    .slice(0, 3);
+
+  return {
+    assessmentId: id,
+    banks,
+    questions,
+    initialFormData: {
+      titleEN: "Customer Satisfaction Survey - Q3 2026",
+      titleKH: "",
+      descriptionEN: "Measure satisfaction trends across active enterprise accounts.",
+      descriptionKH: "",
+      status: "PUBLISHED",
+      participantIdentity: "NAME",
+      sessionMode: "SELF_PACED",
+      questionSelection: "MANUAL",
+      selectedBankId: selectedBank?.id ?? "",
+      selectedQuestionIds: selectedQuestions.map((question) => question.id),
+      totalQuestions: 23,
+      selectionRules: [
+        { difficulty: "Easy", count: 8 },
+        { difficulty: "Medium", count: 10 },
+        { difficulty: "Hard", count: 5 },
+      ],
+      enableTimeLimit: true,
+      timeLimitMinutes: 60,
+      startsAt: "2026-03-01T09:00",
+      endsAt: "2026-03-31T17:00",
+      passMark: 70,
+      shuffleQuestions: true,
+      allowGoingBack: false,
+      gradeLabels: [
+        { grade: "A", minPercent: 90 },
+        { grade: "B", minPercent: 80 },
+        { grade: "C", minPercent: 70 },
+        { grade: "D", minPercent: 60 },
+        { grade: "E", minPercent: 50 },
+        { grade: "F", minPercent: 0 },
+      ],
+      showResults: "IMMEDIATELY",
     },
   };
 }
