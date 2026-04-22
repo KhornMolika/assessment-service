@@ -1,4 +1,5 @@
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import type {
   QuestionFormData,
   QuestionFormType,
@@ -20,12 +21,14 @@ const questionTypes: QuestionFormType[] = [
 
 export default function QuestionDetailsCard({
   banks,
+  topics,
   formData,
   onChange,
   title = "Question Details",
   description,
 }: {
   banks: Bank[];
+  topics: Topic[];
   formData: QuestionFormData;
   onChange: <K extends keyof QuestionFormData>(
     field: K,
@@ -84,13 +87,50 @@ export default function QuestionDetailsCard({
             onChange={(event) => onChange("bank", event.target.value)}
             className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
           >
-            <option value="">Select a bank...</option>
+            <option value="">No bank assigned</option>
             {banks.map((bank) => (
               <option key={bank.id} value={bank.id}>
                 {bank.name}
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-inkd">
+            Optional. Questions can be created without a bank.
+          </p>
+        </div>
+
+        <div>
+          <div className="mb-2 block text-sm font-semibold text-primary">Topics *</div>
+          <div className="grid gap-2 rounded-lg border border-border bg-card p-3">
+            {topics.map((topic) => {
+              const checked = formData.topicIds.includes(topic.id);
+
+              return (
+                <label
+                  key={topic.id}
+                  className="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 transition hover:bg-muted"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(event) => {
+                      const nextTopicIds = event.target.checked
+                        ? [...formData.topicIds, topic.id]
+                        : formData.topicIds.filter((topicId) => topicId !== topic.id);
+
+                      onChange("topicIds", nextTopicIds);
+                    }}
+                    className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-pm"
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-primary">{topic.name}</div>
+                    <div className="text-xs text-inkd">{topic.description}</div>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-1 text-xs text-inkd">Select at least one topic.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

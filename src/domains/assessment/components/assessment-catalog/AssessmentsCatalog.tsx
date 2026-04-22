@@ -1,13 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import type { AssessmentDeliveryMode } from "@/src/domains/assessment/types/assessment.types";
 import type {
   AssessmentCatalogItem,
   AssessmentCatalogStats,
 } from "@/src/domains/assessment/types/assessment-catalog.types";
+import type { AssessmentTopicMap } from "@/src/domains/content/types/topic.types";
+import { assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
+import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
 import Pagination from "@/src/shared/components/navigation/Pagination";
 import {
   Card,
@@ -32,10 +35,13 @@ const deliveryFilters: Array<{
 export default function AssessmentsCatalog({
   assessments,
   stats,
+  assessmentTopics,
 }: {
   assessments: AssessmentCatalogItem[];
   stats: AssessmentCatalogStats;
+  assessmentTopics: AssessmentTopicMap[];
 }) {
+  const searchParams = useSearchParams();
   const [catalogAssessments, setCatalogAssessments] = useState(assessments);
   const [deliveryFilter, setDeliveryFilter] = useState<
     "ALL" | AssessmentDeliveryMode
@@ -43,6 +49,7 @@ export default function AssessmentsCatalog({
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const filteredAssessments = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -51,6 +58,13 @@ export default function AssessmentsCatalog({
       if (
         deliveryFilter !== "ALL" &&
         assessment.delivery_mode !== deliveryFilter
+      ) {
+        return false;
+      }
+
+      if (
+        topicFilter !== ALL_TOPICS_VALUE &&
+        !assessmentMatchesTopic(assessment.id, topicFilter, assessmentTopics)
       ) {
         return false;
       }
@@ -68,7 +82,7 @@ export default function AssessmentsCatalog({
         value.toLowerCase().includes(normalizedQuery),
       );
     });
-  }, [catalogAssessments, deliveryFilter, searchQuery]);
+  }, [assessmentTopics, catalogAssessments, deliveryFilter, searchQuery, topicFilter]);
 
   const totalPages = Math.max(
     1,

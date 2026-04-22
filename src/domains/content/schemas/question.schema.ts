@@ -3,7 +3,7 @@ import { correctAnswerSchema } from "./correct-answer.schema";
 
 export const questionSchema = z.object({
   id: z.string(),
-  bank_id: z.string(),
+  bank_id: z.string().nullable(),
   type_id: z.string(),
   question_text: z.string(),
   language: z.enum(["EN", "KH"]),

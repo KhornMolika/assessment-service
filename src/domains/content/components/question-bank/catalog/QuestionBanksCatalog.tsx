@@ -1,33 +1,53 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { BankTopicMap } from "@/src/domains/content/types/topic.types";
+import {
+  ALL_TOPICS_VALUE,
+  bankMatchesTopic,
+} from "@/src/domains/content/utils/topic-utils";
 import Pagination from "@/src/shared/components/navigation/Pagination";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import QuestionBankCard from "./QuestionBankCard";
 import QuestionBanksHeader from "./QuestionBanksHeader";
 import QuestionBanksStats from "./QuestionBanksStats";
 
-export default function QuestionBanksCatalog({ banks }: { banks: Bank[] }) {
+export default function QuestionBanksCatalog({
+  banks,
+  bankTopics,
+}: {
+  banks: Bank[];
+  bankTopics: BankTopicMap[];
+}) {
+  const searchParams = useSearchParams();
   const [bankItems, setBankItems] = useState(banks);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
+  const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const filteredBanks = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return bankItems;
-    }
-
     return bankItems.filter((bank) => {
+      if (
+        topicFilter !== ALL_TOPICS_VALUE &&
+        !bankMatchesTopic(bank.id, topicFilter, bankTopics)
+      ) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
       const haystacks = [bank.name, bank.description, bank.visibility, ...bank.tags];
 
       return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
     });
-  }, [bankItems, searchQuery]);
+  }, [bankItems, bankTopics, searchQuery, topicFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredBanks.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);

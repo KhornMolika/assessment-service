@@ -1,10 +1,21 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import Overlay from "./Overlay";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isFullscreenAssessmentRoute =
+    /^\/assessments\/[^/]+\/(take|host|join|self-paced-preview|real-time-preview)$/.test(
+      pathname,
+    );
+
+  if (isFullscreenAssessmentRoute) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />

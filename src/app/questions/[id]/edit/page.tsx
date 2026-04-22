@@ -7,8 +7,15 @@ export default async function EditQuestionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { banks, formData } = await getMockQuestionEditPageData(id);
+  const { banks, topics, formData } = await getMockQuestionEditPageData(id);
 
-  return <QuestionEditForm questionId={id} banks={banks} initialFormData={formData} />;
+  return (
+    <QuestionEditForm
+      questionId={id}
+      banks={banks}
+      topics={topics}
+      initialFormData={formData}
+    />
+  );
 }
 

@@ -6,3 +6,4 @@ export * from "./question-detail.types";
 export * from "./question-form.types";
 export * from "./question-type.types";
 export * from "./question.types";
+export * from "./topic.types";

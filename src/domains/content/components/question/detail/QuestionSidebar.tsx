@@ -31,10 +31,14 @@ export default function QuestionSidebar({
           <CardContent className="space-y-4">
             <div>
               <div className="mb-1 text-xs text-inkd">Question Bank</div>
-              <Link href="/banks" className="flex items-start gap-1 font-semibold text-pm hover:underline">
-                <span className="min-w-0 flex-1">{question.bank.name}</span>
-                <ChevronRight className="mt-0.5 h-4 w-4 shrink-0" />
-              </Link>
+              {question.bank ? (
+                <Link href="/banks" className="flex items-start gap-1 font-semibold text-pm hover:underline">
+                  <span className="min-w-0 flex-1">{question.bank.name}</span>
+                  <ChevronRight className="mt-0.5 h-4 w-4 shrink-0" />
+                </Link>
+              ) : (
+                <div className="font-semibold text-primary">No bank assigned</div>
+              )}
             </div>
             <div>
               <div className="mb-1 text-xs text-inkd">Question Type</div>

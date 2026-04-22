@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import { supportsAiGradingInstructions, syncAiGradingFormState } from "@/src/domains/content/utils/question-ai-grading";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
 import QuestionRubricCard from "@/src/domains/content/components/question-common/QuestionRubricCard";
@@ -16,10 +17,12 @@ const editFormId = "question-edit-form";
 export default function QuestionEditForm({
   questionId,
   banks,
+  topics,
   initialFormData,
 }: {
   questionId: string;
   banks: Bank[];
+  topics: Topic[];
   initialFormData: QuestionFormData;
 }) {
   const router = useRouter();
@@ -43,6 +46,11 @@ export default function QuestionEditForm({
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (formData.topicIds.length === 0) {
+      return;
+    }
+
     console.log("Updating question:", questionId, formData);
     router.push(`/questions/${questionId}`);
   };
@@ -59,6 +67,7 @@ export default function QuestionEditForm({
           <div className="space-y-6">
             <QuestionDetailsCard
               banks={banks}
+              topics={topics}
               formData={formData}
               onChange={handleChange}
               title="Question Content"
@@ -75,6 +84,7 @@ export default function QuestionEditForm({
             />
             <QuestionPreviewCard
               banks={banks}
+              topics={topics}
               formData={formData}
               title="Answering Preview"
               description="A quick creator-facing preview of how the question will behave."

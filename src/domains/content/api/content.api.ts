@@ -1,6 +1,70 @@
-import type { Bank, QuestionCatalogItem, QuestionCatalogPageData } from "../types";
+import type {
+  Bank,
+  BankTopicMap,
+  QuestionCatalogItem,
+  QuestionCatalogPageData,
+  QuestionTopicMap,
+  Topic,
+} from "../types";
 import type { QuestionFormData, QuestionFormType } from "../types/question-form.types";
 import { inferAiGradingMode, syncAiGradingFormState } from "../utils/question-ai-grading";
+
+const mockTopics: Topic[] = [
+  {
+    id: "topic-algebra",
+    name: "Algebra",
+    description: "Equations, expressions, and algebraic reasoning.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-geometry",
+    name: "Geometry",
+    description: "Shapes, measurement, and spatial reasoning.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-chemistry",
+    name: "Chemistry",
+    description: "Chemical structure, bonding, and reactions.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-botany",
+    name: "Botany",
+    description: "Plant biology, photosynthesis, and classification.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-history",
+    name: "History",
+    description: "Historical analysis and contextual understanding.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-onboarding",
+    name: "Onboarding",
+    description: "Employee onboarding and feedback workflows.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-security",
+    name: "Security",
+    description: "Security awareness, phishing, and device hygiene.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-physics",
+    name: "Physics",
+    description: "Motion, force, and mechanics fundamentals.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+  {
+    id: "topic-marketing",
+    name: "Marketing",
+    description: "Campaign planning, channels, and acquisition.",
+    created_at: "2026-03-01T08:00:00Z",
+  },
+];
 const mockBanks: Bank[] = [
   {
     id: "bank-math-grade-10",
@@ -625,6 +689,16 @@ const mockQuestions: QuestionCatalogItem[] = [
     language: "EN",
     tags: ["Campaign Brief"],
   },
+  {
+    id: "q-055",
+    bank_id: null,
+    text: "Explain how topic-based question organization can work without assigning the item to a bank.",
+    type: "Short Answer",
+    difficulty: "Medium",
+    points: 4,
+    language: "EN",
+    tags: ["Independent"],
+  },
 ];
 
 export async function getMockBanks(): Promise<Bank[]> {
@@ -639,12 +713,26 @@ export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
   return mockQuestions;
 }
 
+export async function getMockTopics(): Promise<Topic[]> {
+  return mockTopics;
+}
+
+export async function getMockBankTopics(): Promise<BankTopicMap[]> {
+  return mockBankTopics;
+}
+
+export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
+  return mockQuestionTopics;
+}
+
 export async function getMockBankDetailPageData(id: string): Promise<{
   bank: Bank | undefined;
   recentQuestions: QuestionCatalogItem[];
 }> {
   const bank = mockBanks.find((item) => item.id === id);
-  const recentQuestions = mockQuestions.filter((question) => question.bank_id === id).slice(0, 5);
+  const recentQuestions = mockQuestions
+    .filter((question) => question.bank_id != null && question.bank_id === id)
+    .slice(0, 5);
 
   return {
     bank,
@@ -660,6 +748,35 @@ export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageD
 }
 
 const duplicateQuestionIdPattern = /^(q-\d+)-copy(?:-(\d+))?$/;
+
+const mockBankTopics: BankTopicMap[] = [
+  { question_bank_id: "bank-math-grade-10", topic_id: "topic-algebra" },
+  { question_bank_id: "bank-math-grade-10", topic_id: "topic-geometry" },
+  { question_bank_id: "bank-chem-bonding", topic_id: "topic-chemistry" },
+  { question_bank_id: "bank-biology-botany", topic_id: "topic-botany" },
+  { question_bank_id: "bank-khmer-stem", topic_id: "topic-history" },
+  { question_bank_id: "bank-hr-onboarding", topic_id: "topic-onboarding" },
+  { question_bank_id: "bank-it-security", topic_id: "topic-security" },
+  { question_bank_id: "bank-physics-motion", topic_id: "topic-physics" },
+  { question_bank_id: "bank-digital-marketing", topic_id: "topic-marketing" },
+];
+
+const mockQuestionTopics: QuestionTopicMap[] = [
+  { question_id: "q-001", topic_id: "topic-algebra" },
+  { question_id: "q-003", topic_id: "topic-botany" },
+  { question_id: "q-005", topic_id: "topic-onboarding" },
+  { question_id: "q-006", topic_id: "topic-security" },
+  { question_id: "q-010", topic_id: "topic-physics" },
+  { question_id: "q-012", topic_id: "topic-marketing" },
+  { question_id: "q-014", topic_id: "topic-chemistry" },
+  { question_id: "q-015", topic_id: "topic-algebra" },
+  { question_id: "q-020", topic_id: "topic-geometry" },
+  { question_id: "q-033", topic_id: "topic-history" },
+  { question_id: "q-041", topic_id: "topic-security" },
+  { question_id: "q-046", topic_id: "topic-physics" },
+  { question_id: "q-053", topic_id: "topic-marketing" },
+  { question_id: "q-055", topic_id: "topic-onboarding" },
+];
 
 export function createMockQuestionDuplicateId(id: string): string {
   const matchedDuplicate = id.match(duplicateQuestionIdPattern);
@@ -815,8 +932,14 @@ export async function getMockQuestionDetail(id: string): Promise<QuestionDetailD
           id,
           text: `${sourceQuestion.text} (Copy)`,
         };
-  const bank = mockBanks.find((item) => item.id === question.bank_id) ?? mockBanks[0];
+  const bank = question.bank_id
+    ? (mockBanks.find((item) => item.id === question.bank_id) ?? null)
+    : null;
   const type = getQuestionTypeMeta(question.type);
+  const mappedTopicIds = mockQuestionTopics
+    .filter((mapping) => mapping.question_id === sourceQuestion.id)
+    .map((mapping) => mapping.topic_id);
+  const mappedTopics = mockTopics.filter((topic) => mappedTopicIds.includes(topic.id));
 
   const defaultOptions =
     question.type === "MCQ"
@@ -891,26 +1014,25 @@ export async function getMockQuestionDetail(id: string): Promise<QuestionDetailD
 
   return {
     id: question.id,
-    bank_id: bank.id,
+    bank_id: bank?.id ?? null,
     type_id: type.id,
     question_text: question.text,
     language: question.language,
     difficulty: question.difficulty,
     points: question.points,
-    tags: question.tags.length > 0 ? question.tags : bank.tags.slice(0, 1),
+    tags: question.tags,
     settings: defaultSettings,
     correct_answer: defaultCorrectAnswer,
     created_at: "2026-02-15T10:00:00Z",
-    bank: {
-      id: bank.id,
-      name: bank.name,
-      owner_id: "owner-1",
-    },
+    bank: bank
+      ? {
+          id: bank.id,
+          name: bank.name,
+          owner_id: "owner-1",
+        }
+      : null,
     type,
-    topics: [
-      { id: `${bank.id}-topic-1`, name: bank.tags[0] ?? bank.name },
-      { id: `${bank.id}-topic-2`, name: question.type },
-    ],
+    topics: mappedTopics.map((topic) => ({ id: topic.id, name: topic.name })),
     answer_options: defaultOptions,
     ai_grading_config: type.supports_ai
       ? {
@@ -1006,7 +1128,8 @@ function mapQuestionDetailToEditorFormData(question: QuestionDetailData): Questi
   const formData: QuestionFormData = {
     questionText: question.question_text,
     questionType,
-    bank: question.bank.id,
+    bank: question.bank?.id ?? "",
+    topicIds: question.topics.map((topic) => topic.id),
     points: String(question.points),
     difficulty: question.difficulty,
     language: question.language === "KH" ? "Khmer (KH)" : "English (EN)",
@@ -1068,12 +1191,14 @@ function mapQuestionDetailToEditorFormData(question: QuestionDetailData): Questi
 }
 export async function getMockQuestionEditPageData(id: string): Promise<{
   banks: Bank[];
+  topics: Topic[];
   formData: QuestionFormData;
 }> {
   const question = await getMockQuestionDetail(id);
 
   return {
     banks: mockBanks,
+    topics: mockTopics,
     formData: mapQuestionDetailToEditorFormData(question),
   };
 }

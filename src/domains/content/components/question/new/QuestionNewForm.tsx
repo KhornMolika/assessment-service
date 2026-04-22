@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import QuestionRubricSettings from "@/src/domains/content/components/question-common/QuestionRubricSettings";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/domains/content/components/question-form/QuestionPreviewCard";
@@ -20,6 +21,7 @@ const initialFormData: QuestionFormData = {
   questionText: "",
   questionType: "Single Choice",
   bank: "",
+  topicIds: [],
   points: "1",
   difficulty: "Easy",
   language: "English (EN)",
@@ -50,7 +52,13 @@ const initialFormData: QuestionFormData = {
   rubric: "",
 };
 
-export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
+export default function QuestionNewForm({
+  banks,
+  topics,
+}: {
+  banks: Bank[];
+  topics: Topic[];
+}) {
   const router = useRouter();
   const [formData, setFormData] = useState<QuestionFormData>(() => syncAiGradingFormState(initialFormData));
 
@@ -70,6 +78,11 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (formData.topicIds.length === 0) {
+      return;
+    }
+
     console.log("Creating question:", formData);
     router.push("/questions");
   };
@@ -83,7 +96,12 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
       <form id={createFormId} onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="space-y-6">
-            <QuestionDetailsCard banks={banks} formData={formData} onChange={handleChange} />
+            <QuestionDetailsCard
+              banks={banks}
+              topics={topics}
+              formData={formData}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="space-y-6">
@@ -104,7 +122,7 @@ export default function QuestionNewForm({ banks }: { banks: Bank[] }) {
                 ) : null
               }
             />
-            <QuestionPreviewCard banks={banks} formData={formData} />
+            <QuestionPreviewCard banks={banks} topics={topics} formData={formData} />
           </div>
         </div>
       </form>

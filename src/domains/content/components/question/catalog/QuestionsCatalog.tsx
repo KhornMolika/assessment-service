@@ -18,6 +18,11 @@ import type {
   QuestionCatalogItem,
   QuestionCatalogType,
 } from "@/src/domains/content/types/question-catalog.types";
+import type { QuestionTopicMap } from "@/src/domains/content/types/topic.types";
+import {
+  ALL_TOPICS_VALUE,
+  questionMatchesTopic,
+} from "@/src/domains/content/utils/topic-utils";
 import { Badge } from "@/src/shared/components/ui/badge";
 import {
   Card,
@@ -58,9 +63,11 @@ function getQuestionTypeVariant(type: QuestionCatalogType) {
 export default function QuestionsCatalog({
   banks,
   initialQuestions,
+  questionTopics,
 }: {
   banks: Bank[];
   initialQuestions: QuestionCatalogItem[];
+  questionTopics: QuestionTopicMap[];
 }) {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
@@ -90,6 +97,8 @@ export default function QuestionsCatalog({
     return bankMap[bankId]?.name ?? "All Banks";
   }, [bankMap, manualBankFilter, searchParams]);
 
+  const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
+
   const availableTypes = useMemo(
     () => Array.from(new Set(questions.map((question) => question.type))).sort(),
     [questions],
@@ -99,7 +108,9 @@ export default function QuestionsCatalog({
 
   const filteredQuestions = useMemo(() => {
     return questions.filter((question) => {
-      const bankName = bankMap[question.bank_id]?.name ?? "Unknown bank";
+      const bankName = question.bank_id
+        ? bankMap[question.bank_id]?.name ?? "Unknown bank"
+        : "Unassigned";
 
       if (
         searchQuery &&
@@ -112,13 +123,20 @@ export default function QuestionsCatalog({
         return false;
       }
 
+      if (
+        topicFilter !== ALL_TOPICS_VALUE &&
+        !questionMatchesTopic(question.id, topicFilter, questionTopics)
+      ) {
+        return false;
+      }
+
       if (bankFilter !== "All Banks" && bankName !== bankFilter) {
         return false;
       }
 
       return true;
     });
-  }, [bankFilter, bankMap, questions, searchQuery, typeFilter]);
+  }, [bankFilter, bankMap, questionTopics, questions, searchQuery, topicFilter, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
@@ -234,7 +252,7 @@ export default function QuestionsCatalog({
             </TableHeader>
             <TableBody>
               {paginatedQuestions.map((question) => {
-                const bank = bankMap[question.bank_id];
+                const bank = question.bank_id ? bankMap[question.bank_id] : undefined;
 
                 return (
                   <TableRow key={question.id}>
@@ -335,7 +353,9 @@ export default function QuestionsCatalog({
                 {questionPendingDelete.text}
               </div>
               <div className="mt-2 text-xs text-inkd">
-                {bankMap[questionPendingDelete.bank_id]?.name ?? "Unknown bank"} | {questionPendingDelete.type}
+                {questionPendingDelete.bank_id
+                  ? bankMap[questionPendingDelete.bank_id]?.name ?? "Unknown bank"
+                  : "Unassigned"} | {questionPendingDelete.type}
               </div>
             </div>
 

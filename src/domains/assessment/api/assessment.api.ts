@@ -7,7 +7,11 @@ import type {
   AssessmentDetailRecord,
 } from "@/src/domains/assessment/types/assessment-detail.types";
 import type { NewAssessmentFormData } from "@/src/domains/assessment/types/assessment-form.types";
-import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
+import type {
+  AssessmentTopicMap,
+  Bank,
+  QuestionCatalogItem,
+} from "@/src/domains/content/types";
 import { getMockBanks, getMockQuestions } from "@/src/domains/content/api/content.api";
 
 const mockAssessments: AssessmentCatalogItem[] = [
@@ -193,6 +197,19 @@ const mockAssessments: AssessmentCatalogItem[] = [
   },
 ];
 
+const mockAssessmentTopics: AssessmentTopicMap[] = [
+  { assessment_id: "assessment-1", topic_id: "topic-onboarding" },
+  { assessment_id: "assessment-2", topic_id: "topic-chemistry" },
+  { assessment_id: "assessment-3", topic_id: "topic-history" },
+  { assessment_id: "assessment-4", topic_id: "topic-marketing" },
+  { assessment_id: "assessment-5", topic_id: "topic-algebra" },
+  { assessment_id: "assessment-5", topic_id: "topic-geometry" },
+  { assessment_id: "assessment-6", topic_id: "topic-physics" },
+  { assessment_id: "assessment-7", topic_id: "topic-security" },
+  { assessment_id: "assessment-8", topic_id: "topic-marketing" },
+  { assessment_id: "assessment-9", topic_id: "topic-onboarding" },
+];
+
 
 function getStartOfWeek(date: Date) {
   const startOfWeek = new Date(date);
@@ -237,6 +254,10 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
   };
 }
 
+export async function getMockAssessmentTopics(): Promise<AssessmentTopicMap[]> {
+  return mockAssessmentTopics;
+}
+
 export async function getAssessmentCatalogItemById(id: string): Promise<AssessmentCatalogItem | null> {
   return mockAssessments.find((assessment) => assessment.id === id) ?? null;
 }
@@ -276,6 +297,8 @@ function buildAssessmentDetailRecord(assessment: AssessmentCatalogItem): Assessm
       assessment.delivery_mode === "SELF_PACED"
         ? "Immediately after submit"
         : "After the live session closes",
+    is_allowed_share: assessment.delivery_mode === "SELF_PACED",
+    is_showed_answers: assessment.delivery_mode === "SELF_PACED",
     grade_scale: [
       { grade: "A", minPercent: 90 },
       { grade: "B", minPercent: 80 },
@@ -309,9 +332,94 @@ function buildRecentActivity(assessment: AssessmentCatalogItem) {
 function buildAssessmentQuestions(
   assessment: AssessmentCatalogItem,
   questions: QuestionCatalogItem[],
+  banks: Bank[],
 ): AssessmentDetailPageData["questions"] {
+  if (assessment.id === "assessment-1" && assessment.delivery_mode === "SELF_PACED") {
+    return [
+      {
+        id: `${assessment.id}-question-1`,
+        question: "Which customer journey stage needs the most improvement this quarter?",
+        type: "Single Choice",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-2`,
+        question: "Select all channels where customers said response time felt slow.",
+        type: "Multiple Choice",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-3`,
+        question: "True or false: most customers said onboarding expectations were clearly explained.",
+        type: "Boolean",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-4`,
+        question: "In one sentence, what is the main reason customers gave for churn risk?",
+        type: "Short Answer",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-5`,
+        question: "Describe how your team would improve the support handoff experience next month.",
+        type: "Essay",
+        points: 10,
+      },
+      {
+        id: `${assessment.id}-question-6`,
+        question: "Rate the clarity of the latest account health dashboard update.",
+        type: "Rating",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-7`,
+        question: "Arrange the follow-up workflow in the correct order after a detractor response.",
+        type: "Ordering",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-8`,
+        question: "Fill in the blank: The best first response to a detractor is to ___ within ___ hours.",
+        type: "Fill In The Blank",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-9`,
+        question: "Match each feedback theme with the team that should own the next action.",
+        type: "Matching",
+        points: 5,
+      },
+      {
+        id: `${assessment.id}-question-10`,
+        question: "Upload a sample improvement note or screenshot that supports your proposed action.",
+        type: "File Upload",
+        points: 5,
+      },
+    ];
+  }
+
+  const normalizedBankName = assessment.question_bank_name.trim().toLowerCase();
+  const matchingBankIds = new Set(
+    banks
+      .filter((bank) => {
+        const normalizedBankId = bank.id.trim().toLowerCase();
+        const normalizedName = bank.name.trim().toLowerCase();
+
+        return (
+          normalizedName.includes(normalizedBankName) ||
+          normalizedBankName.includes(normalizedName) ||
+          normalizedBankId.includes(normalizedBankName)
+        );
+      })
+      .map((bank) => bank.id),
+  );
+
   const matchingQuestions = questions
-    .filter((question) => question.bank_id.toLowerCase().includes(assessment.question_bank_name.toLowerCase()))
+    .filter(
+      (question) =>
+        question.bank_id != null && matchingBankIds.has(question.bank_id),
+    )
     .slice(0, 8);
 
   const fallbackQuestions = questions.slice(0, 8);
@@ -334,13 +442,13 @@ export async function getAssessmentDetailPageData(
     return null;
   }
 
-  const questions = await getMockQuestions();
+  const [banks, questions] = await Promise.all([getMockBanks(), getMockQuestions()]);
 
   return {
     assessment: buildAssessmentDetailRecord(assessment),
     topPerformers: buildTopPerformers(assessment),
     recentActivity: buildRecentActivity(assessment),
-    questions: buildAssessmentQuestions(assessment, questions),
+    questions: buildAssessmentQuestions(assessment, questions, banks),
   };
 }
 

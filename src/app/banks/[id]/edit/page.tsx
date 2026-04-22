@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getMockBankById } from "@/src/domains/content/api/content.api";
-import QuestionBankEditForm from "@/src/domains/content/components/question-bank/question-bank-edit/QuestionBankEditForm";
+import QuestionBankEditForm from "@/src/domains/content/components/question-bank/edit/QuestionBankEditForm";
 
 export default async function EditQuestionBanksPage({
   params,

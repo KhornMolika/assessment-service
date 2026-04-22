@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getMockBankDetailPageData } from "@/src/domains/content/api/content.api";
-import QuestionBankDetailView from "@/src/domains/content/components/question-bank/question-bank-detail/QuestionBankDetailView";
+import QuestionBankDetailView from "@/src/domains/content/components/question-bank/detail/QuestionBankDetailView";
 
 export default async function QuestionBanksDetailPage({
   params,

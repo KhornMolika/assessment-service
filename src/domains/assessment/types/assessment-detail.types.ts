@@ -42,6 +42,8 @@ export interface AssessmentDetailRecord extends AssessmentCatalogItem {
   allow_going_back: boolean;
   pass_mark: number;
   show_results: string;
+  is_allowed_share: boolean;
+  is_showed_answers: boolean;
   grade_scale: AssessmentDetailGradeBand[];
 }
 

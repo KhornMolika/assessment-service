@@ -1,4 +1,5 @@
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import { Circle, FileText, GripVertical, Square, Star, Upload } from "lucide-react";
@@ -9,16 +10,19 @@ function getOptionLabel(index: number) {
 
 export default function QuestionPreviewCard({
   banks,
+  topics,
   formData,
   title = "Preview",
   description,
 }: {
   banks: Bank[];
+  topics: Topic[];
   formData: QuestionFormData;
   title?: string;
   description?: string;
 }) {
   const selectedBank = banks.find((bank) => bank.id === formData.bank);
+  const selectedTopics = topics.filter((topic) => formData.topicIds.includes(topic.id));
 
   const renderPreview = () => {
     switch (formData.questionType) {
@@ -168,7 +172,12 @@ export default function QuestionPreviewCard({
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-inkd">
             <span>{formData.points} {Number(formData.points) === 1 ? "point" : "points"}</span>
-            {selectedBank && <span>{selectedBank.name}</span>}
+            <span>{selectedBank?.name ?? "No bank assigned"}</span>
+            {selectedTopics.map((topic) => (
+              <span key={topic.id} className="rounded-full bg-accp px-2.5 py-1 font-semibold text-pl">
+                {topic.name}
+              </span>
+            ))}
           </div>
         </div>
         {renderPreview()}
