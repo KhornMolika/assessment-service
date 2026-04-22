@@ -1,13 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2, Clock3, Copy, Crown, PlayCircle, QrCode, Radio, Trophy } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock3,
+  Copy,
+  Crown,
+  PlayCircle,
+  QrCode,
+  Radio,
+  Target,
+  Trophy,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type {
   AssessmentCatalogItem,
   AssessmentDetailQuestionItem,
 } from "@/src/domains/assessment/types";
-import { AssessmentOverviewCard, FlowStepper, QuestionOptionButton, ScreenShell } from "./SessionShared";
+import { getRealtimeOptionPalette, ScreenShell } from "./SessionShared";
+import { useRealtimeAudio } from "./realtime.effects";
 import type { HostPhase } from "./session.types";
 import {
   buildDistribution,
@@ -33,16 +47,28 @@ export function AssessmentHostScreen({
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(15);
   const [responseCount, setResponseCount] = useState(0);
+  const [origin, setOrigin] = useState("");
+  const previousTimerRef = useRef(timerSeconds);
+  const previousPhaseRef = useRef<HostPhase>(phase);
+  const { soundEnabled, setSoundEnabled, prime, playTone } = useRealtimeAudio();
 
   const currentRound = rounds[questionIndex];
-  const participantUrl =
-    typeof window === "undefined"
-      ? `/assessments/${assessment.id}/join`
-      : `${window.location.origin}/assessments/${assessment.id}/join`;
+  const participantPath = `/assessments/${assessment.id}/join`;
+  const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
   const responseDistribution = useMemo(
     () => buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId),
     [currentRound, responseCount],
   );
+  const comebackGap = Math.max(20, leaderboard[1]?.score - leaderboard[2]?.score || 70);
+  const isLobbyPhase = phase === "lobby";
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setOrigin(window.location.origin);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, []);
 
   useEffect(() => {
     if (phase !== "reveal") {
@@ -68,18 +94,34 @@ export function AssessmentHostScreen({
   }, [participants.length, phase, timerSeconds]);
 
   useEffect(() => {
-    if (phase !== "correct") {
+    if (previousPhaseRef.current !== phase) {
+      if (phase === "reveal") {
+        void playTone("reveal");
+      } else if (phase === "correct") {
+        void playTone("success");
+      } else if (phase === "leaderboard") {
+        void playTone("leaderboard");
+      }
+    }
+
+    previousPhaseRef.current = phase;
+  }, [phase, playTone]);
+
+  useEffect(() => {
+    if (phase !== "reveal" || previousTimerRef.current === timerSeconds) {
+      previousTimerRef.current = timerSeconds;
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
-      setPhase("leaderboard");
-    }, 4000);
+    if (timerSeconds > 0) {
+      void playTone(timerSeconds <= 5 ? "warning" : "tick");
+    }
 
-    return () => window.clearTimeout(timeoutId);
-  }, [phase]);
+    previousTimerRef.current = timerSeconds;
+  }, [phase, playTone, timerSeconds]);
 
   function startSession() {
+    prime();
     setQuestionIndex(0);
     setTimerSeconds(15);
     setResponseCount(0);
@@ -90,6 +132,10 @@ export function AssessmentHostScreen({
     setTimerSeconds(0);
     setResponseCount(participants.length);
     setPhase("correct");
+  }
+
+  function showLeaderboard() {
+    setPhase("leaderboard");
   }
 
   function advanceToNextQuestion() {
@@ -112,43 +158,25 @@ export function AssessmentHostScreen({
 
   return (
     <ScreenShell
-      eyebrow="Real-time Host Flow"
-      title={assessment.title}
-      description="This host UI follows the documented live cycle: lobby, reveal with auto-start timer, correct answer, auto leaderboard, then host-driven next question."
+      eyebrow={isLobbyPhase ? "Real-time Host Flow" : ""}
+      title={isLobbyPhase ? assessment.title : ""}
+      description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
-      aside={
-        <div className="space-y-4">
-          <AssessmentOverviewCard assessment={assessment} />
-          <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-              Phase
-            </p>
-            <p className="mt-2 text-2xl font-bold capitalize text-primary">
-              {phase === "winner" ? "Winner podium" : phase}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-inkd">
-              Host emits `session:start`, `question:skip`, `question:next`, and `session:end`
-              across this flow.
-            </p>
-          </div>
-        </div>
-      }
+      aside={null}
     >
-      <FlowStepper
-        steps={["Lobby", "Reveal", "Correct", "Leaderboard"]}
-        activeStep={phase === "lobby" ? 0 : phase === "reveal" ? 1 : phase === "correct" ? 2 : 3}
-      />
-
-      <div className="mt-6 rounded-4xl border border-border bg-white p-6 shadow-sm sm:p-8">
+      <div className="rt-stage-shell rounded-4xl border border-border bg-white p-5 shadow-sm sm:p-6 h-full">
         {phase === "lobby" ? (
-          <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
-            <div className="rounded-[28px] border border-border bg-[#16352A] p-6 text-white">
+          <div className="grid h-full gap-5 xl:grid-cols-[20rem_minmax(0,1fr)]">
+            <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
                 <QrCode className="h-4 w-4 text-[#95D5B2]" />
                 Lobby
               </div>
-              <h2 className="mt-4 text-2xl font-bold">Launch from the control room</h2>
-              <div className="mt-6 flex items-center justify-center rounded-[28px] bg-white p-4">
+              <h2 className="mt-4 text-2xl font-bold leading-tight">Launch the live room</h2>
+              <p className="mt-3 text-sm leading-6 text-white/75">
+                Bright visuals, visible crowd energy, and fast reveals keep the room feeling live.
+              </p>
+              <div className="mt-5 rt-floating flex items-center justify-center rounded-[28px] bg-white p-4">
                 <QRCodeSVG
                   value={participantUrl}
                   title={`Join ${assessment.title}`}
@@ -171,7 +199,7 @@ export function AssessmentHostScreen({
                   <button
                     type="button"
                     onClick={startSession}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:bg-white/90"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
                   >
                     <PlayCircle className="h-4 w-4" />
                     Start
@@ -180,7 +208,7 @@ export function AssessmentHostScreen({
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-border bg-muted/20 p-5">
+            <div className="rt-card-pop rounded-[30px] border border-border bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
@@ -188,15 +216,51 @@ export function AssessmentHostScreen({
                   </p>
                   <h2 className="mt-2 text-2xl font-bold text-primary">{participants.length} in lobby</h2>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
-                  <Radio className="h-4 w-4" />
-                  WAITING state
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSoundEnabled((enabled) => !enabled)}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-primary transition hover:border-primary/35"
+                    aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}
+                  >
+                    {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                  </button>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
+                    <Radio className="h-4 w-4" />
+                    WAITING state
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="rounded-2xl border border-border bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] p-4 text-white shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
+                    Questions
+                  </p>
+                  <p className="mt-2 text-2xl font-bold">{rounds.length}</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-[linear-gradient(135deg,#277DA1_0%,#4CC9F0_100%)] p-4 text-white shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                    Join link
+                  </p>
+                  <p className="mt-2 text-lg font-bold">Room ready to scan</p>
+                </div>
+                <div className="rounded-2xl border border-border bg-[linear-gradient(135deg,#F9C74F_0%,#FFD166_100%)] p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/60">
+                    Energy
+                  </p>
+                  <p className="mt-2 text-lg font-bold text-primary">Crowd warming up</p>
                 </div>
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {participants.map((participant) => (
-                  <div key={participant.id} className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+                {participants.map((participant, index) => (
+                  <div
+                    key={participant.id}
+                    className={`rounded-2xl border border-border bg-white p-4 shadow-sm transition ${
+                      index < 2 ? "rt-card-pop" : ""
+                    }`}
+                  >
                     <p className="text-sm font-semibold text-primary">{participant.name}</p>
                     <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
                       {participant.status}
@@ -209,34 +273,82 @@ export function AssessmentHostScreen({
         ) : null}
 
         {phase === "reveal" ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
-            <div>
+          <div className="flex h-full min-h-0 flex-col gap-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div
+                className={`rounded-3xl border border-border bg-[linear-gradient(135deg,#16352A_0%,#24513D_100%)] p-4 text-white shadow-sm ${
+                  timerSeconds <= 5 ? "rt-timer-critical" : "rt-card-pop"
+                }`}
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
+                  Timer
+                </p>
+                <div className="mt-2 flex items-end justify-between gap-3">
+                  <p className="text-4xl font-black">{timerSeconds}s</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
+                    {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
+                  </p>
+                </div>
+                <div className="rt-progress-shimmer mt-3 h-2.5 rounded-full bg-white/10">
+                  <div
+                    className={`h-full rounded-full transition ${
+                      timerSeconds <= 5
+                        ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
+                        : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
+                    }`}
+                    style={{ width: `${(timerSeconds / 15) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-border bg-white p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
+                  Responses received
+                </p>
+                <p className="mt-2 text-4xl font-bold text-primary">
+                  {responseCount}/{participants.length}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-inkd">Live response wave is building while the room races the clock.</p>
+              </div>
+            </div>
+
+            <div className="rt-card-pop flex-1 rounded-[30px] border border-[#FFD166]/55 bg-[linear-gradient(135deg,#FFF6CC_0%,#FFE7B8_42%,#FFF9E1_100%)] p-5 shadow-sm lg:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
                     Question {questionIndex + 1} of {rounds.length}
                   </p>
-                  <h2 className="mt-2 text-2xl font-bold text-primary">{currentRound.question}</h2>
+                  <h2 className="mt-2 max-w-5xl text-3xl font-bold leading-tight text-primary lg:text-4xl">
+                    {currentRound.question}
+                  </h2>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#D8F3DC] px-3 py-1 text-xs font-semibold text-primary">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/75 px-3 py-1 text-xs font-semibold text-primary shadow-sm">
                   <Clock3 className="h-4 w-4" />
                   Timer auto-started
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-3">
-                {currentRound.options.map((option) => (
-                  <QuestionOptionButton
-                    key={option.id}
-                    option={option}
-                    selected={false}
-                    onClick={() => undefined}
-                    disabled
-                  />
-                ))}
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                {currentRound.options.map((option, index) => {
+                  const palette = getRealtimeOptionPalette(index);
+
+                  return (
+                    <div
+                      key={option.id}
+                      className={`rt-answer-tile flex items-center gap-4 rounded-[26px] border px-5 py-5 ${palette.tileClassName}`}
+                    >
+                      <span
+                        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-lg font-black ${palette.badgeClassName}`}
+                      >
+                      {option.label}
+                      </span>
+                      <span className="text-lg font-bold leading-7 lg:text-xl">{option.text}</span>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <button
                   type="button"
                   onClick={skipToCorrectAnswer}
@@ -244,111 +356,111 @@ export function AssessmentHostScreen({
                 >
                   Skip to correct answer
                 </button>
-                <div className="rounded-2xl bg-muted px-5 py-3 text-sm font-semibold text-primary">
-                  Host sees live responses coming in
+                <div className="rounded-2xl bg-white/70 px-5 py-3 text-sm font-semibold text-primary shadow-sm">
+                  Live response wave and streak race in progress
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-[28px] border border-border bg-[#16352A] p-5 text-white shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                  Timer
-                </p>
-                <p className="mt-2 text-4xl font-bold">{timerSeconds}s</p>
-                <div className="mt-4 h-3 rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-[#95D5B2] transition"
-                    style={{ width: `${(timerSeconds / 15) * 100}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                  Responses received
-                </p>
-                <p className="mt-2 text-3xl font-bold text-primary">
-                  {responseCount}/{participants.length}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-inkd">
-                  Mirrors `answer:received` updates while the timer runs.
-                </p>
               </div>
             </div>
           </div>
         ) : null}
 
         {phase === "correct" ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#D8F3DC] px-3 py-1 text-xs font-semibold text-primary">
-                <CheckCircle2 className="h-4 w-4" />
-                Correct answer
+          <div className="flex h-full min-h-0 flex-col gap-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#43AA8B_0%,#7FE0C0_100%)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Correct answer
+                </div>
+                <h2 className="mt-4 max-w-4xl text-2xl font-bold text-primary">
+                  {currentRound.question}
+                </h2>
               </div>
-              <h2 className="mt-4 text-2xl font-bold text-primary">
-                {currentRound.options.find((option) => option.id === currentRound.correctOptionId)?.text}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-inkd">
-                This state is timed, then automatically advances to the leaderboard.
-              </p>
-
-              <div className="mt-6 space-y-3">
-                {currentRound.options.map((option) => {
-                  const distribution =
-                    responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
-                  const percentage =
-                    responseCount > 0 ? Math.round((distribution / responseCount) * 100) : 0;
-                  const isCorrect = option.id === currentRound.correctOptionId;
-
-                  return (
-                    <div key={option.id} className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <p className={`text-sm font-semibold ${isCorrect ? "text-primary" : "text-inkd"}`}>
-                          {option.text}
-                        </p>
-                        <span className="text-sm font-semibold text-primary">{percentage}%</span>
-                      </div>
-                      <div className="mt-3 h-3 rounded-full bg-muted">
-                        <div
-                          className={`h-full rounded-full ${isCorrect ? "bg-primary" : "bg-[#95D5B2]"}`}
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <button
+                type="button"
+                onClick={showLeaderboard}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="rounded-[28px] border border-border bg-muted/20 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                Auto advance
-              </p>
-              <p className="mt-2 text-lg font-semibold text-primary">Leaderboard in ~4 seconds</p>
+            <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
+              <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
+                  {currentRound.options.map((option, index) => {
+                    const distribution =
+                      responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
+                    const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
+                    const heightPercent =
+                      maxCount > 0 ? Math.max(18, Math.round((distribution / maxCount) * 100)) : 18;
+                    const isCorrect = option.id === currentRound.correctOptionId;
+                    const paletteClassName = [
+                      "from-[#F94144] to-[#FF6B6F]",
+                      "from-[#277DA1] to-[#4CC9F0]",
+                      "from-[#F9C74F] to-[#FFD166]",
+                      "from-[#43AA8B] to-[#7FE0C0]",
+                    ][index % 4];
+
+                    return (
+                      <div key={option.id} className="flex h-full min-w-0 flex-col items-center gap-3">
+                        <div className="shrink-0 text-lg font-bold text-primary">{distribution}</div>
+                        <div className="flex min-h-0 flex-1 w-full items-end justify-center">
+                          <div
+                            className={`flex w-full max-w-32 flex-col justify-end rounded-t-3xl bg-linear-to-t ${paletteClassName} px-3 py-4 text-center shadow-[0_16px_30px_rgba(27,67,50,0.12)] ${isCorrect ? "ring-4 ring-[#D8F7EC]" : ""}`}
+                            style={{ height: `${heightPercent}%` }}
+                          >
+                            {isCorrect ? (
+                              <span className="mb-2 inline-flex self-center rounded-full bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                                Correct
+                              </span>
+                            ) : null}
+                            <span className={`text-sm font-black ${index === 2 ? "text-primary" : "text-white"}`}>
+                              {option.label}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="line-clamp-3 min-h-15 shrink-0 text-center text-sm font-semibold leading-5 text-primary">
+                          {option.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+              </div>
             </div>
           </div>
         ) : null}
 
         {phase === "leaderboard" ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="rounded-[28px] border border-border bg-[#16352A] p-6 text-white shadow-sm">
+          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_16rem]">
+            <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] p-6 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
                 <Trophy className="h-4 w-4 text-[#95D5B2]" />
                 Leaderboard
               </div>
               <div className="mt-6 grid gap-3">
                 {leaderboard.map((entry, index) => (
-                  <div key={entry.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div
+                    key={entry.id}
+                    className={`rounded-2xl border border-white/10 p-4 ${
+                      index === 0
+                        ? "bg-[linear-gradient(135deg,rgba(249,199,79,0.28)_0%,rgba(255,255,255,0.08)_100%)]"
+                        : "bg-white/5"
+                    }`}
+                  >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-bold text-primary">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-bold text-primary shadow-sm">
                           {index + 1}
                         </div>
                         <div>
                           <p className="font-semibold">{entry.name}</p>
                           <p className="text-xs uppercase tracking-[0.18em] text-white/55">
-                            Current rank
+                            {index === 0
+                              ? "Hot streak x4"
+                              : index === 1
+                                ? "Pressure position"
+                                : "Comeback alert"}
                           </p>
                         </div>
                       </div>
@@ -360,17 +472,26 @@ export function AssessmentHostScreen({
             </div>
 
             <div className="space-y-4">
+              <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Target className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
+                    Comeback watch
+                  </p>
+                </div>
+                <p className="mt-2 text-lg font-bold text-primary">{comebackGap} pts to overtake #2</p>
+                <p className="mt-2 text-sm leading-6 text-inkd">
+                  Keep trailing players engaged by showing the gap is still reachable.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={advanceToNextQuestion}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
               >
                 {questionIndex === rounds.length - 1 ? "Show winner podium" : "Next question"}
                 <ArrowRight className="h-4 w-4" />
               </button>
-              <p className="rounded-[28px] border border-border bg-white p-5 text-sm leading-6 text-inkd shadow-sm">
-                Host clicks Next Question to repeat the same reveal process for the next round.
-              </p>
             </div>
           </div>
         ) : null}
@@ -396,6 +517,31 @@ export function AssessmentHostScreen({
                   <p className="mt-2 text-lg font-semibold text-[#95D5B2]">{entry.score} pts</p>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+              <div className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/55">Post-game hook</p>
+                <h3 className="mt-3 text-2xl font-bold">Run it back with a rematch challenge</h3>
+                <p className="mt-3 text-sm leading-6 text-white/75">
+                  Show the room a new bonus rule next round like double-score finale, mystery bonus,
+                  or fastest-finger head start. Variable rewards make the next game feel fresh.
+                </p>
+              </div>
+              <div className="rounded-[28px] border border-[#95D5B2]/20 bg-[linear-gradient(180deg,rgba(149,213,178,0.18)_0%,rgba(255,255,255,0.04)_100%)] p-6">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/55">Replay bait</p>
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-2xl bg-white/5 p-4">
+                    <p className="font-semibold">Streak Crown resets</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 p-4">
+                    <p className="font-semibold">Mystery bonus returns</p>
+                  </div>
+                  <div className="rounded-2xl bg-white/5 p-4">
+                    <p className="font-semibold">Rematch room opens in 10s</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : null}

@@ -12,6 +12,37 @@ import type { AssessmentCatalogItem } from "@/src/domains/assessment/types";
 import type { QuestionOption } from "./session.types";
 import { formatStartDate, getParticipantIdentityLabel } from "./session.utils";
 
+const realtimeOptionPalettes = [
+  {
+    tileClassName:
+      "border-[#F94144]/25 bg-[linear-gradient(135deg,#ff6b6f_0%,#f94144_100%)] text-white shadow-[0_18px_45px_rgba(249,65,68,0.28)]",
+    selectedClassName: "ring-4 ring-[#FFD6D7]",
+    badgeClassName: "bg-white/18 text-white",
+  },
+  {
+    tileClassName:
+      "border-[#277DA1]/25 bg-[linear-gradient(135deg,#4cc9f0_0%,#277DA1_100%)] text-white shadow-[0_18px_45px_rgba(39,125,161,0.28)]",
+    selectedClassName: "ring-4 ring-[#CFEFFC]",
+    badgeClassName: "bg-white/18 text-white",
+  },
+  {
+    tileClassName:
+      "border-[#F9C74F]/25 bg-[linear-gradient(135deg,#ffe08a_0%,#f9c74f_100%)] text-primary shadow-[0_18px_45px_rgba(249,199,79,0.32)]",
+    selectedClassName: "ring-4 ring-[#FFF1C8]",
+    badgeClassName: "bg-white/55 text-primary",
+  },
+  {
+    tileClassName:
+      "border-[#43AA8B]/25 bg-[linear-gradient(135deg,#7fe0c0_0%,#43AA8B_100%)] text-white shadow-[0_18px_45px_rgba(67,170,139,0.28)]",
+    selectedClassName: "ring-4 ring-[#D8F7EC]",
+    badgeClassName: "bg-white/18 text-white",
+  },
+] as const;
+
+export function getRealtimeOptionPalette(index: number) {
+  return realtimeOptionPalettes[index % realtimeOptionPalettes.length];
+}
+
 export function ScreenShell({
   eyebrow,
   title,
@@ -27,18 +58,28 @@ export function ScreenShell({
   children: React.ReactNode;
   variant?: "page" | "panel";
 }) {
+  const hasHeader = Boolean(eyebrow || title || description);
+
   if (variant === "panel") {
     return (
-      <div className="flex h-full flex-col gap-5">
-        <section className="rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
-            {eyebrow}
-          </p>
-          <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
-            {title}
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
-          <div className="mt-8">{children}</div>
+      <div className="flex h-full min-h-0 flex-col gap-5">
+        <section className="flex min-h-0 flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8">
+          {eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
+              {eyebrow}
+            </p>
+          ) : null}
+          {title ? (
+            <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
+              {title}
+            </h1>
+          ) : null}
+          {description ? (
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+          ) : null}
+          <div className={`${hasHeader ? "mt-8" : ""} min-h-0 flex-1 overflow-y-auto pr-1`}>
+            {children}
+          </div>
         </section>
 
         {aside ? <aside className="space-y-4">{aside}</aside> : null}
@@ -47,17 +88,25 @@ export function ScreenShell({
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col gap-6 lg:flex-row">
-        <section className="flex-1 rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8 lg:p-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
-            {eyebrow}
-          </p>
-          <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight text-primary sm:text-4xl">
-            {title}
-          </h1>
-          <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
-          <div className="mt-8">{children}</div>
+    <main className="h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-4 py-4 sm:px-6 sm:py-6">
+      <div className="mx-auto flex h-full max-w-7xl min-h-0 flex-col gap-6 lg:flex-row">
+        <section className="flex min-h-0 flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8 lg:p-10">
+          {eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
+              {eyebrow}
+            </p>
+          ) : null}
+          {title ? (
+            <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight text-primary sm:text-4xl">
+              {title}
+            </h1>
+          ) : null}
+          {description ? (
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+          ) : null}
+          <div className={`${hasHeader ? "mt-8" : ""} min-h-0 flex-1 overflow-y-auto pr-1`}>
+            {children}
+          </div>
         </section>
 
         {aside ? <aside className="w-full shrink-0 lg:w-100">{aside}</aside> : null}
@@ -139,12 +188,40 @@ export function QuestionOptionButton({
   selected,
   disabled,
   onClick,
+  variant = "default",
+  paletteIndex = 0,
 }: {
   option: QuestionOption;
   selected: boolean;
   disabled?: boolean;
   onClick: () => void;
+  variant?: "default" | "realtime";
+  paletteIndex?: number;
 }) {
+  const palette = getRealtimeOptionPalette(paletteIndex);
+
+  if (variant === "realtime") {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onClick}
+        className={`rt-answer-tile flex w-full items-center gap-4 rounded-[26px] border px-5 py-5 text-left transition ${
+          palette.tileClassName
+        } ${selected ? palette.selectedClassName : ""} ${
+          disabled ? "cursor-not-allowed opacity-65" : ""
+        }`}
+      >
+        <span
+          className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-black ${palette.badgeClassName}`}
+        >
+          {option.label}
+        </span>
+        <span className="text-base font-bold leading-6 sm:text-lg">{option.text}</span>
+      </button>
+    );
+  }
+
   return (
     <button
       type="button"

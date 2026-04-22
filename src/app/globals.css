@@ -105,3 +105,101 @@
     @apply font-khmer;
   }
 }
+
+@keyframes realtime-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 111, 0.35);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 14px rgba(255, 107, 111, 0);
+  }
+}
+
+@keyframes realtime-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes realtime-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes realtime-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@layer utilities {
+  .rt-stage-shell {
+    background:
+      radial-gradient(circle at top left, rgba(255, 209, 102, 0.18), transparent 24%),
+      radial-gradient(circle at top right, rgba(76, 201, 240, 0.18), transparent 26%),
+      linear-gradient(180deg, #fffef8 0%, #f7f5f0 100%);
+  }
+
+  .rt-card-pop {
+    animation: realtime-pop 280ms ease-out;
+  }
+
+  .rt-floating {
+    animation: realtime-float 3.2s ease-in-out infinite;
+  }
+
+  .rt-answer-tile {
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+  }
+
+  .rt-answer-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.22) 50%, transparent 75%);
+    transform: translateX(-120%);
+    transition: transform 240ms ease;
+    pointer-events: none;
+  }
+
+  .rt-answer-tile:hover::after {
+    transform: translateX(120%);
+  }
+
+  .rt-answer-tile:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .rt-progress-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rt-progress-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.36) 45%, transparent 100%);
+    animation: realtime-shimmer 1.7s linear infinite;
+  }
+
+  .rt-timer-critical {
+    animation: realtime-pulse 0.9s ease-in-out infinite;
+  }
+}
