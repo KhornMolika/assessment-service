@@ -23,7 +23,7 @@ export interface NewAssessmentFormData {
   descriptionEN: string;
   descriptionKH: string;
   status: AssessmentStatus;
-  participantIdentity: "REGISTERED" | "ANONYMOUS" | "NAME";
+  participantIdentity: "ANONYMOUS" | "INTERNAL" | "EXTERNAL";
   sessionMode: AssessmentDeliveryMode;
   questionSelection: AssessmentQuestionSelectionMode;
   selectedBankId: string;

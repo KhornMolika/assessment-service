@@ -10,6 +10,17 @@ function formatStatus(value: NewAssessmentFormData["status"]) {
   return value.charAt(0) + value.slice(1).toLowerCase();
 }
 
+function formatParticipantIdentity(value: NewAssessmentFormData["participantIdentity"]) {
+  switch (value) {
+    case "ANONYMOUS":
+      return "Anonymous";
+    case "INTERNAL":
+      return "Internal";
+    default:
+      return "External";
+  }
+}
+
 export default function AssessmentSummaryCard({
   className,
   formData,
@@ -70,7 +81,7 @@ export default function AssessmentSummaryCard({
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Participant identity</span>
             <span className="font-semibold text-primary">
-              {formData.participantIdentity === "ANONYMOUS" ? "Anonymous" : "Registered"}
+              {formatParticipantIdentity(formData.participantIdentity)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">

@@ -19,9 +19,11 @@ import {
 export function AssessmentHostScreen({
   assessment,
   questions,
+  embedded,
 }: {
   assessment: AssessmentCatalogItem;
   questions: AssessmentDetailQuestionItem[];
+  embedded?: boolean;
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
   const participants = useMemo(() => buildParticipantRoster(), []);
@@ -113,6 +115,7 @@ export function AssessmentHostScreen({
       eyebrow="Real-time Host Flow"
       title={assessment.title}
       description="This host UI follows the documented live cycle: lobby, reveal with auto-start timer, correct answer, auto leaderboard, then host-driven next question."
+      variant={embedded ? "panel" : "page"}
       aside={
         <div className="space-y-4">
           <AssessmentOverviewCard assessment={assessment} />

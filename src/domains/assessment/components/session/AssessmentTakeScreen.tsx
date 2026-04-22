@@ -24,6 +24,7 @@ import {
   getResultReleaseMode,
   hasAnswerResponse,
   isCorrectAnswerResponse,
+  requiresParticipantDisplayName,
 } from "./session.utils";
 
 export function AssessmentTakeScreen({
@@ -35,6 +36,7 @@ export function AssessmentTakeScreen({
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
   const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
   const resultMode = getResultReleaseMode(assessment.show_results);
   const showCorrectAnswers = assessment.is_showed_answers;
   const allowShareAnswerSheet = assessment.is_allowed_share;
@@ -124,7 +126,7 @@ export function AssessmentTakeScreen({
     <ScreenShell
       eyebrow="Self-paced Participant Flow"
       title={assessment.title}
-      description="This page follows the documented self-paced flow: entry, one question at a time, confirmation, then the result state based on show_results."
+      description={assessment.description!}
       aside={
         step === "entry" ? (
           <div className="space-y-4">
@@ -158,11 +160,7 @@ export function AssessmentTakeScreen({
                 <ShieldCheck className="h-4 w-4" />
                 Entry form
               </div>
-              <h2 className="mt-4 text-3xl font-bold text-primary">Before you begin</h2>
-              <p className="mt-3 text-sm leading-6 text-inkd">
-                Self-paced entry checks `participant_identity`. Anonymous users skip this step,
-                while external users provide a required display name.
-              </p>
+              <h2 className="mt-4 text-3xl font-bold text-primary">Before you begin</h2>              
             </div>
 
             <div className="space-y-4 rounded-[28px] border border-border bg-muted/20 p-5">
@@ -191,7 +189,7 @@ export function AssessmentTakeScreen({
                 </div>
                 <button
                   type="button"
-                  disabled={displayName.trim().length === 0}
+                  disabled={requiresDisplayName && displayName.trim().length === 0}
                   onClick={() => setStep("quiz")}
                   className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -341,7 +339,7 @@ export function AssessmentTakeScreen({
         {step === "end" ? (
           <div className="mx-auto max-w-6xl space-y-6">
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(24rem,0.9fr)]">
-              <div className="rounded-[32px] border border-border bg-[#16352A] p-6 text-white shadow-sm lg:p-8">
+              <div className="rounded-4xl border border-border bg-[#16352A] p-6 text-white shadow-sm lg:p-8">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
                   Result
                 </p>
@@ -400,7 +398,7 @@ export function AssessmentTakeScreen({
             </div>
 
             {resultMode !== "hidden" ? (
-              <div className="rounded-[32px] border border-border bg-white p-6 shadow-sm lg:p-8">
+              <div className="rounded-4xl border border-border bg-white p-6 shadow-sm lg:p-8">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
@@ -414,7 +412,7 @@ export function AssessmentTakeScreen({
                 </div>
 
                 <div className="mt-6 grid gap-4 xl:grid-cols-2">
-                  {confirmationItems.map(({ question, answerValue }) => {
+                  {confirmationItems.map(({ question, answerValue }, index) => {
                     const isCorrect = isCorrectAnswerResponse(question, answerValue);
                     const answerTone = isCorrect
                       ? "border-emerald-200 bg-emerald-50"
@@ -422,7 +420,12 @@ export function AssessmentTakeScreen({
 
                     return (
                       <div key={question.id} className={`rounded-[28px] border p-5 ${answerTone}`}>
-                        <p className="text-sm font-semibold text-primary">{question.question}</p>
+                        <div className="flex items-start gap-3">
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                            {index + 1}
+                          </span>
+                          <p className="pt-1 text-sm font-semibold text-primary">{question.question}</p>
+                        </div>
                         <div className="mt-3 flex items-center gap-2">
                           <span
                             className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${

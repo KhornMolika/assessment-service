@@ -117,9 +117,9 @@ export default function AssessmentBasicInfoStep({
               }
               className="w-full rounded-lg border border-border bg-card px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pm"
             >
-              <option value="REGISTERED">Registered participant</option>
               <option value="ANONYMOUS">Anonymous participant</option>
-              <option value="NAME">Participant's name</option>
+              <option value="INTERNAL">Internal participant</option>
+              <option value="EXTERNAL">External participant</option>
             </select>
           </div>
         </div>
@@ -127,4 +127,3 @@ export default function AssessmentBasicInfoStep({
     </Card>
   );
 }
-

@@ -15,7 +15,7 @@ export interface Assessment {
   title: string;
   description?: string;
   status: AssessmentStatus;
-  participant_identity: "ANONYMOUS" | "REGISTERED";
+  participant_identity: "ANONYMOUS" | "INTERNAL" | "EXTERNAL";
   created_at: string;
   updated_at: string;
 }

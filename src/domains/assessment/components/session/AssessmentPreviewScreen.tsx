@@ -20,12 +20,13 @@ import {
   TimeLimitCard,
 } from "./SessionShared";
 import {
-  buildPreviewAnswerValue,
   buildQuestionRounds,
   formatDurationClock,
   getAnswerResponseText,
   getResultReleaseMode,
+  hasAnswerResponse,
   isCorrectAnswerResponse,
+  requiresParticipantDisplayName,
 } from "./session.utils";
 
 export function AssessmentPreviewScreen({
@@ -44,24 +45,42 @@ export function AssessmentPreviewScreen({
   const resultMode = getResultReleaseMode(assessment.show_results);
   const showCorrectAnswers = assessment.is_showed_answers;
   const allowShareAnswerSheet = assessment.is_allowed_share;
+  const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
   const totalTimerSeconds = Math.max(0, assessment.time_limit_minutes * 60);
-  const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">("entry");
+  const [displayName, setDisplayName] = useState("");
+  const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
+    requiresEntry ? "entry" : "quiz",
+  );
   const [questionIndex, setQuestionIndex] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
-  const previewAnswers = useMemo(
-    () =>
-      Object.fromEntries(
-        rounds.map((question, index) => [question.id, buildPreviewAnswerValue(question, index)]),
-      ) as Record<string, QuestionRendererValue>,
-    [rounds],
-  );
+  const [answers, setAnswers] = useState<Record<string, QuestionRendererValue>>({});
   const currentQuestion = rounds[questionIndex];
-  const answeredCount = Object.keys(previewAnswers).length;
+  const answeredCount = Object.values(answers).filter((answer) => hasAnswerResponse(answer)).length;
   const confirmationItems = rounds.map((question) => ({
     question,
-    selectedOption:
-      question.options.find((option) => option.id === previewAnswers[question.id]) ?? null,
+    answerValue: answers[question.id] ?? null,
   }));
+  const scoreSummary = useMemo(() => {
+    const totalPoints = rounds.reduce((sum, question) => sum + question.points, 0);
+    const earnedPoints = rounds.reduce((sum, question) => {
+      return isCorrectAnswerResponse(question, answers[question.id] ?? null)
+        ? sum + question.points
+        : sum;
+    }, 0);
+    const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+    const grade =
+      assessment.grade_scale.find((band) => percent >= band.minPercent)?.grade ??
+      assessment.grade_scale.at(-1)?.grade ??
+      "N/A";
+
+    return {
+      earnedPoints,
+      totalPoints,
+      grade,
+      passed: percent >= assessment.pass_mark,
+    };
+  }, [answers, assessment.grade_scale, assessment.pass_mark, rounds]);
 
   useEffect(() => {
     if (step !== "processing") {
@@ -87,13 +106,20 @@ export function AssessmentPreviewScreen({
     return () => window.clearTimeout(timeoutId);
   }, [remainingSeconds, step, totalTimerSeconds]);
 
+  function handleSelectAnswer(value: QuestionRendererValue) {
+    setAnswers((currentAnswers) => ({
+      ...currentAnswers,
+      [currentQuestion.id]: value,
+    }));
+  }
+
   return (
     <ScreenShell
       eyebrow={isSelfPacedPreview ? "Self-paced Preview" : "Real-time Preview"}
       title={assessment.title}
       description={
         isSelfPacedPreview
-          ? "Creators see the self-paced participant experience in read-only mode. No answers are saved in preview."
+          ? "Creators can complete the self-paced participant experience as a dry run. Answers are evaluated in the UI, but nothing is saved in preview."
           : "Creators see the real-time participant experience in read-only mode. No answers are saved in preview."
       }
       aside={
@@ -107,7 +133,7 @@ export function AssessmentPreviewScreen({
               <div className="mt-4 space-y-3 text-sm text-inkd">
                 <div className="rounded-2xl bg-muted/30 p-4">
                   <p className="font-semibold text-primary">Answer responses saved</p>
-                  <p className="mt-1">Preview mode does not save answer responses.</p>
+                  <p className="mt-1">Preview mode evaluates answers without saving them.</p>
                 </div>
                 <div className="rounded-2xl bg-muted/30 p-4">
                   <p className="font-semibold text-primary">Result release</p>
@@ -119,6 +145,18 @@ export function AssessmentPreviewScreen({
         ) : null
       }
     >
+      {isSelfPacedPreview ? (
+        <div className="mb-6">
+          <Link
+            href={backHref}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to assessment
+          </Link>
+        </div>
+      ) : null}
+
       <FlowStepper
         steps={["Entry", "Quiz", "Confirm", "End"]}
         activeStep={step === "entry" ? 0 : step === "quiz" ? 1 : step === "confirm" ? 2 : 3}
@@ -191,7 +229,8 @@ export function AssessmentPreviewScreen({
                 </div>
                 <h2 className="mt-4 text-3xl font-bold text-primary">Before you begin</h2>
                 <p className="mt-3 text-sm leading-6 text-inkd">
-                  This preview mirrors the participant entry experience, but nothing is saved.
+                  This preview mirrors the participant entry experience. You can answer the full
+                  flow, but nothing is saved.
                 </p>
               </div>
 
@@ -200,14 +239,30 @@ export function AssessmentPreviewScreen({
                   <TimeLimitCard minutes={assessment.time_limit_minutes} compact />
                 ) : null}
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-border">
-                  <p className="text-sm font-semibold text-primary">Display name</p>
-                  <p className="mt-2 text-sm text-inkd">
-                    {assessment.participant_identity === "ANONYMOUS"
-                      ? "Anonymous participant skips the form"
-                      : "Participant display name field appears here"}
-                  </p>
-                </div>
+                {assessment.participant_identity === "ANONYMOUS" ? (
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-border">
+                    <p className="text-sm font-semibold text-primary">Display name</p>
+                    <p className="mt-2 text-sm text-inkd">Anonymous participant skips the form</p>
+                  </div>
+                ) : requiresDisplayName ? (
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-primary">Display name</span>
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      placeholder="Enter your display name"
+                      className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
+                    />
+                  </label>
+                ) : (
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-border">
+                    <p className="text-sm font-semibold text-primary">Participant identity</p>
+                    <p className="mt-2 text-sm text-inkd">
+                      Internal participants can continue without entering a display name.
+                    </p>
+                  </div>
+                )}
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
                   <Link
                     href={backHref}
@@ -218,10 +273,11 @@ export function AssessmentPreviewScreen({
                   </Link>
                   <button
                     type="button"
+                    disabled={requiresDisplayName && displayName.trim().length === 0}
                     onClick={() => setStep("quiz")}
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                   >
-                    Next preview step
+                    Start preview quiz
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -268,9 +324,8 @@ export function AssessmentPreviewScreen({
                 <div className="mt-6">
                   <QuestionRenderer
                     question={currentQuestion}
-                    value={previewAnswers[currentQuestion.id] ?? null}
-                    disabled
-                    onChange={() => undefined}
+                    value={answers[currentQuestion.id] ?? null}
+                    onChange={handleSelectAnswer}
                   />
                 </div>
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
@@ -284,6 +339,7 @@ export function AssessmentPreviewScreen({
                   </button>
                   <button
                     type="button"
+                    disabled={!hasAnswerResponse(answers[currentQuestion.id] ?? null)}
                     onClick={() => {
                       if (questionIndex === rounds.length - 1) {
                         setStep("confirm");
@@ -333,7 +389,7 @@ export function AssessmentPreviewScreen({
               </div>
 
               <div className="mt-6 space-y-4">
-                {confirmationItems.map(({ question, selectedOption }, index) => (
+                {confirmationItems.map(({ question, answerValue }, index) => (
                   <div key={question.id} className="rounded-[28px] border border-border bg-muted/20 p-5">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
                       Question {index + 1}
@@ -344,7 +400,7 @@ export function AssessmentPreviewScreen({
                         Selected answer
                       </p>
                       <p className="mt-2 text-sm text-inkd">
-                        {getAnswerResponseText(question, selectedOption?.id ?? null)}
+                        {getAnswerResponseText(question, answerValue)}
                       </p>
                     </div>
                   </div>
@@ -363,7 +419,7 @@ export function AssessmentPreviewScreen({
           {step === "end" ? (
             <div className="mx-auto max-w-6xl space-y-6">
               <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(24rem,0.9fr)]">
-                <div className="rounded-[32px] border border-border bg-[#16352A] p-6 text-white shadow-sm lg:p-8">
+                <div className="rounded-4xl border border-border bg-[#16352A] p-6 text-white shadow-sm lg:p-8">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">
                     Result
                   </p>
@@ -374,6 +430,24 @@ export function AssessmentPreviewScreen({
                         This preview shows how the published score summary and answer sheet can
                         look on a larger participant screen, without saving anything.
                       </p>
+                      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-white/55">Score</p>
+                          <p className="mt-2 text-2xl font-bold">
+                            {scoreSummary.earnedPoints}/{scoreSummary.totalPoints}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-white/55">Grade</p>
+                          <p className="mt-2 text-2xl font-bold">{scoreSummary.grade}</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-white/55">Status</p>
+                          <p className="mt-2 text-2xl font-bold">
+                            {scoreSummary.passed ? "Pass" : "Fail"}
+                          </p>
+                        </div>
+                      </div>
                     </>
                   ) : null}
                   {resultMode === "manual" ? (
@@ -390,7 +464,7 @@ export function AssessmentPreviewScreen({
               </div>
 
               {resultMode !== "hidden" ? (
-                <div className="rounded-[32px] border border-border bg-white p-6 shadow-sm lg:p-8">
+                <div className="rounded-4xl border border-border bg-white p-6 shadow-sm lg:p-8">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
@@ -406,8 +480,7 @@ export function AssessmentPreviewScreen({
                   </div>
 
                   <div className="mt-6 grid gap-4 xl:grid-cols-2">
-                    {confirmationItems.map(({ question, selectedOption }) => {
-                      const answerValue = selectedOption?.id ?? null;
+                    {confirmationItems.map(({ question, answerValue }, index) => {
                       const isCorrect = isCorrectAnswerResponse(question, answerValue);
                       const answerTone = isCorrect
                         ? "border-emerald-200 bg-emerald-50"
@@ -415,7 +488,12 @@ export function AssessmentPreviewScreen({
 
                       return (
                         <div key={question.id} className={`rounded-[28px] border p-5 ${answerTone}`}>
-                          <p className="text-sm font-semibold text-primary">{question.question}</p>
+                          <div className="flex items-start gap-3">
+                            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                              {index + 1}
+                            </span>
+                            <p className="pt-1 text-sm font-semibold text-primary">{question.question}</p>
+                          </div>
                           <div className="mt-3 flex items-center gap-2">
                             <span
                               className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${

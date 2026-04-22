@@ -7,7 +7,13 @@ import { AssessmentOverviewCard, FlowStepper, QuestionOptionButton, ScreenShell 
 import type { JoinPhase } from "./session.types";
 import { buildQuestionRounds } from "./session.utils";
 
-export function AssessmentJoinScreen({ assessment }: { assessment: AssessmentCatalogItem }) {
+export function AssessmentJoinScreen({
+  assessment,
+  embedded,
+}: {
+  assessment: AssessmentCatalogItem;
+  embedded?: boolean;
+}) {
   const rounds = useMemo(
     () =>
       buildQuestionRounds([
@@ -105,6 +111,7 @@ export function AssessmentJoinScreen({ assessment }: { assessment: AssessmentCat
       eyebrow="Real-time Participant Flow"
       title={assessment.title}
       description="This participant UI follows the live sequence from the docs: lobby, locked reveal, active timer, per-question result, wait state, then final score and rank."
+      variant={embedded ? "panel" : "page"}
       aside={
         <div className="space-y-4">
           <AssessmentOverviewCard assessment={assessment} />

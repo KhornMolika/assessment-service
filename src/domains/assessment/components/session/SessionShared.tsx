@@ -18,13 +18,34 @@ export function ScreenShell({
   description,
   aside,
   children,
+  variant = "page",
 }: {
   eyebrow: string;
   title: string;
   description: string;
   aside: React.ReactNode;
   children: React.ReactNode;
+  variant?: "page" | "panel";
 }) {
+  if (variant === "panel") {
+    return (
+      <div className="flex h-full flex-col gap-5">
+        <section className="rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
+            {eyebrow}
+          </p>
+          <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+          <div className="mt-8">{children}</div>
+        </section>
+
+        {aside ? <aside className="space-y-4">{aside}</aside> : null}
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col gap-6 lg:flex-row">
@@ -240,7 +261,7 @@ export function ShareAnswerSheetPanel({ enabled }: { enabled: boolean }) {
           </p>
           <h3 className="mt-2 text-xl font-bold text-primary">Send your result anywhere it helps</h3>
           <p className="mt-2 text-sm leading-6 text-inkd">
-            Share the score summary together with the participant&apos;s answer response and the
+            Share the score summary together with the your answer response and the
             correct answers when they are shown.
           </p>
         </div>
@@ -255,7 +276,7 @@ export function ShareAnswerSheetPanel({ enabled }: { enabled: boolean }) {
             <button
               key={destination.name}
               type="button"
-              className="group rounded-[24px] border border-border bg-muted/15 p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white hover:shadow-sm"
+              className="group rounded-3xl border border-border bg-muted/15 p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white hover:shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <span

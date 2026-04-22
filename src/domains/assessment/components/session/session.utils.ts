@@ -68,7 +68,21 @@ export function formatStartDate(date: string) {
 export function getParticipantIdentityLabel(
   identity: AssessmentCatalogItem["participant_identity"],
 ) {
-  return identity === "ANONYMOUS" ? "Anonymous access" : "External display name";
+  if (identity === "ANONYMOUS") {
+    return "Anonymous access";
+  }
+
+  if (identity === "INTERNAL") {
+    return "Internal participant";
+  }
+
+  return "External display name";
+}
+
+export function requiresParticipantDisplayName(
+  identity: AssessmentCatalogItem["participant_identity"],
+) {
+  return identity === "EXTERNAL";
 }
 
 export function getResultReleaseMode(showResults: string): ResultReleaseMode {

@@ -20,7 +20,7 @@ const defaultFormData: NewAssessmentFormData = {
   descriptionEN: "",
   descriptionKH: "",
   status: "DRAFT",
-  participantIdentity: "REGISTERED",
+  participantIdentity: "EXTERNAL",
   sessionMode: "SELF_PACED",
   questionSelection: "MANUAL",
   selectedBankId: "",
