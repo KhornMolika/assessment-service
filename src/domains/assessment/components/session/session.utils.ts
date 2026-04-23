@@ -3,7 +3,12 @@ import type {
   AssessmentDetailQuestionItem,
 } from "@/src/domains/assessment/types";
 import type { QuestionRendererValue } from "../renderers/types";
-import type { QuestionOption, QuestionRound, ResultReleaseMode } from "./session.types";
+import type {
+  LeaderboardEntry,
+  QuestionOption,
+  QuestionRound,
+  ResultReleaseMode,
+} from "./session.types";
 
 export function normalizeQuestionRendererType(type: string) {
   const normalized = type.trim().toLowerCase();
@@ -131,10 +136,41 @@ export function buildParticipantRoster() {
 
 export function buildLeaderboard() {
   return [
-    { id: "lb-1", name: "Sokha Ly", score: 940 },
-    { id: "lb-2", name: "Dara Chen", score: 870 },
-    { id: "lb-3", name: "Mina Park", score: 820 },
+    { id: "lb-1", name: "Sokha Ly", score: 940, streak: 1, lastGain: 0, rank: 1, previousRank: 1 },
+    { id: "lb-2", name: "Dara Chen", score: 870, streak: 0, lastGain: 0, rank: 2, previousRank: 2 },
+    { id: "lb-3", name: "Mina Park", score: 820, streak: 2, lastGain: 0, rank: 3, previousRank: 3 },
+    { id: "lb-4", name: "Rith Kim", score: 790, streak: 1, lastGain: 0, rank: 4, previousRank: 4 },
+    { id: "lb-5", name: "Nita Vong", score: 740, streak: 0, lastGain: 0, rank: 5, previousRank: 5 },
+    { id: "lb-6", name: "Sophy Tan", score: 710, streak: 1, lastGain: 0, rank: 6, previousRank: 6 },
   ];
+}
+
+export function resolveLeaderboardRound(
+  leaderboard: LeaderboardEntry[],
+  roundIndex: number,
+): LeaderboardEntry[] {
+  const updated = leaderboard.map((entry, index) => {
+    const answeredCorrectly = ((index * 2 + roundIndex + 1) % 4) !== 0;
+    const streak = answeredCorrectly ? entry.streak + 1 : 0;
+    const streakBonus = streak >= 2 ? 35 + (streak - 2) * 15 : 0;
+    const speedBonus = answeredCorrectly ? Math.max(15, 70 - index * 8 - roundIndex * 6) : 0;
+    const lastGain = answeredCorrectly ? 100 + roundIndex * 20 + speedBonus + streakBonus : 0;
+
+    return {
+      ...entry,
+      score: entry.score + lastGain,
+      streak,
+      lastGain,
+      previousRank: entry.rank,
+    };
+  });
+
+  return updated
+    .sort((left, right) => right.score - left.score)
+    .map((entry, index) => ({
+      ...entry,
+      rank: index + 1,
+    }));
 }
 
 export function buildDistribution(

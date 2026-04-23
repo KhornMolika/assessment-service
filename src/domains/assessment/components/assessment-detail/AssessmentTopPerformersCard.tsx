@@ -33,10 +33,6 @@ export default function AssessmentTopPerformersCard({
             <div className="text-lg font-bold text-primary">{performer.score}%</div>
           </div>
         ))}
-
-        <button className="mt-4 w-full rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:bg-muted">
-          View All Results
-        </button>
       </CardContent>
     </Card>
   );

@@ -15,6 +15,16 @@ export type QuestionRound = AssessmentDetailQuestionItem & {
   correctOptionId: string;
 };
 
+export type LeaderboardEntry = {
+  id: string;
+  name: string;
+  score: number;
+  streak: number;
+  lastGain: number;
+  rank: number;
+  previousRank: number;
+};
+
 export type HostPhase = "lobby" | "reveal" | "correct" | "leaderboard" | "winner";
 
-export type JoinPhase = "lobby" | "question_locked" | "question_active" | "result" | "final";
+export type JoinPhase = "lobby" | "pick_option" | "result" | "final";

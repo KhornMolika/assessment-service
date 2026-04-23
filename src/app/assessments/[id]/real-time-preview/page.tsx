@@ -51,7 +51,7 @@ export default async function AssessmentRealTimePreviewPage({
           </Link>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
+        <div className="grid items-start gap-6 2xl:grid-cols-2">
           <AssessmentHostScreen
             assessment={assessment}
             questions={detail.questions}

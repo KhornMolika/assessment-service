@@ -27,12 +27,23 @@ function formatDeliveryMode(value: AssessmentDetailRecord["delivery_mode"]) {
   return value === "SELF_PACED" ? "Self-paced" : "Real-time";
 }
 
-const summaryCards = [
+type SummaryCard = {
+  key:
+    | "question_count"
+    | "participant_count"
+    | "average_score_percent"
+    | "pass_rate_percent";
+  label: string;
+  icon: typeof FileText;
+  suffix?: string;
+};
+
+const summaryCards: readonly SummaryCard[] = [
   { key: "question_count", label: "Questions", icon: FileText },
   { key: "participant_count", label: "Participants", icon: Users },
   { key: "average_score_percent", label: "Avg Score", icon: Award, suffix: "%" },
   { key: "pass_rate_percent", label: "Pass Rate", icon: TrendingUp, suffix: "%" },
-] as const;
+];
 
 export default function AssessmentDetailHero({
   assessment,
@@ -40,7 +51,7 @@ export default function AssessmentDetailHero({
   assessment: AssessmentDetailRecord;
 }) {
   return (
-    <section className="bg-gradient-to-br from-[#2D6A4F] via-[#2D6A4F] to-[#40916C] px-4 py-6 sm:px-6 sm:py-8">
+    <section className="bg-linear-to-br from-[#2D6A4F] via-[#2D6A4F] to-[#40916C] px-4 py-6 sm:px-6 sm:py-8">
       <div className="mx-auto max-w-6xl">
         <Link
           href="/assessments"

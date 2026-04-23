@@ -22,7 +22,7 @@ export default function Topbar() {
   const [topicOptions, setTopicOptions] = useState<Array<{ id: string; name: string }>>([]);
   const user = { name: "Khorn Molika", initials: "KM" };
   const supportsTopicFilter =
-    pathname === "/questions" || pathname === "/banks" || pathname === "/assessments";
+    pathname === "/questions" || pathname === "/banks" || pathname === "/assessments" || pathname === "/results";
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   useEffect(() => {

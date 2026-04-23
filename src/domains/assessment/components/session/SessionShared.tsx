@@ -62,8 +62,8 @@ export function ScreenShell({
 
   if (variant === "panel") {
     return (
-      <div className="flex h-full min-h-0 flex-col gap-5">
-        <section className="flex min-h-0 flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8">
+      <div className="flex min-h-0 flex-col gap-5">
+        <section className="flex flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8 lg:min-h-0">
           {eyebrow ? (
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
               {eyebrow}
@@ -77,7 +77,9 @@ export function ScreenShell({
           {description ? (
             <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
           ) : null}
-          <div className={`${hasHeader ? "mt-8" : ""} min-h-0 flex-1 overflow-y-auto pr-1`}>
+          <div
+            className={`${hasHeader ? "mt-8" : ""} flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}
+          >
             {children}
           </div>
         </section>
@@ -88,9 +90,9 @@ export function ScreenShell({
   }
 
   return (
-    <main className="h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto flex h-full max-w-7xl min-h-0 flex-col gap-6 lg:flex-row">
-        <section className="flex min-h-0 flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8 lg:p-10">
+    <main className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-6">
+      <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:h-full lg:min-h-0 lg:gap-6 lg:flex-row">
+        <section className="flex flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-5 shadow-xl backdrop-blur sm:p-6 lg:min-h-0 lg:p-10">
           {eyebrow ? (
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
               {eyebrow}
@@ -104,7 +106,9 @@ export function ScreenShell({
           {description ? (
             <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
           ) : null}
-          <div className={`${hasHeader ? "mt-8" : ""} min-h-0 flex-1 overflow-y-auto pr-1`}>
+          <div
+            className={`${hasHeader ? "mt-6 lg:mt-8" : ""} flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}
+          >
             {children}
           </div>
         </section>
