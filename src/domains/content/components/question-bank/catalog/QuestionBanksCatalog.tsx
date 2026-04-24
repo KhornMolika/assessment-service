@@ -9,6 +9,11 @@ import {
   ALL_TOPICS_VALUE,
   bankMatchesTopic,
 } from "@/src/domains/content/utils/topic-utils";
+import {
+  parsePositiveInteger,
+  useDebouncedSearchParam,
+  useUrlQueryUpdater,
+} from "@/src/shared/hooks/use-url-query-state";
 import Pagination from "@/src/shared/components/navigation/Pagination";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import QuestionBankCard from "./QuestionBankCard";
@@ -23,10 +28,13 @@ export default function QuestionBanksCatalog({
   bankTopics: BankTopicMap[];
 }) {
   const searchParams = useSearchParams();
+  const updateUrl = useUrlQueryUpdater();
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({
+    key: "query",
+  });
   const [bankItems, setBankItems] = useState(banks);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 6);
   const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const filteredBanks = useMemo(() => {
@@ -89,8 +97,10 @@ export default function QuestionBanksCatalog({
   }, [bankItems]);
 
   const handlePageSizeChange = (size: number) => {
-    setItemsPerPage(size);
-    setCurrentPage(1);
+    updateUrl({
+      pageSize: size === 6 ? null : size,
+      page: null,
+    });
   };
 
   const handleDeleteBank = (bankId: string) => {
@@ -120,12 +130,9 @@ export default function QuestionBanksCatalog({
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
               <input
                 type="text"
-                placeholder="Search banks, descriptions, tags, or visibility..."
+                placeholder="Search banks"
                 value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
               />
             </div>
@@ -144,7 +151,7 @@ export default function QuestionBanksCatalog({
             totalItems={filteredBanks.length}
             pageSizeOptions={[6, 9, 12, 24]}
             itemLabel="banks"
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
             onPageSizeChange={handlePageSizeChange}
           />
         </CardContent>

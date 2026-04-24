@@ -11,6 +11,11 @@ import type {
 import type { AssessmentTopicMap } from "@/src/domains/content/types/topic.types";
 import { assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
 import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
+import {
+  parsePositiveInteger,
+  useDebouncedSearchParam,
+  useUrlQueryUpdater,
+} from "@/src/shared/hooks/use-url-query-state";
 import Pagination from "@/src/shared/components/navigation/Pagination";
 import {
   Card,
@@ -42,13 +47,16 @@ export default function AssessmentsCatalog({
   assessmentTopics: AssessmentTopicMap[];
 }) {
   const searchParams = useSearchParams();
+  const updateUrl = useUrlQueryUpdater();
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({
+    key: "query",
+  });
   const [catalogAssessments, setCatalogAssessments] = useState(assessments);
   const [deliveryFilter, setDeliveryFilter] = useState<
     "ALL" | AssessmentDeliveryMode
   >("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const filteredAssessments = useMemo(() => {
@@ -95,8 +103,10 @@ export default function AssessmentsCatalog({
   );
 
   const handlePageSizeChange = (pageSize: number) => {
-    setItemsPerPage(pageSize);
-    setCurrentPage(1);
+    updateUrl({
+      pageSize: pageSize === 10 ? null : pageSize,
+      page: null,
+    });
   };
 
   const handleDeleteAssessment = (assessmentId: string) => {
@@ -131,10 +141,7 @@ export default function AssessmentsCatalog({
                 type="text"
                 placeholder="Search assessments by title, bank, or description..."
                 value={searchQuery}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
               />
             </div>
@@ -149,7 +156,7 @@ export default function AssessmentsCatalog({
                     type="button"
                     onClick={() => {
                       setDeliveryFilter(filter.value);
-                      setCurrentPage(1);
+                      updateUrl({ page: null });
                     }}
                     className={`inline-flex items-center rounded-lg border px-4 py-2 text-sm font-medium transition ${
                       isActive
@@ -176,7 +183,7 @@ export default function AssessmentsCatalog({
             totalItems={filteredAssessments.length}
             pageSizeOptions={[5, 10, 20, 50]}
             itemLabel="assessments"
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
             onPageSizeChange={handlePageSizeChange}
           />
         </CardContent>

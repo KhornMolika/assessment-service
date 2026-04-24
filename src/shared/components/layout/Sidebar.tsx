@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -13,6 +14,7 @@ import {
   Library,
   TrendingUp,
 } from "lucide-react";
+import nbfsaLogo from "@/src/shared/assets/nbfsa-logo.png";
 import { useSidebar } from "../../context/sidebar-context";
 
 export default function Sidebar() {
@@ -56,19 +58,18 @@ export default function Sidebar() {
           {!collapsed ? (
             <>
               <Link href="/" className="flex items-center space-x-3" onClick={handleNavigation}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--acc)/20">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#74C69D" />
-                    <path
-                      d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
-                      fill="#74C69D"
-                      opacity="0.6"
-                    />
-                  </svg>
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm">
+                  <Image
+                    src={nbfsaLogo}
+                    alt="FSA logo"
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-cover"
+                    priority
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="text-lg font-bold">AssessmentService</div>
-                  <div className="text-xs text-white/60">Creator Studio</div>
                 </div>
               </Link>
               <button
@@ -83,17 +84,17 @@ export default function Sidebar() {
             <div className="flex w-full flex-col items-center gap-3">
               <Link
                 href="/"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--acc)/20"
+                className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm"
                 onClick={handleNavigation}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#74C69D" />
-                  <path
-                    d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
-                    fill="#74C69D"
-                    opacity="0.6"
-                  />
-                </svg>
+                <Image
+                  src={nbfsaLogo}
+                  alt="NBFSA logo"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover"
+                  priority
+                />
               </Link>
               <button
                 onClick={() => setCollapsed(false)}
@@ -156,7 +157,7 @@ export default function Sidebar() {
           </nav>
         </div>
 
-        <div className="flex items-center space-x-3 border-t border-white/10 p-4">
+        {/* <div className="flex items-center space-x-3 border-t border-white/10 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--acc) font-bold text-[#1B4332]">
             KM
           </div>
@@ -166,7 +167,7 @@ export default function Sidebar() {
               <p className="truncate text-xs text-white/60">molika@eduhub.kh</p>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </aside>
   );

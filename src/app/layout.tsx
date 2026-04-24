@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, Koh_Santepheap } from "next/font/google";
 import './globals.css';
 import ClientLayout from "../shared/components/layout/ClientLayout";
@@ -20,6 +21,29 @@ const kohSantepheap = Koh_Santepheap({
   preload: false,
   variable: "--font-khmer-family",
 });
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "Assessment Service",
+    template: "%s | Assessment Service",
+  },
+  description: "Assessment creation, delivery, analytics, and results management.",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Assessment Service",
+    description: "Assessment creation, delivery, analytics, and results management.",
+    siteName: "Assessment Service",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Assessment Service",
+    description: "Assessment creation, delivery, analytics, and results management.",
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

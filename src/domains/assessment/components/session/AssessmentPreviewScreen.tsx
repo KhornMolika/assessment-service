@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { ArrowLeft, ArrowRight, Eye, ShieldCheck } from "lucide-react";
 import type {
   AssessmentDetailQuestionItem,
   AssessmentDetailRecord,
 } from "@/src/domains/assessment/types";
+import { BackButton } from "@/src/shared/components/navigation/BackButton";
 import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import type { QuestionRendererValue } from "../renderers/types";
 import {
@@ -147,13 +147,10 @@ export function AssessmentPreviewScreen({
     >
       {isSelfPacedPreview ? (
         <div className="mb-6">
-          <Link
+          <BackButton
             href={backHref}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to assessment
-          </Link>
+            label="Back to assessment"
+          />
         </div>
       ) : null}
 
@@ -184,13 +181,12 @@ export function AssessmentPreviewScreen({
                   Real-time participants always enter a display name before the host starts
                 </p>
               </div>
-              <Link
+              <BackButton
                 href={backHref}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                Back to assessment
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
+                label="Back to assessment"
+                variant="solid"
+                fullWidth
+              />
             </div>
           </div>
 
@@ -264,13 +260,10 @@ export function AssessmentPreviewScreen({
                   </div>
                 )}
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
-                  <Link
+                  <BackButton
                     href={backHref}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to assessment
-                  </Link>
+                    label="Back to assessment"
+                  />
                   <button
                     type="button"
                     disabled={requiresDisplayName && displayName.trim().length === 0}

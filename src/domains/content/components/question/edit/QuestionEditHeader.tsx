@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ArrowLeft, Save } from "lucide-react";
+import { Save } from "lucide-react";
+import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 
 export default function QuestionEditHeader({
   questionId,
@@ -9,30 +9,12 @@ export default function QuestionEditHeader({
   formId: string;
 }) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div className="flex flex-row justify-center items-start gap-4">
-        <Link
-          href="/questions"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-primary transition hover:bg-muted"
-          aria-label="Back to questions"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Edit Question</h1>
-          <p className="mt-1 text-sm text-inkd">
-            Refine wording, grading settings, and metadata before reuse.
-          </p>
-          <p className="mt-2 text-xs text-inkd">Question ID: {questionId}</p>
-        </div>
-      </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <Link
-          href="/questions"
-          className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted"
-        >
-          Back to questions
-        </Link>
+    <PageHeaderCard
+      backHref="/questions"
+      backLabel="Back to questions"
+      title="Edit Question"
+      description="Refine wording, grading settings, and metadata before reuse."
+      actions={
         <button
           type="submit"
           form={formId}
@@ -41,7 +23,9 @@ export default function QuestionEditHeader({
           <Save className="h-4 w-4" />
           Save question
         </button>
-      </div>
-    </div>
+      }
+    >
+      <p className="text-xs text-inkd">Question ID: {questionId}</p>
+    </PageHeaderCard>
   );
 }

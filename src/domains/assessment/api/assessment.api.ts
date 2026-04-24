@@ -9,6 +9,7 @@ import type {
 import type {
   AssessmentResultsPageData,
   AssessmentResultSheetPageData,
+  AssessmentScopedResultsPageData,
   ResultQuestionEntity,
 } from "@/src/domains/assessment/types/assessment-results.types";
 import type { AnswerEntry } from "@/src/domains/assessment/types/answer-entry.types";
@@ -1529,16 +1530,7 @@ function buildResultsAnswerEntries(): AnswerEntry[] {
 }
 
 export async function getAssessmentResultsPageData(): Promise<AssessmentResultsPageData> {
-  const assessments = mockAssessments.map((assessment) => ({
-    id: assessment.id,
-    owner_id: assessment.owner_id,
-    title: assessment.title,
-    description: assessment.description,
-    status: assessment.status,
-    participant_identity: assessment.participant_identity,
-    created_at: assessment.created_at,
-    updated_at: assessment.updated_at,
-  }));
+  const assessments = mockAssessments;
   const participants = buildResultsParticipants();
   const answer_sheets = buildResultsAnswerSheets();
   const answer_entries = buildResultsAnswerEntries();
@@ -1580,16 +1572,7 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
 export async function getAssessmentResultSheetPageData(
   sheetId: string,
 ): Promise<AssessmentResultSheetPageData | null> {
-  const assessments = mockAssessments.map((assessment) => ({
-    id: assessment.id,
-    owner_id: assessment.owner_id,
-    title: assessment.title,
-    description: assessment.description,
-    status: assessment.status,
-    participant_identity: assessment.participant_identity,
-    created_at: assessment.created_at,
-    updated_at: assessment.updated_at,
-  }));
+  const assessments = mockAssessments;
   const participants = buildResultsParticipants();
   const answer_sheets = buildResultsAnswerSheets();
   const answer_entries = buildResultsAnswerEntries();
@@ -1618,6 +1601,60 @@ export async function getAssessmentResultSheetPageData(
       ),
     ),
     answer_entries: answer_entries.filter((entry) => entry.sheet_id === answer_sheet.id),
+  };
+}
+
+export async function getAssessmentScopedResultsPageData(
+  assessmentId: string,
+): Promise<AssessmentScopedResultsPageData | null> {
+  const data = await getAssessmentResultsPageData();
+  const assessment = data.assessments.find((item) => item.id === assessmentId);
+
+  if (!assessment) {
+    return null;
+  }
+
+  const participants = data.participants.filter((item) => item.assessment_id === assessmentId);
+  const answer_sheets = data.answer_sheets.filter((item) => item.assessment_id === assessmentId);
+  const sheetIds = new Set(answer_sheets.map((item) => item.id));
+  const answer_entries = data.answer_entries.filter((item) => sheetIds.has(item.sheet_id));
+  const questionIds = new Set(answer_entries.map((item) => item.question_id));
+  const questions = data.questions.filter((item) => questionIds.has(item.id));
+  const submittedSheets = answer_sheets.filter((item) => item.submitted_at != null);
+  const scoredSheets = submittedSheets.filter((item) => item.total_score != null);
+  const passedSheets = submittedSheets.filter((item) => item.is_passed === true);
+  const pendingReviewCount = answer_sheets.filter(
+    (item) =>
+      item.status === "REVIEW_PENDING" ||
+      answer_entries.some(
+        (entry) => entry.sheet_id === item.id && entry.grading_status === "PENDING",
+      ),
+  ).length;
+
+  return {
+    assessment,
+    stats: {
+      totalSubmissions: submittedSheets.length,
+      averageScorePercent:
+        scoredSheets.length > 0
+          ? Math.round(
+              scoredSheets.reduce(
+                (sum, sheet) => sum + Math.round(((sheet.total_score ?? 0) / sheet.max_score) * 100),
+                0,
+              ) / scoredSheets.length,
+            )
+          : 0,
+      passRatePercent:
+        submittedSheets.length > 0
+          ? Math.round((passedSheets.length / submittedSheets.length) * 100)
+          : 0,
+      totalParticipants: participants.length,
+      pendingReviewCount,
+    },
+    participants,
+    answer_sheets,
+    answer_entries,
+    questions,
   };
 }
 

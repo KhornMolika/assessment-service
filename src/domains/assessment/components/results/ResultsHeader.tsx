@@ -1,4 +1,5 @@
 import { Download } from "lucide-react";
+import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 
 export function ResultsHeader({
   onExportCsv,
@@ -6,14 +7,10 @@ export function ResultsHeader({
   onExportCsv: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div>
-        <h1 className="text-3xl font-bold text-primary">Results</h1>
-        <p className="mt-2 text-sm text-inkd">
-          Cross-assessment answer-sheet records, grading state, and submission outcomes.
-        </p>
-      </div>
-      <div className="flex flex-col gap-3 sm:flex-row">
+    <PageHeaderCard
+      title="Results"
+      description="Cross-assessment answer-sheet records, grading state, and submission outcomes."
+      actions={
         <button
           type="button"
           onClick={onExportCsv}
@@ -22,7 +19,7 @@ export function ResultsHeader({
           <Download className="h-4 w-4" />
           Export CSV
         </button>
-      </div>
-    </div>
+      }
+    />
   );
 }

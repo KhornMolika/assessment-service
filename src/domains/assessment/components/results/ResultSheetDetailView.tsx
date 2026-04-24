@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowLeft, CheckCircle2, Download, Edit3, Save, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Download, Edit3, Save, ShieldAlert } from "lucide-react";
 import type { AnswerEntry, GradingStatus } from "@/src/domains/assessment/types/answer-entry.types";
 import type { AssessmentResultSheetPageData } from "@/src/domains/assessment/types/assessment-results.types";
+import { BackButton } from "@/src/shared/components/navigation/BackButton";
 import { Badge } from "@/src/shared/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 import { exportResultSheetCsv } from "./results.export";
@@ -140,13 +140,11 @@ export default function ResultSheetDetailView({
               <Download className="h-4 w-4" />
               Export CSV
             </button>
-            <Link
+            <BackButton
               href="/results"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to results
-            </Link>
+              label="Back to results"
+              className="rounded-lg px-4 py-2.5"
+            />
           </div>
         </div>
 

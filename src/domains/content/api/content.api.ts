@@ -727,16 +727,16 @@ export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
 
 export async function getMockBankDetailPageData(id: string): Promise<{
   bank: Bank | undefined;
-  recentQuestions: QuestionCatalogItem[];
+  bankQuestions: QuestionCatalogItem[];
 }> {
   const bank = mockBanks.find((item) => item.id === id);
-  const recentQuestions = mockQuestions
-    .filter((question) => question.bank_id != null && question.bank_id === id)
-    .slice(0, 5);
+  const bankQuestions = mockQuestions.filter(
+    (question) => question.bank_id != null && question.bank_id === id,
+  );
 
   return {
     bank,
-    recentQuestions,
+    bankQuestions,
   };
 }
 

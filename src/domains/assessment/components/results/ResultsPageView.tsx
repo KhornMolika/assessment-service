@@ -4,6 +4,11 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { AssessmentResultsPageData } from "@/src/domains/assessment/types/assessment-results.types";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
+import {
+  parsePositiveInteger,
+  useDebouncedSearchParam,
+  useUrlQueryUpdater,
+} from "@/src/shared/hooks/use-url-query-state";
 import { ResultsFilters } from "./ResultsFilters";
 import { ResultsHeader } from "./ResultsHeader";
 import { ResultsPagination } from "./ResultsPagination";
@@ -18,12 +23,15 @@ export default function ResultsPageView({
   data: AssessmentResultsPageData;
 }) {
   const searchParams = useSearchParams();
+  const updateUrl = useUrlQueryUpdater();
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({
+    key: "query",
+  });
   const [selectedAssessment, setSelectedAssessment] = useState("All Assessments");
   const [selectedStatus, setSelectedStatus] = useState("All Statuses");
-  const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("submitted-new");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const allRows = useMemo(() => buildRows(data), [data]);
@@ -88,9 +96,10 @@ export default function ResultsPageView({
   }, [allRows, data.assessment_topics, searchQuery, selectedAssessment, selectedStatus, selectedTopic, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredResults.length / itemsPerPage));
+  const activePage = Math.min(currentPage, totalPages);
   const currentItems = filteredResults.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage,
   );
 
   return (
@@ -111,19 +120,16 @@ export default function ResultsPageView({
             sortBy={sortBy}
             onAssessmentChange={(value) => {
               setSelectedAssessment(value);
-              setCurrentPage(1);
+              updateUrl({ page: null });
             }}
             onStatusChange={(value) => {
               setSelectedStatus(value);
-              setCurrentPage(1);
+              updateUrl({ page: null });
             }}
-            onSearchChange={(value) => {
-              setSearchQuery(value);
-              setCurrentPage(1);
-            }}
+            onSearchChange={setSearchQuery}
             onSortChange={(value) => {
               setSortBy(value);
-              setCurrentPage(1);
+              updateUrl({ page: null });
             }}
           />
         </div>
@@ -137,12 +143,14 @@ export default function ResultsPageView({
             itemsPerPage={itemsPerPage}
             totalItems={filteredResults.length}
             totalPages={totalPages}
-            currentPage={currentPage}
+            currentPage={activePage}
             onItemsPerPageChange={(value) => {
-              setItemsPerPage(value);
-              setCurrentPage(1);
+              updateUrl({
+                pageSize: value === 10 ? null : value,
+                page: null,
+              });
             }}
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
           />
         </div>
       </div>

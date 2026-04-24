@@ -1,7 +1,7 @@
 import Avatar from "boring-avatars";
-import Link from "next/link";
-import { ArrowLeft, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import { motion } from "framer-motion";
+import { BackButton } from "@/src/shared/components/navigation/BackButton";
 import type { LeaderboardEntry } from "../session.types";
 import { getAvatarColors, getAvatarVariant } from "../avatar.utils";
 
@@ -86,13 +86,12 @@ export function HostWinner({
               Return to the assessment detail page to review the setup or launch another session.
             </p>
 
-            <Link
+            <BackButton
               href={`/assessments/${assessmentId}`}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to assessment
-            </Link>
+              label="Back to assessment"
+              fullWidth
+              className="mt-6 bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:opacity-95"
+            />
           </motion.div>
         </div>
       </div>

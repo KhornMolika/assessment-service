@@ -64,7 +64,7 @@ export type AssessmentStatus =
   | "Pending";
 
 export interface RecentAssessment {
-  id: number;
+  id: string;
   title: string;
   bank: string;
   mode: string;

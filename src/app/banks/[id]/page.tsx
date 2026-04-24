@@ -8,11 +8,11 @@ export default async function QuestionBanksDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { bank, recentQuestions } = await getMockBankDetailPageData(id);
+  const { bank, bankQuestions } = await getMockBankDetailPageData(id);
 
   if (!bank) {
     notFound();
   }
 
-  return <QuestionBankDetailView bank={bank} recentQuestions={recentQuestions} />;
+  return <QuestionBankDetailView bank={bank} bankQuestions={bankQuestions} />;
 }

@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Copy,
-  Download,
   Edit,
   Eye,
   Plus,
@@ -39,6 +38,12 @@ import {
   TableRow,
 } from "@/src/shared/components/ui/table";
 import Pagination from "@/src/shared/components/navigation/Pagination";
+import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
+import {
+  parsePositiveInteger,
+  useDebouncedSearchParam,
+  useUrlQueryUpdater,
+} from "@/src/shared/hooks/use-url-query-state";
 
 function getQuestionTypeVariant(type: QuestionCatalogType) {
   switch (type) {
@@ -70,11 +75,14 @@ export default function QuestionsCatalog({
   questionTopics: QuestionTopicMap[];
 }) {
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
+  const updateUrl = useUrlQueryUpdater();
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({
+    key: "query",
+  });
   const [typeFilter, setTypeFilter] = useState<string>("All Types");
   const [manualBankFilter, setManualBankFilter] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
   const [questionPendingDelete, setQuestionPendingDelete] =
     useState<QuestionCatalogItem | null>(null);
@@ -164,22 +172,18 @@ export default function QuestionsCatalog({
   };
 
   const handlePageSizeChange = (size: number) => {
-    setItemsPerPage(size);
-    setCurrentPage(1);
+    updateUrl({
+      pageSize: size === 10 ? null : size,
+      page: null,
+    });
   };
 
   return (
     <div className="space-y-6 px-4 py-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Questions</h1>
-          <p className="mt-1 text-inkd">All questions across {banks.length} banks</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition hover:bg-muted">
-            <Download className="h-4 w-4" />
-            Export
-          </button>
+      <PageHeaderCard
+        title="Questions"
+        description={`${questions.length} reusable questions across all banks.`}
+        actions={
           <Link
             href="/questions/new"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm"
@@ -187,8 +191,8 @@ export default function QuestionsCatalog({
             <Plus className="h-4 w-4" />
             New Question
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_260px]">
         <div className="relative">
@@ -197,10 +201,7 @@ export default function QuestionsCatalog({
             type="text"
             placeholder="Search questions..."
             value={searchQuery}
-            onChange={(event) => {
-              setSearchQuery(event.target.value);
-              setCurrentPage(1);
-            }}
+            onChange={(event) => setSearchQuery(event.target.value)}
             className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
           />
         </div>
@@ -209,7 +210,7 @@ export default function QuestionsCatalog({
           value={typeFilter}
           onChange={(event) => {
             setTypeFilter(event.target.value);
-            setCurrentPage(1);
+            updateUrl({ page: null });
           }}
           className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
         >
@@ -223,7 +224,7 @@ export default function QuestionsCatalog({
           value={bankFilter}
           onChange={(event) => {
             setManualBankFilter(event.target.value);
-            setCurrentPage(1);
+            updateUrl({ page: null });
           }}
           className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
         >
@@ -323,7 +324,7 @@ export default function QuestionsCatalog({
             pageSize={itemsPerPage}
             totalItems={filteredQuestions.length}
             itemLabel="questions"
-            onPageChange={setCurrentPage}
+            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
             onPageSizeChange={handlePageSizeChange}
           />
         </CardContent>

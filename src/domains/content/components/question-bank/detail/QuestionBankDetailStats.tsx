@@ -1,4 +1,4 @@
-import { Calendar, FileText, Globe, Tag, Users } from "lucide-react";
+import { Calendar, Globe, Tag, Users } from "lucide-react";
 import type { Bank } from "@/src/domains/content/types";
 
 function formatDate(dateString: string) {
@@ -20,55 +20,61 @@ function getVisibilityLabel(visibility: Bank["visibility"]) {
   }
 }
 
-function renderVisibilityIcon(visibility: Bank["visibility"]) {
-  switch (visibility) {
-    case "PUBLIC":
-      return <Globe className="h-5 w-5 text-inkd/70" />;
-    case "ORG":
-      return <Users className="h-5 w-5 text-inkd/70" />;
-    default:
-      return <Calendar className="h-5 w-5 text-inkd/70" />;
-  }
-}
-
 export default function QuestionBankDetailStats({ bank }: { bank: Bank }) {
+  const stats = [
+    {
+      label: "Tags",
+      value: `${bank.tags.length}`,
+      detail: "Taxonomy labels available for filtering and reuse.",
+      icon: Tag,
+      iconClassName: "bg-sky-100 text-sky-700",
+      accentClassName:
+        "bg-[linear-gradient(90deg,rgba(14,165,233,0.15)_0%,rgba(14,165,233,0.85)_50%,rgba(14,165,233,0.15)_100%)]",
+    },
+    {
+      label: "Created",
+      value: formatDate(bank.created_at),
+      detail: "Original creation date for this question bank.",
+      icon: Calendar,
+      iconClassName: "bg-amber-100 text-amber-700",
+      accentClassName:
+        "bg-[linear-gradient(90deg,rgba(245,158,11,0.15)_0%,rgba(245,158,11,0.85)_50%,rgba(245,158,11,0.15)_100%)]",
+    },
+    {
+      label: "Visibility",
+      value: getVisibilityLabel(bank.visibility),
+      detail: "Controls who can discover and reuse this bank.",
+      icon: bank.visibility === "PUBLIC" ? Globe : bank.visibility === "ORG" ? Users : Calendar,
+      iconClassName: "bg-violet-100 text-violet-700",
+      accentClassName:
+        "bg-[linear-gradient(90deg,rgba(139,92,246,0.15)_0%,rgba(139,92,246,0.85)_50%,rgba(139,92,246,0.15)_100%)]",
+    },
+  ];
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div className="rounded-2xl bg-primary p-6 text-white">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide text-white/70">Questions</div>
-          <FileText className="h-5 w-5 text-white/50" />
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          className="relative overflow-hidden rounded-3xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] p-6 shadow-[0_18px_40px_rgba(20,53,43,0.08)]"
+        >
+          <div className={`absolute inset-x-0 top-0 h-1 ${stat.accentClassName}`} />
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
+                {stat.label}
+              </div>
+              <div className="mt-4 text-3xl font-bold tracking-tight text-primary">{stat.value}</div>
+              <p className="mt-3 text-sm leading-6 text-inkd">{stat.detail}</p>
+            </div>
+            <div
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1 ring-black/5 ${stat.iconClassName}`}
+            >
+              <stat.icon className="h-5 w-5" />
+            </div>
+          </div>
         </div>
-        <div className="mb-2 text-4xl font-bold">{bank.question_count}</div>
-        <p className="text-xs text-white/70">Reusable items currently associated with this bank.</p>
-      </div>
-
-      <div className="rounded-2xl bg-[#D8F3DC] p-6">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide text-inkd">Tags</div>
-          <Tag className="h-5 w-5 text-inkd/70" />
-        </div>
-        <div className="mb-2 text-4xl font-bold text-primary">{bank.tags.length}</div>
-        <p className="text-xs text-inkd">Taxonomy labels available for filtering and reuse.</p>
-      </div>
-
-      <div className="rounded-2xl bg-[#FFF4E6] p-6">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide text-inkd">Created</div>
-          <Calendar className="h-5 w-5 text-inkd/70" />
-        </div>
-        <div className="mb-2 text-2xl font-bold text-primary">{formatDate(bank.created_at)}</div>
-        <p className="text-xs text-inkd">Original creation date for this question bank.</p>
-      </div>
-
-      <div className="rounded-2xl bg-[#E7F0FF] p-6">
-        <div className="mb-3 flex items-start justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide text-inkd">Visibility</div>
-          {renderVisibilityIcon(bank.visibility)}
-        </div>
-        <div className="mb-2 text-2xl font-bold text-primary">{getVisibilityLabel(bank.visibility)}</div>
-        <p className="text-xs text-inkd">Controls who can discover and reuse this bank.</p>
-      </div>
+      ))}
     </div>
   );
 }

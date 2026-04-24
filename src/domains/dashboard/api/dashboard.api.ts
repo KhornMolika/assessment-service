@@ -1,64 +1,50 @@
 import type {
+  AssessmentStatus,
   DashboardAnalytics,
   DashboardOverviewSections,
 } from "../types/dashboard.types";
+import { getAssessmentCatalogPageData } from "@/src/domains/assessment/api/assessment.api";
+import {
+  getMockBanks,
+  getMockQuestions,
+  getMockTopics,
+} from "@/src/domains/content/api/content.api";
 
 const mockDashboardOverviewSections: DashboardOverviewSections = {
   stats: [
     {
-      id: "active-assessments",
-      label: "Active Assessments",
-      value: "10",
-      helper: "Assessments currently open and accepting responses.",
+      id: "total-topics",
+      label: "Total Topics",
+      value: "0",
+      helper: "Shared taxonomy topics used across questions, banks, and assessments.",
       icon: "radio",
-      tone: "accent",
     },
     {
       id: "total-assessments",
       label: "Total Assessments",
-      value: "20",
-      helper: "All assessments created, including active and completed.",
+      value: "0",
+      helper: "All assessments currently available in the workspace.",
       icon: "clipboardList",
-    },
-    {
-      id: "total-questions",
-      label: "Total Questions",
-      value: "350",
-      helper: "Reusable questions available across all assessments.",
-      icon: "helpCircle",
-      tone: "success",
+      tone: "accent",
     },
     {
       id: "question-banks",
       label: "Question Banks",
-      value: "10",
+      value: "0",
       helper: "Organized collections used to group and manage questions.",
       icon: "library",
       tone: "warning",
     },
-  ],
-  operationalHighlights: [
     {
-      id: "pending-manual-gradings",
-      title: "14 pending manual gradings",
-      description: "Essay and file-upload responses are waiting for review.",
-      icon: "clock",
-    },
-    {
-      id: "live-sessions",
-      title: "1 live session in progress",
-      description:
-        "Host controls and answer reveal timing are available from the sessions area.",
-      icon: "activity",
-    },
-    {
-      id: "completed-this-month",
-      title: "28 completed assessments this month",
-      description:
-        "Reports are ready to export for leadership and compliance reviews.",
-      icon: "trendingUp",
+      id: "total-questions",
+      label: "Total Questions",
+      value: "0",
+      helper: "Reusable questions available across all banks and assessments.",
+      icon: "helpCircle",
+      tone: "success",
     },
   ],
+  operationalHighlights: [],
   quickLaunchpad: [
     {
       id: "question-banks",
@@ -112,80 +98,111 @@ const mockDashboardAnalytics: DashboardAnalytics = {
     { id: "dist-4", range: "61-80", count: 89 },
     { id: "dist-5", range: "81-100", count: 98 },
   ],
-  recentAssessments: [
-    {
-      id: 1,
-      title: "Final Exam - Mathematics Grade 11",
-      bank: "Mathematics",
-      mode: "Self-paced",
-      status: "Published",
-      questions: 40,
-      participants: 243,
-      passRate: "73%",
-      lastModified: "2 hours ago",
-    },
-    {
-      id: 2,
-      title: "Tech Risk Assessment - TechCorp Q4",
-      bank: "Tech Risk",
-      mode: "Self-paced",
-      status: "Active",
-      questions: 22,
-      participants: 23,
-      passRate: "68%",
-      lastModified: "5 hours ago",
-    },
-    {
-      id: 3,
-      title: "Employee Onboarding Survey",
-      bank: "Survey",
-      mode: "Self-paced",
-      status: "Completed",
-      questions: 18,
-      participants: 15,
-      passRate: "-",
-      lastModified: "1 day ago",
-    },
-    {
-      id: 4,
-      title: "Chemistry Quiz - Chapter 4",
-      bank: "Chemistry",
-      mode: "Scheduled",
-      status: "Scheduled",
-      questions: 30,
-      participants: 0,
-      passRate: "-",
-      lastModified: "2 days ago",
-    },
-    {
-      id: 5,
-      title: "Annual Security Awareness Test",
-      bank: "Security",
-      mode: "Self-paced",
-      status: "Completed",
-      questions: 25,
-      participants: 187,
-      passRate: "92%",
-      lastModified: "3 days ago",
-    },
-    {
-      id: 6,
-      title: "Live Product Knowledge Quiz",
-      bank: "Product",
-      mode: "Real-time",
-      status: "Pending",
-      questions: 15,
-      participants: 0,
-      passRate: "-",
-      lastModified: "4 days ago",
-    },
-  ],
+  recentAssessments: [],
 };
 
+function formatRelativeTime(dateString: string) {
+  const now = new Date();
+  const value = new Date(dateString);
+  const diffMs = now.getTime() - value.getTime();
+  const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));
+
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+  }
+
+  const diffDays = Math.max(1, Math.round(diffHours / 24));
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+}
+
+function mapAssessmentStatus(lifecycle: string): AssessmentStatus {
+  switch (lifecycle) {
+    case "ACTIVE":
+      return "Active";
+    case "COMPLETED":
+      return "Completed";
+    case "PENDING":
+      return "Pending";
+    case "DRAFT":
+      return "Scheduled";
+    default:
+      return "Published";
+  }
+}
+
 export async function getDashboardOverviewSections(): Promise<DashboardOverviewSections> {
-  return mockDashboardOverviewSections;
+  const [assessmentPage, banks, questions, topics] = await Promise.all([
+    getAssessmentCatalogPageData(),
+    getMockBanks(),
+    getMockQuestions(),
+    getMockTopics(),
+  ]);
+
+  return {
+    ...mockDashboardOverviewSections,
+    stats: [
+      {
+        ...mockDashboardOverviewSections.stats[0],
+        value: `${topics.length}`,
+      },
+      {
+        ...mockDashboardOverviewSections.stats[1],
+        value: `${assessmentPage.assessments.length}`,
+      },
+      {
+        ...mockDashboardOverviewSections.stats[2],
+        value: `${banks.length}`,
+      },
+      {
+        ...mockDashboardOverviewSections.stats[3],
+        value: `${questions.length}`,
+      },
+    ],
+    operationalHighlights: [
+      {
+        id: "active-assessments",
+        title: `${assessmentPage.stats.activeCount} active assessments`,
+        description: "Assessments currently open and receiving participant activity.",
+        icon: "activity",
+      },
+      {
+        id: "real-time-assessments",
+        title: `${assessmentPage.stats.realTimeCount} real-time assessments`,
+        description: "Live sessions that need host controls, join links, and monitoring.",
+        icon: "clock",
+      },
+      {
+        id: "starting-this-week",
+        title: `${assessmentPage.stats.startingThisWeekCount} starting this week`,
+        description: "Assessments approaching launch that may need a final readiness check.",
+        icon: "trendingUp",
+      },
+    ],
+  };
 }
 
 export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
-  return mockDashboardAnalytics;
+  const [assessmentPage] = await Promise.all([getAssessmentCatalogPageData()]);
+
+  return {
+    ...mockDashboardAnalytics,
+    recentAssessments: assessmentPage.assessments
+      .slice()
+      .sort(
+        (left, right) =>
+          new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+      )
+      .slice(0, 6)
+      .map((assessment) => ({
+        id: assessment.id,
+        title: assessment.title,
+        bank: assessment.question_bank_name,
+        mode: assessment.delivery_mode === "SELF_PACED" ? "Self-paced" : "Real-time",
+        status: mapAssessmentStatus(assessment.lifecycle),
+        questions: assessment.question_count,
+        participants: assessment.participant_count,
+        passRate: assessment.pass_rate,
+        lastModified: formatRelativeTime(assessment.updated_at),
+      })),
+  };
 }

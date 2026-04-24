@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import {
   getAssessmentCatalogItemById,
   getAssessmentDetailPageData,
@@ -9,6 +7,7 @@ import {
   AssessmentHostScreen,
   AssessmentJoinScreen,
 } from "@/src/domains/assessment/components/session/AssessmentSessionScreens";
+import { BackButton } from "@/src/shared/components/navigation/BackButton";
 
 export default async function AssessmentRealTimePreviewPage({
   params,
@@ -42,13 +41,10 @@ export default async function AssessmentRealTimePreviewPage({
             </p>
           </div>
 
-          <Link
+          <BackButton
             href={`/assessments/${assessment.id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to assessment
-          </Link>
+            label="Back to assessment"
+          />
         </div>
 
         <div className="grid items-start gap-6 2xl:grid-cols-2">

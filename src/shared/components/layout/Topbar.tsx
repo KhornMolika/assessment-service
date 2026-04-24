@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import {
   getMockBankTopics,
   getMockQuestionTopics,
@@ -20,9 +20,12 @@ export default function Topbar() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<"EN" | "KH">("EN");
   const [topicOptions, setTopicOptions] = useState<Array<{ id: string; name: string }>>([]);
-  const user = { name: "Khorn Molika", initials: "KM" };
   const supportsTopicFilter =
-    pathname === "/questions" || pathname === "/banks" || pathname === "/assessments" || pathname === "/results";
+    pathname === "/questions" ||
+    pathname === "/banks" ||
+    pathname === "/assessments" ||
+    pathname === "/results" ||
+    pathname === "/analytics";
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   useEffect(() => {
@@ -82,23 +85,12 @@ export default function Topbar() {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="order-3 w-full lg:order-1 lg:min-w-0 lg:flex-1">
-          <div className="relative w-full lg:max-w-xl">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-            <input
-              type="text"
-              placeholder="Search banks, descriptions, tags, or visibility..."
-              className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
-            />
-          </div>
-        </div>
-
-        <div className="order-2 flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3 lg:order-2 lg:flex-none">
+        <div className="order-2 w-full flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3 lg:order-2 lg:flex-none">
           {supportsTopicFilter && (
             <select
               value={selectedTopic}
               onChange={(event) => handleTopicChange(event.target.value)}
-              className="min-w-0 max-w-[10rem] rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm sm:max-w-[12rem]"
+              className="min-w-0 max-w-40 rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm sm:max-w-[12rem]"
               aria-label="Filter questions by topic"
             >
               <option value={ALL_TOPICS_VALUE}>All Topics</option>
@@ -119,13 +111,6 @@ export default function Topbar() {
             ]}
             className="shrink-0"
           />
-
-          <div className="hidden items-center space-x-2 rounded-full px-0 py-1 transition hover:bg-accl sm:flex sm:px-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-card">
-              {user.initials}
-            </div>
-            <span className="hidden font-medium xl:inline">{user.name}</span>
-          </div>
         </div>
       </div>
     </header>

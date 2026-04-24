@@ -1,6 +1,6 @@
 import type { AnswerEntry } from "./answer-entry.types";
 import type { AnswerSheet } from "./answer-sheet.types";
-import type { Assessment } from "./assessment.types";
+import type { AssessmentCatalogItem } from "./assessment-catalog.types";
 import type { Participant } from "./participant.types";
 import type { AssessmentTopicMap, Topic } from "@/src/domains/content/types";
 
@@ -20,7 +20,7 @@ export interface ResultQuestionEntity {
 
 export interface AssessmentResultsPageData {
   stats: AssessmentResultsStats;
-  assessments: Assessment[];
+  assessments: AssessmentCatalogItem[];
   participants: Participant[];
   answer_sheets: AnswerSheet[];
   answer_entries: AnswerEntry[];
@@ -30,9 +30,20 @@ export interface AssessmentResultsPageData {
 }
 
 export interface AssessmentResultSheetPageData {
-  assessment: Assessment;
+  assessment: AssessmentCatalogItem;
   participant: Participant;
   answer_sheet: AnswerSheet;
   questions: ResultQuestionEntity[];
   answer_entries: AnswerEntry[];
+}
+
+export interface AssessmentScopedResultsPageData {
+  assessment: AssessmentCatalogItem;
+  stats: AssessmentResultsStats & {
+    pendingReviewCount: number;
+  };
+  participants: Participant[];
+  answer_sheets: AnswerSheet[];
+  answer_entries: AnswerEntry[];
+  questions: ResultQuestionEntity[];
 }
