@@ -24,12 +24,6 @@ import {
 } from "@/src/domains/content/utils/topic-utils";
 import { Badge } from "@/src/shared/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/shared/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -37,8 +31,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/shared/components/ui/table";
-import Pagination from "@/src/shared/components/navigation/Pagination";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import {
   parsePositiveInteger,
   useDebouncedSearchParam,
@@ -178,6 +173,12 @@ export default function QuestionsCatalog({
     });
   };
 
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 ||
+    topicFilter !== ALL_TOPICS_VALUE ||
+    typeFilter !== "All Types" ||
+    bankFilter !== "All Banks";
+
   return (
     <div className="space-y-6 px-4 py-4">
       <PageHeaderCard
@@ -235,100 +236,136 @@ export default function QuestionsCatalog({
         </select>
       </div>
 
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle>Question catalog</CardTitle>
-        </CardHeader>
-        <CardContent className="px-0 pb-0 sm:px-0 sm:pb-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Question</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Bank</TableHead>
-                <TableHead className="text-center">Points</TableHead>
-                <TableHead className="text-center">Lang.</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedQuestions.map((question) => {
-                const bank = question.bank_id ? bankMap[question.bank_id] : undefined;
-
-                return (
-                  <TableRow key={question.id}>
-                    <TableCell>
-                      <div className="max-w-xl">
-                        <div className="line-clamp-3 font-medium text-primary">{question.text}</div>
-                        {question.tags.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
-                            {question.tags.map((tag) => (
-                              <span
-                                key={`${question.id}-${tag}`}
-                                className="rounded bg-muted px-2 py-0.5 text-xs text-inkd"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getQuestionTypeVariant(question.type)}>{question.type}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-inkd">{bank?.name ?? "Unknown bank"}</TableCell>
-                    <TableCell className="text-center font-semibold text-primary">{question.points}</TableCell>
-                    <TableCell className="text-center text-sm text-inkd">{question.language}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/questions/${question.id}`}
-                          className="rounded p-1 transition hover:bg-muted"
-                          title="View question"
-                        >
-                          <Eye className="h-4 w-4 text-inkd" />
-                        </Link>
-                        <Link
-                          href={`/questions/${question.id}/edit`}
-                          className="rounded p-1 transition hover:bg-muted"
-                          title="Edit question"
-                        >
-                          <Edit className="h-4 w-4 text-inkd" />
-                        </Link>
-                        <button
-                          onClick={() => handleCopyQuestion(question)}
-                          className="rounded p-1 transition hover:bg-muted"
-                          title="Duplicate question"
-                        >
-                          <Copy className="h-4 w-4 text-inkd" />
-                        </button>
-                        <button
-                          onClick={() => setQuestionPendingDelete(question)}
-                          className="rounded p-1 transition hover:bg-muted"
-                          title="Delete question"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-
-          <Pagination
-            currentPage={activePage}
-            totalPages={totalPages}
-            pageSize={itemsPerPage}
-            totalItems={filteredQuestions.length}
-            itemLabel="questions"
-            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
-            onPageSizeChange={handlePageSizeChange}
+      <PaginatedCollectionCard
+        title="Question catalog"
+        className="overflow-hidden"
+        contentClassName="px-0 pb-0 sm:px-0 sm:pb-0"
+        bodyClassName={filteredQuestions.length === 0 ? "px-4 pb-4 sm:px-6 sm:pb-6" : undefined}
+        isEmpty={filteredQuestions.length === 0}
+        emptyState={
+          <StateMessage
+            title={hasActiveFilters ? "No questions found" : "No questions available"}
+            description={
+              hasActiveFilters
+                ? "No questions match the current search, bank, topic, and type filters."
+                : "Questions will appear here after they are added to one or more banks."
+            }
+            action={
+              hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setTypeFilter("All Types");
+                    setManualBankFilter("All Banks");
+                    updateUrl({
+                      page: null,
+                      query: null,
+                      bank: null,
+                      topic: null,
+                    });
+                  }}
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                >
+                  Clear filters
+                </button>
+              ) : null
+            }
           />
-        </CardContent>
-      </Card>
+        }
+        pagination={{
+          currentPage: activePage,
+          totalPages,
+          pageSize: itemsPerPage,
+          totalItems: filteredQuestions.length,
+          itemLabel: "questions",
+          onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
+          onPageSizeChange: handlePageSizeChange,
+        }}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Question</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Bank</TableHead>
+              <TableHead className="text-center">Points</TableHead>
+              <TableHead className="text-center">Lang.</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedQuestions.map((question) => {
+              const bank = question.bank_id ? bankMap[question.bank_id] : undefined;
+
+              return (
+                <TableRow key={question.id}>
+                  <TableCell>
+                    <div className="max-w-xl">
+                      <Link
+                        href={`/questions/${question.id}`}
+                        className="line-clamp-3 font-medium text-primary transition hover:text-pm hover:underline"
+                      >
+                        {question.text}
+                      </Link>
+                      {question.tags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {question.tags.map((tag) => (
+                            <span
+                              key={`${question.id}-${tag}`}
+                              className="rounded bg-muted px-2 py-0.5 text-xs text-inkd"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getQuestionTypeVariant(question.type)}>{question.type}</Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-inkd">{bank?.name ?? "Unknown bank"}</TableCell>
+                  <TableCell className="text-center font-semibold text-primary">{question.points}</TableCell>
+                  <TableCell className="text-center text-sm text-inkd">{question.language}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/questions/${question.id}`}
+                        className="rounded p-1 transition hover:bg-muted"
+                        title="View question"
+                      >
+                        <Eye className="h-4 w-4 text-inkd" />
+                      </Link>
+                      <Link
+                        href={`/questions/${question.id}/edit`}
+                        className="rounded p-1 transition hover:bg-muted"
+                        title="Edit question"
+                      >
+                        <Edit className="h-4 w-4 text-inkd" />
+                      </Link>
+                      <button
+                        onClick={() => handleCopyQuestion(question)}
+                        className="rounded p-1 transition hover:bg-muted"
+                        title="Duplicate question"
+                      >
+                        <Copy className="h-4 w-4 text-inkd" />
+                      </button>
+                      <button
+                        onClick={() => setQuestionPendingDelete(question)}
+                        className="rounded p-1 transition hover:bg-muted"
+                        title="Delete question"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </PaginatedCollectionCard>
 
       {questionPendingDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">

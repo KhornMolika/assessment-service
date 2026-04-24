@@ -4,10 +4,13 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
+import { assessmentFormSchema } from "@/src/domains/assessment/schemas/assessment-form.schema";
 import type {
   AssessmentGradeLabel,
   NewAssessmentFormData,
 } from "@/src/domains/assessment/types/assessment-form.types";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import AssessmentNewHeader from "./AssessmentNewHeader";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
@@ -15,10 +18,9 @@ import AssessmentSummaryCard from "./AssessmentSummaryCard";
 import AssessmentWizardRail from "./AssessmentWizardRail";
 
 const defaultFormData: NewAssessmentFormData = {
-  titleEN: "",
-  titleKH: "",
-  descriptionEN: "",
-  descriptionKH: "",
+  title: "",
+  description: "",
+  ownerTopicId: "",
   status: "DRAFT",
   participantIdentity: "EXTERNAL",
   sessionMode: "SELF_PACED",
@@ -48,42 +50,24 @@ const defaultFormData: NewAssessmentFormData = {
   showResults: "IMMEDIATELY",
 };
 
-const stepMeta = {
-  1: {
-    eyebrow: "Step 1",
-    title: "Assessment Basics",
-    helper: "Start with metadata",
-    cta: "Continue to Session Strategy",
-  },
-  2: {
-    eyebrow: "Step 2",
-    title: "Session Strategy",
-    helper: "Choose delivery approach",
-    cta: "Continue to Question Configuration",
-  },
-  3: {
-    eyebrow: "Step 3",
-    title: "Question Configuration",
-    helper: "Select and tune question sets",
-    cta: "Continue to Timing and Rules",
-  },
-  4: {
-    eyebrow: "Step 4",
-    title: "Timing and Participant Rules",
-    helper: "Finalize release settings",
-    cta: "Publish Assessment",
-  },
-} as const;
+const stepValidationFields: Record<1 | 2 | 3 | 4, string[]> = {
+  1: ["title", "ownerTopicId"],
+  2: ["sessionMode", "questionSelection"],
+  3: ["selectedBankId", "selectedQuestionIds", "totalQuestions", "selectionRules"],
+  4: ["timeLimitMinutes", "startsAt", "endsAt", "passMark", "gradeLabels", "showResults"],
+};
 
 export default function AssessmentNewWizard({
   banks,
   questions,
+  topics,
   mode = "create",
   assessmentId,
   initialFormData,
 }: {
   banks: Bank[];
   questions: QuestionCatalogItem[];
+  topics: Topic[];
   mode?: "create" | "edit";
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
@@ -94,12 +78,11 @@ export default function AssessmentNewWizard({
       ? `assessment-edit-form-${assessmentId}`
       : "assessment-new-form";
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
-  const [visitedSteps, setVisitedSteps] = useState<number[]>([1]);
-  const [activeLanguageTab, setActiveLanguageTab] = useState<"en" | "kh">("en");
   const [questionSearch, setQuestionSearch] = useState("");
   const [formData, setFormData] = useState<NewAssessmentFormData>(
     initialFormData ?? defaultFormData,
   );
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const selectedBankQuestionCount = useMemo(() => {
     if (!formData.selectedBankId) {
@@ -109,25 +92,30 @@ export default function AssessmentNewWizard({
     return questions.filter((question) => question.bank_id === formData.selectedBankId).length;
   }, [formData.selectedBankId, questions]);
 
+  const getStepValidationMessages = (step: 1 | 2 | 3 | 4) => {
+    const validationResult = assessmentFormSchema.safeParse(formData);
+
+    if (validationResult.success) {
+      return [];
+    }
+
+    const allowedFields = stepValidationFields[step];
+
+    return Array.from(
+      new Set(
+        validationResult.error.issues
+          .filter((issue) => allowedFields.includes(String(issue.path[0] ?? "")))
+          .map((issue) => issue.message),
+      ),
+    );
+  };
+
   const isStepComplete = (step: number) => {
-    if (step === 1) {
-      return formData.titleEN.trim().length > 0 || formData.titleKH.trim().length > 0;
+    if (![1, 2, 3, 4].includes(step)) {
+      return false;
     }
 
-    if (step === 2) {
-      return Boolean(formData.sessionMode) && Boolean(formData.questionSelection);
-    }
-
-    if (step === 3) {
-      if (formData.questionSelection === "MANUAL") {
-        return formData.selectedQuestionIds.length > 0;
-      }
-
-      const totalRuleCount = formData.selectionRules.reduce((sum, rule) => sum + rule.count, 0);
-      return Boolean(formData.selectedBankId) && formData.totalQuestions > 0 && totalRuleCount > 0;
-    }
-
-    return formData.passMark >= 0;
+    return getStepValidationMessages(step as 1 | 2 | 3 | 4).length === 0;
   };
 
   const canContinue = isStepComplete(currentStep);
@@ -140,17 +128,53 @@ export default function AssessmentNewWizard({
       ...current,
       [field]: value,
     }));
+    setValidationErrors([]);
+  };
+
+  const canNavigateToStep = (step: number) => {
+    if (![1, 2, 3, 4].includes(step)) {
+      return false;
+    }
+
+    if (step <= currentStep) {
+      return true;
+    }
+
+    if (step !== currentStep + 1) {
+      return false;
+    }
+
+    return isStepComplete(currentStep);
   };
 
   const handleStepChange = (step: number) => {
+    if (!canNavigateToStep(step)) {
+      const blockingStep = ([1, 2, 3, 4] as const).find(
+        (candidate) => candidate < step && !isStepComplete(candidate),
+      );
+
+      if (blockingStep) {
+        setValidationErrors(getStepValidationMessages(blockingStep));
+      }
+      return;
+    }
+
+    setValidationErrors([]);
     setCurrentStep(step as 1 | 2 | 3 | 4);
-    setVisitedSteps((current) => (current.includes(step) ? current : [...current, step]));
   };
 
   const handleNext = () => {
-    if (currentStep < 4 && canContinue) {
-      handleStepChange((currentStep + 1) as 1 | 2 | 3 | 4);
+    if (currentStep >= 4) {
+      return;
     }
+
+    if (!canContinue) {
+      setValidationErrors(getStepValidationMessages(currentStep));
+      return;
+    }
+
+    setValidationErrors([]);
+    handleStepChange((currentStep + 1) as 1 | 2 | 3 | 4);
   };
 
   const handleQuestionToggle = (questionId: string) => {
@@ -209,17 +233,36 @@ export default function AssessmentNewWizard({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const validationResult = assessmentFormSchema.safeParse(formData);
+
+    if (!validationResult.success) {
+      setValidationErrors(
+        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+      );
+      return;
+    }
+
+    setValidationErrors([]);
     console.log(mode === "edit" ? "Saving assessment changes:" : "Saving assessment draft:", formData);
     router.push(destination);
   };
 
   const handlePublish = () => {
+    const validationResult = assessmentFormSchema.safeParse(formData);
+
+    if (!validationResult.success) {
+      setValidationErrors(
+        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+      );
+      return;
+    }
+
+    setValidationErrors([]);
     console.log(mode === "edit" ? "Publishing assessment changes:" : "Publishing assessment:", formData);
     router.push(destination);
   };
 
-  const currentMeta = stepMeta[currentStep];
-  const headerTitle = mode === "edit" ? `Edit ${formData.titleEN || "Assessment"}` : "Create New Assessment";
+  const headerTitle = mode === "edit" ? `Edit ${formData.title || "Assessment"}` : "Create New Assessment";
   const headerDescription =
     mode === "edit"
       ? "Update assessment settings, question strategy, and participant rules."
@@ -229,149 +272,184 @@ export default function AssessmentNewWizard({
     <div className="space-y-6 px-4 py-4 sm:px-6 lg:px-8">
       <AssessmentNewHeader title={headerTitle} description={headerDescription} />
 
-      {/* <div className="rounded-4xl border border-border/70 bg-[linear-gradient(180deg,#f8fbf9_0%,#f1f6f3_100%)] shadow-sm sm:p-4 ">
-        
-      </div> */}
+      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
+            <AssessmentWizardRail
+              currentStep={currentStep}
+              isStepComplete={isStepComplete}
+              canNavigateToStep={canNavigateToStep}
+              onStepChange={handleStepChange}
+            />
+          </div>
+        </aside>
 
-      <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)] 2xl:grid-cols-[340px_minmax(0,1fr)]">
-          <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-            <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
-              <AssessmentWizardRail
-                currentStep={currentStep}
-                visitedSteps={visitedSteps}
-                isStepComplete={isStepComplete}
-                onStepChange={handleStepChange}
-              />
-            </div>
-
-            <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
-              <AssessmentSummaryCard formData={formData} banks={banks} questions={questions} />
-            </div>
-          </aside>
-
-          <section className="min-w-0 rounded-[1.75rem] border border-border/80 bg-white shadow-sm xl:flex xl:h-[calc(100vh)] xl:flex-col">
-            <div className="border-b border-border/70 px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <section className="min-w-0 rounded-[1.75rem] border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
+          <div className="border-b border-border/70 px-4 py-4 sm:px-6">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-1">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                  Step {currentStep} of 4
+                </div>
+                <h2 className="text-xl font-bold text-primary">
+                  {mode === "edit" ? "Assessment Setup" : "Build Your Assessment"}
+                </h2>
+                <p className="text-sm text-inkd">
+                  Complete the current section before moving forward.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3 text-sm sm:w-fit">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    {currentMeta.eyebrow}
-                  </p>
-                  <h2 className="mt-1 text-xl font-bold text-primary">{currentMeta.title}</h2>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80">
+                    Current mode
+                  </div>
+                  <div className="mt-1 font-semibold text-primary">
+                    {formData.sessionMode === "SELF_PACED" ? "Self-paced" : "Real-time"}
+                  </div>
                 </div>
-                <div className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                  <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-white">
-                    {currentStep}/4
-                  </span>
-                  {currentMeta.helper}
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80">
+                    Question flow
+                  </div>
+                  <div className="mt-1 font-semibold text-primary">
+                    {formData.questionSelection === "MANUAL" ? "Manual" : "Dynamic"}
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="min-h-0 px-3 py-3 sm:px-4 sm:py-4 xl:flex-1 xl:overflow-y-auto">
-              <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-                {currentStep === 1 ? (
-                  <AssessmentBasicInfoStep
-                    formData={formData}
-                    activeLanguageTab={activeLanguageTab}
-                    onLanguageTabChange={setActiveLanguageTab}
-                    onChange={handleChange}
+          <div className="px-3 py-3 sm:px-4 sm:py-4">
+            <form id={formId} onSubmit={handleSubmit} className="min-w-0">
+              {validationErrors.length > 0 ? (
+                <div className="mb-4">
+                  <StateMessage
+                    tone="error"
+                    title="Please fix the assessment form"
+                    description={
+                      <div className="space-y-1">
+                        {validationErrors.map((message) => (
+                          <div key={message}>{message}</div>
+                        ))}
+                      </div>
+                    }
                   />
-                ) : currentStep === 2 ? (
-                  <AssessmentSettingsStep
-                    section="SESSION_STRATEGY"
-                    formData={formData}
-                    banks={banks}
-                    questions={questions}
-                    questionSearch={questionSearch}
-                    onQuestionSearchChange={setQuestionSearch}
-                    onChange={handleChange}
-                    onQuestionToggle={handleQuestionToggle}
-                    onSelectionRuleChange={handleSelectionRuleChange}
-                    onGradeLabelChange={handleGradeLabelChange}
-                    onAddGradeLabel={handleAddGradeLabel}
-                    onRemoveGradeLabel={handleRemoveGradeLabel}
-                  />
-                ) : currentStep === 3 ? (
-                  <AssessmentSettingsStep
-                    section="QUESTION_CONFIGURATION"
-                    formData={formData}
-                    banks={banks}
-                    questions={questions}
-                    questionSearch={questionSearch}
-                    onQuestionSearchChange={setQuestionSearch}
-                    onChange={handleChange}
-                    onQuestionToggle={handleQuestionToggle}
-                    onSelectionRuleChange={handleSelectionRuleChange}
-                    onGradeLabelChange={handleGradeLabelChange}
-                    onAddGradeLabel={handleAddGradeLabel}
-                    onRemoveGradeLabel={handleRemoveGradeLabel}
-                  />
-                ) : (
-                  <AssessmentSettingsStep
-                    section="TIMING_RULES"
-                    formData={formData}
-                    banks={banks}
-                    questions={questions}
-                    questionSearch={questionSearch}
-                    onQuestionSearchChange={setQuestionSearch}
-                    onChange={handleChange}
-                    onQuestionToggle={handleQuestionToggle}
-                    onSelectionRuleChange={handleSelectionRuleChange}
-                    onGradeLabelChange={handleGradeLabelChange}
-                    onAddGradeLabel={handleAddGradeLabel}
-                    onRemoveGradeLabel={handleRemoveGradeLabel}
-                  />
-                )}
-              </form>
-            </div>
-
-            <div className="border-t border-border/70 bg-slate-50/80 px-4 py-4 sm:px-6">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="text-sm text-inkd">
-                  {currentStep === 3 && formData.questionSelection === "DYNAMIC"
-                    ? `${selectedBankQuestionCount} available question${selectedBankQuestionCount === 1 ? "" : "s"} in the chosen bank.`
-                    : currentStep === 3 && formData.questionSelection === "MANUAL"
-                      ? `${formData.selectedQuestionIds.length} selected question${formData.selectedQuestionIds.length === 1 ? "" : "s"} ready for this assessment.`
-                      : mode === "edit"
-                        ? "Adjust the assessment in stages and keep the summary updated as you go."
-                        : "Move through the setup one step at a time and keep the assessment summary in sync."}
                 </div>
+              ) : null}
 
-                <div className="grid gap-3 sm:grid-cols-2 xl:min-w-90 xl:max-w-130">
-                  <Link
-                    href={destination}
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+              {currentStep === 1 ? (
+                <AssessmentBasicInfoStep
+                  formData={formData}
+                  topics={topics}
+                  onChange={handleChange}
+                />
+              ) : currentStep === 2 ? (
+                <AssessmentSettingsStep
+                  section="SESSION_STRATEGY"
+                  formData={formData}
+                  banks={banks}
+                  questions={questions}
+                  questionSearch={questionSearch}
+                  onQuestionSearchChange={setQuestionSearch}
+                  onChange={handleChange}
+                  onQuestionToggle={handleQuestionToggle}
+                  onSelectionRuleChange={handleSelectionRuleChange}
+                  onGradeLabelChange={handleGradeLabelChange}
+                  onAddGradeLabel={handleAddGradeLabel}
+                  onRemoveGradeLabel={handleRemoveGradeLabel}
+                />
+              ) : currentStep === 3 ? (
+                <AssessmentSettingsStep
+                  section="QUESTION_CONFIGURATION"
+                  formData={formData}
+                  banks={banks}
+                  questions={questions}
+                  questionSearch={questionSearch}
+                  onQuestionSearchChange={setQuestionSearch}
+                  onChange={handleChange}
+                  onQuestionToggle={handleQuestionToggle}
+                  onSelectionRuleChange={handleSelectionRuleChange}
+                  onGradeLabelChange={handleGradeLabelChange}
+                  onAddGradeLabel={handleAddGradeLabel}
+                  onRemoveGradeLabel={handleRemoveGradeLabel}
+                />
+              ) : (
+                <AssessmentSettingsStep
+                  section="TIMING_RULES"
+                  formData={formData}
+                  banks={banks}
+                  questions={questions}
+                  questionSearch={questionSearch}
+                  onQuestionSearchChange={setQuestionSearch}
+                  onChange={handleChange}
+                  onQuestionToggle={handleQuestionToggle}
+                  onSelectionRuleChange={handleSelectionRuleChange}
+                  onGradeLabelChange={handleGradeLabelChange}
+                  onAddGradeLabel={handleAddGradeLabel}
+                  onRemoveGradeLabel={handleRemoveGradeLabel}
+                />
+              )}
+            </form>
+          </div>
+
+          <div className="border-t border-border/70 bg-slate-50/80 px-4 py-4 sm:px-6">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="text-sm text-inkd">
+                {currentStep === 3 && formData.questionSelection === "DYNAMIC"
+                  ? `${selectedBankQuestionCount} available question${selectedBankQuestionCount === 1 ? "" : "s"} in the chosen bank.`
+                  : currentStep === 3 && formData.questionSelection === "MANUAL"
+                    ? `${formData.selectedQuestionIds.length} selected question${formData.selectedQuestionIds.length === 1 ? "" : "s"} ready for this assessment.`
+                    : mode === "edit"
+                      ? "Adjust the assessment in stages and keep the summary updated as you go."
+                      : "Move through the setup one step at a time and keep the assessment summary in sync."}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-90 xl:max-w-130">
+                <Link
+                  href={destination}
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                >
+                  {mode === "edit" ? "Back" : "Cancel"}
+                </Link>
+
+                {currentStep < 4 ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={!canContinue}
+                    className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                      canContinue
+                        ? "bg-primary text-white hover:bg-pm"
+                        : "cursor-not-allowed bg-muted text-inkl"
+                    }`}
                   >
-                    {mode === "edit" ? "Back" : "Cancel"}
-                  </Link>
-
-                  {currentStep < 4 ? (
-                    <button
-                      type="button"
-                      onClick={handleNext}
-                      disabled={!canContinue}
-                      className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                        canContinue
-                          ? "bg-primary text-white hover:bg-pm"
-                          : "cursor-not-allowed bg-muted text-inkl"
-                      }`}
-                    >
-                      {currentMeta.cta}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={handlePublish}
-                      className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d]"
-                    >
-                      {mode === "edit" ? "Save Changes" : "Publish Assessment"}
-                    </button>
-                  )}
-                </div>
+                    Continue
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handlePublish}
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d]"
+                  >
+                    {mode === "edit" ? "Save Changes" : "Publish Assessment"}
+                  </button>
+                )}
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
+
+        <aside className="space-y-4 2xl:sticky 2xl:top-6 2xl:self-start">
+          <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
+            <AssessmentSummaryCard
+              formData={formData}
+              banks={banks}
+              questions={questions}
+              topics={topics}
+            />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

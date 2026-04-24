@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { TrendingUp } from "lucide-react";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import Pagination from "@/src/shared/components/navigation/Pagination";
+import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import { Badge } from "@/src/shared/components/ui/badge";
 import {
   parsePositiveInteger,
@@ -131,25 +131,29 @@ export default function AnalyticsPageView({
 
       <AnalyticsQuestionBreakdownCard items={snapshot.questionBreakdown} />
 
-      <AnalyticsAssessmentTable rows={paginatedAssessmentRows} />
-
-      {snapshot.assessmentRows.length > 0 ? (
-        <Pagination
-          currentPage={effectiveAssessmentPage}
-          totalPages={assessmentTotalPages}
-          pageSize={assessmentPageSize}
-          totalItems={snapshot.assessmentRows.length}
-          pageSizeOptions={[5, 10, 20]}
-          itemLabel="assessments"
-          onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
-          onPageSizeChange={(size) => {
+      <PaginatedCollectionCard
+        title="Assessment analytics breakdown"
+        description="Assessment-level view of participation, question load, and published outcomes."
+        isEmpty={snapshot.assessmentRows.length === 0}
+        emptyState={<AnalyticsAssessmentTable rows={paginatedAssessmentRows} />}
+        pagination={{
+          currentPage: effectiveAssessmentPage,
+          totalPages: assessmentTotalPages,
+          pageSize: assessmentPageSize,
+          totalItems: snapshot.assessmentRows.length,
+          pageSizeOptions: [5, 10, 20],
+          itemLabel: "assessments",
+          onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
+          onPageSizeChange: (size) => {
             updateUrl({
               pageSize: size === 5 ? null : size,
               page: null,
             });
-          }}
-        />
-      ) : null}
+          },
+        }}
+      >
+        <AnalyticsAssessmentTable rows={paginatedAssessmentRows} />
+      </PaginatedCollectionCard>
     </div>
   );
 }

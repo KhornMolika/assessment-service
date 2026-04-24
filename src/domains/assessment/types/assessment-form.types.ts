@@ -18,10 +18,9 @@ export interface AssessmentSelectionRule {
 }
 
 export interface NewAssessmentFormData {
-  titleEN: string;
-  titleKH: string;
-  descriptionEN: string;
-  descriptionKH: string;
+  title: string;
+  description: string;
+  ownerTopicId: string;
   status: AssessmentStatus;
   participantIdentity: "ANONYMOUS" | "INTERNAL" | "EXTERNAL";
   sessionMode: AssessmentDeliveryMode;

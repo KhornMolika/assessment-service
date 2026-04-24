@@ -22,6 +22,7 @@ export default function QuestionPreviewCard({
   description?: string;
 }) {
   const selectedBank = banks.find((bank) => bank.id === formData.bank);
+  const ownerTopic = topics.find((topic) => topic.id === formData.ownerTopicId);
   const selectedTopics = topics.filter((topic) => formData.topicIds.includes(topic.id));
 
   const renderPreview = () => {
@@ -30,7 +31,7 @@ export default function QuestionPreviewCard({
         return (
           <div className="space-y-2">
             {formData.options.map((option, index) => (
-              <div key={index} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2">
+              <div key={index} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2.75">
                 <Circle className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-700">{option || `Option ${getOptionLabel(index)}`}</span>
               </div>
@@ -41,7 +42,7 @@ export default function QuestionPreviewCard({
         return (
           <div className="space-y-2">
             {formData.options.map((option, index) => (
-              <div key={index} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2">
+              <div key={index} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2.75">
                 <Square className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-700">{option || `Option ${getOptionLabel(index)}`}</span>
               </div>
@@ -52,7 +53,7 @@ export default function QuestionPreviewCard({
         return (
           <div className="space-y-2">
             {["True", "False"].map((option) => (
-              <div key={option} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2">
+              <div key={option} className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-2.75">
                 <Circle className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-700">{option}</span>
               </div>
@@ -60,9 +61,9 @@ export default function QuestionPreviewCard({
           </div>
         );
       case "Short Answer":
-        return <input type="text" placeholder="Type your answer here..." disabled className="w-full rounded-lg border border-border bg-muted px-4 py-2 text-sm text-gray-400" />;
+        return <input type="text" placeholder="Type your answer here..." disabled className="w-full rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
       case "Essay":
-        return <textarea placeholder="Type your answer here..." disabled rows={5} className="w-full resize-none rounded-lg border border-border bg-muted px-4 py-2 text-sm text-gray-400" />;
+        return <textarea placeholder="Type your answer here..." disabled rows={5} className="w-full resize-none rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
       case "Fill in the Blank":
         return (
           <div className="rounded-lg border border-border bg-muted px-4 py-3">
@@ -85,7 +86,7 @@ export default function QuestionPreviewCard({
               <p className="mb-2 text-xs font-semibold text-inkd">Column A</p>
               <div className="space-y-2">
                 {formData.matchingPairs.map((pair, index) => (
-                  <div key={index} className="rounded border border-border bg-muted px-3 py-2 text-sm text-gray-700">
+                  <div key={index} className="rounded border border-border bg-muted px-3 py-2.75 text-sm text-gray-700">
                     {pair.left || `Item ${index + 1}`}
                   </div>
                 ))}
@@ -95,7 +96,7 @@ export default function QuestionPreviewCard({
               <p className="mb-2 text-xs font-semibold text-inkd">Column B</p>
               <div className="space-y-2">
                 {formData.matchingPairs.map((pair, index) => (
-                  <div key={index} className="rounded border border-border bg-muted px-3 py-2 text-sm text-gray-700">
+                  <div key={index} className="rounded border border-border bg-muted px-3 py-2.75 text-sm text-gray-700">
                     {pair.right || `Item ${index + 1}`}
                   </div>
                 ))}
@@ -107,7 +108,7 @@ export default function QuestionPreviewCard({
         return (
           <div className="space-y-2">
             {formData.orderItems.map((item, index) => (
-              <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-muted px-4 py-2">
+              <div key={index} className="flex items-center gap-2 rounded-lg border border-border bg-muted px-4 py-2.75">
                 <GripVertical className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-700">{item || `Item ${index + 1}`}</span>
               </div>
@@ -173,6 +174,7 @@ export default function QuestionPreviewCard({
           <div className="flex flex-wrap items-center gap-3 text-xs text-inkd">
             <span>{formData.points} {Number(formData.points) === 1 ? "point" : "points"}</span>
             <span>{selectedBank?.name ?? "No bank assigned"}</span>
+            <span>{ownerTopic?.name ?? "No owner topic"}</span>
             {selectedTopics.map((topic) => (
               <span key={topic.id} className="rounded-full bg-accp px-2.5 py-1 font-semibold text-pl">
                 {topic.name}

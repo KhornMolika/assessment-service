@@ -15,13 +15,6 @@ export default function QuestionPreviewCard({ question }: { question: QuestionDe
         </div>
 
         <QuestionTypePreview question={question} />
-
-        <div className="border-t border-border pt-6">
-          <div className="mb-3 text-xs font-semibold uppercase text-inkd">Correct Answer (JSONB)</div>
-          <div className="overflow-x-auto rounded-lg bg-muted p-4 font-mono text-xs text-inkd sm:text-sm">
-            <pre>{JSON.stringify(question.correct_answer, null, 2)}</pre>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );

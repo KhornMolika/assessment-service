@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/shared/components/ui/card";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import type { AnalyticsQuestionBreakdown } from "../types/analytics.types";
 
 export default function AnalyticsQuestionBreakdownCard({
@@ -24,9 +25,10 @@ export default function AnalyticsQuestionBreakdownCard({
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/80 bg-muted/40 p-6 text-sm text-inkd">
-            No option-based question data is available for the current selection.
-          </div>
+          <StateMessage
+            title="No question response data found"
+            description="No option-based question data is available for the current selection."
+          />
         ) : (
           <div className="grid grid-cols-1 gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))] 2xl:grid-cols-4">
             {items.map((item) => {

@@ -1,26 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { Topic } from "@/src/domains/content/types/topic.types";
 import QuestionRubricSettings from "@/src/domains/content/components/question-common/QuestionRubricSettings";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
+import type { QuestionDetailsCardProps } from "@/src/domains/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/domains/content/components/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/domains/content/components/question-form/QuestionTypeSettingsCard";
+import { questionFormSchema } from "@/src/domains/content/schemas/question-form.schema";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
 import {
   supportsAiGradingInstructions,
   syncAiGradingFormState,
 } from "@/src/domains/content/utils/question-ai-grading";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import QuestionNewHeader from "./QuestionNewHeader";
 
 const createFormId = "question-new-form";
+const singleTopicSelectionMode: QuestionDetailsCardProps["topicSelectionMode"] = "single";
 
 const initialFormData: QuestionFormData = {
   questionText: "",
   questionType: "Single Choice",
   bank: "",
+  ownerTopicId: "",
   topicIds: [],
   points: "1",
   difficulty: "Easy",
@@ -61,6 +67,7 @@ export default function QuestionNewForm({
 }) {
   const router = useRouter();
   const [formData, setFormData] = useState<QuestionFormData>(() => syncAiGradingFormState(initialFormData));
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
@@ -74,15 +81,22 @@ export default function QuestionNewForm({
 
       return syncAiGradingFormState(next);
     });
+    setValidationErrors([]);
   };
 
-  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const validationResult = questionFormSchema.safeParse(formData);
 
-    if (formData.topicIds.length === 0) {
+    if (!validationResult.success) {
+      const uniqueMessages = Array.from(
+        new Set(validationResult.error.issues.map((issue) => issue.message)),
+      );
+      setValidationErrors(uniqueMessages);
       return;
     }
 
+    setValidationErrors([]);
     console.log("Creating question:", formData);
     router.push("/questions");
   };
@@ -94,6 +108,20 @@ export default function QuestionNewForm({
       <QuestionNewHeader formId={createFormId} />
 
       <form id={createFormId} onSubmit={handleSubmit} className="space-y-6">
+        {validationErrors.length > 0 ? (
+          <StateMessage
+            tone="error"
+            title="Please fix the question form"
+            description={
+              <div className="space-y-1">
+                {validationErrors.map((message) => (
+                  <div key={message}>{message}</div>
+                ))}
+              </div>
+            }
+          />
+        ) : null}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="space-y-6">
             <QuestionDetailsCard
@@ -101,6 +129,7 @@ export default function QuestionNewForm({
               topics={topics}
               formData={formData}
               onChange={handleChange}
+              topicSelectionMode={singleTopicSelectionMode}
             />
           </div>
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { Badge } from "@/src/shared/components/ui/badge";
-import { Card } from "@/src/shared/components/ui/card";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/shared/components/ui/table";
 import type { ResultsRow } from "./results.types";
 import { getGradeTone, getOutcomeBadge } from "./results.utils";
@@ -11,98 +11,105 @@ export function ResultsTable({
 }: {
   rows: ResultsRow[];
 }) {
+  if (rows.length === 0) {
+    return (
+      <StateMessage
+        title="No results found"
+        description="No submissions match the current assessment, status, topic, or search filters."
+      />
+    );
+  }
+
   return (
-    <Card className="overflow-hidden">
-      <Table>
-        <TableHeader className="bg-muted/50">
-          <TableRow>
-            <TableHead>Participant</TableHead>
-            <TableHead>Assessment</TableHead>
-            <TableHead>Score</TableHead>
-            <TableHead>Grade</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Time</TableHead>
-            <TableHead>Submitted</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((result) => (
-            <TableRow key={result.sheet_id} className="hover:bg-muted/30">
-              <TableCell>
-                <div className="font-semibold text-primary">{result.participant_display_name}</div>
-              </TableCell>
-              <TableCell>
-                <div>
-                  <div className="font-medium text-primary">{result.assessment_title}</div>
-                  <div className="text-sm text-inkd">{result.sessionInfo}</div>
+    <Table>
+      <TableHeader className="bg-muted/50">
+        <TableRow>
+          <TableHead>Participant</TableHead>
+          <TableHead>Assessment</TableHead>
+          <TableHead>Score</TableHead>
+          <TableHead>Grade</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Time</TableHead>
+          <TableHead>Submitted</TableHead>
+          <TableHead className="text-center">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((result) => (
+          <TableRow key={result.sheet_id} className="hover:bg-muted/30">
+            <TableCell>
+              <div className="font-semibold text-primary">{result.participant_display_name}</div>
+            </TableCell>
+            <TableCell>
+              <div>
+                <div className="font-medium text-primary">{result.assessment_title}</div>
+                <div className="text-sm text-inkd">{result.sessionInfo}</div>
+              </div>
+            </TableCell>
+            <TableCell>
+              {result.percentage == null ? (
+                <div className="space-y-1">
+                  <div className="h-2 w-32 rounded-full bg-border" />
+                  <div className="text-xs text-inkd">Pending review</div>
                 </div>
-              </TableCell>
-              <TableCell>
-                {result.percentage == null ? (
-                  <div className="space-y-1">
-                    <div className="h-2 w-32 rounded-full bg-border" />
-                    <div className="text-xs text-inkd">Pending review</div>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-32 overflow-hidden rounded-full bg-border">
-                        <div
-                          className={`h-full ${
-                            result.percentage >= 70
-                              ? "bg-green-500"
-                              : result.percentage >= 50
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                          }`}
-                          style={{ width: `${result.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold text-primary">{result.total_score}</span>
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-32 overflow-hidden rounded-full bg-border">
+                      <div
+                        className={`h-full ${
+                          result.percentage >= 70
+                            ? "bg-green-500"
+                            : result.percentage >= 50
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                        }`}
+                        style={{ width: `${result.percentage}%` }}
+                      />
                     </div>
-                    <div className="text-xs text-inkd">{result.percentage}%</div>
+                    <span className="text-sm font-semibold text-primary">{result.total_score}</span>
                   </div>
-                )}
-              </TableCell>
-              <TableCell>
-                <span
-                  className={`inline-flex min-w-12 items-center justify-center rounded-lg px-3 py-2 text-sm font-bold ${getGradeTone(result.grade)}`}
+                  <div className="text-xs text-inkd">{result.percentage}%</div>
+                </div>
+              )}
+            </TableCell>
+            <TableCell>
+              <span
+                className={`inline-flex min-w-12 items-center justify-center rounded-lg px-3 py-2 text-sm font-bold ${getGradeTone(result.grade)}`}
+              >
+                {result.grade ?? "..."}
+              </span>
+            </TableCell>
+            <TableCell>
+              <div className="space-y-2">
+                {getOutcomeBadge(result.outcomeStatus)}
+                {result.evaluationStatus === "PENDING_REVIEW" ? (
+                  <div>
+                    <Badge variant="pending">Needs manual review</Badge>
+                  </div>
+                ) : null}
+              </div>
+            </TableCell>
+            <TableCell>
+              <span className="text-sm text-inkd">{result.timeSpent}</span>
+            </TableCell>
+            <TableCell>
+              <span className="text-sm text-inkd">{result.submittedAt}</span>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center justify-center">
+                <Link
+                  href={`/results/${result.sheet_id}`}
+                  className="rounded-lg p-2 text-inkd transition hover:bg-muted hover:text-primary"
+                  title="View details"
                 >
-                  {result.grade ?? "..."}
-                </span>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-2">
-                  {getOutcomeBadge(result.outcomeStatus)}
-                  {result.evaluationStatus === "PENDING_REVIEW" ? (
-                    <div>
-                      <Badge variant="pending">Needs manual review</Badge>
-                    </div>
-                  ) : null}
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className="text-sm text-inkd">{result.timeSpent}</span>
-              </TableCell>
-              <TableCell>
-                <span className="text-sm text-inkd">{result.submittedAt}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-center">
-                  <Link
-                    href={`/results/${result.sheet_id}`}
-                    className="rounded-lg p-2 text-inkd transition hover:bg-muted hover:text-primary"
-                    title="View details"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Link>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
+                  <Eye className="h-4 w-4" />
+                </Link>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

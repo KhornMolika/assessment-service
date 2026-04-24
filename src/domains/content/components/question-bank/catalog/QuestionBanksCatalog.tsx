@@ -14,8 +14,8 @@ import {
   useDebouncedSearchParam,
   useUrlQueryUpdater,
 } from "@/src/shared/hooks/use-url-query-state";
-import Pagination from "@/src/shared/components/navigation/Pagination";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import QuestionBankCard from "./QuestionBankCard";
 import QuestionBanksHeader from "./QuestionBanksHeader";
 import QuestionBanksStats from "./QuestionBanksStats";
@@ -107,6 +107,9 @@ export default function QuestionBanksCatalog({
     setBankItems((current) => current.filter((bank) => bank.id !== bankId));
   };
 
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 || topicFilter !== ALL_TOPICS_VALUE;
+
   return (
     <div className="space-y-6 px-4 py-4">
       <QuestionBanksHeader bankCount={bankItems.length} totalQuestions={totalQuestions} />
@@ -117,14 +120,11 @@ export default function QuestionBanksCatalog({
         recentlyCreatedCount={recentlyCreatedCount}
       />
 
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <CardTitle>Bank library</CardTitle>
-          <CardDescription>
-            Search, scan metadata, and jump into bank-specific authoring workflows.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <PaginatedCollectionCard
+        title="Bank library"
+        description="Search, scan metadata, and jump into bank-specific authoring workflows."
+        className="overflow-hidden"
+        toolbar={
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
@@ -137,25 +137,53 @@ export default function QuestionBanksCatalog({
               />
             </div>
           </div>
-
-          <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-            {paginatedBanks.map((bank) => (
-              <QuestionBankCard key={bank.id} bank={bank} onDelete={handleDeleteBank} />
-            ))}
-          </div>
-
-          <Pagination
-            currentPage={activePage}
-            totalPages={totalPages}
-            pageSize={itemsPerPage}
-            totalItems={filteredBanks.length}
-            pageSizeOptions={[6, 9, 12, 24]}
-            itemLabel="banks"
-            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
-            onPageSizeChange={handlePageSizeChange}
+        }
+        isEmpty={filteredBanks.length === 0}
+        emptyState={
+          <StateMessage
+            title={hasActiveFilters ? "No banks found" : "No banks available"}
+            description={
+              hasActiveFilters
+                ? "No question banks match the current search or topic filter."
+                : "Question banks will appear here once they are added to the workspace."
+            }
+            action={
+              hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    updateUrl({
+                      page: null,
+                      query: null,
+                      topic: null,
+                    });
+                  }}
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                >
+                  Clear filters
+                </button>
+              ) : null
+            }
           />
-        </CardContent>
-      </Card>
+        }
+        pagination={{
+          currentPage: activePage,
+          totalPages,
+          pageSize: itemsPerPage,
+          totalItems: filteredBanks.length,
+          pageSizeOptions: [6, 9, 12, 24],
+          itemLabel: "banks",
+          onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
+          onPageSizeChange: handlePageSizeChange,
+        }}
+      >
+        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+          {paginatedBanks.map((bank) => (
+            <QuestionBankCard key={bank.id} bank={bank} onDelete={handleDeleteBank} />
+          ))}
+        </div>
+      </PaginatedCollectionCard>
     </div>
   );
 }

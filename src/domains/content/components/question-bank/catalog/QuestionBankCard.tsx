@@ -55,7 +55,7 @@ export default function QuestionBankCard({
             <Link href={`/banks/${bank.id}`} className="block">
               <CardTitle className="transition hover:text-pm">{bank.name}</CardTitle>
             </Link>
-            <CardDescription>{bank.description}</CardDescription>
+            <CardDescription className="line-clamp-2">{bank.description}</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -16,14 +16,8 @@ import {
   useDebouncedSearchParam,
   useUrlQueryUpdater,
 } from "@/src/shared/hooks/use-url-query-state";
-import Pagination from "@/src/shared/components/navigation/Pagination";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/src/shared/components/ui/card";
+import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import AssessmentsHeader from "./AssessmentsHeader";
 import AssessmentsStats from "./AssessmentsStats";
 import AssessmentsTable from "./AssessmentsTable";
@@ -115,25 +109,22 @@ export default function AssessmentsCatalog({
     );
   };
 
+  const hasActiveFilters =
+    searchQuery.trim().length > 0 ||
+    topicFilter !== ALL_TOPICS_VALUE ||
+    deliveryFilter !== "ALL";
+
   return (
     <div className="space-y-6 px-4 py-4">
       <AssessmentsHeader totalAssessments={stats.totalAssessments} />
 
       <AssessmentsStats stats={stats} />
 
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-1">
-              <CardTitle>Assessment catalog</CardTitle>
-              <CardDescription>
-                Track readiness, delivery mode, and performance signals across
-                the workspace.
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <PaginatedCollectionCard
+        title="Assessment catalog"
+        description="Track readiness, delivery mode, and performance signals across the workspace."
+        className="overflow-hidden"
+        toolbar={
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
@@ -170,24 +161,53 @@ export default function AssessmentsCatalog({
               })}
             </div>
           </div>
-
-          <AssessmentsTable
-            assessments={paginatedAssessments}
-            onDeleteAssessment={handleDeleteAssessment}
+        }
+        isEmpty={filteredAssessments.length === 0}
+        emptyState={
+          <StateMessage
+            title={hasActiveFilters ? "No assessments found" : "No assessments available"}
+            description={
+              hasActiveFilters
+                ? "No assessments match the current search, topic, and delivery filters."
+                : "Assessment records will appear here once they are available in the workspace."
+            }
+            action={
+              hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setDeliveryFilter("ALL");
+                    updateUrl({
+                      page: null,
+                      query: null,
+                      topic: null,
+                    });
+                  }}
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                >
+                  Clear filters
+                </button>
+              ) : null
+            }
           />
-
-          <Pagination
-            currentPage={activePage}
-            totalPages={totalPages}
-            pageSize={itemsPerPage}
-            totalItems={filteredAssessments.length}
-            pageSizeOptions={[5, 10, 20, 50]}
-            itemLabel="assessments"
-            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        </CardContent>
-      </Card>
+        }
+        pagination={{
+          currentPage: activePage,
+          totalPages,
+          pageSize: itemsPerPage,
+          totalItems: filteredAssessments.length,
+          pageSizeOptions: [5, 10, 20, 50],
+          itemLabel: "assessments",
+          onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
+          onPageSizeChange: handlePageSizeChange,
+        }}
+      >
+        <AssessmentsTable
+          assessments={paginatedAssessments}
+          onDeleteAssessment={handleDeleteAssessment}
+        />
+      </PaginatedCollectionCard>
     </div>
   );
 }

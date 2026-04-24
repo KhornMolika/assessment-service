@@ -1,15 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { Topic } from "@/src/domains/content/types/topic.types";
+import { questionFormSchema } from "@/src/domains/content/schemas/question-form.schema";
 import { supportsAiGradingInstructions, syncAiGradingFormState } from "@/src/domains/content/utils/question-ai-grading";
 import type { QuestionFormData } from "@/src/domains/content/types/question-form.types";
 import QuestionRubricCard from "@/src/domains/content/components/question-common/QuestionRubricCard";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/domains/content/components/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/domains/content/components/question-form/QuestionTypeSettingsCard";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import QuestionEditHeader from "./QuestionEditHeader";
 
 const editFormId = "question-edit-form";
@@ -29,6 +32,7 @@ export default function QuestionEditForm({
   const [formData, setFormData] = useState<QuestionFormData>(() =>
     syncAiGradingFormState(initialFormData),
   );
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
@@ -42,15 +46,21 @@ export default function QuestionEditForm({
 
       return syncAiGradingFormState(next);
     });
+    setValidationErrors([]);
   };
 
-  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const validationResult = questionFormSchema.safeParse(formData);
 
-    if (formData.topicIds.length === 0) {
+    if (!validationResult.success) {
+      setValidationErrors(
+        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+      );
       return;
     }
 
+    setValidationErrors([]);
     console.log("Updating question:", questionId, formData);
     router.push(`/questions/${questionId}`);
   };
@@ -63,6 +73,20 @@ export default function QuestionEditForm({
       <QuestionEditHeader questionId={questionId} formId={editFormId} />
 
       <form id={editFormId} onSubmit={handleSubmit} className="space-y-6">
+        {validationErrors.length > 0 ? (
+          <StateMessage
+            tone="error"
+            title="Please fix the question form"
+            description={
+              <div className="space-y-1">
+                {validationErrors.map((message) => (
+                  <div key={message}>{message}</div>
+                ))}
+              </div>
+            }
+          />
+        ) : null}
+
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
           <div className="space-y-6">
             <QuestionDetailsCard

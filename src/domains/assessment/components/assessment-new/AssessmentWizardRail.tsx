@@ -16,14 +16,14 @@ const stepIcons = {
 export default function AssessmentWizardRail({
   className,
   currentStep,
-  visitedSteps,
   isStepComplete,
+  canNavigateToStep,
   onStepChange,
 }: {
   className?: string;
   currentStep: number;
-  visitedSteps: number[];
   isStepComplete: (step: number) => boolean;
+  canNavigateToStep: (step: number) => boolean;
   onStepChange: (step: number) => void;
 }) {
   const steps = [
@@ -45,33 +45,65 @@ export default function AssessmentWizardRail({
       <div className="mt-5 flex-1 space-y-2 overflow-y-auto pr-1">
         {steps.map((step) => {
           const Icon = stepIcons[step.number as keyof typeof stepIcons];
-          const visited = visitedSteps.includes(step.number);
-          const complete = visited && isStepComplete(step.number) && step.number < currentStep;
           const active = currentStep === step.number;
+          const complete = step.number < currentStep && isStepComplete(step.number);
+          const canNavigate = canNavigateToStep(step.number);
+          const disabled = !active && !complete && !canNavigate;
+          const stateLabel = active ? "Active" : complete ? "Done" : disabled ? "Locked" : "Available";
 
           return (
             <button
               key={step.number}
               type="button"
+              disabled={disabled}
               onClick={() => onStepChange(step.number)}
               className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
-                active ? "bg-white/12" : "hover:bg-white/8"
+                active
+                  ? "bg-white/12 ring-1 ring-white/15"
+                  : complete
+                    ? "bg-emerald-50/10 hover:bg-emerald-50/15"
+                    : disabled
+                      ? "cursor-not-allowed opacity-45"
+                      : "hover:bg-white/8"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-2xl ${
                   complete
                     ? "bg-[#95D5B2] text-[#17352b]"
-                    : active
-                      ? "bg-white/15 text-white"
-                      : "bg-white/10 text-white/80"
+                  : active
+                      ? "bg-white/15 text-white ring-1 ring-white/20"
+                      : disabled
+                        ? "bg-white/5 text-white/45"
+                        : "bg-white/10 text-white/80"
                 }`}
               >
                 {complete ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/55">Step {step.number}</p>
-                <p className="text-sm font-semibold text-white">{step.title}</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className={`text-xs uppercase tracking-[0.18em] ${
+                    disabled ? "text-white/35" : "text-white/55"
+                  }`}>
+                    Step {step.number}
+                  </p>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                      active
+                        ? "bg-white/15 text-white"
+                        : complete
+                          ? "bg-emerald-200/90 text-[#17352b]"
+                          : disabled
+                            ? "bg-white/8 text-white/45"
+                            : "bg-white/10 text-white/70"
+                    }`}
+                  >
+                    {stateLabel}
+                  </span>
+                </div>
+                <p className={`text-sm font-semibold ${disabled ? "text-white/55" : "text-white"}`}>
+                  {step.title}
+                </p>
               </div>
             </button>
           );

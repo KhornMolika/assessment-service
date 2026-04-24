@@ -1,5 +1,6 @@
-﻿import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
 import type { NewAssessmentFormData } from "@/src/domains/assessment/types/assessment-form.types";
+import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
 
 function formatSessionMode(value: NewAssessmentFormData["sessionMode"]) {
@@ -26,13 +27,16 @@ export default function AssessmentSummaryCard({
   formData,
   banks,
   questions,
+  topics,
 }: {
   className?: string;
   formData: NewAssessmentFormData;
   banks: Bank[];
   questions: QuestionCatalogItem[];
+  topics: Topic[];
 }) {
   const selectedBank = banks.find((bank) => bank.id === formData.selectedBankId);
+  const ownerTopic = topics.find((topic) => topic.id === formData.ownerTopicId);
   const selectedQuestions = questions.filter((question) =>
     formData.selectedQuestionIds.includes(question.id),
   );
@@ -54,7 +58,7 @@ export default function AssessmentSummaryCard({
           Assessment Summary
         </CardDescription>
         <CardTitle className="text-2xl">
-          {formData.titleEN.trim() || formData.titleKH.trim() || "Untitled assessment"}
+          {formData.title.trim() || "Untitled assessment"}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 space-y-4 overflow-y-auto text-sm">
@@ -78,6 +82,12 @@ export default function AssessmentSummaryCard({
         </div>
 
         <div className="space-y-3 rounded-2xl border border-border/70 bg-card p-4">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-inkd">Owner topic</span>
+            <span className="max-w-[60%] text-right font-semibold text-primary">
+              {ownerTopic?.name ?? "Not assigned"}
+            </span>
+          </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Participant identity</span>
             <span className="font-semibold text-primary">

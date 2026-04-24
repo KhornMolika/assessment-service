@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getMockBankById } from "@/src/domains/content/api/content.api";
+import { getMockBankById, getMockTopics } from "@/src/domains/content/api/content.api";
 import QuestionBankEditForm from "@/src/domains/content/components/question-bank/edit/QuestionBankEditForm";
 
 export default async function EditQuestionBanksPage({
@@ -8,11 +8,11 @@ export default async function EditQuestionBanksPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const bank = await getMockBankById(id);
+  const [bank, topics] = await Promise.all([getMockBankById(id), getMockTopics()]);
 
   if (!bank) {
     notFound();
   }
 
-  return <QuestionBankEditForm bank={bank} />;
+  return <QuestionBankEditForm bank={bank} topics={topics} />;
 }

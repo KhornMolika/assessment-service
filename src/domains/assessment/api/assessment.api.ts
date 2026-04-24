@@ -1687,10 +1687,9 @@ export async function getEditAssessmentPageData(id: string): Promise<{
     banks,
     questions,
     initialFormData: {
-      titleEN: "Customer Satisfaction Survey - Q3 2026",
-      titleKH: "",
-      descriptionEN: "Measure satisfaction trends across active enterprise accounts.",
-      descriptionKH: "",
+      title: "Customer Satisfaction Survey - Q3 2026",
+      description: "Measure satisfaction trends across active enterprise accounts.",
+      ownerTopicId: "topic-onboarding",
       status: "PUBLISHED",
       participantIdentity: "EXTERNAL",
       sessionMode: "SELF_PACED",

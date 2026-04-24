@@ -1129,6 +1129,7 @@ function mapQuestionDetailToEditorFormData(question: QuestionDetailData): Questi
     questionText: question.question_text,
     questionType,
     bank: question.bank?.id ?? "",
+    ownerTopicId: question.topics[0]?.id ?? "",
     topicIds: question.topics.map((topic) => topic.id),
     points: String(question.points),
     difficulty: question.difficulty,

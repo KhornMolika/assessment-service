@@ -38,11 +38,6 @@ export const metadata: Metadata = {
     siteName: "Assessment Service",
     type: "website",
   },
-  twitter: {
-    card: "summary",
-    title: "Assessment Service",
-    description: "Assessment creation, delivery, analytics, and results management.",
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

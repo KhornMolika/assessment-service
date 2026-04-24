@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { AssessmentResultsPageData } from "@/src/domains/assessment/types/assessment-results.types";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
+import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import {
   parsePositiveInteger,
   useDebouncedSearchParam,
@@ -11,7 +12,6 @@ import {
 } from "@/src/shared/hooks/use-url-query-state";
 import { ResultsFilters } from "./ResultsFilters";
 import { ResultsHeader } from "./ResultsHeader";
-import { ResultsPagination } from "./ResultsPagination";
 import { ResultsStats } from "./ResultsStats";
 import { ResultsTable } from "./ResultsTable";
 import { exportResultsCsv } from "./results.export";
@@ -135,23 +135,32 @@ export default function ResultsPageView({
         </div>
 
         <div className="mt-6">
-          <ResultsTable rows={currentItems} />
-        </div>
-
-        <div className="mt-6">
-          <ResultsPagination
-            itemsPerPage={itemsPerPage}
-            totalItems={filteredResults.length}
-            totalPages={totalPages}
-            currentPage={activePage}
-            onItemsPerPageChange={(value) => {
-              updateUrl({
-                pageSize: value === 10 ? null : value,
-                page: null,
-              });
+          <PaginatedCollectionCard
+            title="Results library"
+            description="Review submissions, scores, grading status, and route into detailed answer sheets."
+            className="overflow-hidden"
+            contentClassName="px-0 pb-0 sm:px-0 sm:pb-0"
+            bodyClassName={filteredResults.length === 0 ? "px-4 pb-4 sm:px-6 sm:pb-6" : undefined}
+            isEmpty={filteredResults.length === 0}
+            emptyState={<ResultsTable rows={currentItems} />}
+            pagination={{
+              currentPage: activePage,
+              totalPages,
+              pageSize: itemsPerPage,
+              totalItems: filteredResults.length,
+              pageSizeOptions: [5, 10, 20, 50],
+              itemLabel: "results",
+              onPageSizeChange: (value) => {
+                updateUrl({
+                  pageSize: value === 10 ? null : value,
+                  page: null,
+                });
+              },
+              onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
             }}
-            onPageChange={(page) => updateUrl({ page: page === 1 ? null : page })}
-          />
+          >
+            <ResultsTable rows={currentItems} />
+          </PaginatedCollectionCard>
         </div>
       </div>
     </div>

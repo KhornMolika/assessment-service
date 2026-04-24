@@ -12,6 +12,7 @@ import { getMockAssessmentTopics } from "@/src/domains/assessment/api/assessment
 import { ALL_TOPICS_VALUE, getTopicOptions } from "@/src/domains/content/utils/topic-utils";
 import { LocaleSwitch } from "@/src/shared/components/ui/locale-switch";
 import { useSidebar } from "../../context/sidebar-context";
+import { TopbarSearch } from "./TopbarSearch";
 
 export default function Topbar() {
   const { setSidebarOpen } = useSidebar();
@@ -20,19 +21,9 @@ export default function Topbar() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<"EN" | "KH">("EN");
   const [topicOptions, setTopicOptions] = useState<Array<{ id: string; name: string }>>([]);
-  const supportsTopicFilter =
-    pathname === "/questions" ||
-    pathname === "/banks" ||
-    pathname === "/assessments" ||
-    pathname === "/results" ||
-    pathname === "/analytics";
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   useEffect(() => {
-    if (!supportsTopicFilter) {
-      return;
-    }
-
     let isActive = true;
 
     async function loadTopicOptions() {
@@ -60,7 +51,7 @@ export default function Topbar() {
     return () => {
       isActive = false;
     };
-  }, [supportsTopicFilter]);
+  }, []);
 
   const handleTopicChange = (nextTopic: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -85,22 +76,24 @@ export default function Topbar() {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="order-2 w-full flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3 lg:order-2 lg:flex-none">
-          {supportsTopicFilter && (
-            <select
-              value={selectedTopic}
-              onChange={(event) => handleTopicChange(event.target.value)}
-              className="min-w-0 max-w-40 rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm sm:max-w-[12rem]"
-              aria-label="Filter questions by topic"
-            >
-              <option value={ALL_TOPICS_VALUE}>All Topics</option>
-              {topicOptions.map((topic) => (
-                <option key={topic.id} value={topic.id}>
-                  {topic.name}
-                </option>
-              ))}
-            </select>
-          )}
+        <div className="min-w-0 flex-1">
+          <TopbarSearch />
+        </div>
+
+        <div className="order-2 flex min-w-0 items-center gap-2 sm:gap-3">
+          <select
+            value={selectedTopic}
+            onChange={(event) => handleTopicChange(event.target.value)}
+            className="min-w-0 max-w-40 rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm sm:max-w-[12rem]"
+            aria-label="Filter workspace by topic"
+          >
+            <option value={ALL_TOPICS_VALUE}>All Topics</option>
+            {topicOptions.map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.name}
+              </option>
+            ))}
+          </select>
 
           <LocaleSwitch
             value={locale}

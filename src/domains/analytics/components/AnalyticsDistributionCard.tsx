@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import type { AnalyticsDistributionItem } from "../types/analytics.types";
 
 export default function AnalyticsDistributionCard({
@@ -22,9 +23,10 @@ export default function AnalyticsDistributionCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/80 bg-muted/40 p-6 text-sm text-inkd">
-            No analytics data is available for the current selection.
-          </div>
+          <StateMessage
+            title="No analytics data found"
+            description="No analytics data is available for the current selection."
+          />
         ) : (
           items.map((item) => (
             <div key={item.id} className="space-y-2">

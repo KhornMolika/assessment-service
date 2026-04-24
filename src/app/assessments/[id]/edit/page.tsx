@@ -1,5 +1,6 @@
 import { getEditAssessmentPageData } from "@/src/domains/assessment/api/assessment.api";
 import AssessmentNewWizard from "@/src/domains/assessment/components/assessment-new/AssessmentNewWizard";
+import { getMockTopics } from "@/src/domains/content/api/content.api";
 
 export default async function EditAssessmentPage({
   params,
@@ -7,7 +8,7 @@ export default async function EditAssessmentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const data = await getEditAssessmentPageData(id);
+  const [data, topics] = await Promise.all([getEditAssessmentPageData(id), getMockTopics()]);
 
   return (
     <AssessmentNewWizard
@@ -15,6 +16,7 @@ export default async function EditAssessmentPage({
       assessmentId={data.assessmentId}
       banks={data.banks}
       questions={data.questions}
+      topics={topics}
       initialFormData={data.initialFormData}
     />
   );
