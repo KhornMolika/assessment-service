@@ -27,6 +27,7 @@ import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import { ScreenShell } from "./SessionShared";
 import { getAvatarColors, getAvatarVariant } from "./avatar.utils";
 import { useRealtimeAudio } from "./realtime.effects";
+import { realtimeEvents } from "./realtime.events";
 import type { HostPhase } from "./session.types";
 import {
   buildDistribution,
@@ -204,19 +205,20 @@ export function AssessmentHostScreen({
                 <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/80 break-all">
                   {participantUrl}
                 </div>
-                <div className="flex gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => void handleCopyLink()}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     <Copy className="h-4 w-4" />
                     {copied ? "Copied" : "Copy link"}
                   </button>
                   <button
                     type="button"
+                    data-flow-event={realtimeEvents.startQuestion}
                     onClick={startSession}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
                   >
                     <PlayCircle className="h-4 w-4" />
                     Start
@@ -384,6 +386,7 @@ export function AssessmentHostScreen({
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
                 <button
                   type="button"
+                  data-flow-event={realtimeEvents.questionResults}
                   onClick={skipToCorrectAnswer}
                   className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
                 >
@@ -411,6 +414,7 @@ export function AssessmentHostScreen({
               </div>
               <button
                 type="button"
+                data-flow-event={realtimeEvents.showRank}
                 onClick={showLeaderboard}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
               >
@@ -479,6 +483,7 @@ export function AssessmentHostScreen({
               </div>
               <button
                 type="button"
+                data-flow-event={questionIndex === rounds.length - 1 ? realtimeEvents.showFinalRank : realtimeEvents.startQuestion}
                 onClick={advanceToNextQuestion}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
               >

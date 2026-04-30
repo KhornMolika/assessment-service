@@ -1,10 +1,14 @@
 import type { QuestionRendererProps } from "../types";
 
+function isMatchingValue(value: QuestionRendererProps["value"]): value is Record<string, string> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export function MatchingRenderer({ question, value, disabled, onChange }: QuestionRendererProps) {
   const midpoint = Math.ceil(question.options.length / 2);
   const leftOptions = question.options.slice(0, midpoint);
   const rightOptions = question.options.slice(midpoint);
-  const selectedPairs = typeof value === "object" && value !== null ? value : {};
+  const selectedPairs = isMatchingValue(value) ? value : {};
 
   return (
     <div className="space-y-3">

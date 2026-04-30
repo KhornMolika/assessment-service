@@ -76,6 +76,7 @@ export default function QuestionsCatalog({
   });
   const [typeFilter, setTypeFilter] = useState<string>("All Types");
   const [manualBankFilter, setManualBankFilter] = useState<string | null>(null);
+  const [builderCopied, setBuilderCopied] = useState(false);
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
@@ -166,6 +167,16 @@ export default function QuestionsCatalog({
     setQuestionPendingDelete(null);
   };
 
+  const handleCopyQuestionBuilder = async () => {
+    await navigator.clipboard.writeText(`<QuestionBuilder
+  tenantId="tenant-id"
+  topicId="topic-id"
+  questionId="question-id"
+/>`);
+    setBuilderCopied(true);
+    window.setTimeout(() => setBuilderCopied(false), 1600);
+  };
+
   const handlePageSizeChange = (size: number) => {
     updateUrl({
       pageSize: size === 10 ? null : size,
@@ -185,62 +196,73 @@ export default function QuestionsCatalog({
         title="Questions"
         description={`${questions.length} reusable questions across all banks.`}
         actions={
-          <Link
-            href="/questions/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm"
-          >
-            <Plus className="h-4 w-4" />
-            New Question
-          </Link>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <button
+              type="button"
+              onClick={() => void handleCopyQuestionBuilder()}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto"
+            >
+              <Copy className="h-4 w-4" />
+              {builderCopied ? "Copied" : "Question Builder"}
+            </button>
+            <Link
+              href="/questions/new"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              New Question
+            </Link>
+          </div>
         }
       />
-
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px_260px]">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-          <input
-            type="text"
-            placeholder="Search questions..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
-          />
-        </div>
-
-        <select
-          value={typeFilter}
-          onChange={(event) => {
-            setTypeFilter(event.target.value);
-            updateUrl({ page: null });
-          }}
-          className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
-        >
-          <option>All Types</option>
-          {availableTypes.map((type) => (
-            <option key={type}>{type}</option>
-          ))}
-        </select>
-
-        <select
-          value={bankFilter}
-          onChange={(event) => {
-            setManualBankFilter(event.target.value);
-            updateUrl({ page: null });
-          }}
-          className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
-        >
-          <option>All Banks</option>
-          {availableBanks.map((bankName) => (
-            <option key={bankName}>{bankName}</option>
-          ))}
-        </select>
-      </div>
 
       <PaginatedCollectionCard
         title="Question catalog"
         className="overflow-hidden"
         contentClassName="px-0 pb-0 sm:px-0 sm:pb-0"
         bodyClassName={filteredQuestions.length === 0 ? "px-4 pb-4 sm:px-6 sm:pb-6" : undefined}
+        toolbar={
+          <div className="grid gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_220px_260px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
+              <input
+                type="text"
+                placeholder="Search questions..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
+              />
+            </div>
+
+            <select
+              value={typeFilter}
+              onChange={(event) => {
+                setTypeFilter(event.target.value);
+                updateUrl({ page: null });
+              }}
+              className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
+            >
+              <option>All Types</option>
+              {availableTypes.map((type) => (
+                <option key={type}>{type}</option>
+              ))}
+            </select>
+
+            <select
+              value={bankFilter}
+              onChange={(event) => {
+                setManualBankFilter(event.target.value);
+                updateUrl({ page: null });
+              }}
+              className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
+            >
+              <option>All Banks</option>
+              {availableBanks.map((bankName) => (
+                <option key={bankName}>{bankName}</option>
+              ))}
+            </select>
+          </div>
+        }
         isEmpty={filteredQuestions.length === 0}
         emptyState={
           <StateMessage
@@ -290,7 +312,6 @@ export default function QuestionsCatalog({
               <TableHead>Type</TableHead>
               <TableHead>Bank</TableHead>
               <TableHead className="text-center">Points</TableHead>
-              <TableHead className="text-center">Lang.</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -327,7 +348,6 @@ export default function QuestionsCatalog({
                   </TableCell>
                   <TableCell className="text-sm text-inkd">{bank?.name ?? "Unknown bank"}</TableCell>
                   <TableCell className="text-center font-semibold text-primary">{question.points}</TableCell>
-                  <TableCell className="text-center text-sm text-inkd">{question.language}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
                       <Link

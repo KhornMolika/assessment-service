@@ -29,7 +29,6 @@ export type QuestionDetailsCardProps = {
   ) => void;
   title?: string;
   description?: string;
-  topicSelectionMode?: "single" | "multiple";
 };
 
 export default function QuestionDetailsCard({
@@ -39,7 +38,6 @@ export default function QuestionDetailsCard({
   onChange,
   title = "Question Details",
   description,
-  topicSelectionMode = "multiple",
 }: QuestionDetailsCardProps) {
   return (
     <Card>
@@ -112,19 +110,9 @@ export default function QuestionDetailsCard({
             value={formData.ownerTopicId}
             onChange={(event) => {
               const nextOwnerTopicId = event.target.value;
-              const nextTopicIds =
-                topicSelectionMode === "single"
-                  ? nextOwnerTopicId
-                    ? [nextOwnerTopicId]
-                    : []
-                  : nextOwnerTopicId
-                    ? formData.topicIds.includes(nextOwnerTopicId)
-                      ? formData.topicIds
-                      : [...formData.topicIds, nextOwnerTopicId]
-                    : formData.topicIds;
 
               onChange("ownerTopicId", nextOwnerTopicId);
-              onChange("topicIds", nextTopicIds);
+              onChange("topicIds", nextOwnerTopicId ? [nextOwnerTopicId] : []);
             }}
             className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
           >
@@ -139,45 +127,6 @@ export default function QuestionDetailsCard({
             Assign the primary topic owner for this question.
           </p>
         </div>
-
-        {topicSelectionMode === "multiple" ? (
-          <div>
-            <div className="mb-2 block text-sm font-semibold text-primary">Topics *</div>
-            <div className="grid gap-2 rounded-lg border border-border bg-card p-3">
-              {topics.map((topic) => {
-                const checked = formData.topicIds.includes(topic.id);
-
-                return (
-                  <label
-                    key={topic.id}
-                    className="flex cursor-pointer items-start gap-3 rounded-lg px-2 py-2 transition hover:bg-muted"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={(event) => {
-                        const nextTopicIds = event.target.checked
-                          ? [...formData.topicIds, topic.id]
-                          : formData.topicIds.filter((topicId) => topicId !== topic.id);
-
-                        if (!event.target.checked && formData.ownerTopicId === topic.id) {
-                          onChange("ownerTopicId", "");
-                        }
-                        onChange("topicIds", nextTopicIds);
-                      }}
-                      className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-pm"
-                    />
-                    <div>
-                      <div className="text-sm font-semibold text-primary">{topic.name}</div>
-                      <div className="text-xs text-inkd">{topic.description}</div>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-            <p className="mt-1 text-xs text-inkd">Select at least one topic.</p>
-          </div>
-        ) : null}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

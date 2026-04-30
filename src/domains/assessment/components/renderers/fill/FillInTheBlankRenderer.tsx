@@ -1,6 +1,12 @@
 import type { QuestionRendererProps } from "../types";
 
+function isBlankValue(value: QuestionRendererProps["value"]): value is Record<string, string> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export function FillInTheBlankRenderer({ value, disabled, onChange }: QuestionRendererProps) {
+  const blankValue = isBlankValue(value) ? value : {};
+
   return (
     <div className="grid gap-3">
       {[0, 1].map((index) => (
@@ -8,10 +14,10 @@ export function FillInTheBlankRenderer({ value, disabled, onChange }: QuestionRe
           key={index}
           type="text"
           disabled={disabled}
-          value={typeof value === "object" && value !== null ? value[String(index)] ?? "" : ""}
+          value={blankValue[String(index)] ?? ""}
           onChange={(event) =>
             onChange({
-              ...(typeof value === "object" && value !== null ? value : {}),
+              ...blankValue,
               [String(index)]: event.target.value,
             })
           }

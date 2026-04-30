@@ -72,7 +72,9 @@ export function useRealtimeAudio() {
       }
 
       const audioContext = await ensureContext();
-      if (!audioContext || !masterGainRef.current) {
+      const masterGain = masterGainRef.current;
+
+      if (!audioContext || !masterGain) {
         return;
       }
 
@@ -93,7 +95,7 @@ export function useRealtimeAudio() {
         gainNode.gain.exponentialRampToValueAtTime(0.0001, endTime);
 
         oscillator.connect(gainNode);
-        gainNode.connect(masterGainRef.current);
+        gainNode.connect(masterGain);
         oscillator.start(startTime);
         oscillator.stop(endTime);
       });

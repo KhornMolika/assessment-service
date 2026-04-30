@@ -70,7 +70,7 @@ export default function QuestionEditForm({
 
   return (
     <div className="space-y-6">
-      <QuestionEditHeader questionId={questionId} formId={editFormId} />
+      <QuestionEditHeader formId={editFormId} />
 
       <form id={editFormId} onSubmit={handleSubmit} className="space-y-6">
         {validationErrors.length > 0 ? (

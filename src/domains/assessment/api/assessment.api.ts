@@ -24,6 +24,8 @@ import type {
 } from "@/src/domains/content/types";
 import { getMockBanks, getMockQuestions, getMockTopics } from "@/src/domains/content/api/content.api";
 
+const ASSESSMENT_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
+
 const mockAssessments: AssessmentCatalogItem[] = [
   {
     id: "assessment-1",
@@ -239,7 +241,7 @@ function getEndOfWeek(date: Date) {
 }
 
 export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogPageData> {
-  const now = new Date();
+  const now = new Date(ASSESSMENT_REFERENCE_TIMESTAMP);
   const startOfWeek = getStartOfWeek(now);
   const endOfWeek = getEndOfWeek(now);
 

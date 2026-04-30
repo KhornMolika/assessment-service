@@ -7,24 +7,21 @@ import type {
   AssessmentDetailRecord,
 } from "@/src/domains/assessment/types";
 import { BackButton } from "@/src/shared/components/navigation/BackButton";
-import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import type { QuestionRendererValue } from "../renderers/types";
 import {
   AssessmentOverviewCard,
-  FlowStepper,
   ProcessingAnswersCard,
-  QuizTimerCard,
   QuestionOptionButton,
   ShareAnswerSheetPanel,
   ScreenShell,
   TimeLimitCard,
 } from "./SessionShared";
+import { SelfPacedQuiz } from "./self-paced/SelfPacedQuiz";
 import {
   buildQuestionRounds,
   formatDurationClock,
   getAnswerResponseText,
   getResultReleaseMode,
-  hasAnswerResponse,
   isCorrectAnswerResponse,
   requiresParticipantDisplayName,
 } from "./session.utils";
@@ -56,7 +53,6 @@ export function AssessmentPreviewScreen({
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
   const [answers, setAnswers] = useState<Record<string, QuestionRendererValue>>({});
   const currentQuestion = rounds[questionIndex];
-  const answeredCount = Object.values(answers).filter((answer) => hasAnswerResponse(answer)).length;
   const confirmationItems = rounds.map((question) => ({
     question,
     answerValue: answers[question.id] ?? null,
@@ -122,6 +118,12 @@ export function AssessmentPreviewScreen({
           ? "Creators can complete the self-paced participant experience as a dry run. Answers are evaluated in the UI, but nothing is saved in preview."
           : "Creators see the real-time participant experience in read-only mode. No answers are saved in preview."
       }
+      headerAction={
+        <BackButton
+          href={backHref}
+          label="Back to assessment"
+        />
+      }
       aside={
         isSelfPacedPreview && step === "entry" ? (
           <div className="space-y-4">
@@ -145,22 +147,8 @@ export function AssessmentPreviewScreen({
         ) : null
       }
     >
-      {isSelfPacedPreview ? (
-        <div className="mb-6">
-          <BackButton
-            href={backHref}
-            label="Back to assessment"
-          />
-        </div>
-      ) : null}
-
-      <FlowStepper
-        steps={["Entry", "Quiz", "Confirm", "End"]}
-        activeStep={step === "entry" ? 0 : step === "quiz" ? 1 : step === "confirm" ? 2 : 3}
-      />
-
       {!isSelfPacedPreview ? (
-        <div className="mt-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
           <div className="rounded-[28px] border border-border bg-muted/30 p-5">
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
               <Eye className="h-4 w-4" />
@@ -215,7 +203,11 @@ export function AssessmentPreviewScreen({
       ) : null}
 
       {isSelfPacedPreview ? (
-        <div className="mt-6 rounded-4xl border border-border bg-white p-6 shadow-sm sm:p-8">
+        <div
+          className={`rounded-4xl border border-border bg-white shadow-sm ${
+            step === "quiz" ? "p-3 sm:p-4" : "p-6 sm:p-8"
+          }`}
+        >
           {step === "entry" ? (
             <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
               <div>
@@ -279,75 +271,26 @@ export function AssessmentPreviewScreen({
           ) : null}
 
           {step === "quiz" ? (
-            <div className="mx-auto max-w-4xl">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
-                <div className="rounded-[28px] border border-border bg-muted/20 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                    Progress
-                  </p>
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-primary">
-                      Question {questionIndex + 1} of {rounds.length}
-                    </p>
-                    <p className="text-sm font-semibold text-primary">
-                      {Math.round((answeredCount / rounds.length) * 100)}%
-                    </p>
-                  </div>
-                  <div className="mt-4 h-3 rounded-full bg-white ring-1 ring-border">
-                    <div
-                      className="h-full rounded-full bg-primary transition"
-                      style={{ width: `${(answeredCount / rounds.length) * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                {totalTimerSeconds > 0 ? (
-                  <QuizTimerCard
-                    timeLabel={formatDurationClock(remainingSeconds)}
-                    progressPercent={(remainingSeconds / totalTimerSeconds) * 100}
-                  />
-                ) : null}
-              </div>
-
-              <div className="mt-6 rounded-[28px] border border-border bg-white p-6 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                  Question form
-                </p>
-                <h2 className="mt-2 text-2xl font-bold text-primary">{currentQuestion.question}</h2>
-                <div className="mt-6">
-                  <QuestionRenderer
-                    question={currentQuestion}
-                    value={answers[currentQuestion.id] ?? null}
-                    onChange={handleSelectAnswer}
-                  />
-                </div>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between">
-                  <button
-                    type="button"
-                    disabled={questionIndex === 0}
-                    onClick={() => setQuestionIndex((currentIndex) => Math.max(0, currentIndex - 1))}
-                    className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!hasAnswerResponse(answers[currentQuestion.id] ?? null)}
-                    onClick={() => {
-                      if (questionIndex === rounds.length - 1) {
-                        setStep("confirm");
-                        return;
-                      }
-                      setQuestionIndex((currentIndex) => currentIndex + 1);
-                    }}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-                  >
-                    {questionIndex === rounds.length - 1 ? "Review answers" : "Next question"}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SelfPacedQuiz
+              currentQuestion={currentQuestion}
+              questionIndex={questionIndex}
+              totalQuestions={rounds.length}
+              timeLabel={formatDurationClock(remainingSeconds)}
+              timerProgressPercent={(remainingSeconds / totalTimerSeconds) * 100}
+              showTimer={totalTimerSeconds > 0}
+              answerValue={answers[currentQuestion.id] ?? null}
+              onChange={handleSelectAnswer}
+              onPrevious={() => setQuestionIndex((currentIndex) => Math.max(0, currentIndex - 1))}
+              onNext={() => {
+                if (questionIndex === rounds.length - 1) {
+                  setStep("confirm");
+                  return;
+                }
+                setQuestionIndex((currentIndex) => currentIndex + 1);
+              }}
+              nextLabel={questionIndex === rounds.length - 1 ? "Review answers" : "Next question"}
+              disablePrevious={questionIndex === 0}
+            />
           ) : null}
 
           {step === "confirm" ? (

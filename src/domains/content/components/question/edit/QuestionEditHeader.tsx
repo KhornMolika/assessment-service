@@ -2,10 +2,8 @@ import { Save } from "lucide-react";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 
 export default function QuestionEditHeader({
-  questionId,
   formId,
 }: {
-  questionId: string;
   formId: string;
 }) {
   return (
@@ -25,7 +23,6 @@ export default function QuestionEditHeader({
         </button>
       }
     >
-      <p className="text-xs text-inkd">Question ID: {questionId}</p>
     </PageHeaderCard>
   );
 }

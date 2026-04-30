@@ -9,6 +9,7 @@ import { JoinFinal } from "./join/JoinFinal";
 import { JoinLobby } from "./join/JoinLobby";
 import { JoinResult } from "./join/JoinResult";
 import { JoinWaitingState } from "./join/JoinWaitingState";
+import { realtimeEvents } from "./realtime.events";
 import type { JoinPhase } from "./session.types";
 import {
   buildQuestionRounds,
@@ -56,12 +57,12 @@ export function AssessmentJoinScreen({
   const isLobbyPhase = phase === "lobby";
 
   useEffect(() => {
-    if (phase !== "question_locked") {
+    if (phase !== "waiting") {
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
-      setPhase("question_active");
+      setPhase("pick_option");
       setTimerSeconds(12);
     }, 1500);
 
@@ -69,7 +70,7 @@ export function AssessmentJoinScreen({
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "question_active") {
+    if (phase !== "pick_option") {
       return;
     }
 
@@ -94,7 +95,7 @@ export function AssessmentJoinScreen({
       return;
     }
 
-    setPhase("question_locked");
+    setPhase("waiting");
   }
 
   function submitAnswer(value: QuestionRendererValue) {
@@ -119,7 +120,7 @@ export function AssessmentJoinScreen({
     setQuestionIndex((index) => index + 1);
     setAnswerValue(null);
     setTimerSeconds(12);
-    setPhase("question_active");
+    setPhase("pick_option");
   }
 
   return (
@@ -137,20 +138,21 @@ export function AssessmentJoinScreen({
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
               onJoin={joinLobby}
+              eventName={realtimeEvents.joinRoom}
             />
           </div>
         ) : null}
 
-        {phase === "question_locked" ? (
+        {phase === "waiting" ? (
           <JoinWaitingState
             title="Waiting for host to start..."
             description="The first question opens when the host starts the round."
           />
         ) : null}
 
-        {phase === "question_active" ? (
+        {phase === "pick_option" ? (
           <div className="mx-auto flex w-full max-w-4xl flex-1 items-start py-2 sm:py-4 lg:items-center">
-            <div className="w-full">
+            <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
               <QuestionRenderer
                 question={currentRound}
                 value={answerValue}

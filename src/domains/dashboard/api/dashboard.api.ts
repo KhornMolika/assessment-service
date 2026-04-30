@@ -10,6 +10,8 @@ import {
   getMockTopics,
 } from "@/src/domains/content/api/content.api";
 
+const DASHBOARD_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
+
 const mockDashboardOverviewSections: DashboardOverviewSections = {
   stats: [
     {
@@ -102,7 +104,7 @@ const mockDashboardAnalytics: DashboardAnalytics = {
 };
 
 function formatRelativeTime(dateString: string) {
-  const now = new Date();
+  const now = new Date(DASHBOARD_REFERENCE_TIMESTAMP);
   const value = new Date(dateString);
   const diffMs = now.getTime() - value.getTime();
   const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));

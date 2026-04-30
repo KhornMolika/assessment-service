@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
 import type { Topic } from "@/src/domains/content/types/topic.types";
@@ -15,7 +14,6 @@ import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import AssessmentNewHeader from "./AssessmentNewHeader";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
-import AssessmentWizardRail from "./AssessmentWizardRail";
 
 const defaultFormData: NewAssessmentFormData = {
   title: "",
@@ -53,8 +51,20 @@ const defaultFormData: NewAssessmentFormData = {
 const stepValidationFields: Record<1 | 2 | 3 | 4, string[]> = {
   1: ["title", "ownerTopicId"],
   2: ["sessionMode", "questionSelection"],
-  3: ["selectedBankId", "selectedQuestionIds", "totalQuestions", "selectionRules"],
-  4: ["timeLimitMinutes", "startsAt", "endsAt", "passMark", "gradeLabels", "showResults"],
+  3: [
+    "selectedBankId",
+    "selectedQuestionIds",
+    "totalQuestions",
+    "selectionRules",
+  ],
+  4: [
+    "timeLimitMinutes",
+    "startsAt",
+    "endsAt",
+    "passMark",
+    "gradeLabels",
+    "showResults",
+  ],
 };
 
 export default function AssessmentNewWizard({
@@ -84,14 +94,6 @@ export default function AssessmentNewWizard({
   );
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const selectedBankQuestionCount = useMemo(() => {
-    if (!formData.selectedBankId) {
-      return questions.length;
-    }
-
-    return questions.filter((question) => question.bank_id === formData.selectedBankId).length;
-  }, [formData.selectedBankId, questions]);
-
   const getStepValidationMessages = (step: 1 | 2 | 3 | 4) => {
     const validationResult = assessmentFormSchema.safeParse(formData);
 
@@ -104,7 +106,9 @@ export default function AssessmentNewWizard({
     return Array.from(
       new Set(
         validationResult.error.issues
-          .filter((issue) => allowedFields.includes(String(issue.path[0] ?? "")))
+          .filter((issue) =>
+            allowedFields.includes(String(issue.path[0] ?? "")),
+          )
           .map((issue) => issue.message),
       ),
     );
@@ -131,38 +135,6 @@ export default function AssessmentNewWizard({
     setValidationErrors([]);
   };
 
-  const canNavigateToStep = (step: number) => {
-    if (![1, 2, 3, 4].includes(step)) {
-      return false;
-    }
-
-    if (step <= currentStep) {
-      return true;
-    }
-
-    if (step !== currentStep + 1) {
-      return false;
-    }
-
-    return isStepComplete(currentStep);
-  };
-
-  const handleStepChange = (step: number) => {
-    if (!canNavigateToStep(step)) {
-      const blockingStep = ([1, 2, 3, 4] as const).find(
-        (candidate) => candidate < step && !isStepComplete(candidate),
-      );
-
-      if (blockingStep) {
-        setValidationErrors(getStepValidationMessages(blockingStep));
-      }
-      return;
-    }
-
-    setValidationErrors([]);
-    setCurrentStep(step as 1 | 2 | 3 | 4);
-  };
-
   const handleNext = () => {
     if (currentStep >= 4) {
       return;
@@ -174,7 +146,16 @@ export default function AssessmentNewWizard({
     }
 
     setValidationErrors([]);
-    handleStepChange((currentStep + 1) as 1 | 2 | 3 | 4);
+    setCurrentStep((currentStep + 1) as 1 | 2 | 3 | 4);
+  };
+
+  const handlePrevious = () => {
+    if (currentStep <= 1) {
+      return;
+    }
+
+    setValidationErrors([]);
+    setCurrentStep((currentStep - 1) as 1 | 2 | 3 | 4);
   };
 
   const handleQuestionToggle = (questionId: string) => {
@@ -225,11 +206,16 @@ export default function AssessmentNewWizard({
   const handleRemoveGradeLabel = (index: number) => {
     setFormData((current) => ({
       ...current,
-      gradeLabels: current.gradeLabels.filter((_, currentIndex) => currentIndex !== index),
+      gradeLabels: current.gradeLabels.filter(
+        (_, currentIndex) => currentIndex !== index,
+      ),
     }));
   };
 
-  const destination = mode === "edit" && assessmentId ? `/assessments/${assessmentId}` : "/assessments";
+  const destination =
+    mode === "edit" && assessmentId
+      ? `/assessments/${assessmentId}`
+      : "/assessments";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -237,13 +223,20 @@ export default function AssessmentNewWizard({
 
     if (!validationResult.success) {
       setValidationErrors(
-        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+        Array.from(
+          new Set(validationResult.error.issues.map((issue) => issue.message)),
+        ),
       );
       return;
     }
 
     setValidationErrors([]);
-    console.log(mode === "edit" ? "Saving assessment changes:" : "Saving assessment draft:", formData);
+    console.log(
+      mode === "edit"
+        ? "Saving assessment changes:"
+        : "Saving assessment draft:",
+      formData,
+    );
     router.push(destination);
   };
 
@@ -252,17 +245,27 @@ export default function AssessmentNewWizard({
 
     if (!validationResult.success) {
       setValidationErrors(
-        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+        Array.from(
+          new Set(validationResult.error.issues.map((issue) => issue.message)),
+        ),
       );
       return;
     }
 
     setValidationErrors([]);
-    console.log(mode === "edit" ? "Publishing assessment changes:" : "Publishing assessment:", formData);
+    console.log(
+      mode === "edit"
+        ? "Publishing assessment changes:"
+        : "Publishing assessment:",
+      formData,
+    );
     router.push(destination);
   };
 
-  const headerTitle = mode === "edit" ? `Edit ${formData.title || "Assessment"}` : "Create New Assessment";
+  const headerTitle =
+    mode === "edit"
+      ? `Edit ${formData.title || "Assessment"}`
+      : "Create New Assessment";
   const headerDescription =
     mode === "edit"
       ? "Update assessment settings, question strategy, and participant rules."
@@ -270,51 +273,29 @@ export default function AssessmentNewWizard({
 
   return (
     <div className="space-y-6 px-4 py-4 sm:px-6 lg:px-8">
-      <AssessmentNewHeader title={headerTitle} description={headerDescription} />
+      <AssessmentNewHeader
+        title={headerTitle}
+        description={headerDescription}
+        cancelHref={destination}
+        cancelLabel={mode === "edit" ? "Back" : "Cancel"}
+      />
 
-      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
-          <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
-            <AssessmentWizardRail
-              currentStep={currentStep}
-              isStepComplete={isStepComplete}
-              canNavigateToStep={canNavigateToStep}
-              onStepChange={handleStepChange}
-            />
-          </div>
-        </aside>
-
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <section className="min-w-0 rounded-[1.75rem] border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
           <div className="border-b border-border/70 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                  Step {currentStep} of 4
-                </div>
                 <h2 className="text-xl font-bold text-primary">
-                  {mode === "edit" ? "Assessment Setup" : "Build Your Assessment"}
+                  {mode === "edit"
+                    ? "Assessment Setup"
+                    : "Build Your Assessment"}
                 </h2>
                 <p className="text-sm text-inkd">
                   Complete the current section before moving forward.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3 text-sm sm:w-fit">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80">
-                    Current mode
-                  </div>
-                  <div className="mt-1 font-semibold text-primary">
-                    {formData.sessionMode === "SELF_PACED" ? "Self-paced" : "Real-time"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80">
-                    Question flow
-                  </div>
-                  <div className="mt-1 font-semibold text-primary">
-                    {formData.questionSelection === "MANUAL" ? "Manual" : "Dynamic"}
-                  </div>
-                </div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Step {currentStep} of 4
               </div>
             </div>
           </div>
@@ -393,25 +374,20 @@ export default function AssessmentNewWizard({
           </div>
 
           <div className="border-t border-border/70 bg-slate-50/80 px-4 py-4 sm:px-6">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div className="text-sm text-inkd">
-                {currentStep === 3 && formData.questionSelection === "DYNAMIC"
-                  ? `${selectedBankQuestionCount} available question${selectedBankQuestionCount === 1 ? "" : "s"} in the chosen bank.`
-                  : currentStep === 3 && formData.questionSelection === "MANUAL"
-                    ? `${formData.selectedQuestionIds.length} selected question${formData.selectedQuestionIds.length === 1 ? "" : "s"} ready for this assessment.`
-                    : mode === "edit"
-                      ? "Adjust the assessment in stages and keep the summary updated as you go."
-                      : "Move through the setup one step at a time and keep the assessment summary in sync."}
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-90 xl:max-w-130">
-                <Link
-                  href={destination}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
-                >
-                  {mode === "edit" ? "Back" : "Cancel"}
-                </Link>
-
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
+                className={`inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition sm:w-auto ${
+                  currentStep === 1
+                    ? "cursor-not-allowed border-border bg-muted text-inkl"
+                    : "border-border bg-white text-primary hover:bg-muted"
+                }`}
+              >
+                Previous
+              </button>
+              <div className="sm:min-w-52">
                 {currentStep < 4 ? (
                   <button
                     type="button"
@@ -431,7 +407,7 @@ export default function AssessmentNewWizard({
                     onClick={handlePublish}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d]"
                   >
-                    {mode === "edit" ? "Save Changes" : "Publish Assessment"}
+                    {mode === "edit" ? "Save Changes" : "Save Assessment"}
                   </button>
                 )}
               </div>

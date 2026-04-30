@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,32 +13,25 @@ import {
   TrendingUp,
 } from "lucide-react";
 import nbfsaLogo from "@/src/shared/assets/nbfsa-logo.png";
+import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
 import { useSidebar } from "../../context/sidebar-context";
+import SidebarNavLinks from "./SidebarNavLinks";
+
+const workspaceNavigation = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Question Banks", href: "/banks", icon: Library },
+  { name: "Questions", href: "/questions", icon: HelpCircle },
+  { name: "Assessments", href: "/assessments", icon: ClipboardList },
+];
+
+const insightsNavigation = [
+  { name: "Results", href: "/results", icon: FileText },
+  { name: "Analytics", href: "/analytics", icon: TrendingUp },
+];
 
 export default function Sidebar() {
-  const pathname = usePathname();
   const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } = useSidebar();
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname, setSidebarOpen]);
-
-  const workspaceNavigation = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Question Banks", href: "/banks", icon: Library },
-    { name: "Questions", href: "/questions", icon: HelpCircle },
-    { name: "Assessments", href: "/assessments", icon: ClipboardList },
-  ];
-
-  const insightsNavigation = [
-    { name: "Results", href: "/results", icon: FileText },
-    { name: "Analytics", href: "/analytics", icon: TrendingUp },
-  ];
-
-  const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : pathname === href || pathname.startsWith(`${href}/`);
+  const { getHrefWithSelectedTopic } = useGlobalTopicFilter();
 
   const handleNavigation = () => {
     setSidebarOpen(false);
@@ -57,7 +48,11 @@ export default function Sidebar() {
         <div className="flex items-center justify-between border-b border-white/10 p-6">
           {!collapsed ? (
             <>
-              <Link href="/" className="flex items-center space-x-3" onClick={handleNavigation}>
+              <Link
+                href={getHrefWithSelectedTopic("/")}
+                className="flex items-center space-x-3"
+                onClick={handleNavigation}
+              >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm">
                   <Image
                     src={nbfsaLogo}
@@ -83,7 +78,7 @@ export default function Sidebar() {
           ) : (
             <div className="flex w-full flex-col items-center gap-3">
               <Link
-                href="/"
+                href={getHrefWithSelectedTopic("/")}
                 className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm"
                 onClick={handleNavigation}
               >
@@ -112,62 +107,24 @@ export default function Sidebar() {
             <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
           )}
           <nav className="flex flex-col space-y-1">
-            {workspaceNavigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={handleNavigation}
-                className={`flex items-center rounded py-3 font-medium transition ${
-                  collapsed ? "justify-center px-0" : "px-3"
-                } ${
-                  isActive(item.href)
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5"
-                }`}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon size={20} />
-                {!collapsed && <span className="ml-2">{item.name}</span>}
-              </Link>
-            ))}
+            <SidebarNavLinks
+              items={workspaceNavigation}
+              collapsed={collapsed}
+              onNavigate={handleNavigation}
+            />
           </nav>
 
           {!collapsed && (
             <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
           )}
           <nav className="flex flex-col space-y-1">
-            {insightsNavigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={handleNavigation}
-                className={`flex items-center rounded py-3 font-medium transition ${
-                  collapsed ? "justify-center px-0" : "px-3"
-                } ${
-                  isActive(item.href)
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5"
-                }`}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon size={20} />
-                {!collapsed && <span className="ml-2">{item.name}</span>}
-              </Link>
-            ))}
+            <SidebarNavLinks
+              items={insightsNavigation}
+              collapsed={collapsed}
+              onNavigate={handleNavigation}
+            />
           </nav>
         </div>
-
-        {/* <div className="flex items-center space-x-3 border-t border-white/10 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--acc) font-bold text-[#1B4332]">
-            KM
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Khorn Molika</p>
-              <p className="truncate text-xs text-white/60">molika@eduhub.kh</p>
-            </div>
-          )}
-        </div> */}
       </div>
     </aside>
   );

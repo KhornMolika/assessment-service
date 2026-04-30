@@ -4,10 +4,12 @@ export function JoinLobby({
   displayName,
   onDisplayNameChange,
   onJoin,
+  eventName,
 }: {
   displayName: string;
   onDisplayNameChange: (value: string) => void;
   onJoin: () => void;
+  eventName?: string;
 }) {
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center xl:grid-cols-[minmax(0,1fr)_24rem]">
@@ -54,6 +56,7 @@ export function JoinLobby({
         </div>
         <button
           type="button"
+          data-flow-event={eventName}
           disabled={displayName.trim().length === 0}
           onClick={onJoin}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"

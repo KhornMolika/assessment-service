@@ -109,6 +109,22 @@ export default function AssessmentsCatalog({
     );
   };
 
+  const handleDuplicateAssessment = (assessment: AssessmentCatalogItem) => {
+    setCatalogAssessments((currentAssessments) => {
+      const duplicate: AssessmentCatalogItem = {
+        ...assessment,
+        id: `copy-${assessment.id}-${currentAssessments.length + 1}`,
+        title: `${assessment.title} (Copy)`,
+        lifecycle: "DRAFT",
+        participant_count: 0,
+        pass_rate: "-",
+        average_score: "-",
+      };
+
+      return [duplicate, ...currentAssessments];
+    });
+  };
+
   const hasActiveFilters =
     searchQuery.trim().length > 0 ||
     topicFilter !== ALL_TOPICS_VALUE ||
@@ -205,6 +221,7 @@ export default function AssessmentsCatalog({
       >
         <AssessmentsTable
           assessments={paginatedAssessments}
+          onDuplicateAssessment={handleDuplicateAssessment}
           onDeleteAssessment={handleDeleteAssessment}
         />
       </PaginatedCollectionCard>

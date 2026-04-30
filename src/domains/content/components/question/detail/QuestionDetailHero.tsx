@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { QuestionDetailData } from "@/src/domains/content/types/question-detail.types";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 
@@ -45,10 +44,8 @@ export { getDifficultyColor, getTypeColor };
 
 export default function QuestionDetailHero({
   question,
-  onDuplicate,
 }: {
   question: QuestionDetailData;
-  onDuplicate: () => void;
 }) {
   return (
     <div className="px-4 pb-6 pt-2 sm:px-6 sm:py-8">
@@ -74,22 +71,6 @@ export default function QuestionDetailHero({
               <span className="rounded-full border border-border/70 bg-white px-3 py-1 text-xs font-semibold text-primary/75">
                 {question.points} {question.points === 1 ? "Point" : "Points"}
               </span>
-            </>
-          }
-          actions={
-            <>
-              <button
-                onClick={onDuplicate}
-                className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
-              >
-                Duplicate
-              </button>
-              <Link
-                href={`/questions/${question.id}/edit`}
-                className="rounded-xl bg-[#D8F3DC] px-4 py-2.5 text-center text-sm font-bold text-primary transition hover:bg-[#B7E4C7]"
-              >
-                Edit Question
-              </Link>
             </>
           }
         />

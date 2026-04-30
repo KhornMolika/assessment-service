@@ -40,7 +40,7 @@ function ModalShell({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-[28px] bg-white p-6 shadow-2xl sm:p-8"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[24px] bg-white p-4 shadow-2xl sm:rounded-[28px] sm:p-6 lg:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         {children}
@@ -95,11 +95,13 @@ export default function AssessmentShareAction({
       {showShareModal ? (
         <ModalShell onClose={() => setShowShareModal(false)}>
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/70">
                 Share Assessment
               </p>
-              <h3 className="mt-2 text-2xl font-bold text-primary">{assessment.title}</h3>
+              <h3 className="mt-2 text-xl font-bold leading-tight text-primary sm:text-2xl">
+                {assessment.title}
+              </h3>
             </div>
             <button
               type="button"
@@ -123,25 +125,25 @@ export default function AssessmentShareAction({
                   <div className="space-y-2">
                     <p className="text-sm font-semibold text-primary">{assessment.title}</p>
                     <p className="text-xs uppercase tracking-[0.2em] text-inkd">Join link</p>
-                    <div className="rounded-xl bg-white px-3 py-2 text-sm text-primary shadow-sm ring-1 ring-border">
+                    <div className="max-w-full break-all rounded-xl bg-white px-3 py-2 text-sm text-primary shadow-sm ring-1 ring-border">
                       {shareUrl}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
                 >
                   <Copy className="h-4 w-4" />
                   {copied ? "Copied" : "Copy link"}
                 </button>
                 <Link
                   href={previewPath}
-                  className="inline-flex flex-1 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5"
+                  className="inline-flex w-full items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5"
                 >
                   Preview
                 </Link>
@@ -162,23 +164,23 @@ export default function AssessmentShareAction({
                 session now or preview the assessment first.
               </p>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <button
                   type="button"
                   onClick={() => setShowShareModal(false)}
-                  className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="min-h-11 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
                 >
                   Cancel
                 </button>
                 <Link
                   href={previewPath}
-                  className="inline-flex items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5"
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5 lg:col-span-2"
                 >
                   Preview
                 </Link>
                 <Link
                   href={hostPath}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 lg:col-span-2"
                 >
                   <PlayCircle className="h-4 w-4" />
                   Launch

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { correctAnswerSchema } from "../../content/schemas/correct-answer.schema";
+import { correctAnswerSchema } from "../../content/schemas/question-correct-answer.schema";
 
 export const questionSnapshotSchema = z.object({
   id: z.string(),

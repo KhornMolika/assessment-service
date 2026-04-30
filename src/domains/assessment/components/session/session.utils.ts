@@ -5,6 +5,7 @@ import type {
 import type { QuestionRendererValue } from "../renderers/types";
 import type {
   LeaderboardEntry,
+  RoomParticipant,
   QuestionOption,
   QuestionRound,
   ResultReleaseMode,
@@ -123,14 +124,14 @@ export function buildQuestionRounds(
   });
 }
 
-export function buildParticipantRoster() {
+export function buildParticipantRoster(): RoomParticipant[] {
   return [
-    { id: "p-1", name: "Sokha Ly", status: "Ready" },
-    { id: "p-2", name: "Dara Chen", status: "Ready" },
-    { id: "p-3", name: "Mina Park", status: "Waiting" },
-    { id: "p-4", name: "Rith Kim", status: "Ready" },
-    { id: "p-5", name: "Nita Vong", status: "Connected" },
-    { id: "p-6", name: "Sophy Tan", status: "Ready" },
+    { id: "p-1", name: "Sokha Ly", status: "READY" },
+    { id: "p-2", name: "Dara Chen", status: "READY" },
+    { id: "p-3", name: "Mina Park", status: "WAITING" },
+    { id: "p-4", name: "Rith Kim", status: "READY" },
+    { id: "p-5", name: "Nita Vong", status: "CONNECTED" },
+    { id: "p-6", name: "Sophy Tan", status: "READY" },
   ];
 }
 

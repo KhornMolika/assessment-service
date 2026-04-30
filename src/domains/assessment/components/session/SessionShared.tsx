@@ -47,6 +47,7 @@ export function ScreenShell({
   eyebrow,
   title,
   description,
+  headerAction,
   aside,
   children,
   variant = "page",
@@ -54,6 +55,7 @@ export function ScreenShell({
   eyebrow: string;
   title: string;
   description: string;
+  headerAction?: React.ReactNode;
   aside: React.ReactNode;
   children: React.ReactNode;
   variant?: "page" | "panel";
@@ -64,18 +66,25 @@ export function ScreenShell({
     return (
       <div className="flex min-h-0 flex-col gap-5">
         <section className="flex flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-6 shadow-xl backdrop-blur sm:p-8 lg:min-h-0">
-          {eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
-              {eyebrow}
-            </p>
-          ) : null}
-          {title ? (
-            <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
-              {title}
-            </h1>
-          ) : null}
-          {description ? (
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+          {hasHeader || headerAction ? (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                {eyebrow ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
+                    {eyebrow}
+                  </p>
+                ) : null}
+                {title ? (
+                  <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
+                    {title}
+                  </h1>
+                ) : null}
+                {description ? (
+                  <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+                ) : null}
+              </div>
+              {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+            </div>
           ) : null}
           <div
             className={`${hasHeader ? "mt-8" : ""} flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}
@@ -93,18 +102,25 @@ export function ScreenShell({
     <main className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-6">
       <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:h-full lg:min-h-0 lg:gap-6 lg:flex-row">
         <section className="flex flex-1 flex-col rounded-4xl border border-white/70 bg-white/90 p-5 shadow-xl backdrop-blur sm:p-6 lg:min-h-0 lg:p-10">
-          {eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
-              {eyebrow}
-            </p>
-          ) : null}
-          {title ? (
-            <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight text-primary sm:text-4xl">
-              {title}
-            </h1>
-          ) : null}
-          {description ? (
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+          {hasHeader || headerAction ? (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                {eyebrow ? (
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">
+                    {eyebrow}
+                  </p>
+                ) : null}
+                {title ? (
+                  <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight text-primary sm:text-4xl">
+                    {title}
+                  </h1>
+                ) : null}
+                {description ? (
+                  <p className="mt-4 max-w-3xl text-sm leading-6 text-inkd sm:text-base">{description}</p>
+                ) : null}
+              </div>
+              {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
+            </div>
           ) : null}
           <div
             className={`${hasHeader ? "mt-6 lg:mt-8" : ""} flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}
@@ -124,29 +140,46 @@ export function AssessmentOverviewCard({
 }: {
   assessment: AssessmentCatalogItem;
 }) {
+  const items = [
+    {
+      label: "Starts",
+      value: formatStartDate(assessment.starts_at),
+      icon: Clock3,
+    },
+    {
+      label: "Questions",
+      value: `${assessment.question_count} items`,
+      icon: Users,
+    },
+    {
+      label: "Identity",
+      value: getParticipantIdentityLabel(assessment.participant_identity),
+      icon: UserRound,
+    },
+  ];
+
   return (
-    <div className="rounded-[28px] border border-white/70 bg-[#16352A] p-6 text-white shadow-xl">
+    <div className="rounded-[28px] border border-white/70 bg-[#16352A] p-5 text-white shadow-xl">
       <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
         Assessment Snapshot
       </p>
-      <div className="mt-5 space-y-4">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <Clock3 className="h-5 w-5 text-[#95D5B2]" />
-          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Starts</p>
-          <p className="mt-1 text-sm font-semibold">{formatStartDate(assessment.starts_at)}</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <Users className="h-5 w-5 text-[#95D5B2]" />
-          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Questions</p>
-          <p className="mt-1 text-sm font-semibold">{assessment.question_count} items</p>
-        </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <UserRound className="h-5 w-5 text-[#95D5B2]" />
-          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-white/60">Identity</p>
-          <p className="mt-1 text-sm font-semibold">
-            {getParticipantIdentityLabel(assessment.participant_identity)}
-          </p>
-        </div>
+      <div className="mt-4 space-y-3">
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <div
+              key={item.label}
+              className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/6 p-4"
+            >
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#95D5B2]" />
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/55">{item.label}</p>
+                <p className="mt-1 text-sm font-semibold leading-5">{item.value}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -155,10 +188,41 @@ export function AssessmentOverviewCard({
 export function FlowStepper({
   steps,
   activeStep,
+  compact = false,
 }: {
   steps: string[];
   activeStep: number;
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        {steps.map((step, index) => {
+          const isActive = index === activeStep;
+          const isComplete = index < activeStep;
+
+          return (
+            <div
+              key={step}
+              className={`inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-semibold transition ${
+                isActive
+                  ? "border-primary bg-primary text-white"
+                  : isComplete
+                    ? "border-[#95D5B2] bg-[#D8F3DC] text-primary"
+                    : "border-border bg-white text-inkd"
+              }`}
+            >
+              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-current/10 text-[10px]">
+                {index + 1}
+              </span>
+              <span>{step}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-3 sm:grid-cols-4">
       {steps.map((step, index) => {
@@ -254,22 +318,22 @@ export function TimeLimitCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border border-border bg-white ring-1 ring-border/70 ${
-        compact ? "p-4" : "p-5"
+      className={`rounded-2xl border border-border bg-white ${
+        compact ? "p-3" : "p-5"
       }`}
     >
-      <div className="flex items-start gap-3">
-        <div className="rounded-2xl bg-[#D8F3DC] p-3 text-primary">
-          <Clock3 className="h-5 w-5" />
+      <div className="flex items-center gap-3">
+        <div className={`${compact ? "rounded-xl p-2" : "rounded-2xl p-3"} bg-[#D8F3DC] text-primary`}>
+          <Clock3 className={compact ? "h-4 w-4" : "h-5 w-5"} />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
             Time limit
           </p>
-          <p className="mt-2 text-lg font-bold text-primary">
+          <p className={`${compact ? "mt-1 text-base" : "mt-2 text-lg"} font-bold text-primary`}>
             {minutes} minute{minutes === 1 ? "" : "s"}
           </p>
-          <p className="mt-1 text-sm leading-6 text-inkd">
+          <p className={`${compact ? "hidden" : "mt-1"} text-sm leading-6 text-inkd`}>
             Submit before the timer expires. The timer begins when the assessment starts.
           </p>
         </div>

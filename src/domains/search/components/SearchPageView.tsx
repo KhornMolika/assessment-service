@@ -13,9 +13,21 @@ import {
 } from "@/src/shared/components/ui/card";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
 import type { AssessmentCatalogItem } from "@/src/domains/assessment/types/assessment-catalog.types";
 import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { QuestionCatalogItem } from "@/src/domains/content/types/question-catalog.types";
+import type {
+  AssessmentTopicMap,
+  BankTopicMap,
+  QuestionTopicMap,
+} from "@/src/domains/content/types/topic.types";
+import {
+  ALL_TOPICS_VALUE,
+  assessmentMatchesTopic,
+  bankMatchesTopic,
+  questionMatchesTopic,
+} from "@/src/domains/content/utils/topic-utils";
 
 function includesQuery(value: string | null | undefined, query: string) {
   return (value ?? "").toLowerCase().includes(query);
@@ -33,13 +45,21 @@ export default function SearchPageView({
   assessments,
   banks,
   questions,
+  assessmentTopics,
+  bankTopics,
+  questionTopics,
 }: {
   assessments: AssessmentCatalogItem[];
   banks: Bank[];
   questions: QuestionCatalogItem[];
+  assessmentTopics: AssessmentTopicMap[];
+  bankTopics: BankTopicMap[];
+  questionTopics: QuestionTopicMap[];
 }) {
   const searchParams = useSearchParams();
+  const { getHrefWithSelectedTopic } = useGlobalTopicFilter();
   const query = (searchParams.get("search") ?? "").trim();
+  const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
   const normalizedQuery = query.toLowerCase();
   const bankMap = useMemo(
     () => Object.fromEntries(banks.map((bank) => [bank.id, bank])),
@@ -52,6 +72,13 @@ export default function SearchPageView({
     }
 
     return assessments.filter((assessment) => {
+      if (
+        selectedTopic !== ALL_TOPICS_VALUE &&
+        !assessmentMatchesTopic(assessment.id, selectedTopic, assessmentTopics)
+      ) {
+        return false;
+      }
+
       return (
         includesQuery(assessment.title, normalizedQuery) ||
         includesQuery(assessment.description, normalizedQuery) ||
@@ -60,7 +87,7 @@ export default function SearchPageView({
         includesQuery(assessment.lifecycle, normalizedQuery)
       );
     });
-  }, [assessments, normalizedQuery]);
+  }, [assessmentTopics, assessments, normalizedQuery, selectedTopic]);
 
   const filteredBanks = useMemo(() => {
     if (!normalizedQuery) {
@@ -68,6 +95,13 @@ export default function SearchPageView({
     }
 
     return banks.filter((bank) => {
+      if (
+        selectedTopic !== ALL_TOPICS_VALUE &&
+        !bankMatchesTopic(bank.id, selectedTopic, bankTopics)
+      ) {
+        return false;
+      }
+
       return (
         includesQuery(bank.name, normalizedQuery) ||
         includesQuery(bank.description, normalizedQuery) ||
@@ -75,7 +109,7 @@ export default function SearchPageView({
         bank.tags.some((tag) => includesQuery(tag, normalizedQuery))
       );
     });
-  }, [banks, normalizedQuery]);
+  }, [bankTopics, banks, normalizedQuery, selectedTopic]);
 
   const filteredQuestions = useMemo(() => {
     if (!normalizedQuery) {
@@ -83,6 +117,13 @@ export default function SearchPageView({
     }
 
     return questions.filter((question) => {
+      if (
+        selectedTopic !== ALL_TOPICS_VALUE &&
+        !questionMatchesTopic(question.id, selectedTopic, questionTopics)
+      ) {
+        return false;
+      }
+
       const bankName = question.bank_id ? bankMap[question.bank_id]?.name ?? "" : "";
 
       return (
@@ -94,7 +135,7 @@ export default function SearchPageView({
         question.tags.some((tag) => includesQuery(tag, normalizedQuery))
       );
     });
-  }, [bankMap, normalizedQuery, questions]);
+  }, [bankMap, normalizedQuery, questionTopics, questions, selectedTopic]);
 
   const totalResults =
     filteredAssessments.length + filteredBanks.length + filteredQuestions.length;
@@ -143,7 +184,7 @@ export default function SearchPageView({
                 filteredAssessments.map((assessment) => (
                   <Link
                     key={assessment.id}
-                    href={`/assessments/${assessment.id}`}
+                    href={getHrefWithSelectedTopic(`/assessments/${assessment.id}`)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -177,7 +218,7 @@ export default function SearchPageView({
                 filteredBanks.map((bank) => (
                   <Link
                     key={bank.id}
-                    href={`/banks/${bank.id}`}
+                    href={getHrefWithSelectedTopic(`/banks/${bank.id}`)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -214,7 +255,7 @@ export default function SearchPageView({
                 filteredQuestions.map((question) => (
                   <Link
                     key={question.id}
-                    href={`/questions/${question.id}`}
+                    href={getHrefWithSelectedTopic(`/questions/${question.id}`)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Edit, Eye, Trash2, X } from "lucide-react";
-import AssessmentShareAction from "@/src/domains/assessment/components/AssessmentShareAction";
+import { Copy, Edit, Eye, Trash2, X } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/domains/assessment/types/assessment-catalog.types";
 import type {
   AssessmentDeliveryMode,
@@ -134,9 +133,11 @@ function DeleteAssessmentModal({
 
 export default function AssessmentsTable({
   assessments,
+  onDuplicateAssessment,
   onDeleteAssessment,
 }: {
   assessments: AssessmentCatalogItem[];
+  onDuplicateAssessment: (assessment: AssessmentCatalogItem) => void;
   onDeleteAssessment: (assessmentId: string) => void;
 }) {
   const [assessmentToDelete, setAssessmentToDelete] =
@@ -203,30 +204,33 @@ export default function AssessmentsTable({
                 <div className="flex items-center justify-end gap-1">
                   <Link
                     href={`/assessments/${assessment.id}`}
+                    title="View assessment"
                     className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
                   >
                     <Eye className="h-4 w-4" />
-                    <span className="text-xs">View</span>
                   </Link>
                   <Link
                     href={`/assessments/${assessment.id}/edit`}
+                    title="Edit assessment"
                     className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
                   >
                     <Edit className="h-4 w-4" />
-                    <span className="text-xs">Edit</span>
                   </Link>
-                  <AssessmentShareAction
-                    assessment={assessment}
-                    buttonClassName="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
-                    labelClassName="text-sm font-semibold"
-                  />
                   <button
                     type="button"
+                    title="Duplicate assessment"
+                    onClick={() => onDuplicateAssessment(assessment)}
+                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete assessment"
                     onClick={() => setAssessmentToDelete(assessment)}
                     className="inline-flex items-center gap-1 rounded-md p-2 text-red-500 transition hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />
-                    <span className="text-xs">Delete</span>
                   </button>
                 </div>
               </TableCell>

@@ -2,7 +2,6 @@ export * from "./assessment.types";
 export * from "./assessment-catalog.types";
 export * from "./assessment-form.types";
 export * from "./assessment-detail.types";
-export * from "./assessment-result.types";
 export * from "./assessment-results.types";
 export * from "./answer-entry-response.types";
 export * from "./answer-entry.types";

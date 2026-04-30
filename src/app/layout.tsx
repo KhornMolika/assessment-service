@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Serif_Display, DM_Sans, Koh_Santepheap } from "next/font/google";
 import './globals.css';
-import ClientLayout from "../shared/components/layout/ClientLayout";
-import { SidebarProvider } from "../shared/context/sidebar-context";
 
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
@@ -46,11 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${dmSerif.variable} ${dmSans.variable} ${kohSantepheap.variable}`}
     >
-      <body>
-        <SidebarProvider>
-          <ClientLayout>{children}</ClientLayout>
-        </SidebarProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

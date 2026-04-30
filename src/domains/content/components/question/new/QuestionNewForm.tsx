@@ -7,7 +7,6 @@ import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { Topic } from "@/src/domains/content/types/topic.types";
 import QuestionRubricSettings from "@/src/domains/content/components/question-common/QuestionRubricSettings";
 import QuestionDetailsCard from "@/src/domains/content/components/question-form/QuestionDetailsCard";
-import type { QuestionDetailsCardProps } from "@/src/domains/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/domains/content/components/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/domains/content/components/question-form/QuestionTypeSettingsCard";
 import { questionFormSchema } from "@/src/domains/content/schemas/question-form.schema";
@@ -20,7 +19,6 @@ import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import QuestionNewHeader from "./QuestionNewHeader";
 
 const createFormId = "question-new-form";
-const singleTopicSelectionMode: QuestionDetailsCardProps["topicSelectionMode"] = "single";
 
 const initialFormData: QuestionFormData = {
   questionText: "",
@@ -129,7 +127,6 @@ export default function QuestionNewForm({
               topics={topics}
               formData={formData}
               onChange={handleChange}
-              topicSelectionMode={singleTopicSelectionMode}
             />
           </div>
 

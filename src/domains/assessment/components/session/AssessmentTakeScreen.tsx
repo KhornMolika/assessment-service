@@ -7,8 +7,6 @@ import type {
 } from "@/src/domains/assessment/types";
 import type { QuestionRendererValue } from "../renderers/types";
 import {
-  AssessmentOverviewCard,
-  FlowStepper,
   ProcessingAnswersCard,
   ScreenShell,
 } from "./SessionShared";
@@ -20,7 +18,6 @@ import {
   buildQuestionRounds,
   formatDurationClock,
   getResultReleaseMode,
-  hasAnswerResponse,
   isCorrectAnswerResponse,
   requiresParticipantDisplayName,
 } from "./session.utils";
@@ -48,7 +45,6 @@ export function AssessmentTakeScreen({
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
 
   const currentQuestion = rounds[questionIndex];
-  const answeredCount = Object.values(answers).filter((answer) => hasAnswerResponse(answer)).length;
   const confirmationItems = rounds.map((question) => {
     return {
       question,
@@ -76,9 +72,6 @@ export function AssessmentTakeScreen({
       passed: percent >= assessment.pass_mark,
     };
   }, [answers, assessment.grade_scale, assessment.pass_mark, rounds]);
-
-  const activeStepIndex =
-    step === "entry" ? 0 : step === "quiz" ? 1 : step === "confirm" ? 2 : 3;
 
   useEffect(() => {
     if (step !== "processing") {
@@ -125,32 +118,13 @@ export function AssessmentTakeScreen({
       eyebrow="Self-paced Participant Flow"
       title={assessment.title}
       description={assessment.description!}
-      aside={
-        step === "entry" ? (
-          <div className="space-y-4">
-            <AssessmentOverviewCard assessment={assessment} />
-            <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/60">
-                Runtime state
-              </p>
-              <div className="mt-4 space-y-3 text-sm text-inkd">
-                <div className="rounded-2xl bg-muted/30 p-4">
-                  <p className="font-semibold text-primary">Answer responses saved</p>
-                  <p className="mt-1">{answeredCount} answers captured as answer responses.</p>
-                </div>
-                <div className="rounded-2xl bg-muted/30 p-4">
-                  <p className="font-semibold text-primary">Result release</p>
-                  <p className="mt-1 capitalize">{resultMode}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null
-      }
+      aside={null}
     >
-      <FlowStepper steps={["Entry", "Quiz", "Confirm", "End"]} activeStep={activeStepIndex} />
-
-      <div className="mt-6 rounded-4xl border border-border bg-white p-6 shadow-sm sm:p-8">
+      <div
+        className={`rounded-4xl border border-border bg-white shadow-sm ${
+          step === "quiz" ? "p-3 sm:p-4" : "p-4 sm:p-6"
+        }`}
+      >
         {step === "entry" ? (
           <SelfPacedEntry
             heading="Before you begin"
@@ -170,7 +144,6 @@ export function AssessmentTakeScreen({
             currentQuestion={currentQuestion}
             questionIndex={questionIndex}
             totalQuestions={rounds.length}
-            answeredCount={answeredCount}
             timeLabel={formatDurationClock(remainingSeconds)}
             timerProgressPercent={(remainingSeconds / totalTimerSeconds) * 100}
             showTimer={totalTimerSeconds > 0}

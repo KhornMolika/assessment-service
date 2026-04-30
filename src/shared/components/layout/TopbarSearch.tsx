@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
+import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
 
 const GLOBAL_SEARCH_PATH = "/search";
 const GLOBAL_SEARCH_PARAM = "search";
@@ -16,6 +18,7 @@ export function TopbarSearch() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { selectedTopic } = useGlobalTopicFilter();
   const isSearchPage = pathname === GLOBAL_SEARCH_PATH;
   const urlValue = isSearchPage ? searchParams.get(GLOBAL_SEARCH_PARAM) ?? "" : "";
   const [inputValue, setInputValue] = useState(urlValue);
@@ -26,15 +29,18 @@ export function TopbarSearch() {
 
   const searchHref = useMemo(() => {
     const trimmedValue = inputValue.trim();
+    const params = new URLSearchParams();
 
-    if (!trimmedValue) {
-      return GLOBAL_SEARCH_PATH;
+    if (selectedTopic !== ALL_TOPICS_VALUE) {
+      params.set("topic", selectedTopic);
     }
 
-    const params = new URLSearchParams();
-    params.set(GLOBAL_SEARCH_PARAM, trimmedValue);
+    if (trimmedValue) {
+      params.set(GLOBAL_SEARCH_PARAM, trimmedValue);
+    }
+
     return buildHref(GLOBAL_SEARCH_PATH, params);
-  }, [inputValue]);
+  }, [inputValue, selectedTopic]);
 
   useEffect(() => {
     if (!isSearchPage) {
