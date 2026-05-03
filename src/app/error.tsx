@@ -17,7 +17,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 p-4">
       <PageHeaderCard
         title="Something went wrong"
         description="The page hit an unexpected runtime error while rendering this route segment."

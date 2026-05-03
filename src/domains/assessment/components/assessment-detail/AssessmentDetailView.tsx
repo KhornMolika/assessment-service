@@ -12,7 +12,7 @@ export default function AssessmentDetailView({
   const { assessment, questions } = data;
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)]">
+    <div>
       <AssessmentDetailHero assessment={assessment} />
 
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">

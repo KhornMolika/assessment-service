@@ -151,7 +151,7 @@ export default function AssessmentScopedResultsView({
   );
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_28%,#F4FAF6_100%)]">
+    <div>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <AssessmentReportHeader data={data} />
 

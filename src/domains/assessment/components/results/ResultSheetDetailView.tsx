@@ -119,7 +119,7 @@ export default function ResultSheetDetailView({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>

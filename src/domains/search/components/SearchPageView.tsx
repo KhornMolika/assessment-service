@@ -13,7 +13,7 @@ import {
 } from "@/src/shared/components/ui/card";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
+import { getHrefWithTopic } from "@/src/shared/hooks/use-global-topic-filter";
 import type { AssessmentCatalogItem } from "@/src/domains/assessment/types/assessment-catalog.types";
 import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { QuestionCatalogItem } from "@/src/domains/content/types/question-catalog.types";
@@ -57,7 +57,6 @@ export default function SearchPageView({
   questionTopics: QuestionTopicMap[];
 }) {
   const searchParams = useSearchParams();
-  const { getHrefWithSelectedTopic } = useGlobalTopicFilter();
   const query = (searchParams.get("search") ?? "").trim();
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
   const normalizedQuery = query.toLowerCase();
@@ -141,7 +140,7 @@ export default function SearchPageView({
     filteredAssessments.length + filteredBanks.length + filteredQuestions.length;
 
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 p-4">
       <PageHeaderCard
         title="Search"
         description={
@@ -184,7 +183,7 @@ export default function SearchPageView({
                 filteredAssessments.map((assessment) => (
                   <Link
                     key={assessment.id}
-                    href={getHrefWithSelectedTopic(`/assessments/${assessment.id}`)}
+                    href={getHrefWithTopic(`/assessments/${assessment.id}`, selectedTopic)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -218,7 +217,7 @@ export default function SearchPageView({
                 filteredBanks.map((bank) => (
                   <Link
                     key={bank.id}
-                    href={getHrefWithSelectedTopic(`/banks/${bank.id}`)}
+                    href={getHrefWithTopic(`/banks/${bank.id}`, selectedTopic)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -255,7 +254,7 @@ export default function SearchPageView({
                 filteredQuestions.map((question) => (
                   <Link
                     key={question.id}
-                    href={getHrefWithSelectedTopic(`/questions/${question.id}`)}
+                    href={getHrefWithTopic(`/questions/${question.id}`, selectedTopic)}
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">

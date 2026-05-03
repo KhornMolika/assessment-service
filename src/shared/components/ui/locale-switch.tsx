@@ -30,15 +30,12 @@ export function LocaleSwitch({
   return (
     <div
       className={joinClasses(
-        "inline-flex items-center gap-2 rounded-full border border-border/80 bg-linear-to-r from-white via-muted/75 to-accl/55 p-1 shadow-sm",
+        "inline-flex items-center gap-2 p-1",
         className,
       )}
       role="group"
       aria-label="Locale switcher"
     >
-      <div className="pointer-events-none flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-inkl shadow-sm ring-1 ring-border/60">
-        <Globe className="h-4 w-4" />
-      </div>
 
       <div className="relative inline-grid grid-cols-2 rounded-full bg-black/5 p-0.5">
         <div

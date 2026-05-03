@@ -22,7 +22,7 @@ export default function BankDetailView({
 
   return (
     <>
-      <div className="min-h-screen bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] px-4 py-4 sm:px-6">
+      <div className="px-4 py-4 sm:px-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <BankDetailHeader bank={bank} onDelete={() => setDeleteOpen(true)} />
           <BankDetailStats bank={bank} />

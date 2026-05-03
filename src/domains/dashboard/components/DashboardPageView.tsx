@@ -1,8 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
-import { useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/domains/assessment/types/assessment-catalog.types";
 import type {
@@ -28,10 +24,11 @@ import QuickLaunchpad from "./QuickLaunchpad";
 import RecentAssessmentTable from "./RecentAssessmentTable";
 import StatsGridSection from "./StatsGridSection";
 
-function formatRelativeTime(dateString: string) {
-  const now = new Date();
+const DASHBOARD_REFERENCE_DATE = new Date("2026-04-30T00:00:00.000Z");
+
+function formatRelativeTime(dateString: string, referenceDate: Date) {
   const value = new Date(dateString);
-  const diffMs = now.getTime() - value.getTime();
+  const diffMs = referenceDate.getTime() - value.getTime();
   const diffHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)));
 
   if (diffHours < 24) {
@@ -132,10 +129,11 @@ function buildStats({
   ];
 }
 
-function buildOperationalHighlights(filteredAssessments: AssessmentCatalogItem[]): OperationalHighlight[] {
-  const now = new Date();
-  const startOfWeek = getStartOfWeek(now);
-  const endOfWeek = getEndOfWeek(now);
+function buildOperationalHighlights(
+  filteredAssessments: AssessmentCatalogItem[],
+): OperationalHighlight[] {
+  const startOfWeek = getStartOfWeek(DASHBOARD_REFERENCE_DATE);
+  const endOfWeek = getEndOfWeek(DASHBOARD_REFERENCE_DATE);
 
   return [
     {
@@ -179,7 +177,7 @@ function buildRecentAssessments(filteredAssessments: AssessmentCatalogItem[]): R
       questions: assessment.question_count,
       participants: assessment.participant_count,
       passRate: assessment.pass_rate,
-      lastModified: formatRelativeTime(assessment.updated_at),
+      lastModified: formatRelativeTime(assessment.updated_at, DASHBOARD_REFERENCE_DATE),
     }));
 }
 
@@ -192,6 +190,7 @@ export default function DashboardPageView({
   assessmentTopics,
   bankTopics,
   questionTopics,
+  selectedTopic,
 }: {
   quickLaunchpad: DashboardOverviewSections["quickLaunchpad"];
   assessments: AssessmentCatalogItem[];
@@ -201,63 +200,42 @@ export default function DashboardPageView({
   assessmentTopics: AssessmentTopicMap[];
   bankTopics: BankTopicMap[];
   questionTopics: QuestionTopicMap[];
+  selectedTopic: string;
 }) {
-  const searchParams = useSearchParams();
-  const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
   const selectedTopicLabel =
     selectedTopic === ALL_TOPICS_VALUE
       ? "All Topics"
       : topics.find((topic) => topic.id === selectedTopic)?.name ?? "Unknown Topic";
 
-  const filteredAssessments = useMemo(
-    () =>
-      selectedTopic === ALL_TOPICS_VALUE
-        ? assessments
-        : assessments.filter((assessment) =>
-            assessmentMatchesTopic(assessment.id, selectedTopic, assessmentTopics),
-          ),
-    [assessmentTopics, assessments, selectedTopic],
-  );
+  const filteredAssessments =
+    selectedTopic === ALL_TOPICS_VALUE
+      ? assessments
+      : assessments.filter((assessment) =>
+          assessmentMatchesTopic(assessment.id, selectedTopic, assessmentTopics),
+        );
 
-  const filteredBanks = useMemo(
-    () =>
-      selectedTopic === ALL_TOPICS_VALUE
-        ? banks
-        : banks.filter((bank) => bankMatchesTopic(bank.id, selectedTopic, bankTopics)),
-    [bankTopics, banks, selectedTopic],
-  );
+  const filteredBanks =
+    selectedTopic === ALL_TOPICS_VALUE
+      ? banks
+      : banks.filter((bank) => bankMatchesTopic(bank.id, selectedTopic, bankTopics));
 
-  const filteredQuestions = useMemo(
-    () =>
-      selectedTopic === ALL_TOPICS_VALUE
-        ? questions
-        : questions.filter((question) =>
-            questionMatchesTopic(question.id, selectedTopic, questionTopics),
-          ),
-    [questionTopics, questions, selectedTopic],
-  );
+  const filteredQuestions =
+    selectedTopic === ALL_TOPICS_VALUE
+      ? questions
+      : questions.filter((question) =>
+          questionMatchesTopic(question.id, selectedTopic, questionTopics),
+        );
 
-  const stats = useMemo(
-    () =>
-      buildStats({
-        topics,
-        filteredAssessments,
-        filteredBanks,
-        filteredQuestions,
-        selectedTopic,
-      }),
-    [filteredAssessments, filteredBanks, filteredQuestions, selectedTopic, topics],
-  );
+  const stats = buildStats({
+    topics,
+    filteredAssessments,
+    filteredBanks,
+    filteredQuestions,
+    selectedTopic,
+  });
 
-  const operationalHighlights = useMemo(
-    () => buildOperationalHighlights(filteredAssessments),
-    [filteredAssessments],
-  );
-
-  const recentAssessments = useMemo(
-    () => buildRecentAssessments(filteredAssessments),
-    [filteredAssessments],
-  );
+  const operationalHighlights = buildOperationalHighlights(filteredAssessments);
+  const recentAssessments = buildRecentAssessments(filteredAssessments);
 
   const hasAnyVisibleContent =
     filteredAssessments.length > 0 ||
@@ -265,7 +243,7 @@ export default function DashboardPageView({
     filteredQuestions.length > 0;
 
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 p-4">
       <PageHeaderCard
         title="Dashboard"
         description={`Focus on the current workspace footprint, pending operational work, and the latest assessment activity for ${selectedTopicLabel.toLowerCase()}.`}

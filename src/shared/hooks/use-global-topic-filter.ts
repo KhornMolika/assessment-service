@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
 
@@ -25,23 +25,66 @@ function writeStoredTopic(topicId: string) {
   window.localStorage.setItem(TOPIC_STORAGE_KEY, topicId);
 }
 
+function scheduleStoredTopicWrite(topicId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const write = () => writeStoredTopic(topicId);
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(write, { timeout: 500 });
+    return;
+  }
+
+  globalThis.setTimeout(write, 0);
+}
+
+export function getHrefWithTopic(href: string, selectedTopic: string) {
+  if (selectedTopic === ALL_TOPICS_VALUE) {
+    return href;
+  }
+
+  const [targetPathname, targetQuery = ""] = href.split("?");
+  const nextParams = new URLSearchParams(targetQuery);
+  nextParams.set(TOPIC_QUERY_PARAM, selectedTopic);
+  return buildHref(targetPathname, nextParams);
+}
+
+export function useSelectedTopic() {
+  const searchParams = useSearchParams();
+  const searchString = searchParams.toString();
+
+  return useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get(TOPIC_QUERY_PARAM) ?? ALL_TOPICS_VALUE;
+  }, [searchString]);
+}
+
 export function useGlobalTopicFilter() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const selectedTopic = searchParams.get(TOPIC_QUERY_PARAM) ?? ALL_TOPICS_VALUE;
+  const searchString = searchParams.toString();
+  const urlSelectedTopic = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get(TOPIC_QUERY_PARAM) ?? ALL_TOPICS_VALUE;
+  }, [searchString]);
+  const [selectedTopic, setOptimisticSelectedTopic] = useState(urlSelectedTopic);
 
   useEffect(() => {
-    const topicFromUrl = searchParams.get(TOPIC_QUERY_PARAM);
-
-    if (topicFromUrl) {
-      writeStoredTopic(topicFromUrl);
-    }
-  }, [searchParams]);
+    setOptimisticSelectedTopic(urlSelectedTopic);
+  }, [urlSelectedTopic]);
 
   const setSelectedTopic = useCallback(
     (nextTopic: string) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
+      if (nextTopic === selectedTopic) {
+        return;
+      }
+
+      setOptimisticSelectedTopic(nextTopic);
+
+      const nextParams = new URLSearchParams(searchString);
 
       if (nextTopic === ALL_TOPICS_VALUE) {
         nextParams.delete(TOPIC_QUERY_PARAM);
@@ -50,32 +93,19 @@ export function useGlobalTopicFilter() {
       }
 
       nextParams.delete("page");
-      writeStoredTopic(nextTopic);
-      router.replace(buildHref(pathname, nextParams), { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
+      scheduleStoredTopicWrite(nextTopic);
+      const nextHref = buildHref(pathname, nextParams);
+      const currentHref = searchString ? `${pathname}?${searchString}` : pathname;
 
-  const getHrefWithSelectedTopic = useCallback(
-    (href: string) => {
-      if (selectedTopic === ALL_TOPICS_VALUE) {
-        return href;
+      if (nextHref !== currentHref) {
+        router.replace(nextHref, { scroll: false });
       }
-
-      const [targetPathname, targetQuery = ""] = href.split("?");
-      const nextParams = new URLSearchParams(targetQuery);
-      nextParams.set(TOPIC_QUERY_PARAM, selectedTopic);
-      return buildHref(targetPathname, nextParams);
     },
-    [selectedTopic],
+    [pathname, router, searchString, selectedTopic],
   );
 
-  return useMemo(
-    () => ({
-      selectedTopic,
-      setSelectedTopic,
-      getHrefWithSelectedTopic,
-    }),
-    [getHrefWithSelectedTopic, selectedTopic, setSelectedTopic],
-  );
+  return {
+    selectedTopic,
+    setSelectedTopic,
+  };
 }

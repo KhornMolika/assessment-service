@@ -7,721 +7,49 @@ import type {
   Topic,
 } from "../types";
 import type { QuestionFormData, QuestionFormType } from "../types/question-form.types";
+import mockData from "./mock-data.json";
+import { duplicateQuestionIdPattern } from "../utils/question-duplicate-id";
 import { inferAiGradingMode, syncAiGradingFormState } from "../utils/question-ai-grading";
 
-const mockTopics: Topic[] = [
-  {
-    id: "topic-algebra",
-    name: "Algebra",
-    description: "Equations, expressions, and algebraic reasoning.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-geometry",
-    name: "Geometry",
-    description: "Shapes, measurement, and spatial reasoning.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-chemistry",
-    name: "Chemistry",
-    description: "Chemical structure, bonding, and reactions.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-botany",
-    name: "Botany",
-    description: "Plant biology, photosynthesis, and classification.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-history",
-    name: "History",
-    description: "Historical analysis and contextual understanding.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-onboarding",
-    name: "Onboarding",
-    description: "Employee onboarding and feedback workflows.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-security",
-    name: "Security",
-    description: "Security awareness, phishing, and device hygiene.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-physics",
-    name: "Physics",
-    description: "Motion, force, and mechanics fundamentals.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-  {
-    id: "topic-marketing",
-    name: "Marketing",
-    description: "Campaign planning, channels, and acquisition.",
-    created_at: "2026-03-01T08:00:00Z",
-  },
-];
-const mockBanks: Bank[] = [
-  {
-    id: "bank-math-grade-10",
-    owner_id: "owner-1",
-    name: "Mathematics - Grade 10",
-    description: "Core algebra, geometry, and introductory statistics for grade 10.",
-    tags: ["algebra", "geometry", "grade-10"],
-    visibility: "PUBLIC",
-    question_count: 24,
-    created_at: "2026-03-10T08:00:00Z",
-  },
-  {
-    id: "bank-chem-bonding",
-    owner_id: "owner-1",
-    name: "Chemistry - Bonding",
-    description: "Chemical bonding concepts, valence rules, and molecular structure.",
-    tags: ["chemistry", "bonding", "molecules"],
-    visibility: "ORG",
-    question_count: 18,
-    created_at: "2026-03-11T08:00:00Z",
-  },
-  {
-    id: "bank-biology-botany",
-    owner_id: "owner-2",
-    name: "9-Biology/Botany",
-    description: "Plant systems, photosynthesis, and classification topics.",
-    tags: ["biology", "botany", "plants"],
-    visibility: "PUBLIC",
-    question_count: 11,
-    created_at: "2026-03-12T08:00:00Z",
-  },
-  {
-    id: "bank-khmer-stem",
-    owner_id: "owner-3",
-    name: "History",
-    description: "Khmer-language mixed STEM assessment content.",
-    tags: ["khmer", "stem", "localized"],
-    visibility: "PRIVATE",
-    question_count: 8,
-    created_at: "2026-03-15T08:00:00Z",
-  },
-  {
-    id: "bank-hr-onboarding",
-    owner_id: "owner-2",
-    name: "HR Onboarding Feedback",
-    description: "Feedback and pulse checks for onboarding experience.",
-    tags: ["hr", "onboarding", "feedback"],
-    visibility: "ORG",
-    question_count: 9,
-    created_at: "2026-03-18T08:00:00Z",
-  },
-  {
-    id: "bank-it-security",
-    owner_id: "owner-4",
-    name: "IT Security Awareness",
-    description: "Security hygiene, phishing, and workplace device handling.",
-    tags: ["security", "phishing", "devices"],
-    visibility: "PUBLIC",
-    question_count: 16,
-    created_at: "2026-03-20T08:00:00Z",
-  },
-  {
-    id: "bank-physics-motion",
-    owner_id: "owner-1",
-    name: "Physics - Forces & Motion",
-    description: "Newtonian motion, force calculations, and real-world applications.",
-    tags: ["physics", "motion", "forces"],
-    visibility: "PUBLIC",
-    question_count: 21,
-    created_at: "2026-03-22T08:00:00Z",
-  },
-  {
-    id: "bank-digital-marketing",
-    owner_id: "owner-5",
-    name: "Digital Marketing Fundamentals",
-    description: "Channel strategy, campaign planning, and acquisition basics.",
-    tags: ["marketing", "campaigns", "acquisition"],
-    visibility: "ORG",
-    question_count: 13,
-    created_at: "2026-03-25T08:00:00Z",
-  },
-];
-
-const mockQuestions: QuestionCatalogItem[] = [
-  {
-    id: "q-001",
-    bank_id: "bank-math-grade-10",
-    text: "Describe the reaction mechanism for adding an F-base catalyze?",
-    type: "MCQ",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: ["Equation"],
-  },
-  {
-    id: "q-002",
-    bank_id: "bank-chem-bonding",
-    text: "Which of the following is an example of exothermic reaction? Select all that apply.",
-    type: "Multiple Choice",
-    difficulty: "Hard",
-    points: 3,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-003",
-    bank_id: "bank-biology-botany",
-    text: "True or False: Photosynthesis always converts carbon dioxide into glucose in the presence of light.",
-    type: "True/False",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Botany"],
-  },
-  {
-    id: "q-004",
-    bank_id: "bank-khmer-stem",
-    text: "Describe the main causes of the fall of the Roman Empire in C5.",
-    type: "Long Essay",
-    difficulty: "Hard",
-    points: 10,
-    language: "KH",
-    tags: [],
-  },
-  {
-    id: "q-005",
-    bank_id: "bank-hr-onboarding",
-    text: "What is your overall satisfaction with the onboarding process?",
-    type: "Rating",
-    difficulty: "Easy",
-    points: 0,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-006",
-    bank_id: "bank-it-security",
-    text: "Rank the following parameters from highest to lowest risk in server access management.",
-    type: "Ranking",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-007",
-    bank_id: "bank-physics-motion",
-    text: "Remember ____ test items that the direction states and the instructions identify.",
-    type: "Fill-in-blank",
-    difficulty: "Easy",
-    points: 3,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-008",
-    bank_id: "bank-chem-bonding",
-    text: "Upload a photo of your completed worksheet to confirm the bonding exercise submission.",
-    type: "File Upload",
-    difficulty: "Medium",
-    points: 5,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-009",
-    bank_id: "bank-math-grade-10",
-    text: "List the difference between mean, median, and mode with examples.",
-    type: "Short Answer",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-010",
-    bank_id: "bank-physics-motion",
-    text: "Which of the following best exemplifies acceleration in rectilinear motion terms?",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-011",
-    bank_id: "bank-physics-motion",
-    text: "What is the solution configuration of Coulomb force in a two-body system?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 2,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-012",
-    bank_id: "bank-digital-marketing",
-    text: "Calculate the expected conversion lift of an object campaign with acceleration in reach.",
-    type: "Short Answer",
-    difficulty: "Medium",
-    points: 5,
-    language: "EN",
-    tags: [],
-  },
-    {
-    id: "q-013",
-    bank_id: "bank-digital-marketing",
-    text: "What marketing channels are most effective for lead generation in emerging markets?",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: [],
-  },
-  {
-    id: "q-014",
-    bank_id: "bank-chem-bonding",
-    text: "Match each bonding type with its most representative real-world example.",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Bonding"],
-  },
-  {
-    id: "q-015",
-    bank_id: "bank-math-grade-10",
-    text: "Solve the quadratic equation x^2 - 7x + 12 = 0.",
-    type: "Short Answer",
-    difficulty: "Easy",
-    points: 2,
-    language: "EN",
-    tags: ["Algebra"],
-  },
-  {
-    id: "q-016",
-    bank_id: "bank-math-grade-10",
-    text: "Which graph best represents a linear function with a negative slope?",
-    type: "MCQ",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: ["Graphs"],
-  },
-  {
-    id: "q-017",
-    bank_id: "bank-math-grade-10",
-    text: "Match each statistical measure with the description that best defines it.",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Statistics"],
-  },
-  {
-    id: "q-018",
-    bank_id: "bank-math-grade-10",
-    text: "Arrange these fractions from smallest to largest: 1/2, 3/4, 2/3, 5/6.",
-    type: "Ranking",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Fractions"],
-  },
-  {
-    id: "q-019",
-    bank_id: "bank-math-grade-10",
-    text: "The sum of the interior angles of a triangle is always 180 degrees.",
-    type: "True/False",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Geometry"],
-  },
-  {
-    id: "q-020",
-    bank_id: "bank-chem-bonding",
-    text: "Which particle is shared in a covalent bond?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Covalent"],
-  },
-  {
-    id: "q-021",
-    bank_id: "bank-chem-bonding",
-    text: "Select all substances that primarily exhibit ionic bonding.",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Ionic"],
-  },
-  {
-    id: "q-022",
-    bank_id: "bank-chem-bonding",
-    text: "Complete the sentence: A metallic bond forms because valence electrons are ____.",
-    type: "Fill-in-blank",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: ["Metallic"],
-  },
-  {
-    id: "q-023",
-    bank_id: "bank-chem-bonding",
-    text: "Explain why water is considered a polar molecule.",
-    type: "Long Essay",
-    difficulty: "Medium",
-    points: 6,
-    language: "EN",
-    tags: ["Polarity"],
-  },
-  {
-    id: "q-024",
-    bank_id: "bank-chem-bonding",
-    text: "Upload your Lewis structure worksheet for ammonia and methane.",
-    type: "File Upload",
-    difficulty: "Medium",
-    points: 5,
-    language: "EN",
-    tags: ["Lewis Structure"],
-  },
-  {
-    id: "q-025",
-    bank_id: "bank-biology-botany",
-    text: "Which plant tissue is primarily responsible for transporting water?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Plant Tissue"],
-  },
-  {
-    id: "q-026",
-    bank_id: "bank-biology-botany",
-    text: "Select all structures that are part of a flower's reproductive system.",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Flowers"],
-  },
-  {
-    id: "q-027",
-    bank_id: "bank-biology-botany",
-    text: "Photosynthesis occurs only in the roots of higher plants.",
-    type: "True/False",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Photosynthesis"],
-  },
-  {
-    id: "q-028",
-    bank_id: "bank-biology-botany",
-    text: "Match each plant adaptation with the environment where it is most useful.",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Adaptation"],
-  },
-  {
-    id: "q-029",
-    bank_id: "bank-biology-botany",
-    text: "Describe the role of stomata in plant survival.",
-    type: "Short Answer",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: ["Stomata"],
-  },
-  {
-    id: "q-030",
-    bank_id: "bank-khmer-stem",
-    text: "????????????????????????????????",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 1,
-    language: "KH",
-    tags: ["Physics"],
-  },
-  {
-    id: "q-031",
-    bank_id: "bank-khmer-stem",
-    text: "??????????????????????????????????????????????????",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "KH",
-    tags: ["Astronomy"],
-  },
-  {
-    id: "q-032",
-    bank_id: "bank-khmer-stem",
-    text: "???????????? ??????????? ____ ??????????????",
-    type: "Fill-in-blank",
-    difficulty: "Medium",
-    points: 2,
-    language: "KH",
-    tags: ["Energy"],
-  },
-  {
-    id: "q-033",
-    bank_id: "bank-khmer-stem",
-    text: "????????????????????????????????????????????????????????????",
-    type: "Long Essay",
-    difficulty: "Hard",
-    points: 8,
-    language: "KH",
-    tags: ["Technology"],
-  },
-  {
-    id: "q-034",
-    bank_id: "bank-khmer-stem",
-    text: "????????????????????????????????????????????????????????????????????",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 4,
-    language: "KH",
-    tags: ["Lab"],
-  },
-  {
-    id: "q-035",
-    bank_id: "bank-hr-onboarding",
-    text: "Which onboarding step helped you feel most prepared for your role?",
-    type: "Short Answer",
-    difficulty: "Easy",
-    points: 0,
-    language: "EN",
-    tags: ["Feedback"],
-  },
-  {
-    id: "q-036",
-    bank_id: "bank-hr-onboarding",
-    text: "Rate the clarity of the first-week schedule you received.",
-    type: "Rating",
-    difficulty: "Easy",
-    points: 0,
-    language: "EN",
-    tags: ["Schedule"],
-  },
-  {
-    id: "q-037",
-    bank_id: "bank-hr-onboarding",
-    text: "Select all onboarding resources you actually used during your first week.",
-    type: "Multiple Choice",
-    difficulty: "Easy",
-    points: 0,
-    language: "EN",
-    tags: ["Resources"],
-  },
-  {
-    id: "q-038",
-    bank_id: "bank-hr-onboarding",
-    text: "Match each onboarding activity with the team that typically owns it.",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 2,
-    language: "EN",
-    tags: ["Ownership"],
-  },
-  {
-    id: "q-039",
-    bank_id: "bank-hr-onboarding",
-    text: "The onboarding checklist was easy to understand and complete.",
-    type: "True/False",
-    difficulty: "Easy",
-    points: 0,
-    language: "EN",
-    tags: ["Checklist"],
-  },
-  {
-    id: "q-040",
-    bank_id: "bank-it-security",
-    text: "Which password practice is the most secure for workplace systems?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 2,
-    language: "EN",
-    tags: ["Passwords"],
-  },
-  {
-    id: "q-041",
-    bank_id: "bank-it-security",
-    text: "Select all behaviors that may indicate a phishing attempt.",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Phishing"],
-  },
-  {
-    id: "q-042",
-    bank_id: "bank-it-security",
-    text: "Place these incident response steps in the correct order after identifying a suspicious email.",
-    type: "Ranking",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Incident Response"],
-  },
-  {
-    id: "q-043",
-    bank_id: "bank-it-security",
-    text: "Match each security threat with the most appropriate first response.",
-    type: "Matching",
-    difficulty: "Hard",
-    points: 5,
-    language: "EN",
-    tags: ["Threats"],
-  },
-  {
-    id: "q-044",
-    bank_id: "bank-it-security",
-    text: "Uploading a confidential file to a personal cloud drive is acceptable if it speeds up work.",
-    type: "True/False",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Data Handling"],
-  },
-  {
-    id: "q-045",
-    bank_id: "bank-physics-motion",
-    text: "What is the SI unit of force?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Force"],
-  },
-  {
-    id: "q-046",
-    bank_id: "bank-physics-motion",
-    text: "Select all quantities that are vectors.",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Vectors"],
-  },
-  {
-    id: "q-047",
-    bank_id: "bank-physics-motion",
-    text: "Fill in the blank: Momentum equals mass multiplied by ____.",
-    type: "Fill-in-blank",
-    difficulty: "Easy",
-    points: 1,
-    language: "EN",
-    tags: ["Momentum"],
-  },
-  {
-    id: "q-048",
-    bank_id: "bank-physics-motion",
-    text: "Match each motion graph with the situation it best represents.",
-    type: "Matching",
-    difficulty: "Hard",
-    points: 5,
-    language: "EN",
-    tags: ["Graphs"],
-  },
-  {
-    id: "q-049",
-    bank_id: "bank-physics-motion",
-    text: "Explain how friction affects the distance required to stop a moving object.",
-    type: "Long Essay",
-    difficulty: "Medium",
-    points: 6,
-    language: "EN",
-    tags: ["Friction"],
-  },
-  {
-    id: "q-050",
-    bank_id: "bank-digital-marketing",
-    text: "Which metric best reflects how expensive it is to acquire a customer?",
-    type: "MCQ",
-    difficulty: "Easy",
-    points: 2,
-    language: "EN",
-    tags: ["Metrics"],
-  },
-  {
-    id: "q-051",
-    bank_id: "bank-digital-marketing",
-    text: "Select all channels that are typically classified as paid acquisition channels.",
-    type: "Multiple Choice",
-    difficulty: "Medium",
-    points: 3,
-    language: "EN",
-    tags: ["Channels"],
-  },
-  {
-    id: "q-052",
-    bank_id: "bank-digital-marketing",
-    text: "Rank these campaign metrics in order of funnel flow from awareness to conversion.",
-    type: "Ranking",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Funnel"],
-  },
-  {
-    id: "q-053",
-    bank_id: "bank-digital-marketing",
-    text: "Match each marketing objective with the KPI that most directly measures success.",
-    type: "Matching",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["KPI"],
-  },
-  {
-    id: "q-054",
-    bank_id: "bank-digital-marketing",
-    text: "Upload a one-page campaign brief for a seasonal product launch.",
-    type: "File Upload",
-    difficulty: "Medium",
-    points: 5,
-    language: "EN",
-    tags: ["Campaign Brief"],
-  },
-  {
-    id: "q-055",
-    bank_id: null,
-    text: "Explain how topic-based question organization can work without assigning the item to a bank.",
-    type: "Short Answer",
-    difficulty: "Medium",
-    points: 4,
-    language: "EN",
-    tags: ["Independent"],
-  },
-];
+const mockTopics = mockData.topics as Topic[];
+const mockBanks = mockData.banks as Bank[];
+const mockQuestions = mockData.questions as QuestionCatalogItem[];
+const mockBankTopics = mockData.bankTopics as BankTopicMap[];
+const mockQuestionTopics = mockData.questionTopics as QuestionTopicMap[];
 
 export async function getMockBanks(): Promise<Bank[]> {
+  "use cache";
+
   return mockBanks;
 }
 
 export async function getMockBankById(id: string): Promise<Bank | undefined> {
+  "use cache";
+
   return mockBanks.find((bank) => bank.id === id);
 }
 
 export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
+  "use cache";
+
   return mockQuestions;
 }
 
 export async function getMockTopics(): Promise<Topic[]> {
+  "use cache";
+
   return mockTopics;
 }
 
 export async function getMockBankTopics(): Promise<BankTopicMap[]> {
+  "use cache";
+
   return mockBankTopics;
 }
 
 export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
+  "use cache";
+
   return mockQuestionTopics;
 }
 
@@ -729,6 +57,8 @@ export async function getMockBankDetailPageData(id: string): Promise<{
   bank: Bank | undefined;
   bankQuestions: QuestionCatalogItem[];
 }> {
+  "use cache";
+
   const bank = mockBanks.find((item) => item.id === id);
   const bankQuestions = mockQuestions.filter(
     (question) => question.bank_id != null && question.bank_id === id,
@@ -741,56 +71,13 @@ export async function getMockBankDetailPageData(id: string): Promise<{
 }
 
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
+  "use cache";
+
   return {
     banks: mockBanks,
     questions: mockQuestions,
   };
 }
-
-const duplicateQuestionIdPattern = /^(q-\d+)-copy(?:-(\d+))?$/;
-
-const mockBankTopics: BankTopicMap[] = [
-  { question_bank_id: "bank-math-grade-10", topic_id: "topic-algebra" },
-  { question_bank_id: "bank-math-grade-10", topic_id: "topic-geometry" },
-  { question_bank_id: "bank-chem-bonding", topic_id: "topic-chemistry" },
-  { question_bank_id: "bank-biology-botany", topic_id: "topic-botany" },
-  { question_bank_id: "bank-khmer-stem", topic_id: "topic-history" },
-  { question_bank_id: "bank-hr-onboarding", topic_id: "topic-onboarding" },
-  { question_bank_id: "bank-it-security", topic_id: "topic-security" },
-  { question_bank_id: "bank-physics-motion", topic_id: "topic-physics" },
-  { question_bank_id: "bank-digital-marketing", topic_id: "topic-marketing" },
-];
-
-const mockQuestionTopics: QuestionTopicMap[] = [
-  { question_id: "q-001", topic_id: "topic-algebra" },
-  { question_id: "q-003", topic_id: "topic-botany" },
-  { question_id: "q-005", topic_id: "topic-onboarding" },
-  { question_id: "q-006", topic_id: "topic-security" },
-  { question_id: "q-010", topic_id: "topic-physics" },
-  { question_id: "q-012", topic_id: "topic-marketing" },
-  { question_id: "q-014", topic_id: "topic-chemistry" },
-  { question_id: "q-015", topic_id: "topic-algebra" },
-  { question_id: "q-020", topic_id: "topic-geometry" },
-  { question_id: "q-033", topic_id: "topic-history" },
-  { question_id: "q-041", topic_id: "topic-security" },
-  { question_id: "q-046", topic_id: "topic-physics" },
-  { question_id: "q-053", topic_id: "topic-marketing" },
-  { question_id: "q-055", topic_id: "topic-onboarding" },
-];
-
-export function createMockQuestionDuplicateId(id: string): string {
-  const matchedDuplicate = id.match(duplicateQuestionIdPattern);
-
-  if (matchedDuplicate) {
-    const baseId = matchedDuplicate[1];
-    const copyIndex = Number(matchedDuplicate[2] ?? "1") + 1;
-
-    return `${baseId}-copy-${copyIndex}`;
-  }
-
-  return `${id}-copy`;
-}
-
 
 import type { QuestionDetailData } from "../types/question-detail.types";
 
@@ -921,6 +208,8 @@ function getQuestionTypeMeta(typeName: string) {
 }
 
 export async function getMockQuestionDetail(id: string): Promise<QuestionDetailData> {
+  "use cache";
+
   const duplicateMatch = id.match(duplicateQuestionIdPattern);
   const sourceId = duplicateMatch?.[1] ?? id;
   const sourceQuestion = mockQuestions.find((item) => item.id === sourceId) ?? mockQuestions[0];
@@ -1195,6 +484,8 @@ export async function getMockQuestionEditPageData(id: string): Promise<{
   topics: Topic[];
   formData: QuestionFormData;
 }> {
+  "use cache";
+
   const question = await getMockQuestionDetail(id);
 
   return {

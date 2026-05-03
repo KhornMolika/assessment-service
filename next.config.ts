@@ -3,9 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
-    instantNavigationDevToolsToggle: true,
+    staleTimes: {
+      dynamic: 120,
+      static: 300,
+    },
+    turbopackFileSystemCacheForDev: true,
   },
-  reactCompiler: true,
 };
 
 export default nextConfig;

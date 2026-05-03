@@ -123,7 +123,7 @@ function TableCardSkeleton({
 
 export function WorkspacePageSkeleton() {
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 py-10 px-8">
       <PageHeaderSkeleton />
       <StatsGridSkeleton />
       <CardGridSkeleton />
@@ -134,8 +134,16 @@ export function WorkspacePageSkeleton() {
 
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 p-4">
       <PageHeaderSkeleton hasActions={false} />
+      <AnalyticsContentSkeleton />
+    </div>
+  );
+}
+
+export function AnalyticsContentSkeleton() {
+  return (
+    <>
       <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
@@ -149,15 +157,24 @@ export function AnalyticsPageSkeleton() {
       <CardGridSkeleton rows={3} />
       <CardGridSkeleton cards={1} rows={4} />
       <TableCardSkeleton rows={5} />
-    </div>
+    </>
   );
 }
 
 export function ResultsPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
         <PageHeaderSkeleton />
+        <ResultsContentSkeleton />
+      </div>
+    </div>
+  );
+}
+
+export function ResultsContentSkeleton() {
+  return (
+    <>
         <StatsGridSkeleton />
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="grid gap-3 xl:grid-cols-4">
@@ -168,7 +185,6 @@ export function ResultsPageSkeleton() {
           </div>
         </div>
         <TableCardSkeleton rows={8} />
-      </div>
-    </div>
+    </>
   );
 }

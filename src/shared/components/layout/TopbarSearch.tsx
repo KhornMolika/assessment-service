@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
-import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
 
 const GLOBAL_SEARCH_PATH = "/search";
 const GLOBAL_SEARCH_PARAM = "search";
@@ -18,9 +17,10 @@ export function TopbarSearch() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { selectedTopic } = useGlobalTopicFilter();
+  const searchString = searchParams.toString();
   const isSearchPage = pathname === GLOBAL_SEARCH_PATH;
   const urlValue = isSearchPage ? searchParams.get(GLOBAL_SEARCH_PARAM) ?? "" : "";
+  const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
   const [inputValue, setInputValue] = useState(urlValue);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function TopbarSearch() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      const nextParams = new URLSearchParams(searchParams.toString());
+      const nextParams = new URLSearchParams(searchString);
       const trimmedValue = inputValue.trim();
 
       if (trimmedValue) {
@@ -60,7 +60,7 @@ export function TopbarSearch() {
       const nextHref = buildHref(GLOBAL_SEARCH_PATH, nextParams);
       const currentHref = buildHref(
         GLOBAL_SEARCH_PATH,
-        new URLSearchParams(searchParams.toString()),
+        new URLSearchParams(searchString),
       );
 
       if (nextHref !== currentHref) {
@@ -69,7 +69,7 @@ export function TopbarSearch() {
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
-  }, [inputValue, isSearchPage, router, searchParams]);
+  }, [inputValue, isSearchPage, router, searchString]);
 
   return (
     <form

@@ -10,17 +10,25 @@ import {
   HelpCircle,
   LayoutDashboard,
   Library,
+  Tags,
   TrendingUp,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 import nbfsaLogo from "@/src/shared/assets/nbfsa-logo.png";
-import { useGlobalTopicFilter } from "@/src/shared/hooks/use-global-topic-filter";
+import {
+  getHrefWithTopic,
+  useSelectedTopic,
+} from "@/src/shared/hooks/use-global-topic-filter";
 import { useSidebar } from "../../context/sidebar-context";
+import { announceWorkspaceNavigation } from "./MainContentFrame";
 import SidebarNavLinks from "./SidebarNavLinks";
 
 const workspaceNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Question Banks", href: "/banks", icon: Library },
   { name: "Questions", href: "/questions", icon: HelpCircle },
+  { name: "Topics", href: "/topics", icon: Tags },
   { name: "Assessments", href: "/assessments", icon: ClipboardList },
 ];
 
@@ -30,10 +38,37 @@ const insightsNavigation = [
 ];
 
 export default function Sidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
   const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } = useSidebar();
-  const { getHrefWithSelectedTopic } = useGlobalTopicFilter();
+  const selectedTopic = useSelectedTopic();
+  const activePathname =
+    optimisticPathname != null && pathname !== optimisticPathname
+      ? optimisticPathname
+      : pathname;
+  const workspaceLinks = useMemo(
+    () =>
+      workspaceNavigation.map((item) => ({
+        ...item,
+        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
+      })),
+    [selectedTopic],
+  );
+  const insightLinks = useMemo(
+    () =>
+      insightsNavigation.map((item) => ({
+        ...item,
+        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
+      })),
+    [selectedTopic],
+  );
 
-  const handleNavigation = () => {
+  const handleNavigation = (nextPathname?: string) => {
+    if (nextPathname) {
+      setOptimisticPathname(nextPathname);
+      announceWorkspaceNavigation(nextPathname);
+    }
     setSidebarOpen(false);
   };
 
@@ -44,14 +79,21 @@ export default function Sidebar() {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-pm md:flex"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-white/10 p-6">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           {!collapsed ? (
-            <>
+            <div className="min-w-0">
               <Link
-                href={getHrefWithSelectedTopic("/")}
+                href={getHrefWithTopic("/", selectedTopic)}
                 className="flex items-center space-x-3"
-                onClick={handleNavigation}
+                onClick={() => handleNavigation("/")}
               >
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm">
                   <Image
@@ -67,20 +109,13 @@ export default function Sidebar() {
                   <div className="text-lg font-bold">AssessmentService</div>
                 </div>
               </Link>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="ml-0.5 flex shrink-0 items-center justify-center rounded-lg p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            </>
+            </div>
           ) : (
             <div className="flex w-full flex-col items-center gap-3">
               <Link
-                href={getHrefWithSelectedTopic("/")}
+                href={getHrefWithTopic("/", selectedTopic)}
                 className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm"
-                onClick={handleNavigation}
+                onClick={() => handleNavigation("/")}
               >
                 <Image
                   src={nbfsaLogo}
@@ -91,13 +126,6 @@ export default function Sidebar() {
                   priority
                 />
               </Link>
-              <button
-                onClick={() => setCollapsed(false)}
-                className="flex items-center justify-center rounded-lg p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
-                aria-label="Expand sidebar"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
             </div>
           )}
         </div>
@@ -108,8 +136,12 @@ export default function Sidebar() {
           )}
           <nav className="flex flex-col space-y-1">
             <SidebarNavLinks
-              items={workspaceNavigation}
+              items={workspaceLinks}
               collapsed={collapsed}
+              activePathname={activePathname}
+              currentPathname={pathname}
+              optimisticPathname={optimisticPathname}
+              onIntent={(href) => router.prefetch(href)}
               onNavigate={handleNavigation}
             />
           </nav>
@@ -119,8 +151,12 @@ export default function Sidebar() {
           )}
           <nav className="flex flex-col space-y-1">
             <SidebarNavLinks
-              items={insightsNavigation}
+              items={insightLinks}
               collapsed={collapsed}
+              activePathname={activePathname}
+              currentPathname={pathname}
+              optimisticPathname={optimisticPathname}
+              onIntent={(href) => router.prefetch(href)}
               onNavigate={handleNavigation}
             />
           </nav>

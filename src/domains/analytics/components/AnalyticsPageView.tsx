@@ -85,7 +85,7 @@ export default function AnalyticsPageView({
   );
 
   return (
-    <div className="space-y-6 bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] p-4">
+    <div className="space-y-6 p-4">
       <PageHeaderCard
         title="Analytics"
         description="Monitor topic-level performance, compare assessments, and spot where participant demand or question load is concentrated."
