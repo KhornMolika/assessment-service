@@ -270,7 +270,7 @@ export default function ResultsPage({
 }) {
   return (
     <div>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="space-y-6 p-4">
         <ResultsHeader searchParams={searchParams} />
         <div className="mt-6">
           <Suspense fallback={<ResultsContentSkeleton />}>
