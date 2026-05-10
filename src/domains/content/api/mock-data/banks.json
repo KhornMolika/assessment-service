@@ -1,0 +1,114 @@
+﻿[
+    {
+        "id":  "bank-math-grade-10",
+        "owner_id":  "owner-1",
+        "name":  "Mathematics - Grade 10",
+        "description":  "Core algebra, geometry, and introductory statistics for grade 10.",
+        "tags":  [
+                     "algebra",
+                     "geometry",
+                     "grade-10"
+                 ],
+        "visibility":  "PUBLIC",
+        "question_count":  24,
+        "created_at":  "2026-03-10T08:00:00Z"
+    },
+    {
+        "id":  "bank-chem-bonding",
+        "owner_id":  "owner-1",
+        "name":  "Chemistry - Bonding",
+        "description":  "Chemical bonding concepts, valence rules, and molecular structure.",
+        "tags":  [
+                     "chemistry",
+                     "bonding",
+                     "molecules"
+                 ],
+        "visibility":  "ORG",
+        "question_count":  18,
+        "created_at":  "2026-03-11T08:00:00Z"
+    },
+    {
+        "id":  "bank-biology-botany",
+        "owner_id":  "owner-2",
+        "name":  "9-Biology/Botany",
+        "description":  "Plant systems, photosynthesis, and classification topics.",
+        "tags":  [
+                     "biology",
+                     "botany",
+                     "plants"
+                 ],
+        "visibility":  "PUBLIC",
+        "question_count":  11,
+        "created_at":  "2026-03-12T08:00:00Z"
+    },
+    {
+        "id":  "bank-khmer-stem",
+        "owner_id":  "owner-3",
+        "name":  "History",
+        "description":  "Khmer-language mixed STEM assessment content.",
+        "tags":  [
+                     "khmer",
+                     "stem",
+                     "localized"
+                 ],
+        "visibility":  "PRIVATE",
+        "question_count":  8,
+        "created_at":  "2026-03-15T08:00:00Z"
+    },
+    {
+        "id":  "bank-hr-onboarding",
+        "owner_id":  "owner-2",
+        "name":  "HR Onboarding Feedback",
+        "description":  "Feedback and pulse checks for onboarding experience.",
+        "tags":  [
+                     "hr",
+                     "onboarding",
+                     "feedback"
+                 ],
+        "visibility":  "ORG",
+        "question_count":  9,
+        "created_at":  "2026-03-18T08:00:00Z"
+    },
+    {
+        "id":  "bank-it-security",
+        "owner_id":  "owner-4",
+        "name":  "IT Security Awareness",
+        "description":  "Security hygiene, phishing, and workplace device handling.",
+        "tags":  [
+                     "security",
+                     "phishing",
+                     "devices"
+                 ],
+        "visibility":  "PUBLIC",
+        "question_count":  16,
+        "created_at":  "2026-03-20T08:00:00Z"
+    },
+    {
+        "id":  "bank-physics-motion",
+        "owner_id":  "owner-1",
+        "name":  "Physics - Forces \u0026 Motion",
+        "description":  "Newtonian motion, force calculations, and real-world applications.",
+        "tags":  [
+                     "physics",
+                     "motion",
+                     "forces"
+                 ],
+        "visibility":  "PUBLIC",
+        "question_count":  21,
+        "created_at":  "2026-03-22T08:00:00Z"
+    },
+    {
+        "id":  "bank-digital-marketing",
+        "owner_id":  "owner-5",
+        "name":  "Digital Marketing Fundamentals",
+        "description":  "Channel strategy, campaign planning, and acquisition basics.",
+        "tags":  [
+                     "marketing",
+                     "campaigns",
+                     "acquisition"
+                 ],
+        "visibility":  "ORG",
+        "question_count":  13,
+        "created_at":  "2026-03-25T08:00:00Z"
+    }
+]

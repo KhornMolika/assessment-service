@@ -28,7 +28,7 @@ export function SelfPacedResult({
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(24rem,0.9fr)]">
-        <div className="rounded-4xl border border-border bg-[#16352A] p-6 text-white shadow-sm lg:p-8">
+        <div className="rt-card-pop rounded-4xl border border-[#1C5C45]/20 bg-[radial-gradient(circle_at_top,rgba(249,199,79,0.28),transparent_30%),linear-gradient(180deg,#16352A_0%,#1E4738_55%,#245C47_100%)] p-6 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] lg:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Result</p>
           {resultMode === "immediate" ? (
             <>
@@ -38,17 +38,17 @@ export function SelfPacedResult({
                 response with the correct answer for each question.
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-white/55">Score</p>
                   <p className="mt-2 text-2xl font-bold">
                     {scoreSummary.earnedPoints}/{scoreSummary.totalPoints}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-white/55">Grade</p>
                   <p className="mt-2 text-2xl font-bold">{scoreSummary.grade}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                   <p className="text-xs uppercase tracking-[0.18em] text-white/55">Status</p>
                   <p className="mt-2 text-2xl font-bold">{scoreSummary.passed ? "Pass" : "Fail"}</p>
                 </div>
@@ -82,7 +82,7 @@ export function SelfPacedResult({
       </div>
 
       {resultMode !== "hidden" ? (
-        <div className="rounded-4xl border border-border bg-white p-6 shadow-sm lg:p-8">
+        <div className="rounded-4xl border border-border bg-white/90 p-6 shadow-sm backdrop-blur lg:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">

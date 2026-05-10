@@ -1,7 +1,6 @@
 "use client";
 
 import Avatar from "boring-avatars";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -503,30 +502,14 @@ export function AssessmentHostScreen({
                   </p>
                 </div>
 
-                <LayoutGroup id="host-leaderboard">
-                  <motion.div
-                    layout
-                    className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr"
-                    transition={{ layout: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
-                  >
-                    <AnimatePresence initial={false} mode="popLayout">
-                      {leaderboard.slice(0, 5).map((entry, index) => {
+                <div className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr">
+                  {leaderboard.slice(0, 5).map((entry, index) => {
                         const gapToLead = Math.max(0, leaderboard[0]?.score - entry.score);
                         const rankDelta = entry.previousRank - entry.rank;
 
                         return (
-                          <motion.div
+                          <div
                             key={entry.id}
-                            layout
-                            initial={{ opacity: 0, y: 28, scale: 0.98 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.98 }}
-                            transition={{
-                              layout: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-                              opacity: { duration: 0.22, delay: index * 0.03 },
-                              y: { duration: 0.3, delay: index * 0.03 },
-                              scale: { duration: 0.3, delay: index * 0.03 },
-                            }}
                             className={`rounded-[26px] border p-4 lg:flex lg:min-h-23 lg:flex-1 lg:items-center ${
                               index === 0
                                 ? "border-[#FFD166]/35 bg-[linear-gradient(135deg,rgba(249,199,79,0.28)_0%,rgba(255,255,255,0.09)_100%)] shadow-[0_18px_40px_rgba(249,199,79,0.12)]"
@@ -535,12 +518,9 @@ export function AssessmentHostScreen({
                           >
                             <div className="flex w-full flex-wrap items-center justify-between gap-3">
                               <div className="flex min-w-0 items-center gap-3">
-                                <motion.div
-                                  layout
-                                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-primary shadow-sm"
-                                >
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-primary shadow-sm">
                                   {entry.rank}
-                                </motion.div>
+                                </div>
                                 <div className="min-w-0">
                                   <p className="truncate font-semibold">{entry.name}</p>
                                   <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -571,12 +551,10 @@ export function AssessmentHostScreen({
                                 </p>
                               </div>
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })}
-                    </AnimatePresence>
-                  </motion.div>
-                </LayoutGroup>
+                </div>
               </div>
             </div>
           </div>
@@ -612,11 +590,8 @@ export function AssessmentHostScreen({
                           : "from-[#E8B179] to-[#F4CC9C] text-primary";
 
                     return (
-                      <motion.div
+                      <div
                         key={entry.id}
-                        initial={{ opacity: 0, y: 40, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
                         className={`flex flex-col items-center ${orderClassName}`}
                       >
                         <div className="mb-4 flex flex-col items-center text-center">
@@ -643,19 +618,14 @@ export function AssessmentHostScreen({
                           ) : null}
                           <p className="text-4xl font-black">{place}</p>
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
 
               <div className="flex flex-col justify-end">
-                <motion.div
-                  initial={{ opacity: 0, x: 18 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.45, delay: 0.25 }}
-                  className="rounded-[30px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm"
-                >
+                <div className="rounded-[30px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
                     Session closed
                   </p>
@@ -671,7 +641,7 @@ export function AssessmentHostScreen({
                     <ArrowLeft className="h-4 w-4" />
                     Back to assessment
                   </Link>
-                </motion.div>
+                </div>
               </div>
             </div>
           </div>

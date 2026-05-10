@@ -6,27 +6,16 @@ import AnalyticsAssessmentTable from "@/src/domains/analytics/components/Analyti
 import AnalyticsDistributionCard from "@/src/domains/analytics/components/AnalyticsDistributionCard";
 import AnalyticsFiltersControl from "@/src/domains/analytics/components/AnalyticsFiltersControl";
 import AnalyticsQuestionBreakdownCard from "@/src/domains/analytics/components/AnalyticsQuestionBreakdownCard";
-import AnalyticsSummaryGrid from "@/src/domains/analytics/components/AnalyticsSummaryGrid";
 import { buildAnalyticsSnapshot } from "@/src/domains/analytics/utils/analytics.utils";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
-import { Badge } from "@/src/shared/components/ui/badge";
 import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
 import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
 import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import { AnalyticsContentSkeleton } from "@/src/shared/components/layout/PageSkeletons";
 import { Metadata } from "next";
-import { TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = {
   title: 'Analytics',
-};
-
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", bank: "bank-1", assessment: "all-assessments", search: "quiz" } },
-  ],
 };
 
 type AnalyticsSearchParams = {
@@ -45,24 +34,15 @@ function parsePositiveInteger(value: string | undefined, fallback: number) {
   return Number.isNaN(parsed) || parsed < 1 ? fallback : parsed;
 }
 
-async function AnalyticsPageContent({
-  searchParams,
+async function getAnalyticsPageSnapshot({
+  selectedAssessmentId,
+  selectedTopic,
 }: {
-  searchParams?: Promise<AnalyticsSearchParams>;
+  selectedAssessmentId: string;
+  selectedTopic: string;
 }) {
-  const resolvedSearchParams = await searchParams;
-  const selectedTopic =
-    getSingleSearchParam(resolvedSearchParams?.topic) ?? ALL_TOPICS_VALUE;
-  const selectedAssessmentId =
-    getSingleSearchParam(resolvedSearchParams?.assessment) ?? "all-assessments";
-  const assessmentPage = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams?.page),
-    1,
-  );
-  const assessmentPageSize = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams?.pageSize),
-    5,
-  );
+  "use cache";
+
   const data = await getAssessmentResultsPageData();
   const filteredAssessments = data.assessments.filter((assessment) =>
     selectedTopic === ALL_TOPICS_VALUE
@@ -83,6 +63,40 @@ async function AnalyticsPageContent({
     selectedAssessmentId: effectiveSelectedAssessmentId,
     selectedTopic,
   });
+
+  return {
+    filteredAssessments,
+    effectiveSelectedAssessmentId,
+    snapshot,
+  };
+}
+
+async function AnalyticsPageContent({
+  searchParams,
+}: {
+  searchParams?: Promise<AnalyticsSearchParams>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const selectedTopic =
+    getSingleSearchParam(resolvedSearchParams?.topic) ?? ALL_TOPICS_VALUE;
+  const selectedAssessmentId =
+    getSingleSearchParam(resolvedSearchParams?.assessment) ?? "all-assessments";
+  const assessmentPage = parsePositiveInteger(
+    getSingleSearchParam(resolvedSearchParams?.page),
+    1,
+  );
+  const assessmentPageSize = parsePositiveInteger(
+    getSingleSearchParam(resolvedSearchParams?.pageSize),
+    5,
+  );
+  const {
+    filteredAssessments,
+    effectiveSelectedAssessmentId,
+    snapshot,
+  } = await getAnalyticsPageSnapshot({
+    selectedAssessmentId,
+    selectedTopic,
+  });
   const assessmentTotalPages = Math.max(
     1,
     Math.ceil(snapshot.assessmentRows.length / assessmentPageSize),
@@ -100,8 +114,6 @@ async function AnalyticsPageContent({
         selectedAssessmentId={effectiveSelectedAssessmentId}
         selectedTopicLabel={snapshot.selectedTopicLabel}
       />
-
-      <AnalyticsSummaryGrid items={snapshot.summary} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <AnalyticsDistributionCard

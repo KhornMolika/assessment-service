@@ -115,20 +115,6 @@ export default function TopicsManager({
     );
   }, [managedTopics, query]);
 
-  const totals = useMemo(
-    () =>
-      managedTopics.reduce(
-        (current, topic) => ({
-          topics: current.topics + 1,
-          banks: current.banks + topic.usage.banks,
-          questions: current.questions + topic.usage.questions,
-          assessments: current.assessments + topic.usage.assessments,
-        }),
-        { topics: 0, banks: 0, questions: 0, assessments: 0 },
-      ),
-    [managedTopics],
-  );
-
   const resetForm = () => {
     setForm(emptyForm);
     setEditingTopicId(null);
@@ -218,33 +204,6 @@ export default function TopicsManager({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Card>
-          <CardContent className="pt-5">
-            <div className="text-sm font-medium text-inkd">Topics</div>
-            <div className="mt-2 text-3xl font-bold text-primary">{totals.topics}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <div className="text-sm font-medium text-inkd">Mapped banks</div>
-            <div className="mt-2 text-3xl font-bold text-primary">{totals.banks}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <div className="text-sm font-medium text-inkd">Mapped questions</div>
-            <div className="mt-2 text-3xl font-bold text-primary">{totals.questions}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-5">
-            <div className="text-sm font-medium text-inkd">Mapped assessments</div>
-            <div className="mt-2 text-3xl font-bold text-primary">{totals.assessments}</div>
-          </CardContent>
-        </Card>
-      </div>
-
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden">
           <CardHeader className="gap-4 lg:flex-row lg:items-start lg:justify-between">

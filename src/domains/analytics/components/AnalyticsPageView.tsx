@@ -15,7 +15,6 @@ import AnalyticsAssessmentTable from "./AnalyticsAssessmentTable";
 import AnalyticsDistributionCard from "./AnalyticsDistributionCard";
 import AnalyticsFiltersCard from "./AnalyticsFiltersCard";
 import AnalyticsQuestionBreakdownCard from "./AnalyticsQuestionBreakdownCard";
-import AnalyticsSummaryGrid from "./AnalyticsSummaryGrid";
 import { buildAnalyticsSnapshot } from "../utils/analytics.utils";
 import type { AnalyticsPageViewProps } from "../types/analytics.types";
 
@@ -111,8 +110,6 @@ export default function AnalyticsPageView({
           });
         }}
       />
-
-      <AnalyticsSummaryGrid items={snapshot.summary} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <AnalyticsDistributionCard

@@ -5,7 +5,6 @@ import { useState } from "react";
 import DeleteBankModal from "@/src/domains/content/components/bank/DeleteBankModal";
 import type { Bank, QuestionCatalogItem } from "@/src/domains/content/types";
 import BankDetailHeader from "./BankDetailHeader";
-import BankDetailStats from "./BankDetailStats";
 import BankRecentQuestions from "./BankRecentQuestions";
 import BankMetadataCard from "./BankMetadataCard";
 import BankTaxonomyCard from "./BankTaxonomyCard";
@@ -25,7 +24,6 @@ export default function BankDetailView({
       <div className="px-4 py-4 sm:px-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <BankDetailHeader bank={bank} onDelete={() => setDeleteOpen(true)} />
-          <BankDetailStats bank={bank} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <BankMetadataCard bank={bank} />

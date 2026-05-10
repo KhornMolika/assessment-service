@@ -1,0 +1,42 @@
+﻿[
+    {
+        "assessment_id":  "assessment-1",
+        "topic_id":  "topic-onboarding"
+    },
+    {
+        "assessment_id":  "assessment-2",
+        "topic_id":  "topic-chemistry"
+    },
+    {
+        "assessment_id":  "assessment-3",
+        "topic_id":  "topic-history"
+    },
+    {
+        "assessment_id":  "assessment-4",
+        "topic_id":  "topic-marketing"
+    },
+    {
+        "assessment_id":  "assessment-5",
+        "topic_id":  "topic-algebra"
+    },
+    {
+        "assessment_id":  "assessment-5",
+        "topic_id":  "topic-geometry"
+    },
+    {
+        "assessment_id":  "assessment-6",
+        "topic_id":  "topic-physics"
+    },
+    {
+        "assessment_id":  "assessment-7",
+        "topic_id":  "topic-security"
+    },
+    {
+        "assessment_id":  "assessment-8",
+        "topic_id":  "topic-marketing"
+    },
+    {
+        "assessment_id":  "assessment-9",
+        "topic_id":  "topic-onboarding"
+    }
+]

@@ -1,0 +1,533 @@
+﻿[
+    {
+        "id":  "assessment-1-question-1",
+        "assessment_id":  "assessment-1",
+        "question_text":  "Which account journey stage had the lowest satisfaction rating this quarter?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  15,
+        "options":  [
+                        {
+                            "id":  "a1-q1-a",
+                            "text":  "Implementation"
+                        },
+                        {
+                            "id":  "a1-q1-b",
+                            "text":  "Support handoff"
+                        },
+                        {
+                            "id":  "a1-q1-c",
+                            "text":  "Renewal review"
+                        }
+                    ],
+        "correct_answer":  "a1-q1-b"
+    },
+    {
+        "id":  "assessment-1-question-2",
+        "assessment_id":  "assessment-1",
+        "question_text":  "Select all channels where customers reported slow response time.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  15,
+        "options":  [
+                        {
+                            "id":  "a1-q2-a",
+                            "text":  "Email"
+                        },
+                        {
+                            "id":  "a1-q2-b",
+                            "text":  "Chat"
+                        },
+                        {
+                            "id":  "a1-q2-c",
+                            "text":  "Phone"
+                        },
+                        {
+                            "id":  "a1-q2-d",
+                            "text":  "Community forum"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a1-q2-a",
+                               "a1-q2-b"
+                           ]
+    },
+    {
+        "id":  "assessment-1-question-3",
+        "assessment_id":  "assessment-1",
+        "question_text":  "Describe the main reason customers said handoff quality dropped.",
+        "type_id":  "ESSAY",
+        "points":  10,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-1-question-4",
+        "assessment_id":  "assessment-1",
+        "question_text":  "Upload a support note example that shows a better handoff.",
+        "type_id":  "FILE_UPLOAD",
+        "points":  20,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-2-question-1",
+        "assessment_id":  "assessment-2",
+        "question_text":  "Which bond type is present in methane?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a2-q1-a",
+                            "text":  "Ionic"
+                        },
+                        {
+                            "id":  "a2-q1-b",
+                            "text":  "Covalent"
+                        },
+                        {
+                            "id":  "a2-q1-c",
+                            "text":  "Metallic"
+                        }
+                    ],
+        "correct_answer":  "a2-q1-b"
+    },
+    {
+        "id":  "assessment-2-question-2",
+        "assessment_id":  "assessment-2",
+        "question_text":  "List two indicators of a complete combustion reaction.",
+        "type_id":  "SHORT_ANSWER",
+        "points":  10,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-2-question-3",
+        "assessment_id":  "assessment-2",
+        "question_text":  "Choose the compounds that are hydrocarbons.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a2-q3-a",
+                            "text":  "CH4"
+                        },
+                        {
+                            "id":  "a2-q3-b",
+                            "text":  "CO2"
+                        },
+                        {
+                            "id":  "a2-q3-c",
+                            "text":  "C2H6"
+                        },
+                        {
+                            "id":  "a2-q3-d",
+                            "text":  "H2O"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a2-q3-a",
+                               "a2-q3-c"
+                           ]
+    },
+    {
+        "id":  "assessment-2-question-4",
+        "assessment_id":  "assessment-2",
+        "question_text":  "Upload your worked solution for balancing the reaction.",
+        "type_id":  "FILE_UPLOAD",
+        "points":  12,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-3-question-1",
+        "assessment_id":  "assessment-3",
+        "question_text":  "sin(30Ã‚Â°) equals:",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a3-q1-a",
+                            "text":  "1/2"
+                        },
+                        {
+                            "id":  "a3-q1-b",
+                            "text":  "Ã¢Ë†Å¡3/2"
+                        },
+                        {
+                            "id":  "a3-q1-c",
+                            "text":  "1"
+                        }
+                    ],
+        "correct_answer":  "a3-q1-a"
+    },
+    {
+        "id":  "assessment-3-question-2",
+        "assessment_id":  "assessment-3",
+        "question_text":  "Select all true identities.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a3-q2-a",
+                            "text":  "sinÃ‚Â²x + cosÃ‚Â²x = 1"
+                        },
+                        {
+                            "id":  "a3-q2-b",
+                            "text":  "tan x = sin x / cos x"
+                        },
+                        {
+                            "id":  "a3-q2-c",
+                            "text":  "sin x = cos x for every x"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a3-q2-a",
+                               "a3-q2-b"
+                           ]
+    },
+    {
+        "id":  "assessment-3-question-3",
+        "assessment_id":  "assessment-3",
+        "question_text":  "True or false: cos(0Ã‚Â°) = 1.",
+        "type_id":  "BOOLEAN",
+        "points":  5,
+        "correct_answer":  true
+    },
+    {
+        "id":  "assessment-3-question-4",
+        "assessment_id":  "assessment-3",
+        "question_text":  "Rate your confidence in solving triangle identity questions.",
+        "type_id":  "RATING",
+        "points":  10,
+        "correct_answer":  4
+    },
+    {
+        "id":  "assessment-4-question-1",
+        "assessment_id":  "assessment-4",
+        "question_text":  "Which channel delivered the highest conversion rate?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a4-q1-a",
+                            "text":  "Email"
+                        },
+                        {
+                            "id":  "a4-q1-b",
+                            "text":  "Paid social"
+                        },
+                        {
+                            "id":  "a4-q1-c",
+                            "text":  "Organic search"
+                        }
+                    ],
+        "correct_answer":  "a4-q1-c"
+    },
+    {
+        "id":  "assessment-4-question-2",
+        "assessment_id":  "assessment-4",
+        "question_text":  "Select the metrics that indicate awareness-stage performance.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  8,
+        "options":  [
+                        {
+                            "id":  "a4-q2-a",
+                            "text":  "Impressions"
+                        },
+                        {
+                            "id":  "a4-q2-b",
+                            "text":  "Reach"
+                        },
+                        {
+                            "id":  "a4-q2-c",
+                            "text":  "Checkout rate"
+                        },
+                        {
+                            "id":  "a4-q2-d",
+                            "text":  "Video views"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a4-q2-a",
+                               "a4-q2-b",
+                               "a4-q2-d"
+                           ]
+    },
+    {
+        "id":  "assessment-4-question-3",
+        "assessment_id":  "assessment-4",
+        "question_text":  "Write one recommendation to improve landing-page performance.",
+        "type_id":  "SHORT_ANSWER",
+        "points":  6,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-4-question-4",
+        "assessment_id":  "assessment-4",
+        "question_text":  "Rate the quality of the campaign brief.",
+        "type_id":  "RATING",
+        "points":  10,
+        "correct_answer":  4
+    },
+    {
+        "id":  "assessment-5-question-1",
+        "assessment_id":  "assessment-5",
+        "question_text":  "Which formula is correct for the quadratic discriminant?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a5-q1-a",
+                            "text":  "bÃ‚Â² - 4ac"
+                        },
+                        {
+                            "id":  "a5-q1-b",
+                            "text":  "2a + 2b"
+                        },
+                        {
+                            "id":  "a5-q1-c",
+                            "text":  "aÃ‚Â² + bÃ‚Â²"
+                        }
+                    ],
+        "correct_answer":  "a5-q1-a"
+    },
+    {
+        "id":  "assessment-5-question-2",
+        "assessment_id":  "assessment-5",
+        "question_text":  "Select all equivalent fractions for 3/4.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a5-q2-a",
+                            "text":  "6/8"
+                        },
+                        {
+                            "id":  "a5-q2-b",
+                            "text":  "9/12"
+                        },
+                        {
+                            "id":  "a5-q2-c",
+                            "text":  "12/20"
+                        },
+                        {
+                            "id":  "a5-q2-d",
+                            "text":  "15/20"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a5-q2-a",
+                               "a5-q2-b",
+                               "a5-q2-d"
+                           ]
+    },
+    {
+        "id":  "assessment-5-question-3",
+        "assessment_id":  "assessment-5",
+        "question_text":  "Explain the first step to solve 2x + 5 = 17.",
+        "type_id":  "SHORT_ANSWER",
+        "points":  5,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-5-question-4",
+        "assessment_id":  "assessment-5",
+        "question_text":  "Describe how to check a factorisation result.",
+        "type_id":  "ESSAY",
+        "points":  10,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-6-question-1",
+        "assessment_id":  "assessment-6",
+        "question_text":  "What is the SI unit of force?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  8,
+        "options":  [
+                        {
+                            "id":  "a6-q1-a",
+                            "text":  "Pascal"
+                        },
+                        {
+                            "id":  "a6-q1-b",
+                            "text":  "Newton"
+                        },
+                        {
+                            "id":  "a6-q1-c",
+                            "text":  "Joule"
+                        }
+                    ],
+        "correct_answer":  "a6-q1-b"
+    },
+    {
+        "id":  "assessment-6-question-2",
+        "assessment_id":  "assessment-6",
+        "question_text":  "Select all quantities that are vectors.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  8,
+        "options":  [
+                        {
+                            "id":  "a6-q2-a",
+                            "text":  "Velocity"
+                        },
+                        {
+                            "id":  "a6-q2-b",
+                            "text":  "Speed"
+                        },
+                        {
+                            "id":  "a6-q2-c",
+                            "text":  "Force"
+                        },
+                        {
+                            "id":  "a6-q2-d",
+                            "text":  "Mass"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a6-q2-a",
+                               "a6-q2-c"
+                           ]
+    },
+    {
+        "id":  "assessment-6-question-3",
+        "assessment_id":  "assessment-6",
+        "question_text":  "True or false: an object can move with constant velocity if the net force is zero.",
+        "type_id":  "BOOLEAN",
+        "points":  8,
+        "correct_answer":  true
+    },
+    {
+        "id":  "assessment-6-question-4",
+        "assessment_id":  "assessment-6",
+        "question_text":  "Rate how confident you are with Newton\u0027s laws.",
+        "type_id":  "RATING",
+        "points":  9,
+        "correct_answer":  5
+    },
+    {
+        "id":  "assessment-7-question-1",
+        "assessment_id":  "assessment-7",
+        "question_text":  "Which scenario is a phishing attempt?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a7-q1-a",
+                            "text":  "Unexpected login reset link"
+                        },
+                        {
+                            "id":  "a7-q1-b",
+                            "text":  "Scheduled payroll notice"
+                        },
+                        {
+                            "id":  "a7-q1-c",
+                            "text":  "Internal wiki update"
+                        }
+                    ],
+        "correct_answer":  "a7-q1-a"
+    },
+    {
+        "id":  "assessment-7-question-2",
+        "assessment_id":  "assessment-7",
+        "question_text":  "Select the signs of a risky vendor request.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  10,
+        "options":  [
+                        {
+                            "id":  "a7-q2-a",
+                            "text":  "Urgent payment request"
+                        },
+                        {
+                            "id":  "a7-q2-b",
+                            "text":  "Domain spelling mismatch"
+                        },
+                        {
+                            "id":  "a7-q2-c",
+                            "text":  "Existing approved contract"
+                        },
+                        {
+                            "id":  "a7-q2-d",
+                            "text":  "Bypasses approval workflow"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a7-q2-a",
+                               "a7-q2-b",
+                               "a7-q2-d"
+                           ]
+    },
+    {
+        "id":  "assessment-7-question-3",
+        "assessment_id":  "assessment-7",
+        "question_text":  "Write the first action you would take after spotting suspicious access.",
+        "type_id":  "SHORT_ANSWER",
+        "points":  5,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-7-question-4",
+        "assessment_id":  "assessment-7",
+        "question_text":  "Upload the incident note you would send to the security team.",
+        "type_id":  "FILE_UPLOAD",
+        "points":  10,
+        "correct_answer":  null
+    },
+    {
+        "id":  "assessment-8-question-1",
+        "assessment_id":  "assessment-8",
+        "question_text":  "Which feature is the strongest differentiator in the launch pitch?",
+        "type_id":  "SINGLE_CHOICE",
+        "points":  6,
+        "options":  [
+                        {
+                            "id":  "a8-q1-a",
+                            "text":  "Single sign-on"
+                        },
+                        {
+                            "id":  "a8-q1-b",
+                            "text":  "Automated forecasting"
+                        },
+                        {
+                            "id":  "a8-q1-c",
+                            "text":  "Dark mode"
+                        }
+                    ],
+        "correct_answer":  "a8-q1-b"
+    },
+    {
+        "id":  "assessment-8-question-2",
+        "assessment_id":  "assessment-8",
+        "question_text":  "Select all discovery questions that qualify urgency.",
+        "type_id":  "MULTIPLE_CHOICE",
+        "points":  6,
+        "options":  [
+                        {
+                            "id":  "a8-q2-a",
+                            "text":  "What happens if this issue stays unresolved?"
+                        },
+                        {
+                            "id":  "a8-q2-b",
+                            "text":  "How many users are affected?"
+                        },
+                        {
+                            "id":  "a8-q2-c",
+                            "text":  "What color theme do you prefer?"
+                        }
+                    ],
+        "correct_answer":  [
+                               "a8-q2-a",
+                               "a8-q2-b"
+                           ]
+    },
+    {
+        "id":  "assessment-8-question-3",
+        "assessment_id":  "assessment-8",
+        "question_text":  "True or false: discounting should be the first negotiation move.",
+        "type_id":  "BOOLEAN",
+        "points":  6,
+        "correct_answer":  false
+    },
+    {
+        "id":  "assessment-8-question-4",
+        "assessment_id":  "assessment-8",
+        "question_text":  "Rate your confidence handling pricing objections.",
+        "type_id":  "RATING",
+        "points":  8,
+        "correct_answer":  4
+    }
+]

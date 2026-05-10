@@ -1,6 +1,5 @@
 import Avatar from "boring-avatars";
 import { Crown } from "lucide-react";
-import { motion } from "framer-motion";
 import { BackButton } from "@/src/shared/components/navigation/BackButton";
 import type { LeaderboardEntry } from "../session.types";
 import { getAvatarColors, getAvatarVariant } from "../avatar.utils";
@@ -38,11 +37,8 @@ export function HostWinner({
                     : "from-[#E8B179] to-[#F4CC9C] text-primary";
 
               return (
-                <motion.div
+                <div
                   key={entry.id}
-                  initial={{ opacity: 0, y: 40, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
                   className={`flex flex-col items-center ${orderClassName}`}
                 >
                   <div className="mb-4 flex flex-col items-center text-center">
@@ -67,19 +63,14 @@ export function HostWinner({
                     {place === 1 ? <Crown className="mb-3 h-8 w-8 text-primary" /> : null}
                     <p className="text-4xl font-black">{place}</p>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </div>
 
         <div className="flex flex-col justify-end">
-          <motion.div
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45, delay: 0.25 }}
-            className="rounded-[30px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm"
-          >
+          <div className="rounded-[30px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Session closed</p>
             <h2 className="mt-3 text-2xl font-bold">Back to assessment</h2>
             <p className="mt-3 text-sm leading-6 text-white/70">
@@ -92,7 +83,7 @@ export function HostWinner({
               fullWidth
               className="mt-6 bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:opacity-95"
             />
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

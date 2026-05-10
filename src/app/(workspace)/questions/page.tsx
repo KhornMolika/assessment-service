@@ -31,14 +31,6 @@ export const metadata: Metadata = {
   title: "Questions",
 };
 
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, type: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", type: "MCQ", bank: "Algebra", assessment: "all-assessments", search: "quiz" } },
-  ],
-};
-
 type QuestionSearchParams = Promise<{
   topic?: string | string[];
   query?: string | string[];

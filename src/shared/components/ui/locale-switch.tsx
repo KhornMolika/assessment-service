@@ -1,7 +1,5 @@
 "use client";
 
-import { Globe } from "lucide-react";
-
 type LocaleOption = {
   label: string;
   value: string;

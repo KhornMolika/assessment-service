@@ -8,7 +8,6 @@ import type {
   AnalyticsDistributionItem,
   AnalyticsQuestionBreakdown,
   AnalyticsSnapshot,
-  AnalyticsSummaryStat,
 } from "../types/analytics.types";
 
 function parsePercent(value: string) {
@@ -18,22 +17,6 @@ function parsePercent(value: string) {
 
   const parsed = Number.parseInt(value, 10);
   return Number.isNaN(parsed) ? null : parsed;
-}
-
-function formatPercent(value: number | null, fallback: string) {
-  return value === null ? fallback : `${Math.round(value)}%`;
-}
-
-function formatDecimal(value: number) {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
-}
-
-function formatRatio(numerator: number, denominator: number) {
-  if (denominator === 0) {
-    return "0";
-  }
-
-  return formatDecimal(numerator / denominator);
 }
 
 function buildTopicMap(topics: Topic[]) {
@@ -72,48 +55,6 @@ function buildAssessmentRows(
   }));
 }
 
-function buildQuestionTypeDistribution({
-  visibleAssessments,
-  answerEntries,
-  answerSheets,
-}: {
-  visibleAssessments: AssessmentCatalogItem[];
-  answerEntries: AnswerEntry[];
-  answerSheets: AnswerSheet[];
-}): AnalyticsDistributionItem[] {
-  const visibleAssessmentIds = new Set(visibleAssessments.map((assessment) => assessment.id));
-  const submittedSheetIds = buildVisibleSubmittedSheetSet(visibleAssessmentIds, answerSheets);
-  const typeCounts = new Map<string, number>();
-  const seenQuestionIds = new Set<string>();
-
-  answerEntries.forEach((entry) => {
-    if (!submittedSheetIds.has(entry.sheet_id) || seenQuestionIds.has(entry.question_id)) {
-      return;
-    }
-
-    seenQuestionIds.add(entry.question_id);
-    const typeLabel = entry.question_snapshot.type_id.replaceAll("_", " ");
-    typeCounts.set(typeLabel, (typeCounts.get(typeLabel) ?? 0) + 1);
-  });
-
-  const maxCount = Math.max(...typeCounts.values(), 1);
-
-  return [...typeCounts.entries()]
-    .sort((left, right) => right[1] - left[1])
-    .map(([label, value], index) => ({
-      id: label,
-      label,
-      value,
-      helper: `${Math.round((value / maxCount) * 100)}% of the most common question type in this slice`,
-      toneClassName:
-        index === 0
-          ? "bg-primary"
-          : index === 1
-            ? "bg-secondary"
-            : "bg-[color:var(--color-chart-3)]",
-    }));
-}
-
 function getDifficultyLabel(points: number) {
   if (points <= 6) {
     return "Easy";
@@ -124,55 +65,6 @@ function getDifficultyLabel(points: number) {
   }
 
   return "Hard";
-}
-
-function buildDifficultyDistribution({
-  visibleAssessments,
-  answerEntries,
-  answerSheets,
-}: {
-  visibleAssessments: AssessmentCatalogItem[];
-  answerEntries: AnswerEntry[];
-  answerSheets: AnswerSheet[];
-}): AnalyticsDistributionItem[] {
-  const visibleAssessmentIds = new Set(visibleAssessments.map((assessment) => assessment.id));
-  const submittedSheetIds = buildVisibleSubmittedSheetSet(visibleAssessmentIds, answerSheets);
-  const difficultyCounts = new Map<string, number>([
-    ["Easy", 0],
-    ["Medium", 0],
-    ["Hard", 0],
-  ]);
-  const seenQuestionIds = new Set<string>();
-
-  answerEntries.forEach((entry) => {
-    if (!submittedSheetIds.has(entry.sheet_id) || seenQuestionIds.has(entry.question_id)) {
-      return;
-    }
-
-    seenQuestionIds.add(entry.question_id);
-    const label = getDifficultyLabel(entry.question_snapshot.points);
-    difficultyCounts.set(label, (difficultyCounts.get(label) ?? 0) + 1);
-  });
-
-  const maxCount = Math.max(...difficultyCounts.values(), 1);
-
-  return [...difficultyCounts.entries()]
-    .sort((left, right) => {
-      const order = { Hard: 0, Medium: 1, Easy: 2 };
-      return order[left[0] as keyof typeof order] - order[right[0] as keyof typeof order];
-    })
-    .map(([label, value]) => ({
-      id: label,
-      label,
-      value,
-      helper: `${Math.round((value / maxCount) * 100)}% of the largest difficulty bucket in this slice`,
-      toneClassName:
-        label === "Hard"
-          ? "bg-primary"
-          : label === "Medium"
-            ? "bg-[color:var(--color-chart-2)]"
-            : "bg-[color:var(--color-chart-4)]",
-    }));
 }
 
 function parseResponse(entry: AnswerEntry) {
@@ -197,7 +89,45 @@ function getCorrectOptionIds(correctAnswer: unknown) {
   return new Set<string>();
 }
 
-function buildQuestionBreakdown({
+function buildDistributionItems(
+  counts: Map<string, number>,
+  getToneClassName: (label: string, index: number) => string,
+  helperSuffix: string,
+) {
+  const maxCount = Math.max(...counts.values(), 1);
+
+  return [...counts.entries()]
+    .sort((left, right) => right[1] - left[1])
+    .map(([label, value], index) => ({
+      id: label,
+      label,
+      value,
+      helper: `${Math.round((value / maxCount) * 100)}% ${helperSuffix}`,
+      toneClassName: getToneClassName(label, index),
+    }));
+}
+
+function buildDifficultyDistributionItems(counts: Map<string, number>) {
+  const maxCount = Math.max(...counts.values(), 1);
+  const order = { Hard: 0, Medium: 1, Easy: 2 };
+
+  return [...counts.entries()]
+    .sort((left, right) => order[left[0] as keyof typeof order] - order[right[0] as keyof typeof order])
+    .map(([label, value]) => ({
+      id: label,
+      label,
+      value,
+      helper: `${Math.round((value / maxCount) * 100)}% of the largest difficulty bucket in this slice`,
+      toneClassName:
+        label === "Hard"
+          ? "bg-primary"
+          : label === "Medium"
+            ? "bg-[color:var(--color-chart-2)]"
+            : "bg-[color:var(--color-chart-4)]",
+    }));
+}
+
+function buildAnalyticsDerivedData({
   visibleAssessments,
   answerEntries,
   answerSheets,
@@ -205,7 +135,11 @@ function buildQuestionBreakdown({
   visibleAssessments: AssessmentCatalogItem[];
   answerEntries: AnswerEntry[];
   answerSheets: AnswerSheet[];
-}): AnalyticsQuestionBreakdown[] {
+}): {
+  questionTypeDistribution: AnalyticsDistributionItem[];
+  difficultyDistribution: AnalyticsDistributionItem[];
+  questionBreakdown: AnalyticsQuestionBreakdown[];
+} {
   const assessmentMap = new Map(visibleAssessments.map((assessment) => [assessment.id, assessment] as const));
   const submittedSheetIds = new Set(
     answerSheets
@@ -215,8 +149,14 @@ function buildQuestionBreakdown({
       )
       .map((sheet) => sheet.id),
   );
-
   const grouped = new Map<string, AnalyticsQuestionBreakdown>();
+  const typeCounts = new Map<string, number>();
+  const difficultyCounts = new Map<string, number>([
+    ["Easy", 0],
+    ["Medium", 0],
+    ["Hard", 0],
+  ]);
+  const seenQuestionIds = new Set<string>();
 
   answerEntries.forEach((entry) => {
     if (!submittedSheetIds.has(entry.sheet_id)) {
@@ -227,7 +167,20 @@ function buildQuestionBreakdown({
     const assessment = assessmentMap.get(assessmentId);
     const options = entry.question_snapshot.options;
 
-    if (!assessment || !options || options.length === 0) {
+    if (!assessment) {
+      return;
+    }
+
+    if (!seenQuestionIds.has(entry.question_id)) {
+      seenQuestionIds.add(entry.question_id);
+      const typeLabel = entry.question_snapshot.type_id.replaceAll("_", " ");
+      const difficultyLabel = getDifficultyLabel(entry.question_snapshot.points);
+
+      typeCounts.set(typeLabel, (typeCounts.get(typeLabel) ?? 0) + 1);
+      difficultyCounts.set(difficultyLabel, (difficultyCounts.get(difficultyLabel) ?? 0) + 1);
+    }
+
+    if (!options || options.length === 0) {
       return;
     }
 
@@ -283,23 +236,22 @@ function buildQuestionBreakdown({
     );
   });
 
-  return [...grouped.values()]
-    .sort((left, right) => right.responseCount - left.responseCount)
-    .slice(0, 6);
-}
-
-function buildVisibleSubmittedSheetSet(
-  visibleAssessmentIds: Set<string>,
-  answerSheets: AnswerSheet[],
-) {
-  return new Set(
-    answerSheets
-      .filter(
-        (sheet) =>
-          visibleAssessmentIds.has(sheet.assessment_id) && sheet.submitted_at != null,
-      )
-      .map((sheet) => sheet.id),
-  );
+  return {
+    questionTypeDistribution: buildDistributionItems(
+      typeCounts,
+      (_label, index) =>
+        index === 0
+          ? "bg-primary"
+          : index === 1
+            ? "bg-secondary"
+            : "bg-[color:var(--color-chart-3)]",
+      "of the most common question type in this slice",
+    ),
+    difficultyDistribution: buildDifficultyDistributionItems(difficultyCounts),
+    questionBreakdown: [...grouped.values()]
+      .sort((left, right) => right.responseCount - left.responseCount)
+      .slice(0, 6),
+  };
 }
 
 export function buildAnalyticsSnapshot({
@@ -339,76 +291,16 @@ export function buildAnalyticsSnapshot({
   const rows = buildAssessmentRows(visibleAssessments, assessmentTopics, topics).sort(
     (left, right) => right.participants - left.participants,
   );
-  const visibleAssessmentIds = new Set(visibleAssessments.map((assessment) => assessment.id));
-  const submittedSheetIds = buildVisibleSubmittedSheetSet(visibleAssessmentIds, answerSheets);
-  const participantTotal = rows.reduce((sum, row) => sum + row.participants, 0);
-  const objectiveEntries = answerEntries.filter(
-    (entry) =>
-      submittedSheetIds.has(entry.sheet_id) &&
-      Array.isArray(entry.question_snapshot.options) &&
-      entry.question_snapshot.options.length > 0 &&
-      entry.is_correct !== null,
-  );
-  const objectiveCorrectCount = objectiveEntries.filter((entry) => entry.is_correct === true).length;
-  const activeAssessmentCount = rows.filter((row) => row.lifecycle === "ACTIVE").length;
-  const realTimeAssessmentCount = rows.filter((row) => row.deliveryMode === "REAL_TIME").length;
-  const submissionCoverage =
-    participantTotal > 0 ? Math.round((submittedSheetIds.size / participantTotal) * 100) : 0;
-  const objectiveAccuracy =
-    objectiveEntries.length > 0
-      ? Math.round((objectiveCorrectCount / objectiveEntries.length) * 100)
-      : null;
-
-  const summary: AnalyticsSummaryStat[] = [
-    {
-      id: "submission-coverage",
-      label: "Submission coverage",
-      value: `${submissionCoverage}%`,
-      helper: `${submittedSheetIds.size} submitted sheets across ${participantTotal.toLocaleString()} tracked participants.`,
-    },
-    {
-      id: "participant-density",
-      label: "Participants per assessment",
-      value: formatRatio(participantTotal, rows.length),
-      helper:
-        rows.length === 0
-          ? "No assessments are visible in the current slice."
-          : `${participantTotal.toLocaleString()} participants spread across ${rows.length} assessments.`,
-    },
-    {
-      id: "objective-accuracy",
-      label: "Objective question accuracy",
-      value: formatPercent(objectiveAccuracy, "-"),
-      helper:
-        objectiveEntries.length === 0
-          ? "No option-based responses are available in the current slice."
-          : `${objectiveCorrectCount} correct responses across ${objectiveEntries.length} graded option selections.`,
-    },
-    {
-      id: "delivery-health",
-      label: "Active / real-time mix",
-      value: `${activeAssessmentCount} / ${realTimeAssessmentCount}`,
-      helper: `${selectedTopicLabel} currently shows ${rows.length} visible assessments in scope.`,
-    },
-  ];
+  const derivedData = buildAnalyticsDerivedData({
+    visibleAssessments,
+    answerEntries,
+    answerSheets,
+  });
 
   return {
-    summary,
-    questionTypeDistribution: buildQuestionTypeDistribution({
-      visibleAssessments,
-      answerEntries,
-      answerSheets,
-    }),
-    difficultyDistribution: buildDifficultyDistribution({
-      visibleAssessments,
-      answerEntries,
-      answerSheets,
-    }),
-    questionBreakdown: buildQuestionBreakdown({
-      visibleAssessments,
-      answerEntries,
-      answerSheets,
-    }),
+    questionTypeDistribution: derivedData.questionTypeDistribution,
+    difficultyDistribution: derivedData.difficultyDistribution,
+    questionBreakdown: derivedData.questionBreakdown,
     assessmentRows: rows,
     selectedTopicLabel,
   };

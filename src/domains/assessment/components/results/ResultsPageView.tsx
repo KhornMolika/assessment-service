@@ -12,10 +12,9 @@ import {
 } from "@/src/shared/hooks/use-url-query-state";
 import { ResultsFilters } from "./ResultsFilters";
 import { ResultsHeader } from "./ResultsHeader";
-import { ResultsStats } from "./ResultsStats";
 import { ResultsTable } from "./ResultsTable";
 import { exportResultsCsv } from "./results.export";
-import { buildRows, buildStatsFromRows } from "./results.utils";
+import { buildRows } from "./results.utils";
 
 export default function ResultsPageView({
   data,
@@ -40,21 +39,6 @@ export default function ResultsPageView({
     () => ["All Assessments", ...new Set(allRows.map((result) => result.assessment_title))],
     [allRows],
   );
-  const selectedAssessmentRows = useMemo(
-    () =>
-      selectedAssessment === "All Assessments"
-        ? allRows
-        : allRows.filter((result) => result.assessment_title === selectedAssessment),
-    [allRows, selectedAssessment],
-  );
-  const selectedAssessmentStats = useMemo(
-    () =>
-      selectedAssessment === "All Assessments"
-        ? data.stats
-        : buildStatsFromRows(selectedAssessmentRows),
-    [data.stats, selectedAssessment, selectedAssessmentRows],
-  );
-
   const filteredResults = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const working = allRows.filter((result) => {
@@ -106,10 +90,6 @@ export default function ResultsPageView({
     <div>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <ResultsHeader onExportCsv={() => exportResultsCsv(filteredResults)} />
-
-        <div className="mt-6">
-          <ResultsStats stats={selectedAssessmentStats} />
-        </div>
 
         <div className="mt-6">
           <ResultsFilters

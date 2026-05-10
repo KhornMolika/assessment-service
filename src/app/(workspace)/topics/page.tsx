@@ -14,14 +14,6 @@ export const metadata: Metadata = {
   title: "Topics",
 };
 
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null } },
-    { searchParams: { topic: "topic-algebra", query: "algebra", page: "1", pageSize: "10" } },
-  ],
-};
-
 function getTopicUsage({
   topic,
   bankTopicIds,

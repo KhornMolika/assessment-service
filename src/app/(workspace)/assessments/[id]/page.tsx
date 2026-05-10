@@ -5,6 +5,16 @@ import { getAssessmentDetailPageData } from "@/src/domains/assessment/api/assess
 import AssessmentDetailView from "@/src/domains/assessment/components/assessment-detail/AssessmentDetailView";
 import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
 
+export const unstable_instant = {
+  prefetch: "runtime",
+  samples: [
+    {
+      params: { id: "assessment-1" },
+      searchParams: { search: null, topic: null },
+    },
+  ],
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Assessment Detail | Assessments",
@@ -13,12 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function AssessmentDetailPageContent({
-  params,
+  dataPromise,
 }: {
-  params: Promise<{ id: string }>;
+  dataPromise: Promise<Awaited<ReturnType<typeof getAssessmentDetailPageData>>>;
 }) {
-  const { id } = await params;
-  const data = await getAssessmentDetailPageData(id);
+  const data = await dataPromise;
 
   if (!data) {
     notFound();
@@ -34,7 +43,9 @@ export default function AssessmentDetailPage({
 }) {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <AssessmentDetailPageContent params={params} />
+      <AssessmentDetailPageContent
+        dataPromise={params.then(({ id }) => getAssessmentDetailPageData(id))}
+      />
     </Suspense>
   );
 }

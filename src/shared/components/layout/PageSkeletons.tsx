@@ -35,28 +35,6 @@ function PageHeaderSkeleton({
   );
 }
 
-function StatsGridSkeleton({
-  count = 4,
-}: {
-  count?: number;
-}) {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {Array.from({ length: count }, (_, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-        >
-          <Skeleton className="h-11 w-11 rounded-xl" />
-          <Skeleton className="mt-4 h-4 w-28" />
-          <Skeleton className="mt-3 h-9 w-24" />
-          <Skeleton className="mt-4 h-4 w-full" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function CardGridSkeleton({
   cards = 2,
   rows = 4,
@@ -125,7 +103,6 @@ export function WorkspacePageSkeleton() {
   return (
     <div className="space-y-6 py-10 px-8">
       <PageHeaderSkeleton />
-      <StatsGridSkeleton />
       <CardGridSkeleton />
       <TableCardSkeleton />
     </div>
@@ -153,7 +130,6 @@ export function AnalyticsContentSkeleton() {
           <Skeleton className="h-11 w-64 rounded-xl" />
         </div>
       </div>
-      <StatsGridSkeleton />
       <CardGridSkeleton rows={3} />
       <CardGridSkeleton cards={1} rows={4} />
       <TableCardSkeleton rows={5} />
@@ -175,7 +151,6 @@ export function ResultsPageSkeleton() {
 export function ResultsContentSkeleton() {
   return (
     <>
-        <StatsGridSkeleton />
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="grid gap-3 xl:grid-cols-4">
             <Skeleton className="h-11 w-full rounded-xl" />

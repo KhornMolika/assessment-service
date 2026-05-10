@@ -10,7 +10,6 @@ import {
 import AssessmentsCatalogLoading from "@/src/domains/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
 import AssessmentsCatalogToolbar from "@/src/domains/assessment/components/assessment-catalog/AssessmentsCatalogToolbar";
 import AssessmentsHeader from "@/src/domains/assessment/components/assessment-catalog/AssessmentsHeader";
-import AssessmentsStats from "@/src/domains/assessment/components/assessment-catalog/AssessmentsStats";
 import AssessmentsTableInteractive from "@/src/domains/assessment/components/assessment-catalog/AssessmentsTableInteractive";
 import type { AssessmentTopicMap } from "@/src/domains/content/types/topic.types";
 import {
@@ -29,14 +28,6 @@ import {
 
 export const metadata: Metadata = {
   title: "Assessments",
-};
-
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, delivery: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", delivery: "SELF_PACED", bank: "bank-1", assessment: "all-assessments", search: "quiz" } },
-  ],
 };
 
 type AssessmentSearchParams = Promise<{
@@ -162,7 +153,6 @@ async function AssessmentsPageContent({
   return (
     <div className="space-y-6 px-4 py-4">
       <AssessmentsHeader totalAssessments={data.stats.totalAssessments} />
-      <AssessmentsStats stats={data.stats} />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

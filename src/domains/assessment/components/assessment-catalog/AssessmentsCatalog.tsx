@@ -19,7 +19,6 @@ import {
 import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import AssessmentsHeader from "./AssessmentsHeader";
-import AssessmentsStats from "./AssessmentsStats";
 import AssessmentsTable from "./AssessmentsTable";
 
 const deliveryFilters: Array<{
@@ -133,8 +132,6 @@ export default function AssessmentsCatalog({
   return (
     <div className="space-y-6 px-4 py-4">
       <AssessmentsHeader totalAssessments={stats.totalAssessments} />
-
-      <AssessmentsStats stats={stats} />
 
       <PaginatedCollectionCard
         title="Assessment catalog"

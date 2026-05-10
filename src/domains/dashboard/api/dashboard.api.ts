@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type {
   AssessmentStatus,
   DashboardAnalytics,
@@ -9,11 +11,23 @@ import {
   getMockQuestions,
   getMockTopics,
 } from "@/src/domains/content/api/content.api";
-import mockData from "./mock-data.json";
 
 const DASHBOARD_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
-const mockDashboardOverviewSections = mockData.overviewSections as DashboardOverviewSections;
-const mockDashboardAnalytics = mockData.analytics as DashboardAnalytics;
+type DashboardMockData = {
+  overviewSections: DashboardOverviewSections;
+  analytics: DashboardAnalytics;
+};
+
+let dashboardMockDataPromise: Promise<DashboardMockData> | undefined;
+
+function getDashboardMockData() {
+  dashboardMockDataPromise ??= readFile(
+    path.join(process.cwd(), "src/domains/dashboard/api/mock-data.json"),
+    "utf8",
+  ).then((value) => JSON.parse(value) as DashboardMockData);
+
+  return dashboardMockDataPromise;
+}
 
 function formatRelativeTime(dateString: string) {
   const now = new Date(DASHBOARD_REFERENCE_TIMESTAMP);
@@ -53,24 +67,25 @@ export async function getDashboardOverviewSections(): Promise<DashboardOverviewS
     getMockQuestions(),
     getMockTopics(),
   ]);
+  const { overviewSections } = await getDashboardMockData();
 
   return {
-    ...mockDashboardOverviewSections,
+    ...overviewSections,
     stats: [
       {
-        ...mockDashboardOverviewSections.stats[0],
+        ...overviewSections.stats[0],
         value: `${topics.length}`,
       },
       {
-        ...mockDashboardOverviewSections.stats[1],
+        ...overviewSections.stats[1],
         value: `${assessmentPage.assessments.length}`,
       },
       {
-        ...mockDashboardOverviewSections.stats[2],
+        ...overviewSections.stats[2],
         value: `${banks.length}`,
       },
       {
-        ...mockDashboardOverviewSections.stats[3],
+        ...overviewSections.stats[3],
         value: `${questions.length}`,
       },
     ],
@@ -101,9 +116,10 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   "use cache";
 
   const [assessmentPage] = await Promise.all([getAssessmentCatalogPageData()]);
+  const { analytics } = await getDashboardMockData();
 
   return {
-    ...mockDashboardAnalytics,
+    ...analytics,
     recentAssessments: assessmentPage.assessments
       .slice()
       .sort(

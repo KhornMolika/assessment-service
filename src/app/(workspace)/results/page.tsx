@@ -3,9 +3,8 @@ import type { Metadata } from "next";
 import { getAssessmentResultsPageData } from "@/src/domains/assessment/api/assessment.api";
 import ResultsExportButton from "@/src/domains/assessment/components/results/ResultsExportButton";
 import ResultsToolbar from "@/src/domains/assessment/components/results/ResultsToolbar";
-import { ResultsStats } from "@/src/domains/assessment/components/results/ResultsStats";
 import { ResultsTable } from "@/src/domains/assessment/components/results/ResultsTable";
-import { buildRows, buildStatsFromRows } from "@/src/domains/assessment/components/results/results.utils";
+import { buildRows } from "@/src/domains/assessment/components/results/results.utils";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
 import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
 import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
@@ -15,14 +14,6 @@ import { ResultsContentSkeleton } from "@/src/shared/components/layout/PageSkele
 export const metadata: Metadata = {
   title: "Results",
   description: "Cross-assessment submission records, scoring outcomes, and manual review status.",
-};
-
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, bank: null, assessment: null, search: null, status: null, sort: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", bank: "bank-1", assessment: "all-assessments", search: "quiz", status: "Passed", sort: "score-high" } },
-  ],
 };
 
 type ResultsSearchParams = {
@@ -72,14 +63,6 @@ async function ResultsPageContent({
     "All Assessments",
     ...new Set(allRows.map((result) => result.assessment_title)),
   ];
-  const selectedAssessmentRows =
-    selectedAssessment === "All Assessments"
-      ? allRows
-      : allRows.filter((result) => result.assessment_title === selectedAssessment);
-  const selectedAssessmentStats =
-    selectedAssessment === "All Assessments"
-      ? data.stats
-      : buildStatsFromRows(selectedAssessmentRows);
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredResults = allRows
     .filter((result) => {
@@ -131,10 +114,6 @@ async function ResultsPageContent({
 
   return (
     <>
-        <div>
-          <ResultsStats stats={selectedAssessmentStats} />
-        </div>
-
         <div className="mt-6">
           <ResultsToolbar
             assessmentOptions={assessmentOptions}

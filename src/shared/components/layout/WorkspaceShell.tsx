@@ -1,7 +1,9 @@
 import { Suspense } from "react";
-import { TopbarSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import {
+  TopbarSkeleton,
+  WorkspacePageSkeleton,
+} from "@/src/shared/components/layout/PageSkeletons";
 import { SidebarProvider } from "@/src/shared/context/sidebar-context";
-import MainContentFrame from "./MainContentFrame";
 import Overlay from "./Overlay";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -20,9 +22,8 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
             <Topbar />
           </Suspense>
           <main className="relative flex-1 overflow-auto p-4">
-            {children}
-            <Suspense fallback={null}>
-              <MainContentFrame />
+            <Suspense fallback={<WorkspacePageSkeleton />}>
+              {children}
             </Suspense>
           </main>
         </div>

@@ -18,7 +18,6 @@ import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
 import BankCard from "./BankCard";
 import BanksHeader from "./BanksHeader";
-import BanksStats from "./BanksStats";
 
 export default function BanksCatalog({
   banks,
@@ -69,33 +68,6 @@ export default function BanksCatalog({
     [bankItems],
   );
 
-  const largestBank = useMemo(() => {
-    return bankItems.reduce<Bank | undefined>((largest, bank) => {
-      if (!largest || bank.question_count > largest.question_count) {
-        return bank;
-      }
-
-      return largest;
-    }, undefined);
-  }, [bankItems]);
-
-  const publicBankCount = useMemo(
-    () => bankItems.filter((bank) => bank.visibility === "PUBLIC").length,
-    [bankItems],
-  );
-
-  const recentlyCreatedCount = useMemo(() => {
-    const now = new Date();
-
-    return bankItems.filter((bank) => {
-      const createdAt = new Date(bank.created_at);
-      const diffInDays = Math.floor(
-        (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      return diffInDays <= 31;
-    }).length;
-  }, [bankItems]);
-
   const handlePageSizeChange = (size: number) => {
     updateUrl({
       pageSize: size === 6 ? null : size,
@@ -113,12 +85,6 @@ export default function BanksCatalog({
   return (
     <div className="space-y-6 px-4 py-4">
       <BanksHeader bankCount={bankItems.length} totalQuestions={totalQuestions} />
-
-      <BanksStats
-        largestBank={largestBank}
-        publicBankCount={publicBankCount}
-        recentlyCreatedCount={recentlyCreatedCount}
-      />
 
       <PaginatedCollectionCard
         title="Bank library"

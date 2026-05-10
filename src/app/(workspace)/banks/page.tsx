@@ -5,7 +5,6 @@ import { getMockBankTopics, getMockBanks } from "@/src/domains/content/api/conte
 import BanksCatalogToolbar from "@/src/domains/content/components/bank/catalog/BanksCatalogToolbar";
 import BankGridInteractive from "@/src/domains/content/components/bank/catalog/BankGridInteractive";
 import BanksHeader from "@/src/domains/content/components/bank/catalog/BanksHeader";
-import BanksStats from "@/src/domains/content/components/bank/catalog/BanksStats";
 import type { Bank } from "@/src/domains/content/types/bank.types";
 import type { BankTopicMap } from "@/src/domains/content/types/topic.types";
 import {
@@ -23,18 +22,8 @@ import {
   CardTitle,
 } from "@/src/shared/components/ui/card";
 
-const BANK_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
-
 export const metadata: Metadata = {
   title: "Question Banks",
-};
-
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "6", bank: "bank-1", assessment: "all-assessments", search: "quiz" } },
-  ],
 };
 
 type BankSearchParams = Promise<{
@@ -96,18 +85,6 @@ function filterBanks({
   });
 }
 
-function getRecentlyCreatedCount(banks: Bank[]) {
-  const now = new Date(BANK_REFERENCE_TIMESTAMP);
-
-  return banks.filter((bank) => {
-    const createdAt = new Date(bank.created_at);
-    const diffInDays = Math.floor(
-      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    return diffInDays <= 31;
-  }).length;
-}
-
 async function BanksPageContent({ searchParams }: { searchParams: BankSearchParams }) {
   const resolvedSearchParams = await searchParams;
   const topicFilter =
@@ -131,25 +108,11 @@ async function BanksPageContent({ searchParams }: { searchParams: BankSearchPara
     activePage * itemsPerPage,
   );
   const totalQuestions = banks.reduce((sum, bank) => sum + bank.question_count, 0);
-  const largestBank = banks.reduce<Bank | undefined>((largest, bank) => {
-    if (!largest || bank.question_count > largest.question_count) {
-      return bank;
-    }
-
-    return largest;
-  }, undefined);
-  const publicBankCount = banks.filter((bank) => bank.visibility === "PUBLIC").length;
-  const recentlyCreatedCount = getRecentlyCreatedCount(banks);
   const hasActiveFilters = query.trim().length > 0 || topicFilter !== ALL_TOPICS_VALUE;
 
   return (
     <div className="space-y-6 px-4 py-4">
       <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
-      <BanksStats
-        largestBank={largestBank}
-        publicBankCount={publicBankCount}
-        recentlyCreatedCount={recentlyCreatedCount}
-      />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

@@ -21,7 +21,6 @@ import {
   useSelectedTopic,
 } from "@/src/shared/hooks/use-global-topic-filter";
 import { useSidebar } from "../../context/sidebar-context";
-import { announceWorkspaceNavigation } from "./MainContentFrame";
 import SidebarNavLinks from "./SidebarNavLinks";
 
 const workspaceNavigation = [
@@ -67,7 +66,6 @@ export default function Sidebar() {
   const handleNavigation = (nextPathname?: string) => {
     if (nextPathname) {
       setOptimisticPathname(nextPathname);
-      announceWorkspaceNavigation(nextPathname);
     }
     setSidebarOpen(false);
   };

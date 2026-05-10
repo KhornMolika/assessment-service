@@ -33,14 +33,6 @@ export const metadata: Metadata = {
   description: "Search assessments, question banks, and questions across the workspace.",
 };
 
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", bank: "bank-1", assessment: "all-assessments", search: "quiz" } },
-  ],
-};
-
 type SearchPageParams = {
   topic?: string | string[];
   search?: string | string[];

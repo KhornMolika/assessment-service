@@ -1,12 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { FileWarning, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import type { AssessmentScopedResultsPageData } from "@/src/domains/assessment/types/assessment-results.types";
 import { BackButton } from "@/src/shared/components/navigation/BackButton";
 import { Badge } from "@/src/shared/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/shared/components/ui/card";
-import { ResultsStats } from "../results/ResultsStats";
 import { ResultsTable } from "../results/ResultsTable";
 import { buildRows } from "../results/results.utils";
 
@@ -39,93 +37,10 @@ function AssessmentReportHeader({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[360px] lg:max-w-[420px]">
-          <div className="rounded-2xl border border-border/70 bg-white/85 px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Delivery
-            </div>
-            <div className="mt-2 text-base font-semibold text-primary">
-              {data.assessment.delivery_mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-white/85 px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Status
-            </div>
-            <div className="mt-2 text-base font-semibold text-primary">{data.assessment.status}</div>
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-white/85 px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Participants
-            </div>
-            <div className="mt-2 text-base font-semibold text-primary">{data.stats.totalParticipants}</div>
-          </div>
-        </div>
+        <Badge variant="secondary">
+          {data.assessment.delivery_mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
+        </Badge>
       </div>
-    </div>
-  );
-}
-
-function AssessmentReportSummary({
-  data,
-}: {
-  data: AssessmentScopedResultsPageData;
-}) {
-  const pendingEntries = data.answer_entries.filter((entry) => entry.grading_status === "PENDING");
-
-  return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <Card className="border-border/70 bg-white/95 shadow-[0_18px_44px_rgba(20,53,43,0.08)]">
-        <CardHeader>
-          <CardTitle className="text-lg">Report Scope</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Question count
-            </div>
-            <div className="mt-2 text-2xl font-bold text-primary">{data.questions.length}</div>
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Answer sheets
-            </div>
-            <div className="mt-2 text-2xl font-bold text-primary">{data.answer_sheets.length}</div>
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Answer entries
-            </div>
-            <div className="mt-2 text-2xl font-bold text-primary">{data.answer_entries.length}</div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-border/70 bg-white/95 shadow-[0_18px_44px_rgba(20,53,43,0.08)]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <FileWarning className="h-4 w-4" />
-            Manual Review
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-800/80">
-              Pending sheets
-            </div>
-            <div className="mt-2 text-3xl font-bold text-primary">{data.stats.pendingReviewCount}</div>
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-4">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-inkd/80">
-              Pending answer entries
-            </div>
-            <div className="mt-2 text-lg font-semibold text-primary">{pendingEntries.length}</div>
-          </div>
-          <div className="text-sm text-inkd">
-            Open a participant result to review essay, short-answer, and file-upload responses that are still pending.
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
@@ -154,14 +69,6 @@ export default function AssessmentScopedResultsView({
     <div>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <AssessmentReportHeader data={data} />
-
-        <div className="mt-6">
-          <ResultsStats stats={data.stats} />
-        </div>
-
-        <div className="mt-6">
-          <AssessmentReportSummary data={data} />
-        </div>
 
         <div className="mt-6 rounded-[28px] border border-border/70 bg-white/95 p-4 shadow-[0_18px_44px_rgba(20,53,43,0.08)] sm:p-6">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

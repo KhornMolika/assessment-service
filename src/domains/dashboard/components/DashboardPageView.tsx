@@ -15,14 +15,12 @@ import { Badge } from "@/src/shared/components/ui/badge";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic, bankMatchesTopic, questionMatchesTopic } from "@/src/domains/content/utils/topic-utils";
 import type {
   DashboardOverviewSections,
-  DashboardStat,
   OperationalHighlight,
   RecentAssessment,
 } from "../types/dashboard.types";
 import OperationalHighlights from "./OperationalHighlights";
 import QuickLaunchpad from "./QuickLaunchpad";
 import RecentAssessmentTable from "./RecentAssessmentTable";
-import StatsGridSection from "./StatsGridSection";
 
 const DASHBOARD_REFERENCE_DATE = new Date("2026-04-30T00:00:00.000Z");
 
@@ -69,64 +67,6 @@ function getEndOfWeek(date: Date) {
   const endOfWeek = getStartOfWeek(date);
   endOfWeek.setDate(endOfWeek.getDate() + 7);
   return endOfWeek;
-}
-
-function buildStats({
-  topics,
-  filteredAssessments,
-  filteredBanks,
-  filteredQuestions,
-  selectedTopic,
-}: {
-  topics: Topic[];
-  filteredAssessments: AssessmentCatalogItem[];
-  filteredBanks: Bank[];
-  filteredQuestions: QuestionCatalogItem[];
-  selectedTopic: string;
-}): DashboardStat[] {
-  const hasFilteredContent =
-    filteredAssessments.length > 0 ||
-    filteredBanks.length > 0 ||
-    filteredQuestions.length > 0;
-  const topicCount =
-    selectedTopic === ALL_TOPICS_VALUE ? topics.length : hasFilteredContent ? 1 : 0;
-
-  return [
-    {
-      id: "total-topics",
-      label: "Total Topics",
-      value: `${topicCount}`,
-      helper:
-        selectedTopic === ALL_TOPICS_VALUE
-          ? "Shared taxonomy topics used across questions, banks, and assessments."
-          : "The currently selected topic scope applied across the dashboard.",
-      icon: "radio",
-    },
-    {
-      id: "total-assessments",
-      label: "Total Assessments",
-      value: `${filteredAssessments.length}`,
-      helper: "Assessments currently visible in the selected topic scope.",
-      icon: "clipboardList",
-      tone: "accent",
-    },
-    {
-      id: "question-banks",
-      label: "Question Banks",
-      value: `${filteredBanks.length}`,
-      helper: "Question banks mapped to the current topic scope.",
-      icon: "library",
-      tone: "warning",
-    },
-    {
-      id: "total-questions",
-      label: "Total Questions",
-      value: `${filteredQuestions.length}`,
-      helper: "Reusable questions mapped to the current topic scope.",
-      icon: "helpCircle",
-      tone: "success",
-    },
-  ];
 }
 
 function buildOperationalHighlights(
@@ -226,14 +166,6 @@ export default function DashboardPageView({
           questionMatchesTopic(question.id, selectedTopic, questionTopics),
         );
 
-  const stats = buildStats({
-    topics,
-    filteredAssessments,
-    filteredBanks,
-    filteredQuestions,
-    selectedTopic,
-  });
-
   const operationalHighlights = buildOperationalHighlights(filteredAssessments);
   const recentAssessments = buildRecentAssessments(filteredAssessments);
 
@@ -266,8 +198,6 @@ export default function DashboardPageView({
         />
       ) : (
         <>
-          <StatsGridSection items={stats} />
-
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <OperationalHighlights items={operationalHighlights} />
             <QuickLaunchpad items={quickLaunchpad} />

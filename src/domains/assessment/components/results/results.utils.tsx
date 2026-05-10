@@ -1,4 +1,3 @@
-import { FileText, Trophy, TrendingUp, Users } from "lucide-react";
 import type { AssessmentResultsPageData } from "@/src/domains/assessment/types/assessment-results.types";
 import { Badge } from "@/src/shared/components/ui/badge";
 import type { ResultsRow } from "./results.types";
@@ -16,36 +15,6 @@ export function getOutcomeBadge(status: "PASSED" | "FAILED" | "PENDING_REVIEW") 
   if (status === "PASSED") return <Badge variant="success">Passed</Badge>;
   if (status === "FAILED") return <Badge variant="warning">Failed</Badge>;
   return <Badge variant="pending">Pending review</Badge>;
-}
-
-export function getStatCards(data: AssessmentResultsPageData["stats"]) {
-  return [
-    { label: "Total Submissions", value: `${data.totalSubmissions}`, icon: FileText, iconClassName: "bg-green-100 text-green-600" },
-    { label: "Average Score", value: `${data.averageScorePercent}%`, icon: Trophy, iconClassName: "bg-blue-100 text-blue-700" },
-    { label: "Pass Rate", value: `${data.passRatePercent}%`, icon: TrendingUp, iconClassName: "bg-amber-100 text-amber-700" },
-    { label: "Total Participants", value: `${data.totalParticipants}`, icon: Users, iconClassName: "bg-orange-100 text-orange-700" },
-  ];
-}
-
-export function buildStatsFromRows(rows: ResultsRow[]): AssessmentResultsPageData["stats"] {
-  const scoredRows = rows.filter((row) => row.percentage != null);
-  const passedRows = rows.filter((row) => row.outcomeStatus === "PASSED");
-  const participantCount = new Set(rows.map((row) => row.participant_id)).size;
-
-  return {
-    totalSubmissions: rows.length,
-    averageScorePercent:
-      scoredRows.length > 0
-        ? Math.round(
-            scoredRows.reduce((sum, row) => sum + (row.percentage ?? 0), 0) / scoredRows.length,
-          )
-        : 0,
-    passRatePercent:
-      rows.length > 0
-        ? Math.round((passedRows.length / rows.length) * 100)
-        : 0,
-    totalParticipants: participantCount,
-  };
 }
 
 export function buildRows(data: AssessmentResultsPageData): ResultsRow[] {

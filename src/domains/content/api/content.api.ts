@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type {
   Bank,
   BankTopicMap,
@@ -7,50 +9,121 @@ import type {
   Topic,
 } from "../types";
 import type { QuestionFormData, QuestionFormType } from "../types/question-form.types";
-import mockData from "./mock-data.json";
 import { duplicateQuestionIdPattern } from "../utils/question-duplicate-id";
 import { inferAiGradingMode, syncAiGradingFormState } from "../utils/question-ai-grading";
 
-const mockTopics = mockData.topics as Topic[];
-const mockBanks = mockData.banks as Bank[];
-const mockQuestions = mockData.questions as QuestionCatalogItem[];
-const mockBankTopics = mockData.bankTopics as BankTopicMap[];
-const mockQuestionTopics = mockData.questionTopics as QuestionTopicMap[];
+const contentJsonPromises = new Map<string, Promise<unknown>>();
+
+function loadContentJson<T>(fileName: string): Promise<T> {
+  if (!contentJsonPromises.has(fileName)) {
+    contentJsonPromises.set(
+      fileName,
+      readFile(
+        path.join(process.cwd(), "src/domains/content/api/mock-data", fileName),
+        "utf8",
+      ).then((value) => JSON.parse(value.replace(/^\uFEFF/, "")) as T),
+    );
+  }
+
+  return contentJsonPromises.get(fileName) as Promise<T>;
+}
+
+function getMockBanksSeed() {
+  return loadContentJson<Bank[]>("banks.json");
+}
+
+function getMockQuestionsSeed() {
+  return loadContentJson<QuestionCatalogItem[]>("questions.json");
+}
+
+function getMockTopicsSeed() {
+  return loadContentJson<Topic[]>("topics.json");
+}
+
+function getMockBankTopicsSeed() {
+  return loadContentJson<BankTopicMap[]>("bankTopics.json");
+}
+
+function getMockQuestionTopicsSeed() {
+  return loadContentJson<QuestionTopicMap[]>("questionTopics.json");
+}
 
 export async function getMockBanks(): Promise<Bank[]> {
   "use cache";
 
-  return mockBanks;
+  return getMockBanksSeed();
 }
 
 export async function getMockBankById(id: string): Promise<Bank | undefined> {
   "use cache";
 
-  return mockBanks.find((bank) => bank.id === id);
+  const banks = await getMockBanksSeed();
+  return banks.find((bank) => bank.id === id);
 }
 
 export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
   "use cache";
 
-  return mockQuestions;
+  return getMockQuestionsSeed();
+}
+
+export async function getMockQuestionSummariesForBankName(
+  bankName: string,
+  limit: number,
+): Promise<Array<Pick<QuestionCatalogItem, "text" | "type" | "points">>> {
+  "use cache";
+
+  const [banks, questions] = await Promise.all([
+    getMockBanksSeed(),
+    getMockQuestionsSeed(),
+  ]);
+  const normalizedBankName = bankName.trim().toLowerCase();
+  const matchingBankIds = new Set(
+    banks
+      .filter((bank) => {
+        const normalizedBankId = bank.id.trim().toLowerCase();
+        const normalizedName = bank.name.trim().toLowerCase();
+
+        return (
+          normalizedName.includes(normalizedBankName) ||
+          normalizedBankName.includes(normalizedName) ||
+          normalizedBankId.includes(normalizedBankName)
+        );
+      })
+      .map((bank) => bank.id),
+  );
+  const matchingQuestions = questions
+    .filter(
+      (question) =>
+        question.bank_id != null && matchingBankIds.has(question.bank_id),
+    )
+    .slice(0, limit);
+  const selectedQuestions =
+    matchingQuestions.length > 0 ? matchingQuestions : questions.slice(0, limit);
+
+  return selectedQuestions.map(({ text, type, points }) => ({
+    text,
+    type,
+    points,
+  }));
 }
 
 export async function getMockTopics(): Promise<Topic[]> {
   "use cache";
 
-  return mockTopics;
+  return getMockTopicsSeed();
 }
 
 export async function getMockBankTopics(): Promise<BankTopicMap[]> {
   "use cache";
 
-  return mockBankTopics;
+  return getMockBankTopicsSeed();
 }
 
 export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
   "use cache";
 
-  return mockQuestionTopics;
+  return getMockQuestionTopicsSeed();
 }
 
 export async function getMockBankDetailPageData(id: string): Promise<{
@@ -59,8 +132,12 @@ export async function getMockBankDetailPageData(id: string): Promise<{
 }> {
   "use cache";
 
-  const bank = mockBanks.find((item) => item.id === id);
-  const bankQuestions = mockQuestions.filter(
+  const [banks, questions] = await Promise.all([
+    getMockBanksSeed(),
+    getMockQuestionsSeed(),
+  ]);
+  const bank = banks.find((item) => item.id === id);
+  const bankQuestions = questions.filter(
     (question) => question.bank_id != null && question.bank_id === id,
   );
 
@@ -73,9 +150,13 @@ export async function getMockBankDetailPageData(id: string): Promise<{
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
   "use cache";
 
+  const [banks, questions] = await Promise.all([
+    getMockBanksSeed(),
+    getMockQuestionsSeed(),
+  ]);
   return {
-    banks: mockBanks,
-    questions: mockQuestions,
+    banks,
+    questions,
   };
 }
 
@@ -212,7 +293,13 @@ export async function getMockQuestionDetail(id: string): Promise<QuestionDetailD
 
   const duplicateMatch = id.match(duplicateQuestionIdPattern);
   const sourceId = duplicateMatch?.[1] ?? id;
-  const sourceQuestion = mockQuestions.find((item) => item.id === sourceId) ?? mockQuestions[0];
+  const [banks, questions, questionTopics, topics] = await Promise.all([
+    getMockBanksSeed(),
+    getMockQuestionsSeed(),
+    getMockQuestionTopicsSeed(),
+    getMockTopicsSeed(),
+  ]);
+  const sourceQuestion = questions.find((item) => item.id === sourceId) ?? questions[0];
   const question =
     duplicateMatch == null
       ? sourceQuestion
@@ -222,13 +309,13 @@ export async function getMockQuestionDetail(id: string): Promise<QuestionDetailD
           text: `${sourceQuestion.text} (Copy)`,
         };
   const bank = question.bank_id
-    ? (mockBanks.find((item) => item.id === question.bank_id) ?? null)
+    ? (banks.find((item) => item.id === question.bank_id) ?? null)
     : null;
   const type = getQuestionTypeMeta(question.type);
-  const mappedTopicIds = mockQuestionTopics
+  const mappedTopicIds = questionTopics
     .filter((mapping) => mapping.question_id === sourceQuestion.id)
     .map((mapping) => mapping.topic_id);
-  const mappedTopics = mockTopics.filter((topic) => mappedTopicIds.includes(topic.id));
+  const mappedTopics = topics.filter((topic) => mappedTopicIds.includes(topic.id));
 
   const defaultOptions =
     question.type === "MCQ"
@@ -487,10 +574,14 @@ export async function getMockQuestionEditPageData(id: string): Promise<{
   "use cache";
 
   const question = await getMockQuestionDetail(id);
+  const [banks, topics] = await Promise.all([
+    getMockBanksSeed(),
+    getMockTopicsSeed(),
+  ]);
 
   return {
-    banks: mockBanks,
-    topics: mockTopics,
+    banks,
+    topics,
     formData: mapQuestionDetailToEditorFormData(question),
   };
 }

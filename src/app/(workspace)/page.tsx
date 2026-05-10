@@ -6,14 +6,6 @@ import { getMockBankTopics, getMockBanks, getMockQuestionTopics, getMockQuestion
 import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
 import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
 
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    { searchParams: { topic: null, query: null, page: null, pageSize: null, bank: null, assessment: null, search: null } },
-    { searchParams: { topic: "topic-algebra", query: "quiz", page: "1", pageSize: "10", bank: "bank-1", assessment: "all-assessments", search: "quiz" } },
-  ],
-};
-
 type DashboardSearchParams = {
   topic?: string | string[];
 };

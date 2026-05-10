@@ -11,13 +11,6 @@ export interface AnalyticsPageViewProps {
   answerSheets: AnswerSheet[];
 }
 
-export interface AnalyticsSummaryStat {
-  id: string;
-  label: string;
-  value: string;
-  helper: string;
-}
-
 export interface AnalyticsDistributionItem {
   id: string;
   label: string;
@@ -39,7 +32,6 @@ export interface AnalyticsAssessmentRow {
 }
 
 export interface AnalyticsSnapshot {
-  summary: AnalyticsSummaryStat[];
   questionTypeDistribution: AnalyticsDistributionItem[];
   difficultyDistribution: AnalyticsDistributionItem[];
   questionBreakdown: AnalyticsQuestionBreakdown[];

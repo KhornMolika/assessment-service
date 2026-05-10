@@ -2,6 +2,8 @@
   AssessmentCatalogItem,
   AssessmentCatalogPageData,
 } from "@/src/domains/assessment/types/assessment-catalog.types";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import type {
   AssessmentDetailPageData,
   AssessmentDetailRecord,
@@ -22,8 +24,12 @@ import type {
   QuestionCatalogItem,
   Topic,
 } from "@/src/domains/content/types";
-import { getMockBanks, getMockQuestions, getMockTopics } from "@/src/domains/content/api/content.api";
-import mockData from "./mock-data.json";
+import {
+  getMockBanks,
+  getMockQuestionSummariesForBankName,
+  getMockQuestions,
+  getMockTopics,
+} from "@/src/domains/content/api/content.api";
 
 type AnswerEntrySeed = {
   id: string;
@@ -38,13 +44,77 @@ type AnswerEntrySeed = {
 };
 
 const ASSESSMENT_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
-const mockAssessments = mockData.assessments as AssessmentCatalogItem[];
-const mockAssessmentTopics = mockData.assessmentTopics as AssessmentTopicMap[];
-const mockResultParticipants = mockData.resultParticipants as Participant[];
-const mockResultAnswerSheets = mockData.resultAnswerSheets as AnswerSheet[];
-const mockResultQuestionSeeds = mockData.resultQuestionSeeds as ResultQuestionSeed[];
-const mockResultAnswerEntrySeeds = mockData.resultAnswerEntrySeeds as AnswerEntrySeed[];
+const assessmentJsonPromises = new Map<string, Promise<unknown>>();
 
+function loadAssessmentJson<T>(fileName: string): Promise<T> {
+  if (!assessmentJsonPromises.has(fileName)) {
+    assessmentJsonPromises.set(
+      fileName,
+      readFile(
+        path.join(process.cwd(), "src/domains/assessment/api/mock-data", fileName),
+        "utf8",
+      ).then((value) => JSON.parse(value.replace(/^\uFEFF/, "")) as T),
+    );
+  }
+
+  return assessmentJsonPromises.get(fileName) as Promise<T>;
+}
+
+function getMockAssessmentsSeed() {
+  return loadAssessmentJson<AssessmentCatalogItem[]>("assessments.json");
+}
+
+function getMockAssessmentTopicsSeed() {
+  return loadAssessmentJson<AssessmentTopicMap[]>("assessmentTopics.json");
+}
+
+function getMockResultParticipantsSeed() {
+  return loadAssessmentJson<Participant[]>("resultParticipants.json");
+}
+
+function getMockResultAnswerSheetsSeed() {
+  return loadAssessmentJson<AnswerSheet[]>("resultAnswerSheets.json");
+}
+
+function getMockResultQuestionSeedsSeed() {
+  return loadAssessmentJson<ResultQuestionSeed[]>("resultQuestionSeeds.json");
+}
+
+function getMockResultAnswerEntrySeedsSeed() {
+  return loadAssessmentJson<AnswerEntrySeed[]>("resultAnswerEntrySeeds.json");
+}
+
+type AssessmentResultsSeedData = {
+  assessments: AssessmentCatalogItem[];
+  resultParticipants: Participant[];
+  resultAnswerSheets: AnswerSheet[];
+  resultQuestionSeeds: ResultQuestionSeed[];
+  resultAnswerEntrySeeds: AnswerEntrySeed[];
+};
+
+async function getAssessmentResultsSeedData(): Promise<AssessmentResultsSeedData> {
+  const [
+    assessments,
+    resultParticipants,
+    resultAnswerSheets,
+    resultQuestionSeeds,
+    resultAnswerEntrySeeds,
+  ] = await Promise.all([
+    getMockAssessmentsSeed(),
+    getMockResultParticipantsSeed(),
+    getMockResultAnswerSheetsSeed(),
+    getMockResultQuestionSeedsSeed(),
+    getMockResultAnswerEntrySeedsSeed(),
+  ]);
+
+  return {
+    assessments,
+    resultParticipants,
+    resultAnswerSheets,
+    resultQuestionSeeds,
+    resultAnswerEntrySeeds,
+  };
+}
 
 function getStartOfWeek(date: Date) {
   const startOfWeek = new Date(date);
@@ -69,20 +139,21 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
   const now = new Date(ASSESSMENT_REFERENCE_TIMESTAMP);
   const startOfWeek = getStartOfWeek(now);
   const endOfWeek = getEndOfWeek(now);
+  const assessments = await getMockAssessmentsSeed();
 
   return {
-    assessments: mockAssessments,
+    assessments,
     stats: {
-      totalAssessments: mockAssessments.length,
-      draftCount: mockAssessments.filter((assessment) => assessment.lifecycle === "DRAFT").length,
-      activeCount: mockAssessments.filter((assessment) => assessment.lifecycle === "ACTIVE").length,
-      selfPacedCount: mockAssessments.filter(
+      totalAssessments: assessments.length,
+      draftCount: assessments.filter((assessment) => assessment.lifecycle === "DRAFT").length,
+      activeCount: assessments.filter((assessment) => assessment.lifecycle === "ACTIVE").length,
+      selfPacedCount: assessments.filter(
         (assessment) => assessment.delivery_mode === "SELF_PACED",
       ).length,
-      realTimeCount: mockAssessments.filter(
+      realTimeCount: assessments.filter(
         (assessment) => assessment.delivery_mode === "REAL_TIME",
       ).length,
-      startingThisWeekCount: mockAssessments.filter((assessment) => {
+      startingThisWeekCount: assessments.filter((assessment) => {
         const startsAt = new Date(assessment.starts_at);
 
         return startsAt >= startOfWeek && startsAt < endOfWeek;
@@ -94,13 +165,14 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
 export async function getMockAssessmentTopics(): Promise<AssessmentTopicMap[]> {
   "use cache";
 
-  return mockAssessmentTopics;
+  return getMockAssessmentTopicsSeed();
 }
 
 export async function getAssessmentCatalogItemById(id: string): Promise<AssessmentCatalogItem | null> {
   "use cache";
 
-  return mockAssessments.find((assessment) => assessment.id === id) ?? null;
+  const assessments = await getMockAssessmentsSeed();
+  return assessments.find((assessment) => assessment.id === id) ?? null;
 }
 
 function buildAssessmentDetailRecord(assessment: AssessmentCatalogItem): AssessmentDetailRecord {
@@ -172,8 +244,7 @@ function buildRecentActivity(assessment: AssessmentCatalogItem) {
 
 function buildAssessmentQuestions(
   assessment: AssessmentCatalogItem,
-  questions: QuestionCatalogItem[],
-  banks: Bank[],
+  questionSummaries: Array<Pick<QuestionCatalogItem, "text" | "type" | "points">>,
 ): AssessmentDetailPageData["questions"] {
   if (assessment.id === "assessment-1" && assessment.delivery_mode === "SELF_PACED") {
     return [
@@ -240,33 +311,7 @@ function buildAssessmentQuestions(
     ];
   }
 
-  const normalizedBankName = assessment.question_bank_name.trim().toLowerCase();
-  const matchingBankIds = new Set(
-    banks
-      .filter((bank) => {
-        const normalizedBankId = bank.id.trim().toLowerCase();
-        const normalizedName = bank.name.trim().toLowerCase();
-
-        return (
-          normalizedName.includes(normalizedBankName) ||
-          normalizedBankName.includes(normalizedName) ||
-          normalizedBankId.includes(normalizedBankName)
-        );
-      })
-      .map((bank) => bank.id),
-  );
-
-  const matchingQuestions = questions
-    .filter(
-      (question) =>
-        question.bank_id != null && matchingBankIds.has(question.bank_id),
-    )
-    .slice(0, 8);
-
-  const fallbackQuestions = questions.slice(0, 8);
-  const selectedQuestions = matchingQuestions.length > 0 ? matchingQuestions : fallbackQuestions;
-
-  return selectedQuestions.map((question, index) => ({
+  return questionSummaries.map((question, index) => ({
     id: `${assessment.id}-question-${index + 1}`,
     question: question.text,
     type: question.type,
@@ -285,13 +330,16 @@ export async function getAssessmentDetailPageData(
     return null;
   }
 
-  const [banks, questions] = await Promise.all([getMockBanks(), getMockQuestions()]);
+  const questionSummaries = await getMockQuestionSummariesForBankName(
+    assessment.question_bank_name,
+    8,
+  );
 
   return {
     assessment: buildAssessmentDetailRecord(assessment),
     topPerformers: buildTopPerformers(assessment),
     recentActivity: buildRecentActivity(assessment),
-    questions: buildAssessmentQuestions(assessment, questions, banks),
+    questions: buildAssessmentQuestions(assessment, questionSummaries),
   };
 }
 
@@ -304,8 +352,8 @@ type ResultQuestionSeed = ResultQuestionEntity & {
   correct_answer: unknown;
 };
 
-function buildResultsQuestions(): ResultQuestionEntity[] {
-  return buildResultsQuestionSeeds().map(({ id, question_text, type_id, points }) => ({
+function buildResultsQuestions(data: AssessmentResultsSeedData): ResultQuestionEntity[] {
+  return buildResultsQuestionSeeds(data).map(({ id, question_text, type_id, points }) => ({
     id,
     question_text,
     type_id,
@@ -313,8 +361,8 @@ function buildResultsQuestions(): ResultQuestionEntity[] {
   }));
 }
 
-function buildResultQuestionLookup() {
-  return new Map(buildResultsQuestionSeeds().map((question) => [question.id, question] as const));
+function buildResultQuestionLookup(data: AssessmentResultsSeedData) {
+  return new Map(buildResultsQuestionSeeds(data).map((question) => [question.id, question] as const));
 }
 
 function createAnswerEntry(
@@ -358,32 +406,33 @@ function createAnswerEntry(
   };
 }
 
-function buildResultsParticipants(): Participant[] {
-  return mockResultParticipants;
+function buildResultsParticipants(data: AssessmentResultsSeedData): Participant[] {
+  return data.resultParticipants;
 }
 
-function buildResultsAnswerSheets(): AnswerSheet[] {
-  return mockResultAnswerSheets;
+function buildResultsAnswerSheets(data: AssessmentResultsSeedData): AnswerSheet[] {
+  return data.resultAnswerSheets;
 }
 
-function buildResultsQuestionSeeds(): ResultQuestionSeed[] {
-  return mockResultQuestionSeeds;
+function buildResultsQuestionSeeds(data: AssessmentResultsSeedData): ResultQuestionSeed[] {
+  return data.resultQuestionSeeds;
 }
 
-function buildResultsAnswerEntries(): AnswerEntry[] {
-  const questionLookup = buildResultQuestionLookup();
+function buildResultsAnswerEntries(data: AssessmentResultsSeedData): AnswerEntry[] {
+  const questionLookup = buildResultQuestionLookup(data);
 
-  return mockResultAnswerEntrySeeds.map((seed) => createAnswerEntry(questionLookup, seed));
+  return data.resultAnswerEntrySeeds.map((seed) => createAnswerEntry(questionLookup, seed));
 }
 
 export async function getAssessmentResultsPageData(): Promise<AssessmentResultsPageData> {
   "use cache";
 
-  const assessments = mockAssessments;
-  const participants = buildResultsParticipants();
-  const answer_sheets = buildResultsAnswerSheets();
-  const answer_entries = buildResultsAnswerEntries();
-  const questions = buildResultsQuestions();
+  const mockData = await getAssessmentResultsSeedData();
+  const assessments = mockData.assessments;
+  const participants = buildResultsParticipants(mockData);
+  const answer_sheets = buildResultsAnswerSheets(mockData);
+  const answer_entries = buildResultsAnswerEntries(mockData);
+  const questions = buildResultsQuestions(mockData);
   const topics: Topic[] = await getMockTopics();
   const assessment_topics = await getMockAssessmentTopics();
   const submittedSheets = answer_sheets.filter((sheet) => sheet.submitted_at != null);
@@ -423,11 +472,12 @@ export async function getAssessmentResultSheetPageData(
 ): Promise<AssessmentResultSheetPageData | null> {
   "use cache";
 
-  const assessments = mockAssessments;
-  const participants = buildResultsParticipants();
-  const answer_sheets = buildResultsAnswerSheets();
-  const answer_entries = buildResultsAnswerEntries();
-  const questions = buildResultsQuestions();
+  const mockData = await getAssessmentResultsSeedData();
+  const assessments = mockData.assessments;
+  const participants = buildResultsParticipants(mockData);
+  const answer_sheets = buildResultsAnswerSheets(mockData);
+  const answer_entries = buildResultsAnswerEntries(mockData);
+  const questions = buildResultsQuestions(mockData);
 
   const answer_sheet = answer_sheets.find((sheet) => sheet.id === sheetId);
 
