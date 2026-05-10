@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  cacheComponents: true,
+  experimental: {
+    staleTimes: {
+      dynamic: 120,
+      static: 300,
+    },
+    turbopackFileSystemCacheForDev: true,
+  },
 };
 
 export default nextConfig;

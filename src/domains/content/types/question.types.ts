@@ -5,7 +5,7 @@ export type Difficulty = "easy" | "medium" | "hard";
 
 export interface Question {
   id: string;
-  bank_id: string;
+  bank_id: string | null;
   type_id: string;
   question_text: string;
   language: "EN" | "KH";

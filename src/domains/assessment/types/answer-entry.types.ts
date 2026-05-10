@@ -11,10 +11,12 @@ export interface AnswerEntry {
   sheet_id: string;
   question_id: string;
 
-  response: Record<string, any>; // JSONB
+  response: string | Record<string, unknown>;
   question_snapshot: QuestionSnapshot;
 
   is_correct: boolean | null;
   score_awarded: number;
   grading_status: GradingStatus;
+  graded_at: string | null;
+  updated_at: string;
 }

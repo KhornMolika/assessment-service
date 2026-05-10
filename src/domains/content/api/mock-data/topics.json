@@ -1,0 +1,56 @@
+﻿[
+    {
+        "id":  "topic-algebra",
+        "name":  "Algebra",
+        "description":  "Equations, expressions, and algebraic reasoning.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-geometry",
+        "name":  "Geometry",
+        "description":  "Shapes, measurement, and spatial reasoning.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-chemistry",
+        "name":  "Chemistry",
+        "description":  "Chemical structure, bonding, and reactions.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-botany",
+        "name":  "Botany",
+        "description":  "Plant biology, photosynthesis, and classification.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-history",
+        "name":  "History",
+        "description":  "Historical analysis and contextual understanding.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-onboarding",
+        "name":  "Onboarding",
+        "description":  "Employee onboarding and feedback workflows.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-security",
+        "name":  "Security",
+        "description":  "Security awareness, phishing, and device hygiene.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-physics",
+        "name":  "Physics",
+        "description":  "Motion, force, and mechanics fundamentals.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    },
+    {
+        "id":  "topic-marketing",
+        "name":  "Marketing",
+        "description":  "Campaign planning, channels, and acquisition.",
+        "created_at":  "2026-03-01T08:00:00Z"
+    }
+]

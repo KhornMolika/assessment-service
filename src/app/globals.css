@@ -2,9 +2,9 @@
 
 @theme {
   /* Typography */
-  --font-heading: "DM Serif Display", serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-khmer: "Koh Santepheap", serif;
+  --font-heading: var(--font-heading-family), serif;
+  --font-sans: var(--font-sans-family), ui-sans-serif, system-ui, sans-serif;
+  --font-khmer: var(--font-khmer-family), serif;
 
   /* NBFSA Brand Colors */
   --color-p: #1b4332;
@@ -103,5 +103,169 @@
   /* Khmer text support */
   [lang="kh"] {
     @apply font-khmer;
+  }
+}
+
+@keyframes realtime-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 107, 111, 0.35);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 14px rgba(255, 107, 111, 0);
+  }
+}
+
+@keyframes realtime-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes realtime-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes realtime-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes realtime-bar-grow {
+  0% {
+    opacity: 0.35;
+    transform: scaleY(0.08);
+    filter: saturate(0.75) brightness(1.08);
+  }
+  65% {
+    opacity: 1;
+    transform: scaleY(1.04);
+    filter: saturate(1.08) brightness(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes realtime-join-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(76, 201, 240, 0.16);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(76, 201, 240, 0);
+  }
+}
+
+@keyframes realtime-join-card {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes realtime-leaderboard-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@layer utilities {
+  .rt-stage-shell {
+    background:
+      radial-gradient(circle at top left, rgba(255, 209, 102, 0.18), transparent 24%),
+      radial-gradient(circle at top right, rgba(76, 201, 240, 0.18), transparent 26%),
+      linear-gradient(180deg, #fffef8 0%, #f7f5f0 100%);
+  }
+
+  .rt-card-pop {
+    animation: realtime-pop 280ms ease-out;
+  }
+
+  .rt-floating {
+    animation: realtime-float 3.2s ease-in-out infinite;
+  }
+
+  .rt-answer-tile {
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0);
+  }
+
+  .rt-answer-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.22) 50%, transparent 75%);
+    transform: translateX(-120%);
+    transition: transform 240ms ease;
+    pointer-events: none;
+  }
+
+  .rt-answer-tile:hover::after {
+    transform: translateX(120%);
+  }
+
+  .rt-answer-tile:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  .rt-progress-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rt-progress-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.36) 45%, transparent 100%);
+    animation: realtime-shimmer 1.7s linear infinite;
+  }
+
+  .rt-timer-critical {
+    animation: realtime-pulse 0.9s ease-in-out infinite;
+  }
+
+  .rt-bar-grow {
+    transform-origin: bottom center;
+    animation: realtime-bar-grow 520ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  }
+
+  .rt-join-glow {
+    animation: realtime-join-glow 1.8s ease-in-out infinite;
+  }
+
+  .rt-join-card {
+    animation: realtime-join-card 320ms ease-out both;
+  }
+
+  .rt-leaderboard-rise {
+    animation: realtime-leaderboard-rise 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
   }
 }

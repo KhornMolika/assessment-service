@@ -11,7 +11,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={joinClasses(
-      "rounded-2xl border border-border bg-card text-foreground shadow-sm",
+      "min-w-0 rounded-2xl border border-border bg-card text-foreground shadow-sm",
       className,
     )}
     {...props}
@@ -55,7 +55,11 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={joinClasses("px-4 pb-4 sm:px-6 sm:pb-6", className)} {...props} />
+  <div
+    ref={ref}
+    className={joinClasses("min-w-0 px-4 pb-4 sm:px-6 sm:pb-6", className)}
+    {...props}
+  />
 ));
 CardContent.displayName = "CardContent";
 

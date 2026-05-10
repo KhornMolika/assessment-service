@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { correctAnswerSchema } from "../../content/schemas/correct-answer.schema";
+import { correctAnswerSchema } from "../../content/schemas/question-correct-answer.schema";
 
 export const questionSnapshotSchema = z.object({
   id: z.string(),
@@ -22,10 +22,12 @@ export const answerEntrySchema = z.object ({
   sheet_id: z.string(),
   question_id: z.string(),
 
-  response: z.record(z.any(), z.any()),
+  response: z.union([z.string(), z.record(z.any(), z.any())]),
   question_snapshot: questionSnapshotSchema,
 
-  is_correct: z.boolean(),
-  score_awarded: z.number().positive(),
-  grading_status: z.enum
-})
+  is_correct: z.boolean().nullable(),
+  score_awarded: z.number().nonnegative(),
+  grading_status: z.enum(["AUTOMATIC", "PENDING", "AI_EVALUATED", "MANUAL_REVISED"]),
+  graded_at: z.string().nullable(),
+  updated_at: z.string(),
+});

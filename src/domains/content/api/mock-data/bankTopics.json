@@ -1,0 +1,38 @@
+﻿[
+    {
+        "question_bank_id":  "bank-math-grade-10",
+        "topic_id":  "topic-algebra"
+    },
+    {
+        "question_bank_id":  "bank-math-grade-10",
+        "topic_id":  "topic-geometry"
+    },
+    {
+        "question_bank_id":  "bank-chem-bonding",
+        "topic_id":  "topic-chemistry"
+    },
+    {
+        "question_bank_id":  "bank-biology-botany",
+        "topic_id":  "topic-botany"
+    },
+    {
+        "question_bank_id":  "bank-khmer-stem",
+        "topic_id":  "topic-history"
+    },
+    {
+        "question_bank_id":  "bank-hr-onboarding",
+        "topic_id":  "topic-onboarding"
+    },
+    {
+        "question_bank_id":  "bank-it-security",
+        "topic_id":  "topic-security"
+    },
+    {
+        "question_bank_id":  "bank-physics-motion",
+        "topic_id":  "topic-physics"
+    },
+    {
+        "question_bank_id":  "bank-digital-marketing",
+        "topic_id":  "topic-marketing"
+    }
+]

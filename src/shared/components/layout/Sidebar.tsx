@@ -1,8 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,36 +10,63 @@ import {
   HelpCircle,
   LayoutDashboard,
   Library,
+  Tags,
   TrendingUp,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import nbfsaLogo from "@/src/shared/assets/nbfsa-logo.png";
+import {
+  getHrefWithTopic,
+  useSelectedTopic,
+} from "@/src/shared/hooks/use-global-topic-filter";
 import { useSidebar } from "../../context/sidebar-context";
+import SidebarNavLinks from "./SidebarNavLinks";
+
+const workspaceNavigation = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Question Banks", href: "/banks", icon: Library },
+  { name: "Questions", href: "/questions", icon: HelpCircle },
+  { name: "Topics", href: "/topics", icon: Tags },
+  { name: "Assessments", href: "/assessments", icon: ClipboardList },
+];
+
+const insightsNavigation = [
+  { name: "Results", href: "/results", icon: FileText },
+  { name: "Analytics", href: "/analytics", icon: TrendingUp },
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
   const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } = useSidebar();
+  const selectedTopic = useSelectedTopic();
+  const activePathname =
+    optimisticPathname != null && pathname !== optimisticPathname
+      ? optimisticPathname
+      : pathname;
+  const workspaceLinks = useMemo(
+    () =>
+      workspaceNavigation.map((item) => ({
+        ...item,
+        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
+      })),
+    [selectedTopic],
+  );
+  const insightLinks = useMemo(
+    () =>
+      insightsNavigation.map((item) => ({
+        ...item,
+        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
+      })),
+    [selectedTopic],
+  );
 
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname, setSidebarOpen]);
-
-  const workspaceNavigation = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Question Banks", href: "/banks", icon: Library },
-    { name: "Questions", href: "/questions", icon: HelpCircle },
-    { name: "Assessments", href: "/assessments", icon: ClipboardList },
-  ];
-
-  const insightsNavigation = [
-    { name: "Results", href: "/results", icon: FileText },
-    { name: "Analytics", href: "/analytics", icon: TrendingUp },
-  ];
-
-  const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : pathname === href || pathname.startsWith(`${href}/`);
-
-  const handleNavigation = () => {
+  const handleNavigation = (nextPathname?: string) => {
+    if (nextPathname) {
+      setOptimisticPathname(nextPathname);
+    }
     setSidebarOpen(false);
   };
 
@@ -51,57 +77,53 @@ export default function Sidebar() {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-pm md:flex"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-white/10 p-6">
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           {!collapsed ? (
-            <>
-              <Link href="/" className="flex items-center space-x-3" onClick={handleNavigation}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--acc)/20">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#74C69D" />
-                    <path
-                      d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
-                      fill="#74C69D"
-                      opacity="0.6"
-                    />
-                  </svg>
+            <div className="min-w-0">
+              <Link
+                href={getHrefWithTopic("/", selectedTopic)}
+                className="flex items-center space-x-3"
+                onClick={() => handleNavigation("/")}
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm">
+                  <Image
+                    src={nbfsaLogo}
+                    alt="FSA logo"
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-cover"
+                    priority
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="text-lg font-bold">AssessmentService</div>
-                  <div className="text-xs text-white/60">Creator Studio</div>
                 </div>
               </Link>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="ml-0.5 flex shrink-0 items-center justify-center rounded-lg p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-            </>
+            </div>
           ) : (
             <div className="flex w-full flex-col items-center gap-3">
               <Link
-                href="/"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--acc)/20"
-                onClick={handleNavigation}
+                href={getHrefWithTopic("/", selectedTopic)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-white shadow-sm"
+                onClick={() => handleNavigation("/")}
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#74C69D" />
-                  <path
-                    d="M2 17L12 22L22 17V12L12 17L2 12V17Z"
-                    fill="#74C69D"
-                    opacity="0.6"
-                  />
-                </svg>
+                <Image
+                  src={nbfsaLogo}
+                  alt="NBFSA logo"
+                  width={44}
+                  height={44}
+                  className="h-full w-full object-cover"
+                  priority
+                />
               </Link>
-              <button
-                onClick={() => setCollapsed(false)}
-                className="flex items-center justify-center rounded-lg p-2 text-white/60 transition hover:bg-white/5 hover:text-white"
-                aria-label="Expand sidebar"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
             </div>
           )}
         </div>
@@ -111,61 +133,31 @@ export default function Sidebar() {
             <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
           )}
           <nav className="flex flex-col space-y-1">
-            {workspaceNavigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={handleNavigation}
-                className={`flex items-center rounded py-3 font-medium transition ${
-                  collapsed ? "justify-center px-0" : "px-3"
-                } ${
-                  isActive(item.href)
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5"
-                }`}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon size={20} />
-                {!collapsed && <span className="ml-2">{item.name}</span>}
-              </Link>
-            ))}
+            <SidebarNavLinks
+              items={workspaceLinks}
+              collapsed={collapsed}
+              activePathname={activePathname}
+              currentPathname={pathname}
+              optimisticPathname={optimisticPathname}
+              onIntent={(href) => router.prefetch(href)}
+              onNavigate={handleNavigation}
+            />
           </nav>
 
           {!collapsed && (
             <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
           )}
           <nav className="flex flex-col space-y-1">
-            {insightsNavigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                onClick={handleNavigation}
-                className={`flex items-center rounded py-3 font-medium transition ${
-                  collapsed ? "justify-center px-0" : "px-3"
-                } ${
-                  isActive(item.href)
-                    ? "bg-white/10 text-white"
-                    : "text-white/70 hover:bg-white/5"
-                }`}
-                title={collapsed ? item.name : undefined}
-              >
-                <item.icon size={20} />
-                {!collapsed && <span className="ml-2">{item.name}</span>}
-              </Link>
-            ))}
+            <SidebarNavLinks
+              items={insightLinks}
+              collapsed={collapsed}
+              activePathname={activePathname}
+              currentPathname={pathname}
+              optimisticPathname={optimisticPathname}
+              onIntent={(href) => router.prefetch(href)}
+              onNavigate={handleNavigation}
+            />
           </nav>
-        </div>
-
-        <div className="flex items-center space-x-3 border-t border-white/10 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--acc) font-bold text-[#1B4332]">
-            KM
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">Khorn Molika</p>
-              <p className="truncate text-xs text-white/60">molika@eduhub.kh</p>
-            </div>
-          )}
         </div>
       </div>
     </aside>

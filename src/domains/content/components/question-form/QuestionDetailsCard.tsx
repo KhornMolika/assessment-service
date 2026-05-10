@@ -1,4 +1,5 @@
 import type { Bank } from "@/src/domains/content/types/bank.types";
+import type { Topic } from "@/src/domains/content/types/topic.types";
 import type {
   QuestionFormData,
   QuestionFormType,
@@ -18,14 +19,9 @@ const questionTypes: QuestionFormType[] = [
   "File Upload",
 ];
 
-export default function QuestionDetailsCard({
-  banks,
-  formData,
-  onChange,
-  title = "Question Details",
-  description,
-}: {
+export type QuestionDetailsCardProps = {
   banks: Bank[];
+  topics: Topic[];
   formData: QuestionFormData;
   onChange: <K extends keyof QuestionFormData>(
     field: K,
@@ -33,7 +29,16 @@ export default function QuestionDetailsCard({
   ) => void;
   title?: string;
   description?: string;
-}) {
+};
+
+export default function QuestionDetailsCard({
+  banks,
+  topics,
+  formData,
+  onChange,
+  title = "Question Details",
+  description,
+}: QuestionDetailsCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -84,13 +89,43 @@ export default function QuestionDetailsCard({
             onChange={(event) => onChange("bank", event.target.value)}
             className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
           >
-            <option value="">Select a bank...</option>
+            <option value="">No bank assigned</option>
             {banks.map((bank) => (
               <option key={bank.id} value={bank.id}>
                 {bank.name}
               </option>
             ))}
           </select>
+          <p className="mt-1 text-xs text-inkd">
+            Optional. Questions can be created without a bank.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="ownerTopic" className="mb-2 block text-sm font-semibold text-primary">
+            Owner Topic *
+          </label>
+          <select
+            id="ownerTopic"
+            value={formData.ownerTopicId}
+            onChange={(event) => {
+              const nextOwnerTopicId = event.target.value;
+
+              onChange("ownerTopicId", nextOwnerTopicId);
+              onChange("topicIds", nextOwnerTopicId ? [nextOwnerTopicId] : []);
+            }}
+            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
+          >
+            <option value="">Select a topic owner</option>
+            {topics.map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-inkd">
+            Assign the primary topic owner for this question.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
