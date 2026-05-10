@@ -172,7 +172,7 @@ export function AssessmentHostScreen({
       variant={embedded ? "panel" : "page"}
       aside={null}
     >
-      <div className="rt-stage-shell rounded-4xl border border-border bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:p-6">
+      <div className="lg:h-full">
         {phase === "lobby" ? (
           <div
             className={`grid gap-5 ${

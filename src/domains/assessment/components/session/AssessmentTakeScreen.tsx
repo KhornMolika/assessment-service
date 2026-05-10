@@ -121,9 +121,9 @@ export function AssessmentTakeScreen({
       aside={null}
     >
       <div
-        className={`rt-stage-shell rounded-4xl border border-border shadow-sm ${
-          step === "quiz" ? "p-3 sm:p-4 lg:h-full lg:min-h-0" : "p-4 sm:p-5 lg:p-6"
-        }`}
+        className={
+          step === "quiz" ? "lg:h-full lg:min-h-0" : ""
+        }
       >
         {step === "entry" ? (
           <SelfPacedEntry

@@ -131,7 +131,7 @@ export function AssessmentJoinScreen({
       variant={embedded ? "panel" : "page"}
       aside={null}
     >
-      <div className="rt-stage-shell flex min-h-[32rem] flex-col rounded-4xl border border-border bg-white p-4 shadow-sm sm:min-h-[34rem] sm:p-5 lg:h-full lg:min-h-0 lg:p-6">
+      <div className="flex min-h-[32rem] flex-col sm:min-h-[34rem] lg:h-full lg:min-h-0">
         {phase === "lobby" ? (
           <div className="flex flex-1 items-start py-2 lg:items-center">
             <JoinLobby
