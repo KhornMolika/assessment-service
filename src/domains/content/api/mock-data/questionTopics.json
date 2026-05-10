@@ -1,0 +1,58 @@
+﻿[
+    {
+        "question_id":  "q-001",
+        "topic_id":  "topic-algebra"
+    },
+    {
+        "question_id":  "q-003",
+        "topic_id":  "topic-botany"
+    },
+    {
+        "question_id":  "q-005",
+        "topic_id":  "topic-onboarding"
+    },
+    {
+        "question_id":  "q-006",
+        "topic_id":  "topic-security"
+    },
+    {
+        "question_id":  "q-010",
+        "topic_id":  "topic-physics"
+    },
+    {
+        "question_id":  "q-012",
+        "topic_id":  "topic-marketing"
+    },
+    {
+        "question_id":  "q-014",
+        "topic_id":  "topic-chemistry"
+    },
+    {
+        "question_id":  "q-015",
+        "topic_id":  "topic-algebra"
+    },
+    {
+        "question_id":  "q-020",
+        "topic_id":  "topic-geometry"
+    },
+    {
+        "question_id":  "q-033",
+        "topic_id":  "topic-history"
+    },
+    {
+        "question_id":  "q-041",
+        "topic_id":  "topic-security"
+    },
+    {
+        "question_id":  "q-046",
+        "topic_id":  "topic-physics"
+    },
+    {
+        "question_id":  "q-053",
+        "topic_id":  "topic-marketing"
+    },
+    {
+        "question_id":  "q-055",
+        "topic_id":  "topic-onboarding"
+    }
+]

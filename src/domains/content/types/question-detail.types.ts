@@ -38,7 +38,7 @@ export interface QuestionPerformanceStats {
 
 export interface QuestionDetailData {
   id: string;
-  bank_id: string;
+  bank_id: string | null;
   type_id: string;
   question_text: string;
   language: "EN" | "KH";
@@ -52,7 +52,7 @@ export interface QuestionDetailData {
     id: string;
     name: string;
     owner_id: string;
-  };
+  } | null;
   type: QuestionTypeMeta;
   topics: QuestionTopic[];
   answer_options: QuestionAnswerOptionDetail[];

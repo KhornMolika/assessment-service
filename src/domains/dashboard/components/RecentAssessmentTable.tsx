@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/shared/components/ui/card";
+import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
 
 function getStatusVariant(status: AssessmentStatus) {
   switch (status) {
@@ -56,41 +57,48 @@ export default function RecentAssessmentTable({
         </Link>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Assessment</TableHead>
-              <TableHead>Delivery</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Questions</TableHead>
-              <TableHead className="text-center">Participants</TableHead>
-              <TableHead className="text-center">Pass Rate</TableHead>
-              <TableHead className="text-right">Last Modified</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((assessment) => (
-              <TableRow key={assessment.id}>
-                <TableCell>
-                  <div className="in-w-55">
-                    <div className="font-semibold text-primary">
-                      <Link href={`/assessments/${assessment.id}`}>{assessment.title}</Link>
-                    </div>
-                    <div className="text-xs text-inkd">{assessment.bank}</div>
-                  </div>
-                </TableCell>
-                <TableCell>{assessment.mode}</TableCell>
-                <TableCell>
-                  <Badge variant={getStatusVariant(assessment.status)}>{assessment.status}</Badge>
-                </TableCell>
-                <TableCell className="text-center">{assessment.questions}</TableCell>
-                <TableCell className="text-center">{assessment.participants}</TableCell>
-                <TableCell className="text-center">{assessment.passRate}</TableCell>
-                <TableCell className="text-right text-inkd">{assessment.lastModified}</TableCell>
+        {items.length === 0 ? (
+          <StateMessage
+            title="No recent assessments"
+            description="Recent assessment activity will appear here once assessments are created or updated."
+          />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Assessment</TableHead>
+                <TableHead>Delivery</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Questions</TableHead>
+                <TableHead className="text-center">Participants</TableHead>
+                <TableHead className="text-center">Pass Rate</TableHead>
+                <TableHead className="text-right">Last Modified</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {items.map((assessment) => (
+                <TableRow key={assessment.id}>
+                  <TableCell>
+                    <div className="in-w-55">
+                      <div className="font-semibold text-primary">
+                        <Link href={`/assessments/${assessment.id}`}>{assessment.title}</Link>
+                      </div>
+                      <div className="text-xs text-inkd">{assessment.bank}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{assessment.mode}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(assessment.status)}>{assessment.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-center">{assessment.questions}</TableCell>
+                  <TableCell className="text-center">{assessment.participants}</TableCell>
+                  <TableCell className="text-center">{assessment.passRate}</TableCell>
+                  <TableCell className="text-right text-inkd">{assessment.lastModified}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

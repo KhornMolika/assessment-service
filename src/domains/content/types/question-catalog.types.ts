@@ -14,7 +14,7 @@ export type QuestionCatalogDifficulty = "Easy" | "Medium" | "Hard";
 
 export interface QuestionCatalogItem {
   id: string;
-  bank_id: string;
+  bank_id: string | null;
   text: string;
   type: QuestionCatalogType;
   difficulty: QuestionCatalogDifficulty;

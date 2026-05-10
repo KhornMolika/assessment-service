@@ -522,17 +522,6 @@ export default function QuestionTypeSettingsCard({
                 <option value={10}>10 Files</option>
               </select>
             </div>
-
-            <div>
-              <label className="mb-2 block text-xs text-inkd">Instructions for Participants</label>
-              <textarea
-                placeholder="e.g., Upload your completed assignment as a PDF file..."
-                value={formData.fileUploadInstructions}
-                onChange={(event) => onChange("fileUploadInstructions", event.target.value)}
-                rows={3}
-                className="w-full resize-none rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              />
-            </div>
           </div>
         );
 

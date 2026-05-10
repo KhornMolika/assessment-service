@@ -5,6 +5,7 @@ export interface NewQuestionBankFormData {
   description: string;
   tags: string;
   visibility: BankVisibility;
+  ownerTopicId: string;
 }
 
 export interface EditQuestionBankFormData {
@@ -12,4 +13,5 @@ export interface EditQuestionBankFormData {
   description: string;
   tags: string;
   visibility: BankVisibility;
+  ownerTopicId: string;
 }

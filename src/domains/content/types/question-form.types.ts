@@ -26,6 +26,8 @@ export interface QuestionFormData {
   questionText: string;
   questionType: QuestionFormType;
   bank: string;
+  ownerTopicId: string;
+  topicIds: string[];
   points: string;
   difficulty: "Easy" | "Medium" | "Hard";
   language: "English (EN)" | "Khmer (KH)";

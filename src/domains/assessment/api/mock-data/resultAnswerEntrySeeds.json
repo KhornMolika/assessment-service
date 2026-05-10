@@ -1,0 +1,594 @@
+﻿[
+    {
+        "id":  "entry-sheet-1-1",
+        "sheet_id":  "sheet-1",
+        "question_id":  "assessment-5-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a5-q1-a"
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T07:45:10.000Z",
+        "updated_at":  "2026-03-24T07:45:10.000Z"
+    },
+    {
+        "id":  "entry-sheet-1-2",
+        "sheet_id":  "sheet-1",
+        "question_id":  "assessment-5-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a5-q2-a",
+                                                     "a5-q2-b",
+                                                     "a5-q2-d"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T07:45:11.000Z",
+        "updated_at":  "2026-03-24T07:45:11.000Z"
+    },
+    {
+        "id":  "entry-sheet-1-3",
+        "sheet_id":  "sheet-1",
+        "question_id":  "assessment-5-question-3",
+        "response":  {
+                         "type":  "short",
+                         "text":  "Subtract 5 from both sides first."
+                     },
+        "is_correct":  true,
+        "score_awarded":  3,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-24T08:10:00.000Z",
+        "updated_at":  "2026-03-24T08:10:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-1-4",
+        "sheet_id":  "sheet-1",
+        "question_id":  "assessment-5-question-4",
+        "response":  {
+                         "type":  "essay",
+                         "text":  "Expand the brackets again and compare to the original expression."
+                     },
+        "is_correct":  false,
+        "score_awarded":  2,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-24T08:11:00.000Z",
+        "updated_at":  "2026-03-24T08:11:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-2-1",
+        "sheet_id":  "sheet-2",
+        "question_id":  "assessment-5-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a5-q1-b"
+                     },
+        "is_correct":  false,
+        "score_awarded":  0,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-16T18:45:10.000Z",
+        "updated_at":  "2026-03-16T18:45:10.000Z"
+    },
+    {
+        "id":  "entry-sheet-2-2",
+        "sheet_id":  "sheet-2",
+        "question_id":  "assessment-5-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a5-q2-a",
+                                                     "a5-q2-d"
+                                                 ]
+                     },
+        "is_correct":  false,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-16T18:45:11.000Z",
+        "updated_at":  "2026-03-16T18:45:11.000Z"
+    },
+    {
+        "id":  "entry-sheet-2-3",
+        "sheet_id":  "sheet-2",
+        "question_id":  "assessment-5-question-3",
+        "response":  {
+                         "type":  "short",
+                         "text":  "Move the 2 to the other side."
+                     },
+        "is_correct":  false,
+        "score_awarded":  4,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-16T19:05:00.000Z",
+        "updated_at":  "2026-03-16T19:05:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-2-4",
+        "sheet_id":  "sheet-2",
+        "question_id":  "assessment-5-question-4",
+        "response":  {
+                         "type":  "essay",
+                         "text":  "Check with another example after factorising."
+                     },
+        "is_correct":  false,
+        "score_awarded":  6,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-16T19:06:00.000Z",
+        "updated_at":  "2026-03-16T19:06:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-3-1",
+        "sheet_id":  "sheet-3",
+        "question_id":  "assessment-1-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a1-q1-b"
+                     },
+        "is_correct":  true,
+        "score_awarded":  15,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-17T18:25:10.000Z",
+        "updated_at":  "2026-03-17T18:25:10.000Z"
+    },
+    {
+        "id":  "entry-sheet-3-2",
+        "sheet_id":  "sheet-3",
+        "question_id":  "assessment-1-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a1-q2-a",
+                                                     "a1-q2-b"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  15,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-17T18:25:11.000Z",
+        "updated_at":  "2026-03-17T18:25:11.000Z"
+    },
+    {
+        "id":  "entry-sheet-3-3",
+        "sheet_id":  "sheet-3",
+        "question_id":  "assessment-1-question-3",
+        "response":  {
+                         "type":  "essay",
+                         "text":  "The support team lacked enough context from implementation handoff notes."
+                     },
+        "is_correct":  null,
+        "score_awarded":  0,
+        "grading_status":  "PENDING",
+        "graded_at":  null,
+        "updated_at":  "2026-03-17T18:25:12.000Z"
+    },
+    {
+        "id":  "entry-sheet-3-4",
+        "sheet_id":  "sheet-3",
+        "question_id":  "assessment-1-question-4",
+        "response":  {
+                         "type":  "file",
+                         "file_url":  "/files/handoff-note-example.pdf"
+                     },
+        "is_correct":  null,
+        "score_awarded":  0,
+        "grading_status":  "PENDING",
+        "graded_at":  null,
+        "updated_at":  "2026-03-17T18:25:13.000Z"
+    },
+    {
+        "id":  "entry-sheet-4-1",
+        "sheet_id":  "sheet-4",
+        "question_id":  "assessment-4-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a4-q1-a"
+                     },
+        "is_correct":  false,
+        "score_awarded":  0,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-16T17:46:01.000Z",
+        "updated_at":  "2026-03-16T17:46:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-4-2",
+        "sheet_id":  "sheet-4",
+        "question_id":  "assessment-4-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a4-q2-a",
+                                                     "a4-q2-d"
+                                                 ]
+                     },
+        "is_correct":  false,
+        "score_awarded":  5,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-16T17:46:02.000Z",
+        "updated_at":  "2026-03-16T17:46:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-4-3",
+        "sheet_id":  "sheet-4",
+        "question_id":  "assessment-4-question-3",
+        "response":  {
+                         "type":  "short",
+                         "text":  "Simplify the form and remove one field."
+                     },
+        "is_correct":  true,
+        "score_awarded":  4,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-16T18:05:00.000Z",
+        "updated_at":  "2026-03-16T18:05:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-4-4",
+        "sheet_id":  "sheet-4",
+        "question_id":  "assessment-4-question-4",
+        "response":  {
+                         "type":  "rating",
+                         "value":  10
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-16T17:46:03.000Z",
+        "updated_at":  "2026-03-16T17:46:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-5-1",
+        "sheet_id":  "sheet-5",
+        "question_id":  "assessment-7-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a7-q1-a"
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T03:20:01.000Z",
+        "updated_at":  "2026-03-15T03:20:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-5-2",
+        "sheet_id":  "sheet-5",
+        "question_id":  "assessment-7-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a7-q2-a",
+                                                     "a7-q2-b",
+                                                     "a7-q2-d"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T03:20:02.000Z",
+        "updated_at":  "2026-03-15T03:20:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-5-3",
+        "sheet_id":  "sheet-5",
+        "question_id":  "assessment-7-question-3",
+        "response":  {
+                         "type":  "short",
+                         "text":  "Report it through the incident channel and isolate access."
+                     },
+        "is_correct":  true,
+        "score_awarded":  5,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-15T03:36:00.000Z",
+        "updated_at":  "2026-03-15T03:36:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-5-4",
+        "sheet_id":  "sheet-5",
+        "question_id":  "assessment-7-question-4",
+        "response":  {
+                         "type":  "file",
+                         "file_url":  "/files/incident-note-sheet-5.pdf"
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "MANUAL_REVISED",
+        "graded_at":  "2026-03-15T03:37:00.000Z",
+        "updated_at":  "2026-03-15T03:37:00.000Z"
+    },
+    {
+        "id":  "entry-sheet-6-1",
+        "sheet_id":  "sheet-6",
+        "question_id":  "assessment-2-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a2-q1-b"
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-25T03:50:01.000Z",
+        "updated_at":  "2026-03-25T03:50:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-6-2",
+        "sheet_id":  "sheet-6",
+        "question_id":  "assessment-2-question-2",
+        "response":  {
+                         "type":  "short",
+                         "text":  "Blue flame and carbon dioxide release."
+                     },
+        "is_correct":  null,
+        "score_awarded":  0,
+        "grading_status":  "PENDING",
+        "graded_at":  null,
+        "updated_at":  "2026-03-25T03:50:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-6-3",
+        "sheet_id":  "sheet-6",
+        "question_id":  "assessment-2-question-3",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a2-q3-a",
+                                                     "a2-q3-c"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-25T03:50:03.000Z",
+        "updated_at":  "2026-03-25T03:50:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-6-4",
+        "sheet_id":  "sheet-6",
+        "question_id":  "assessment-2-question-4",
+        "response":  {
+                         "type":  "file",
+                         "file_url":  "/files/chemistry-balancing-work.pdf"
+                     },
+        "is_correct":  null,
+        "score_awarded":  0,
+        "grading_status":  "PENDING",
+        "graded_at":  null,
+        "updated_at":  "2026-03-25T03:50:04.000Z"
+    },
+    {
+        "id":  "entry-sheet-7-1",
+        "sheet_id":  "sheet-7",
+        "question_id":  "assessment-3-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a3-q1-a"
+                     },
+        "is_correct":  true,
+        "score_awarded":  10,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T11:20:01.000Z",
+        "updated_at":  "2026-03-15T11:20:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-7-2",
+        "sheet_id":  "sheet-7",
+        "question_id":  "assessment-3-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a3-q2-a",
+                                                     "a3-q2-c"
+                                                 ]
+                     },
+        "is_correct":  false,
+        "score_awarded":  5,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T11:20:02.000Z",
+        "updated_at":  "2026-03-15T11:20:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-7-3",
+        "sheet_id":  "sheet-7",
+        "question_id":  "assessment-3-question-3",
+        "response":  {
+                         "type":  "boolean",
+                         "value":  true
+                     },
+        "is_correct":  true,
+        "score_awarded":  5,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T11:20:03.000Z",
+        "updated_at":  "2026-03-15T11:20:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-7-4",
+        "sheet_id":  "sheet-7",
+        "question_id":  "assessment-3-question-4",
+        "response":  {
+                         "type":  "rating",
+                         "value":  5
+                     },
+        "is_correct":  true,
+        "score_awarded":  5,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-15T11:20:04.000Z",
+        "updated_at":  "2026-03-15T11:20:04.000Z"
+    },
+    {
+        "id":  "entry-sheet-8-1",
+        "sheet_id":  "sheet-8",
+        "question_id":  "assessment-6-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a6-q1-b"
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:45:01.000Z",
+        "updated_at":  "2026-03-24T12:45:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-8-2",
+        "sheet_id":  "sheet-8",
+        "question_id":  "assessment-6-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a6-q2-a",
+                                                     "a6-q2-c"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:45:02.000Z",
+        "updated_at":  "2026-03-24T12:45:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-8-3",
+        "sheet_id":  "sheet-8",
+        "question_id":  "assessment-6-question-3",
+        "response":  {
+                         "type":  "boolean",
+                         "value":  true
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:45:03.000Z",
+        "updated_at":  "2026-03-24T12:45:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-8-4",
+        "sheet_id":  "sheet-8",
+        "question_id":  "assessment-6-question-4",
+        "response":  {
+                         "type":  "rating",
+                         "value":  4
+                     },
+        "is_correct":  false,
+        "score_awarded":  5,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:45:04.000Z",
+        "updated_at":  "2026-03-24T12:45:04.000Z"
+    },
+    {
+        "id":  "entry-sheet-9-1",
+        "sheet_id":  "sheet-9",
+        "question_id":  "assessment-6-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a6-q1-b"
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:48:01.000Z",
+        "updated_at":  "2026-03-24T12:48:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-9-2",
+        "sheet_id":  "sheet-9",
+        "question_id":  "assessment-6-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a6-q2-a",
+                                                     "a6-q2-c"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:48:02.000Z",
+        "updated_at":  "2026-03-24T12:48:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-9-3",
+        "sheet_id":  "sheet-9",
+        "question_id":  "assessment-6-question-3",
+        "response":  {
+                         "type":  "boolean",
+                         "value":  true
+                     },
+        "is_correct":  true,
+        "score_awarded":  8,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:48:03.000Z",
+        "updated_at":  "2026-03-24T12:48:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-9-4",
+        "sheet_id":  "sheet-9",
+        "question_id":  "assessment-6-question-4",
+        "response":  {
+                         "type":  "rating",
+                         "value":  5
+                     },
+        "is_correct":  true,
+        "score_awarded":  7,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-24T12:48:04.000Z",
+        "updated_at":  "2026-03-24T12:48:04.000Z"
+    },
+    {
+        "id":  "entry-sheet-10-1",
+        "sheet_id":  "sheet-10",
+        "question_id":  "assessment-8-question-1",
+        "response":  {
+                         "type":  "single",
+                         "selected_option_id":  "a8-q1-b"
+                     },
+        "is_correct":  true,
+        "score_awarded":  6,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-26T09:15:01.000Z",
+        "updated_at":  "2026-03-26T09:15:01.000Z"
+    },
+    {
+        "id":  "entry-sheet-10-2",
+        "sheet_id":  "sheet-10",
+        "question_id":  "assessment-8-question-2",
+        "response":  {
+                         "type":  "multiple",
+                         "selected_option_ids":  [
+                                                     "a8-q2-a",
+                                                     "a8-q2-b"
+                                                 ]
+                     },
+        "is_correct":  true,
+        "score_awarded":  6,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-26T09:15:02.000Z",
+        "updated_at":  "2026-03-26T09:15:02.000Z"
+    },
+    {
+        "id":  "entry-sheet-10-3",
+        "sheet_id":  "sheet-10",
+        "question_id":  "assessment-8-question-3",
+        "response":  {
+                         "type":  "boolean",
+                         "value":  false
+                     },
+        "is_correct":  true,
+        "score_awarded":  6,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-26T09:15:03.000Z",
+        "updated_at":  "2026-03-26T09:15:03.000Z"
+    },
+    {
+        "id":  "entry-sheet-10-4",
+        "sheet_id":  "sheet-10",
+        "question_id":  "assessment-8-question-4",
+        "response":  {
+                         "type":  "rating",
+                         "value":  4
+                     },
+        "is_correct":  true,
+        "score_awarded":  4,
+        "grading_status":  "AUTOMATIC",
+        "graded_at":  "2026-03-26T09:15:04.000Z",
+        "updated_at":  "2026-03-26T09:15:04.000Z"
+    }
+]
