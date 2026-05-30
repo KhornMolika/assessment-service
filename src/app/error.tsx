@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 
 export default function Error({
   error,

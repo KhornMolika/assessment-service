@@ -3,29 +3,29 @@ import type { Metadata } from "next";
 import {
   getAssessmentCatalogPageData,
   getMockAssessmentTopics,
-} from "@/src/domains/assessment/api/assessment.api";
+} from "@/src/components/assessment/api/assessment.api";
 import {
   getMockBankTopics,
   getMockQuestionTopics,
   getQuestionCatalogPageData,
-} from "@/src/domains/content/api/content.api";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
-import { Badge } from "@/src/shared/components/ui/badge";
+} from "@/src/components/content/api/content.api";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
+import { Badge } from "@/src/components/ui/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/shared/components/ui/card";
+} from "@/src/components/ui/ui/card";
 import {
   ALL_TOPICS_VALUE,
   assessmentMatchesTopic,
   bankMatchesTopic,
   questionMatchesTopic,
-} from "@/src/domains/content/utils/topic-utils";
+} from "@/src/components/content/utils/topic-utils";
 import Link from "next/link";
 
 export const metadata: Metadata = {

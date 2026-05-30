@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import BankNewForm from "@/src/domains/content/components/bank/new/BankNewForm";
-import { getMockTopics } from "@/src/domains/content/api/content.api";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import BankNewForm from "@/src/components/content/components/bank/new/BankNewForm";
+import { getMockTopics } from "@/src/components/content/api/content.api";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function NewBanksPageContent() {
   const topics = await getMockTopics();

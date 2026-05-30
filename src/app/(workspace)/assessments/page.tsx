@@ -1,30 +1,30 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import type { AssessmentDeliveryMode } from "@/src/domains/assessment/types/assessment.types";
-import type { AssessmentCatalogItem } from "@/src/domains/assessment/types/assessment-catalog.types";
+import type { AssessmentDeliveryMode } from "@/src/types/assessment.types";
+import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import {
   getAssessmentCatalogPageData,
   getMockAssessmentTopics,
-} from "@/src/domains/assessment/api/assessment.api";
-import AssessmentsCatalogLoading from "@/src/domains/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
-import AssessmentsCatalogToolbar from "@/src/domains/assessment/components/assessment-catalog/AssessmentsCatalogToolbar";
-import AssessmentsHeader from "@/src/domains/assessment/components/assessment-catalog/AssessmentsHeader";
-import AssessmentsTableInteractive from "@/src/domains/assessment/components/assessment-catalog/AssessmentsTableInteractive";
-import type { AssessmentTopicMap } from "@/src/domains/content/types/topic.types";
+} from "@/src/components/assessment/api/assessment.api";
+import AssessmentsCatalogLoading from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
+import AssessmentsCatalogToolbar from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogToolbar";
+import AssessmentsHeader from "@/src/components/assessment/components/assessment-catalog/AssessmentsHeader";
+import AssessmentsTableInteractive from "@/src/components/assessment/components/assessment-catalog/AssessmentsTableInteractive";
+import type { AssessmentTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   assessmentMatchesTopic,
-} from "@/src/domains/content/utils/topic-utils";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
+} from "@/src/components/content/utils/topic-utils";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/shared/components/ui/card";
+} from "@/src/components/ui/ui/card";
 
 export const metadata: Metadata = {
   title: "Assessments",

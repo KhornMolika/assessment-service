@@ -1,26 +1,26 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getMockBankTopics, getMockBanks } from "@/src/domains/content/api/content.api";
-import BanksCatalogToolbar from "@/src/domains/content/components/bank/catalog/BanksCatalogToolbar";
-import BankGridInteractive from "@/src/domains/content/components/bank/catalog/BankGridInteractive";
-import BanksHeader from "@/src/domains/content/components/bank/catalog/BanksHeader";
-import type { Bank } from "@/src/domains/content/types/bank.types";
-import type { BankTopicMap } from "@/src/domains/content/types/topic.types";
+import { getMockBankTopics, getMockBanks } from "@/src/components/content/api/content.api";
+import BanksCatalogToolbar from "@/src/components/content/components/bank/catalog/BanksCatalogToolbar";
+import BankGridInteractive from "@/src/components/content/components/bank/catalog/BankGridInteractive";
+import BanksHeader from "@/src/components/content/components/bank/catalog/BanksHeader";
+import type { Bank } from "@/src/types/bank.types";
+import type { BankTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   bankMatchesTopic,
-} from "@/src/domains/content/utils/topic-utils";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
+} from "@/src/components/content/utils/topic-utils";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
+import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/shared/components/ui/card";
+} from "@/src/components/ui/ui/card";
 
 export const metadata: Metadata = {
   title: "Question Banks",

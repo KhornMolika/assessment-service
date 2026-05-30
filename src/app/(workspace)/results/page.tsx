@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getAssessmentResultsPageData } from "@/src/domains/assessment/api/assessment.api";
-import ResultsExportButton from "@/src/domains/assessment/components/results/ResultsExportButton";
-import ResultsToolbar from "@/src/domains/assessment/components/results/ResultsToolbar";
-import { ResultsTable } from "@/src/domains/assessment/components/results/ResultsTable";
-import { buildRows } from "@/src/domains/assessment/components/results/results.utils";
-import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
-import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { ResultsContentSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import { getAssessmentResultsPageData } from "@/src/components/assessment/api/assessment.api";
+import ResultsExportButton from "@/src/components/assessment/components/results/ResultsExportButton";
+import ResultsToolbar from "@/src/components/assessment/components/results/ResultsToolbar";
+import { ResultsTable } from "@/src/components/assessment/components/results/ResultsTable";
+import { buildRows } from "@/src/components/assessment/components/results/results.utils";
+import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/components/content/utils/topic-utils";
+import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
+import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { ResultsContentSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 export const metadata: Metadata = {
   title: "Results",

@@ -5,27 +5,27 @@ import type { Metadata } from "next";
 import {
   getMockQuestionTopics,
   getQuestionCatalogPageData,
-} from "@/src/domains/content/api/content.api";
-import QuestionBuilderAction from "@/src/domains/content/components/question/catalog/QuestionBuilderAction";
-import QuestionsCatalogToolbar from "@/src/domains/content/components/question/catalog/QuestionsCatalogToolbar";
-import QuestionsTableInteractive from "@/src/domains/content/components/question/catalog/QuestionsTableInteractive";
-import type { Bank } from "@/src/domains/content/types/bank.types";
-import type { QuestionCatalogItem } from "@/src/domains/content/types/question-catalog.types";
-import type { QuestionTopicMap } from "@/src/domains/content/types/topic.types";
+} from "@/src/components/content/api/content.api";
+import QuestionBuilderAction from "@/src/components/content/components/question/catalog/QuestionBuilderAction";
+import QuestionsCatalogToolbar from "@/src/components/content/components/question/catalog/QuestionsCatalogToolbar";
+import QuestionsTableInteractive from "@/src/components/content/components/question/catalog/QuestionsTableInteractive";
+import type { Bank } from "@/src/types/bank.types";
+import type { QuestionCatalogItem } from "@/src/types/question-catalog.types";
+import type { QuestionTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   questionMatchesTopic,
-} from "@/src/domains/content/utils/topic-utils";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
+} from "@/src/components/content/utils/topic-utils";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
+import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/src/shared/components/ui/card";
+} from "@/src/components/ui/ui/card";
 
 export const metadata: Metadata = {
   title: "Questions",

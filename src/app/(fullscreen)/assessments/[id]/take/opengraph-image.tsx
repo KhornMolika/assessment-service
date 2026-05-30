@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { getAssessmentDetailPageData } from "@/src/domains/assessment/api/assessment.api";
+import { getAssessmentDetailPageData } from "@/src/components/assessment/api/assessment.api";
 
 export const alt = "Assessment share preview";
 export const size = {

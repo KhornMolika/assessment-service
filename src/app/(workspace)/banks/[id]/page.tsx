@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getMockBankDetailPageData } from "@/src/domains/content/api/content.api";
-import BankDetailView from "@/src/domains/content/components/bank/detail/BankDetailView";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import { getMockBankDetailPageData } from "@/src/components/content/api/content.api";
+import BankDetailView from "@/src/components/content/components/bank/detail/BankDetailView";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function BankDetailPageContent({
   params,

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { getEditAssessmentPageData } from "@/src/domains/assessment/api/assessment.api";
-import AssessmentNewLoading from "@/src/domains/assessment/components/assessment-new/AssessmentNewLoading";
-import AssessmentNewWizard from "@/src/domains/assessment/components/assessment-new/AssessmentNewWizard";
-import { getMockTopics } from "@/src/domains/content/api/content.api";
+import { getEditAssessmentPageData } from "@/src/components/assessment/api/assessment.api";
+import AssessmentNewLoading from "@/src/components/assessment/components/assessment-new/AssessmentNewLoading";
+import AssessmentNewWizard from "@/src/components/assessment/components/assessment-new/AssessmentNewWizard";
+import { getMockTopics } from "@/src/components/content/api/content.api";
 
 async function EditAssessmentPageContent({
   params,

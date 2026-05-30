@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { getAssessmentCatalogPageData, getMockAssessmentTopics } from "@/src/domains/assessment/api/assessment.api";
-import { getDashboardOverviewSections } from "@/src/domains/dashboard/api/dashboard.api";
-import DashboardPageView from "@/src/domains/dashboard/components/DashboardPageView";
-import { getMockBankTopics, getMockBanks, getMockQuestionTopics, getMockQuestions, getMockTopics } from "@/src/domains/content/api/content.api";
-import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import { getAssessmentCatalogPageData, getMockAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getDashboardOverviewSections } from "@/src/components/dashboard/api/dashboard.api";
+import DashboardPageView from "@/src/components/dashboard/components/DashboardPageView";
+import { getMockBankTopics, getMockBanks, getMockQuestionTopics, getMockQuestions, getMockTopics } from "@/src/components/content/api/content.api";
+import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 type DashboardSearchParams = {
   topic?: string | string[];

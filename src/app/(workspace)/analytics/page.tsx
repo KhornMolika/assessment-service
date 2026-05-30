@@ -1,17 +1,17 @@
 import { Suspense } from "react";
 import {
   getAssessmentResultsPageData,
-} from "@/src/domains/assessment/api/assessment.api";
-import AnalyticsAssessmentTable from "@/src/domains/analytics/components/AnalyticsAssessmentTable";
-import AnalyticsDistributionCard from "@/src/domains/analytics/components/AnalyticsDistributionCard";
-import AnalyticsFiltersControl from "@/src/domains/analytics/components/AnalyticsFiltersControl";
-import AnalyticsQuestionBreakdownCard from "@/src/domains/analytics/components/AnalyticsQuestionBreakdownCard";
-import { buildAnalyticsSnapshot } from "@/src/domains/analytics/utils/analytics.utils";
-import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
-import { AnalyticsContentSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+} from "@/src/components/assessment/api/assessment.api";
+import AnalyticsAssessmentTable from "@/src/components/analytics/components/AnalyticsAssessmentTable";
+import AnalyticsDistributionCard from "@/src/components/analytics/components/AnalyticsDistributionCard";
+import AnalyticsFiltersControl from "@/src/components/analytics/components/AnalyticsFiltersControl";
+import AnalyticsQuestionBreakdownCard from "@/src/components/analytics/components/AnalyticsQuestionBreakdownCard";
+import { buildAnalyticsSnapshot } from "@/src/components/analytics/utils/analytics.utils";
+import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/components/content/utils/topic-utils";
+import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
+import { AnalyticsContentSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { getNewAssessmentPageData } from "@/src/domains/assessment/api/assessment.api";
-import AssessmentNewWizard from "@/src/domains/assessment/components/assessment-new/AssessmentNewWizard";
-import AssessmentNewLoading from "@/src/domains/assessment/components/assessment-new/AssessmentNewLoading";
-import { getMockTopics } from "@/src/domains/content/api/content.api";
+import { getNewAssessmentPageData } from "@/src/components/assessment/api/assessment.api";
+import AssessmentNewWizard from "@/src/components/assessment/components/assessment-new/AssessmentNewWizard";
+import AssessmentNewLoading from "@/src/components/assessment/components/assessment-new/AssessmentNewLoading";
+import { getMockTopics } from "@/src/components/content/api/content.api";
 
 async function NewAssessmentPageContent() {
   const [data, topics] = await Promise.all([getNewAssessmentPageData(), getMockTopics()]);

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import "./globals.css";
 
 export default function GlobalError({

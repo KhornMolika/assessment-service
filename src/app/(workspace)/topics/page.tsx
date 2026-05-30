@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { getMockAssessmentTopics } from "@/src/domains/assessment/api/assessment.api";
+import { getMockAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
 import {
   getMockBankTopics,
   getMockQuestionTopics,
   getMockTopics,
-} from "@/src/domains/content/api/content.api";
-import TopicsManager from "@/src/domains/content/components/topic/TopicsManager";
-import type { Topic } from "@/src/domains/content/types";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { Badge } from "@/src/shared/components/ui/badge";
+} from "@/src/components/content/api/content.api";
+import TopicsManager from "@/src/components/content/components/topic/TopicsManager";
+import type { Topic } from "@/src/types";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { Badge } from "@/src/components/ui/ui/badge";
 
 export const metadata: Metadata = {
   title: "Topics",
