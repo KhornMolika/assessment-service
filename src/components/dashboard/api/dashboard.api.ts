@@ -22,7 +22,7 @@ let dashboardMockDataPromise: Promise<DashboardMockData> | undefined;
 
 function getDashboardMockData() {
   dashboardMockDataPromise ??= readFile(
-    path.join(process.cwd(), "src/data.json"),
+    path.join(process.cwd(), "src/data/dashboard-mock-data.json"),
     "utf8",
   ).then((value) => JSON.parse(value) as DashboardMockData);
 

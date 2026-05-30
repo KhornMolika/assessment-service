@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     },
     turbopackFileSystemCacheForDev: true,
   },
+  outputFileTracingRoot: __dirname,
 };
 
 export default nextConfig;
