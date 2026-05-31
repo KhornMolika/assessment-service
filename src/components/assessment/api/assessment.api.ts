@@ -2,8 +2,7 @@ import type {
   AssessmentCatalogItem,
   AssessmentCatalogPageData,
 } from "@/src/types/assessment-catalog.types";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+
 import type {
   AssessmentDetailPageData,
   AssessmentDetailRecord,
@@ -31,90 +30,10 @@ import {
   getMockTopics,
 } from "@/src/components/content/api/content.api";
 
-type AnswerEntrySeed = {
-  id: string;
-  sheet_id: string;
-  question_id: string;
-  response: Record<string, unknown>;
-  is_correct: boolean | null;
-  score_awarded: number;
-  grading_status: AnswerEntry["grading_status"];
-  graded_at: string | null;
-  updated_at: string;
-};
+
+import { apiClient } from "@/src/lib/api-client";
 
 const ASSESSMENT_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
-const assessmentJsonPromises = new Map<string, Promise<unknown>>();
-
-function loadAssessmentJson<T>(fileName: string): Promise<T> {
-  if (!assessmentJsonPromises.has(fileName)) {
-    assessmentJsonPromises.set(
-      fileName,
-      readFile(
-        path.join(process.cwd(), "src/data", fileName),
-        "utf8",
-      ).then((value) => JSON.parse(value.replace(/^\uFEFF/, "")) as T),
-    );
-  }
-
-  return assessmentJsonPromises.get(fileName) as Promise<T>;
-}
-
-function getMockAssessmentsSeed() {
-  return loadAssessmentJson<AssessmentCatalogItem[]>("assessments.json");
-}
-
-function getMockAssessmentTopicsSeed() {
-  return loadAssessmentJson<AssessmentTopicMap[]>("assessmentTopics.json");
-}
-
-function getMockResultParticipantsSeed() {
-  return loadAssessmentJson<Participant[]>("resultParticipants.json");
-}
-
-function getMockResultAnswerSheetsSeed() {
-  return loadAssessmentJson<AnswerSheet[]>("resultAnswerSheets.json");
-}
-
-function getMockResultQuestionSeedsSeed() {
-  return loadAssessmentJson<ResultQuestionSeed[]>("resultQuestionSeeds.json");
-}
-
-function getMockResultAnswerEntrySeedsSeed() {
-  return loadAssessmentJson<AnswerEntrySeed[]>("resultAnswerEntrySeeds.json");
-}
-
-type AssessmentResultsSeedData = {
-  assessments: AssessmentCatalogItem[];
-  resultParticipants: Participant[];
-  resultAnswerSheets: AnswerSheet[];
-  resultQuestionSeeds: ResultQuestionSeed[];
-  resultAnswerEntrySeeds: AnswerEntrySeed[];
-};
-
-async function getAssessmentResultsSeedData(): Promise<AssessmentResultsSeedData> {
-  const [
-    assessments,
-    resultParticipants,
-    resultAnswerSheets,
-    resultQuestionSeeds,
-    resultAnswerEntrySeeds,
-  ] = await Promise.all([
-    getMockAssessmentsSeed(),
-    getMockResultParticipantsSeed(),
-    getMockResultAnswerSheetsSeed(),
-    getMockResultQuestionSeedsSeed(),
-    getMockResultAnswerEntrySeedsSeed(),
-  ]);
-
-  return {
-    assessments,
-    resultParticipants,
-    resultAnswerSheets,
-    resultQuestionSeeds,
-    resultAnswerEntrySeeds,
-  };
-}
 
 function getStartOfWeek(date: Date) {
   const startOfWeek = new Date(date);
@@ -139,14 +58,20 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
   const now = new Date(ASSESSMENT_REFERENCE_TIMESTAMP);
   const startOfWeek = getStartOfWeek(now);
   const endOfWeek = getEndOfWeek(now);
-  const assessments = await getMockAssessmentsSeed();
+  let assessments: any[] = [];
+  try {
+    const res = await apiClient.get<any>('/assessments?limit=100');
+    assessments = res.data || res || [];
+  } catch(e) {
+    console.error("Failed to fetch assessments", e);
+  }
 
   return {
     assessments,
     stats: {
       totalAssessments: assessments.length,
-      draftCount: assessments.filter((assessment) => assessment.lifecycle === "DRAFT").length,
-      activeCount: assessments.filter((assessment) => assessment.lifecycle === "ACTIVE").length,
+      draftCount: assessments.filter((assessment) => assessment.lifecycle === "DRAFT" || assessment.status === "DRAFT").length,
+      activeCount: assessments.filter((assessment) => assessment.lifecycle === "ACTIVE" || assessment.status === "ACTIVE").length,
       selfPacedCount: assessments.filter(
         (assessment) => assessment.delivery_mode === "SELF_PACED",
       ).length,
@@ -154,8 +79,8 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
         (assessment) => assessment.delivery_mode === "REAL_TIME",
       ).length,
       startingThisWeekCount: assessments.filter((assessment) => {
+        if (!assessment.starts_at) return false;
         const startsAt = new Date(assessment.starts_at);
-
         return startsAt >= startOfWeek && startsAt < endOfWeek;
       }).length,
     },
@@ -164,159 +89,17 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
 
 export async function getMockAssessmentTopics(): Promise<AssessmentTopicMap[]> {
   "use cache";
-
-  return getMockAssessmentTopicsSeed();
+  return [];
 }
 
 export async function getAssessmentCatalogItemById(id: string): Promise<AssessmentCatalogItem | null> {
   "use cache";
-
-  const assessments = await getMockAssessmentsSeed();
-  return assessments.find((assessment) => assessment.id === id) ?? null;
-}
-
-function buildAssessmentDetailRecord(assessment: AssessmentCatalogItem): AssessmentDetailRecord {
-  const participantCount = assessment.participant_count;
-  const completedCount =
-    participantCount === 0
-      ? 0
-      : Math.max(0, Math.min(participantCount, participantCount - Math.max(1, Math.round(participantCount * 0.09))));
-  const inProgressCount = Math.max(0, participantCount - completedCount);
-  const averageScorePercent =
-    assessment.average_score === "-" ? 0 : Number.parseInt(assessment.average_score, 10);
-  const passRatePercent =
-    assessment.pass_rate === "-" ? 0 : Number.parseInt(assessment.pass_rate, 10);
-  const sourceBank = assessment.question_bank_name;
-
-  return {
-    ...assessment,
-    subtitle:
-      assessment.description ?? `${assessment.title} delivery details and performance overview.`,
-    source_bank: sourceBank,
-    completed_count: completedCount,
-    in_progress_count: inProgressCount,
-    average_score_percent: averageScorePercent,
-    pass_rate_percent: passRatePercent,
-    live_sessions: assessment.delivery_mode === "REAL_TIME" ? 1 : 0,
-    active_sessions: assessment.delivery_mode === "REAL_TIME" ? Math.max(1, inProgressCount) : 0,
-    total_points: assessment.question_count * 4,
-    time_limit_minutes: assessment.delivery_mode === "REAL_TIME" ? 60 : 45,
-    created_by: "Admin User",
-    question_selection: assessment.delivery_mode === "REAL_TIME" ? "Dynamic" : "Manual",
-    shuffle_questions: true,
-    allow_going_back: assessment.delivery_mode === "SELF_PACED",
-    pass_mark: assessment.delivery_mode === "REAL_TIME" ? 70 : 60,
-    show_results:
-      assessment.delivery_mode === "SELF_PACED"
-        ? "Immediately after submit"
-        : "After the live session closes",
-    is_allowed_share: assessment.delivery_mode === "SELF_PACED",
-    is_showed_answers: assessment.delivery_mode === "SELF_PACED",
-    grade_scale: [
-      { grade: "A", minPercent: 90 },
-      { grade: "B", minPercent: 80 },
-      { grade: "C", minPercent: 70 },
-      { grade: "D", minPercent: 60 },
-      { grade: "E", minPercent: 50 },
-      { grade: "F", minPercent: 0 },
-    ],
-  };
-}
-
-function buildTopPerformers(assessment: AssessmentCatalogItem) {
-  return [
-    { name: "Emma Wilson", score: 98, time: "45 min" },
-    { name: "David Park", score: 95, time: "52 min" },
-    { name: "Lisa Zhang", score: 92, time: "48 min" },
-    { name: "Michael Kim", score: 90, time: "55 min" },
-    { name: "Sarah Chen", score: assessment.delivery_mode === "REAL_TIME" ? 88 : 91, time: "60 min" },
-  ];
-}
-
-function buildRecentActivity(assessment: AssessmentCatalogItem) {
-  return [
-    { name: "John Smith", action: "completed" as const, time: "5 min ago", score: 85 },
-    { name: "Anna Lee", action: "started" as const, time: "12 min ago", score: null },
-    { name: "Tom Brown", action: "completed" as const, time: "25 min ago", score: 92 },
-    { name: "Jane Doe", action: "completed" as const, time: "1 hour ago", score: assessment.delivery_mode === "REAL_TIME" ? 78 : 83 },
-  ];
-}
-
-function buildAssessmentQuestions(
-  assessment: AssessmentCatalogItem,
-  questionSummaries: Array<Pick<QuestionCatalogItem, "text" | "type" | "points">>,
-): AssessmentDetailPageData["questions"] {
-  if (assessment.id === "assessment-1" && assessment.delivery_mode === "SELF_PACED") {
-    return [
-      {
-        id: `${assessment.id}-question-1`,
-        question: "Which customer journey stage needs the most improvement this quarter?",
-        type: "Single Choice",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-2`,
-        question: "Select all channels where customers said response time felt slow.",
-        type: "Multiple Choice",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-3`,
-        question: "True or false: most customers said onboarding expectations were clearly explained.",
-        type: "Boolean",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-4`,
-        question: "In one sentence, what is the main reason customers gave for churn risk?",
-        type: "Short Answer",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-5`,
-        question: "Describe how your team would improve the support handoff experience next month.",
-        type: "Essay",
-        points: 10,
-      },
-      {
-        id: `${assessment.id}-question-6`,
-        question: "Rate the clarity of the latest account health dashboard update.",
-        type: "Rating",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-7`,
-        question: "Arrange the follow-up workflow in the correct order after a detractor response.",
-        type: "Ordering",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-8`,
-        question: "Fill in the blank: The best first response to a detractor is to ___ within ___ hours.",
-        type: "Fill In The Blank",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-9`,
-        question: "Match each feedback theme with the team that should own the next action.",
-        type: "Matching",
-        points: 5,
-      },
-      {
-        id: `${assessment.id}-question-10`,
-        question: "Upload a sample improvement note or screenshot that supports your proposed action.",
-        type: "File Upload",
-        points: 5,
-      },
-    ];
+  try {
+    const res = await apiClient.get<any>(`/assessments/${id}`);
+    return res.data || res || null;
+  } catch(e) {
+    return null;
   }
-
-  return questionSummaries.map((question, index) => ({
-    id: `${assessment.id}-question-${index + 1}`,
-    question: question.text,
-    type: question.type,
-    points: question.points,
-  }));
 }
 
 export async function getAssessmentDetailPageData(
@@ -324,241 +107,311 @@ export async function getAssessmentDetailPageData(
 ): Promise<AssessmentDetailPageData | null> {
   "use cache";
 
-  const assessment = await getAssessmentCatalogItemById(id);
+  try {
+    const [assessmentRes, reportRes, questionsRes] = await Promise.all([
+      apiClient.get<any>(`/assessments/${id}`),
+      apiClient.get<any>(`/assessments/${id}/report?limit=100`),
+      apiClient.get<any>(`/assessments/${id}/questions`),
+    ]);
 
-  if (!assessment) {
+    const assessment = assessmentRes;
+    const report = reportRes.data;
+
+    // Build assessment detail record using report stats
+    const participantCount = report.assessment.totalParticipants || 0;
+    const completedCount = report.assessment.completed || 0;
+    const inProgressCount = report.assessment.pending || 0;
+
+    const record: AssessmentDetailRecord = {
+      ...assessment,
+      subtitle: assessment.description ?? `${assessment.title} delivery details and performance overview.`,
+      source_bank: "Custom Questions",
+      completed_count: completedCount,
+      in_progress_count: inProgressCount,
+      average_score_percent: report.assessment.averageScore ?? 0,
+      pass_rate_percent: report.assessment.passRate ?? 0,
+      live_sessions: assessment.delivery_mode === "REAL_TIME" ? 1 : 0,
+      active_sessions: assessment.delivery_mode === "REAL_TIME" ? Math.max(1, inProgressCount) : 0,
+      total_points: report.questionBreakdown?.reduce((sum: number, q: any) => sum + (q.maxScore || 0), 0) || 0,
+      time_limit_minutes: assessment.delivery_mode === "REAL_TIME" ? 60 : 45,
+      created_by: "Admin User",
+      question_selection: assessment.delivery_mode === "REAL_TIME" ? "Dynamic" : "Manual",
+      shuffle_questions: true,
+      allow_going_back: assessment.delivery_mode === "SELF_PACED",
+      pass_mark: assessment.delivery_mode === "REAL_TIME" ? 70 : 60,
+      show_results: assessment.delivery_mode === "SELF_PACED" ? "Immediately after submit" : "After the live session closes",
+      is_allowed_share: assessment.delivery_mode === "SELF_PACED",
+      is_showed_answers: assessment.delivery_mode === "SELF_PACED",
+      grade_scale: [
+        { grade: "A", minPercent: 90 },
+        { grade: "B", minPercent: 80 },
+        { grade: "C", minPercent: 70 },
+        { grade: "D", minPercent: 60 },
+        { grade: "E", minPercent: 50 },
+        { grade: "F", minPercent: 0 },
+      ],
+    };
+
+    // Calculate Top Performers
+    const sortedParticipants = [...(report.participants || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
+    const topPerformers = sortedParticipants.slice(0, 5).map((p: any) => ({
+      name: p.name || "Anonymous",
+      score: p.score,
+      time: p.duration ? `${Math.round(p.duration / 60)} min` : "-",
+    }));
+
+    // Calculate Recent Activity
+    const recentActivity = [...(report.participants || [])]
+      .sort((a, b) => new Date(b.submittedAt || Date.now()).getTime() - new Date(a.submittedAt || Date.now()).getTime())
+      .slice(0, 5)
+      .map((p: any) => ({
+        name: p.name || "Anonymous",
+        action: (p.submittedAt ? "completed" : "started") as "completed" | "started",
+        time: p.submittedAt ? new Date(p.submittedAt).toLocaleDateString() : "Just now",
+        score: p.score,
+      }));
+
+    // Map Questions
+    const questions = (questionsRes.data || questionsRes || []).map((q: any) => ({
+      id: q.id,
+      question: q.questionText,
+      type: q.type,
+      points: q.points || 5,
+    }));
+
+    return {
+      assessment: record,
+      topPerformers,
+      recentActivity,
+      questions,
+    };
+  } catch (err) {
+    console.error("Failed to fetch AssessmentDetailPageData", err);
     return null;
   }
-
-  const questionSummaries = await getMockQuestionSummariesForBankName(
-    assessment.question_bank_name,
-    8,
-  );
-
-  return {
-    assessment: buildAssessmentDetailRecord(assessment),
-    topPerformers: buildTopPerformers(assessment),
-    recentActivity: buildRecentActivity(assessment),
-    questions: buildAssessmentQuestions(assessment, questionSummaries),
-  };
 }
-
-type ResultQuestionSeed = ResultQuestionEntity & {
-  assessment_id: string;
-  options?: {
-    id: string;
-    text: string;
-  }[];
-  correct_answer: unknown;
-};
-
-function buildResultsQuestions(data: AssessmentResultsSeedData): ResultQuestionEntity[] {
-  return buildResultsQuestionSeeds(data).map(({ id, question_text, type_id, points }) => ({
-    id,
-    question_text,
-    type_id,
-    points,
-  }));
-}
-
-function buildResultQuestionLookup(data: AssessmentResultsSeedData) {
-  return new Map(buildResultsQuestionSeeds(data).map((question) => [question.id, question] as const));
-}
-
-function createAnswerEntry(
-  questionLookup: Map<string, ResultQuestionSeed>,
-  {
-    id,
-    sheet_id,
-    question_id,
-    response,
-    is_correct,
-    score_awarded,
-    grading_status,
-    graded_at,
-    updated_at,
-  }: AnswerEntrySeed,
-): AnswerEntry {
-  const question = questionLookup.get(question_id);
-
-  if (!question) {
-    throw new Error(`Missing result question seed for ${question_id}`);
-  }
-
-  return {
-    id,
-    sheet_id,
-    question_id,
-    response: JSON.stringify(response),
-    question_snapshot: {
-      id: question.id,
-      question_text: question.question_text,
-      type_id: question.type_id,
-      points: question.points,
-      options: question.options,
-      correct_answer: question.correct_answer,
-    },
-    is_correct,
-    score_awarded,
-    grading_status,
-    graded_at,
-    updated_at,
-  };
-}
-
-function buildResultsParticipants(data: AssessmentResultsSeedData): Participant[] {
-  return data.resultParticipants;
-}
-
-function buildResultsAnswerSheets(data: AssessmentResultsSeedData): AnswerSheet[] {
-  return data.resultAnswerSheets;
-}
-
-function buildResultsQuestionSeeds(data: AssessmentResultsSeedData): ResultQuestionSeed[] {
-  return data.resultQuestionSeeds;
-}
-
-function buildResultsAnswerEntries(data: AssessmentResultsSeedData): AnswerEntry[] {
-  const questionLookup = buildResultQuestionLookup(data);
-
-  return data.resultAnswerEntrySeeds.map((seed) => createAnswerEntry(questionLookup, seed));
-}
+// Removed dead mock parsing logic
 
 export async function getAssessmentResultsPageData(): Promise<AssessmentResultsPageData> {
   "use cache";
+  try {
+    const assessmentsRes = await apiClient.get<any>('/assessments?limit=100');
+    let assessments = assessmentsRes.data || assessmentsRes;
 
-  const mockData = await getAssessmentResultsSeedData();
-  const assessments = mockData.assessments;
-  const participants = buildResultsParticipants(mockData);
-  const answer_sheets = buildResultsAnswerSheets(mockData);
-  const answer_entries = buildResultsAnswerEntries(mockData);
-  const questions = buildResultsQuestions(mockData);
-  const topics: Topic[] = await getMockTopics();
-  const assessment_topics = await getMockAssessmentTopics();
-  const submittedSheets = answer_sheets.filter((sheet) => sheet.submitted_at != null);
-  const scoredSheets = submittedSheets.filter((sheet) => sheet.total_score != null);
-  const passedSheets = submittedSheets.filter((sheet) => sheet.is_passed === true);
+    // Sort descending and limit to 15 to avoid massive N+1 delays
+    assessments = assessments.sort((a: any, b: any) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()).slice(0, 15);
 
-  return {
-    stats: {
-      totalSubmissions: submittedSheets.length,
-      averageScorePercent:
-        scoredSheets.length > 0
-          ? Math.round(
-              scoredSheets.reduce(
-                (sum, sheet) => sum + Math.round(((sheet.total_score ?? 0) / sheet.max_score) * 100),
-                0,
-              ) / scoredSheets.length,
-            )
-          : 0,
-      passRatePercent:
-        submittedSheets.length > 0
-          ? Math.round((passedSheets.length / submittedSheets.length) * 100)
-          : 0,
-      totalParticipants: participants.length,
-    },
-    assessments,
-    participants,
-    answer_sheets,
-    answer_entries,
-    questions,
-    topics,
-    assessment_topics,
-  };
+    const reportsPromises = assessments.map((a: any) => 
+      apiClient.get<any>(`/assessments/${a.id}/report`).catch(() => null)
+    );
+    const reports = (await Promise.all(reportsPromises)).filter(Boolean);
+
+    const allParticipants: any[] = [];
+    const allAnswerSheets: any[] = [];
+    const allQuestions: any[] = [];
+    const allAnswerEntries: any[] = [];
+
+    let totalSubmissions = 0;
+    let totalScoreSum = 0;
+    let totalScoreCount = 0;
+    let totalPassCount = 0;
+    let totalMaxScore = 0;
+
+    for (const report of reports) {
+      if (!report || !report.data) continue;
+      const { assessment, participants, questionBreakdown } = report.data;
+
+      totalSubmissions += assessment.completed || 0;
+      
+      for (const q of (questionBreakdown || [])) {
+        allQuestions.push({
+          id: q.assessmentQuestionId,
+          question_text: q.questionText,
+          type_id: q.type,
+          points: q.maxScore,
+        });
+      }
+
+      for (const p of (participants || [])) {
+        if (!allParticipants.find(x => x.id === p.participantId)) {
+          allParticipants.push({
+            id: p.participantId,
+            name: p.name,
+            email: p.email,
+          });
+        }
+
+        allAnswerSheets.push({
+          id: p.sessionId,
+          assessment_id: assessment.id,
+          participant_id: p.participantId,
+          status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
+          started_at: new Date(new Date(p.submittedAt || Date.now()).getTime() - ((p.duration||0)*1000)).toISOString(),
+          submitted_at: p.submittedAt || null,
+          total_score: p.score,
+          max_score: 100, // simplified max score based on percentage or similar
+          is_passed: p.isPassed,
+        });
+
+        if (p.score != null) {
+          totalScoreSum += p.score;
+          totalMaxScore += 100;
+          totalScoreCount++;
+          if (p.isPassed) totalPassCount++;
+        }
+      }
+    }
+
+    const topics: Topic[] = await getMockTopics();
+    const assessment_topics = await getMockAssessmentTopics();
+
+    return {
+      stats: {
+        totalSubmissions,
+        averageScorePercent: totalScoreCount > 0 ? Math.round((totalScoreSum / totalMaxScore) * 100) : 0,
+        passRatePercent: totalSubmissions > 0 ? Math.round((totalPassCount / totalSubmissions) * 100) : 0,
+        totalParticipants: allParticipants.length,
+      },
+      assessments,
+      participants: allParticipants,
+      answer_sheets: allAnswerSheets,
+      answer_entries: allAnswerEntries,
+      questions: allQuestions,
+      topics,
+      assessment_topics,
+    };
+  } catch (err) {
+    console.error("Failed getAssessmentResultsPageData", err);
+    return {
+      stats: { totalSubmissions: 0, averageScorePercent: 0, passRatePercent: 0, totalParticipants: 0 },
+      assessments: [], participants: [], answer_sheets: [], answer_entries: [], questions: [], topics: [], assessment_topics: [],
+    };
+  }
 }
 
 export async function getAssessmentResultSheetPageData(
-  sheetId: string,
+  sheetId: string, // In this new backend, sheetId acts as sessionId
 ): Promise<AssessmentResultSheetPageData | null> {
   "use cache";
+  // The backend endpoint `GET /assessments/:assessmentId/sessions/:sessionId/report` requires assessmentId.
+  // We'll need to figure out assessmentId. For now, since the global results page loads all sheets, we can 
+  // find the assessmentId by scanning reports, or we assume the UI will be updated to pass assessmentId.
+  // For the sake of this deep integration, we will scan the assessments.
+    try {
+    const assessmentsRes = await apiClient.get<any>('/assessments?limit=100');
+    let assessments = assessmentsRes.data || assessmentsRes;
 
-  const mockData = await getAssessmentResultsSeedData();
-  const assessments = mockData.assessments;
-  const participants = buildResultsParticipants(mockData);
-  const answer_sheets = buildResultsAnswerSheets(mockData);
-  const answer_entries = buildResultsAnswerEntries(mockData);
-  const questions = buildResultsQuestions(mockData);
+    // Sort descending and take top 30. We scan recent ones for the session.
+    assessments = assessments.sort((a: any, b: any) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()).slice(0, 30);
 
-  const answer_sheet = answer_sheets.find((sheet) => sheet.id === sheetId);
+    const reportPromises = assessments.map((a: any) => 
+      apiClient.get<any>(`/assessments/${a.id}/sessions/${sheetId}/report`)
+        .then(res => ({ assessmentId: a.id, report: res.data || res }))
+        .catch(() => null)
+    );
 
-  if (!answer_sheet) {
+    const reports = await Promise.all(reportPromises);
+    const targetMatch = reports.find(r => r != null);
+
+    if (!targetMatch) return null;
+
+    const { assessmentId: targetAssessmentId, report: targetReport } = targetMatch;
+    const assessment = assessments.find((a: any) => a.id === targetAssessmentId);
+    
+    // Map the deep session report to the old AnswerSheet / AnswerEntry UI shape
+    const participant = { id: targetReport.participantId, name: targetReport.name, email: targetReport.email };
+    const answer_sheet = {
+      id: sheetId,
+      assessment_id: targetAssessmentId,
+      participant_id: targetReport.participantId,
+      status: targetReport.submittedAt ? "COMPLETED" : "IN_PROGRESS",
+      started_at: new Date(new Date(targetReport.submittedAt || Date.now()).getTime() - ((targetReport.duration||0)*1000)).toISOString(),
+      submitted_at: targetReport.submittedAt || null,
+      total_score: targetReport.score,
+      max_score: 100,
+      is_passed: targetReport.isPassed,
+    };
+
+    const questions = targetReport.questions.map((q: any) => ({
+      id: q.assessmentQuestionId,
+      question: q.questionText,
+      type: q.type,
+      points: q.maxScore || 5,
+    }));
+
+    const answer_entries = targetReport.questions.map((q: any) => ({
+      id: `${sheetId}-${q.assessmentQuestionId}`,
+      sheet_id: sheetId,
+      question_id: q.assessmentQuestionId,
+      response: JSON.stringify(q.response),
+      is_correct: q.scoreAwared > 0,
+      score_awarded: q.scoreAwarded || 0,
+      grading_status: "COMPLETED",
+    }));
+
+    return { assessment, participant, answer_sheet, questions, answer_entries } as any;
+  } catch (e) {
     return null;
   }
-
-  const participant = participants.find((item) => item.id === answer_sheet.participant_id);
-  const assessment = assessments.find((item) => item.id === answer_sheet.assessment_id);
-
-  if (!participant || !assessment) {
-    return null;
-  }
-
-  return {
-    assessment,
-    participant,
-    answer_sheet,
-    questions: questions.filter((question) =>
-      answer_entries.some(
-        (entry) => entry.sheet_id === answer_sheet.id && entry.question_id === question.id,
-      ),
-    ),
-    answer_entries: answer_entries.filter((entry) => entry.sheet_id === answer_sheet.id),
-  };
 }
 
 export async function getAssessmentScopedResultsPageData(
   assessmentId: string,
 ): Promise<AssessmentScopedResultsPageData | null> {
   "use cache";
+  try {
+    const [assessmentRes, reportRes, questionsRes] = await Promise.all([
+      apiClient.get<any>(`/assessments/${assessmentId}`),
+      apiClient.get<any>(`/assessments/${assessmentId}/report`),
+      apiClient.get<any>(`/assessments/${assessmentId}/questions`),
+    ]);
 
-  const data = await getAssessmentResultsPageData();
-  const assessment = data.assessments.find((item) => item.id === assessmentId);
+    const assessment = assessmentRes;
+    const report = reportRes.data;
+    
+    const participants = report.participants.map((p: any) => ({
+      id: p.participantId,
+      name: p.name,
+      email: p.email,
+    }));
 
-  if (!assessment) {
+    const answer_sheets = report.participants.map((p: any) => ({
+      id: p.sessionId,
+      assessment_id: assessmentId,
+      participant_id: p.participantId,
+      status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
+      started_at: new Date(new Date(p.submittedAt || Date.now()).getTime() - ((p.duration||0)*1000)).toISOString(),
+      submitted_at: p.submittedAt || null,
+      total_score: p.score,
+      max_score: 100,
+      is_passed: p.isPassed,
+    }));
+
+    const questions = (questionsRes.data || questionsRes || []).map((q: any) => ({
+      id: q.id,
+      question: q.questionText,
+      type: q.type,
+      points: q.points || 5,
+    }));
+
+    return {
+      assessment,
+      stats: {
+        totalSubmissions: report.assessment.completed || 0,
+        averageScorePercent: report.assessment.averageScore || 0,
+        passRatePercent: report.assessment.passRate || 0,
+        totalParticipants: report.assessment.totalParticipants || 0,
+        pendingReviewCount: report.assessment.pending || 0,
+      },
+      participants,
+      answer_sheets,
+      answer_entries: [], // Empty for scoped overview
+      questions,
+    };
+  } catch (err) {
+    console.error("Failed getAssessmentScopedResultsPageData", err);
     return null;
   }
-
-  const participants = data.participants.filter((item) => item.assessment_id === assessmentId);
-  const answer_sheets = data.answer_sheets.filter((item) => item.assessment_id === assessmentId);
-  const sheetIds = new Set(answer_sheets.map((item) => item.id));
-  const answer_entries = data.answer_entries.filter((item) => sheetIds.has(item.sheet_id));
-  const questionIds = new Set(answer_entries.map((item) => item.question_id));
-  const questions = data.questions.filter((item) => questionIds.has(item.id));
-  const submittedSheets = answer_sheets.filter((item) => item.submitted_at != null);
-  const scoredSheets = submittedSheets.filter((item) => item.total_score != null);
-  const passedSheets = submittedSheets.filter((item) => item.is_passed === true);
-  const pendingReviewCount = answer_sheets.filter(
-    (item) =>
-      item.status === "REVIEW_PENDING" ||
-      answer_entries.some(
-        (entry) => entry.sheet_id === item.id && entry.grading_status === "PENDING",
-      ),
-  ).length;
-
-  return {
-    assessment,
-    stats: {
-      totalSubmissions: submittedSheets.length,
-      averageScorePercent:
-        scoredSheets.length > 0
-          ? Math.round(
-              scoredSheets.reduce(
-                (sum, sheet) => sum + Math.round(((sheet.total_score ?? 0) / sheet.max_score) * 100),
-                0,
-              ) / scoredSheets.length,
-            )
-          : 0,
-      passRatePercent:
-        submittedSheets.length > 0
-          ? Math.round((passedSheets.length / submittedSheets.length) * 100)
-          : 0,
-      totalParticipants: participants.length,
-      pendingReviewCount,
-    },
-    participants,
-    answer_sheets,
-    answer_entries,
-    questions,
-  };
 }
 
 export async function getNewAssessmentPageData(): Promise<{
@@ -582,49 +435,59 @@ export async function getEditAssessmentPageData(id: string): Promise<{
   initialFormData: NewAssessmentFormData;
 }> {
   "use cache";
+  try {
+    const [banks, questions, assessmentRes, settingsRes, assignedRes] = await Promise.all([
+      getMockBanks(),
+      getMockQuestions(),
+      apiClient.get<any>(`/assessments/${id}`),
+      apiClient.get<any>(`/assessments/${id}/settings`).catch(() => null),
+      apiClient.get<any>(`/assessments/${id}/questions`).catch(() => null),
+    ]);
 
-  const [banks, questions] = await Promise.all([getMockBanks(), getMockQuestions()]);
-  const selectedBank = banks[0];
-  const selectedQuestions = questions
-    .filter((question) => question.bank_id === selectedBank?.id)
-    .slice(0, 3);
+    const assessment = assessmentRes;
+    const settings = settingsRes || {};
+    const assignedQs = (assignedRes?.data || assignedRes || []);
 
-  return {
-    assessmentId: id,
-    banks,
-    questions,
-    initialFormData: {
-      title: "Customer Satisfaction Survey - Q3 2026",
-      description: "Measure satisfaction trends across active enterprise accounts.",
-      ownerTopicId: "topic-onboarding",
-      status: "PUBLISHED",
-      participantIdentity: "EXTERNAL",
-      sessionMode: "SELF_PACED",
-      questionSelection: "MANUAL",
-      selectedBankId: selectedBank?.id ?? "",
-      selectedQuestionIds: selectedQuestions.map((question) => question.id),
-      totalQuestions: 23,
-      selectionRules: [
-        { difficulty: "Easy", count: 8 },
-        { difficulty: "Medium", count: 10 },
-        { difficulty: "Hard", count: 5 },
-      ],
-      enableTimeLimit: true,
-      timeLimitMinutes: 60,
-      startsAt: "2026-03-01T09:00",
-      endsAt: "2026-03-31T17:00",
-      passMark: 70,
-      shuffleQuestions: true,
-      allowGoingBack: false,
-      gradeLabels: [
-        { grade: "A", minPercent: 90 },
-        { grade: "B", minPercent: 80 },
-        { grade: "C", minPercent: 70 },
-        { grade: "D", minPercent: 60 },
-        { grade: "E", minPercent: 50 },
-        { grade: "F", minPercent: 0 },
-      ],
-      showResults: "IMMEDIATELY",
-    },
-  };
+    const selectedBankId = settings.selectionRules?.bankId || banks[0]?.id || "";
+
+    return {
+      assessmentId: id,
+      banks,
+      questions,
+      initialFormData: {
+        title: assessment.title || assessment.name,
+        description: assessment.description || "",
+        ownerTopicId: assessment.topic_id || assessment.topicId || "",
+        status: assessment.lifecycle || assessment.status,
+        participantIdentity: settings.participantIdentity || "EXTERNAL",
+        sessionMode: settings.mode || "SELF_PACED",
+        questionSelection: settings.questionSelection || "MANUAL",
+        selectedBankId,
+        selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
+        totalQuestions: settings.numQuestions || assignedQs.length || 0,
+        selectionRules: settings.selectionRules?.distribution ? 
+          Object.entries(settings.selectionRules.distribution).map(([k, v]) => ({ difficulty: k as "Easy" | "Medium" | "Hard", count: v as number })) 
+          : [],
+        enableTimeLimit: !!settings.timeLimit,
+        timeLimitMinutes: settings.timeLimit ? Math.round(settings.timeLimit / 60) : 60,
+        startsAt: assessment.starts_at ? new Date(assessment.starts_at).toISOString().slice(0, 16) : "",
+        endsAt: assessment.ends_at ? new Date(assessment.ends_at).toISOString().slice(0, 16) : "",
+        passMark: settings.passMark || 70,
+        shuffleQuestions: !!settings.isShuffle,
+        allowGoingBack: !!settings.allowReview,
+        gradeLabels: [
+          { grade: "A", minPercent: 90 },
+          { grade: "B", minPercent: 80 },
+          { grade: "C", minPercent: 70 },
+          { grade: "D", minPercent: 60 },
+          { grade: "E", minPercent: 50 },
+          { grade: "F", minPercent: 0 },
+        ],
+        showResults: settings.showResults || "IMMEDIATELY",
+      },
+    };
+  } catch (err) {
+    console.error("Failed getEditAssessmentPageData", err);
+    throw err;
+  }
 }

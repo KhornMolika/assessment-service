@@ -1,5 +1,4 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { apiClient } from "@/src/lib/api-client";
 import type {
   Bank,
   BankTopicMap,
@@ -12,59 +11,35 @@ import type { QuestionFormData, QuestionFormType } from "@/src/types/question-fo
 import { duplicateQuestionIdPattern } from "../utils/question-duplicate-id";
 import { inferAiGradingMode, syncAiGradingFormState } from "../utils/question-ai-grading";
 
-const contentJsonPromises = new Map<string, Promise<unknown>>();
-
-function loadContentJson<T>(fileName: string): Promise<T> {
-  if (!contentJsonPromises.has(fileName)) {
-    contentJsonPromises.set(
-      fileName,
-      readFile(
-        path.join(process.cwd(), "src/data", fileName),
-        "utf8",
-      ).then((value) => JSON.parse(value.replace(/^\uFEFF/, "")) as T),
-    );
-  }
-
-  return contentJsonPromises.get(fileName) as Promise<T>;
-}
-
-function getMockBanksSeed() {
-  return loadContentJson<Bank[]>("banks.json");
-}
-
-function getMockQuestionsSeed() {
-  return loadContentJson<QuestionCatalogItem[]>("questions.json");
-}
-
-function getMockTopicsSeed() {
-  return loadContentJson<Topic[]>("topics.json");
-}
-
-function getMockBankTopicsSeed() {
-  return loadContentJson<BankTopicMap[]>("bankTopics.json");
-}
-
-function getMockQuestionTopicsSeed() {
-  return loadContentJson<QuestionTopicMap[]>("questionTopics.json");
-}
-
 export async function getMockBanks(): Promise<Bank[]> {
   "use cache";
-
-  return getMockBanksSeed();
+  try {
+    const response = await apiClient.get<{ data: Bank[] }>('/banks?limit=100');
+    return response.data || (response as any);
+  } catch (err) {
+    console.error("Failed to fetch banks", err);
+    return [];
+  }
 }
 
 export async function getMockBankById(id: string): Promise<Bank | undefined> {
   "use cache";
-
-  const banks = await getMockBanksSeed();
-  return banks.find((bank) => bank.id === id);
+  try {
+    const response = await apiClient.get<Bank>(`/banks/${id}`);
+    return response;
+  } catch (err) {
+    return undefined;
+  }
 }
 
 export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
   "use cache";
-
-  return getMockQuestionsSeed();
+  try {
+    const response = await apiClient.get<{ data: QuestionCatalogItem[] }>('/questions?limit=100');
+    return response.data || (response as any);
+  } catch (err) {
+    return [];
+  }
 }
 
 export async function getMockQuestionSummariesForBankName(
@@ -72,10 +47,9 @@ export async function getMockQuestionSummariesForBankName(
   limit: number,
 ): Promise<Array<Pick<QuestionCatalogItem, "text" | "type" | "points">>> {
   "use cache";
-
   const [banks, questions] = await Promise.all([
-    getMockBanksSeed(),
-    getMockQuestionsSeed(),
+    getMockBanks(),
+    getMockQuestions(),
   ]);
   const normalizedBankName = bankName.trim().toLowerCase();
   const matchingBankIds = new Set(
@@ -83,7 +57,6 @@ export async function getMockQuestionSummariesForBankName(
       .filter((bank) => {
         const normalizedBankId = bank.id.trim().toLowerCase();
         const normalizedName = bank.name.trim().toLowerCase();
-
         return (
           normalizedName.includes(normalizedBankName) ||
           normalizedBankName.includes(normalizedName) ||
@@ -110,20 +83,23 @@ export async function getMockQuestionSummariesForBankName(
 
 export async function getMockTopics(): Promise<Topic[]> {
   "use cache";
-
-  return getMockTopicsSeed();
+  try {
+    const response = await apiClient.get<{ data: Topic[] }>('/topics?limit=100');
+    return response.data || (response as any);
+  } catch (err) {
+    return [];
+  }
 }
 
 export async function getMockBankTopics(): Promise<BankTopicMap[]> {
   "use cache";
-
-  return getMockBankTopicsSeed();
+  // If the backend doesn't have this exact junction route yet, return empty array for now
+  return [];
 }
 
 export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
   "use cache";
-
-  return getMockQuestionTopicsSeed();
+  return [];
 }
 
 export async function getMockBankDetailPageData(id: string): Promise<{
@@ -131,33 +107,51 @@ export async function getMockBankDetailPageData(id: string): Promise<{
   bankQuestions: QuestionCatalogItem[];
 }> {
   "use cache";
-
-  const [banks, questions] = await Promise.all([
-    getMockBanksSeed(),
-    getMockQuestionsSeed(),
-  ]);
-  const bank = banks.find((item) => item.id === id);
-  const bankQuestions = questions.filter(
-    (question) => question.bank_id != null && question.bank_id === id,
-  );
-
-  return {
-    bank,
-    bankQuestions,
-  };
+  try {
+    const [bankRes, questionsRes] = await Promise.all([
+      apiClient.get<Bank>(`/banks/${id}`),
+      apiClient.get<any>(`/banks/${id}/questions`),
+    ]);
+    
+    return {
+      bank: bankRes,
+      bankQuestions: (questionsRes.data || questionsRes || []).map((q: any) => ({
+        id: q.id,
+        text: q.questionText || q.text,
+        type: q.type,
+        bank_id: id,
+        points: q.points || 5,
+        created_at: q.createdAt || new Date().toISOString()
+      })),
+    };
+  } catch (err) {
+    console.error("Failed to fetch bank detail page data", err);
+    return { bank: undefined, bankQuestions: [] };
+  }
 }
 
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
   "use cache";
-
-  const [banks, questions] = await Promise.all([
-    getMockBanksSeed(),
-    getMockQuestionsSeed(),
-  ]);
-  return {
-    banks,
-    questions,
-  };
+  try {
+    const [banks, questionsRes] = await Promise.all([
+      getMockBanks(),
+      apiClient.get<any>('/questions?limit=500'), // Or default pagination
+    ]);
+    return {
+      banks,
+      questions: (questionsRes.data || questionsRes || []).map((q: any) => ({
+        id: q.id,
+        text: q.questionText || q.text,
+        type: q.type,
+        bank_id: q.bankId || null,
+        points: q.points || 5,
+        created_at: q.createdAt || new Date().toISOString()
+      })),
+    };
+  } catch (err) {
+    console.error("Failed to fetch question catalog page data", err);
+    return { banks: [], questions: [] };
+  }
 }
 
 import type { QuestionDetailData } from "@/src/types/question-detail.types";
@@ -290,141 +284,68 @@ function getQuestionTypeMeta(typeName: string) {
 
 export async function getMockQuestionDetail(id: string): Promise<QuestionDetailData> {
   "use cache";
+  try {
+    const questionRes = await apiClient.get<any>(`/questions/${id}`);
+    const q = questionRes;
 
-  const duplicateMatch = id.match(duplicateQuestionIdPattern);
-  const sourceId = duplicateMatch?.[1] ?? id;
-  const [banks, questions, questionTopics, topics] = await Promise.all([
-    getMockBanksSeed(),
-    getMockQuestionsSeed(),
-    getMockQuestionTopicsSeed(),
-    getMockTopicsSeed(),
-  ]);
-  const sourceQuestion = questions.find((item) => item.id === sourceId) ?? questions[0];
-  const question =
-    duplicateMatch == null
-      ? sourceQuestion
-      : {
-          ...sourceQuestion,
-          id,
-          text: `${sourceQuestion.text} (Copy)`,
-        };
-  const bank = question.bank_id
-    ? (banks.find((item) => item.id === question.bank_id) ?? null)
-    : null;
-  const type = getQuestionTypeMeta(question.type);
-  const mappedTopicIds = questionTopics
-    .filter((mapping) => mapping.question_id === sourceQuestion.id)
-    .map((mapping) => mapping.topic_id);
-  const mappedTopics = topics.filter((topic) => mappedTopicIds.includes(topic.id));
+    const type = getQuestionTypeMeta(q.type);
+    
+    // Map answer options from backend (if any)
+    const options = Array.isArray(q.options) ? q.options.map((opt: any, idx: number) => ({
+      id: opt.id || String(idx),
+      question_id: id,
+      option_text: opt.text || opt.option_text || "",
+      is_correct: opt.isCorrect || false,
+      option_order: idx + 1
+    })) : [];
 
-  const defaultOptions =
-    question.type === "MCQ"
-      ? [
-          { id: "a", question_id: question.id, option_text: "Nucleophilic addition followed by elimination", is_correct: true, option_order: 1 },
-          { id: "b", question_id: question.id, option_text: "Electrophilic substitution mechanism", is_correct: false, option_order: 2 },
-          { id: "c", question_id: question.id, option_text: "Radical chain reaction", is_correct: false, option_order: 3 },
-          { id: "d", question_id: question.id, option_text: "Concerted pericyclic reaction", is_correct: false, option_order: 4 },
-        ]
-      : question.type === "Multiple Choice"
-        ? [
-            { id: "a", question_id: question.id, option_text: "Lower bounce rate", is_correct: true, option_order: 1 },
-            { id: "b", question_id: question.id, option_text: "Higher click-through rate", is_correct: true, option_order: 2 },
-            { id: "c", question_id: question.id, option_text: "Random session timeout", is_correct: false, option_order: 3 },
-            { id: "d", question_id: question.id, option_text: "Improved conversion path clarity", is_correct: true, option_order: 4 },
-          ]
-        : question.type === "True/False"
-          ? [
-              { id: "true", question_id: question.id, option_text: "True", is_correct: true, option_order: 1 },
-              { id: "false", question_id: question.id, option_text: "False", is_correct: false, option_order: 2 },
-            ]
-          : [];
+    // Construct the standard UI correctAnswer shape based on question type
+    let correctAnswerConfig: any = { type: "short", expected_keywords: [] };
+    if (q.type === "MCQ") {
+      correctAnswerConfig = { type: "single", correct_option_ids: q.correctAnswer?.optionIds || [] };
+    } else if (q.type === "Multiple Choice") {
+      correctAnswerConfig = { type: "multiple", correct_option_ids: q.correctAnswer?.optionIds || [] };
+    } else if (q.type === "True/False") {
+      correctAnswerConfig = { type: "boolean", value: q.correctAnswer?.value };
+    } else if (q.type === "Matching") {
+      correctAnswerConfig = { type: "matching", pairs: q.correctAnswer?.pairs || [] };
+    } else if (q.type === "Fill-in-blank") {
+      correctAnswerConfig = { type: "fill", answers: q.correctAnswer?.answers || [] };
+    } else if (q.type === "Ranking") {
+      correctAnswerConfig = { type: "ordering", correct_order: q.correctAnswer?.order || [] };
+    } else if (q.type === "Long Essay") {
+      correctAnswerConfig = { type: "essay", value: null };
+    }
 
-  const defaultCorrectAnswer =
-    question.type === "MCQ"
-      ? { type: "single", correct_option_ids: ["a"] }
-      : question.type === "Multiple Choice"
-        ? { type: "multiple", correct_option_ids: ["a", "b", "d"] }
-        : question.type === "True/False"
-          ? { type: "boolean", value: true }
-          : question.type === "Matching"
-            ? {
-                type: "matching",
-                pairs: [
-                  { left: "Ionic", right: "Sodium chloride" },
-                  { left: "Covalent", right: "Water molecule" },
-                  { left: "Metallic", right: "Copper wire" },
-                ],
-              }
-            : question.type === "Fill-in-blank"
-              ? { type: "fill", answers: ["velocity"] }
-              : question.type === "Ranking"
-                ? { type: "ordering", correct_order: ["1", "2", "3", "4"] }
-                : question.type === "Long Essay"
-                  ? { type: "essay", value: null }
-                  : { type: "short", expected_keywords: ["concept", "example"] };
-
-  const defaultSettings: Record<string, boolean | number | string> =
-    question.type === "MCQ" || question.type === "Multiple Choice"
-      ? {
-          allowPartialCredit: question.type === "Multiple Choice",
-          randomizeOptions: true,
-          caseSensitive: false,
-        }
-      : question.type === "Matching"
-        ? {
-            shuffleRightColumn: true,
-            requireUniqueMatches: true,
-            pairCount: 3,
-          }
-        : question.type === "File Upload"
-          ? {
-              maxSizeMb: 10,
-              maxFiles: 1,
-              allowedTypes: "pdf, docx, png",
-            }
-          : {
-              caseSensitive: false,
-              autoGrade: !type.supports_ai,
-              timeSuggestedMinutes: 3,
-            };
-
-  return {
-    id: question.id,
-    bank_id: bank?.id ?? null,
-    type_id: type.id,
-    question_text: question.text,
-    language: question.language,
-    difficulty: question.difficulty,
-    points: question.points,
-    tags: question.tags,
-    settings: defaultSettings,
-    correct_answer: defaultCorrectAnswer,
-    created_at: "2026-02-15T10:00:00Z",
-    bank: bank
-      ? {
-          id: bank.id,
-          name: bank.name,
-          owner_id: "owner-1",
-        }
-      : null,
-    type,
-    topics: mappedTopics.map((topic) => ({ id: topic.id, name: topic.name })),
-    answer_options: defaultOptions,
-    ai_grading_config: type.supports_ai
-      ? {
-          mode: type.is_manual_only ? "MANUAL_AI" : "AI_ASSISTED",
-          max_score: question.points,
-          instruction: "Evaluate clarity, correctness, completeness, and alignment with the expected learning outcome.",
-        }
-      : null,
-    stats: {
-      createdBy: "Dr. Sarah Johnson",
-      usedInAssessments: 12,
-      totalAttempts: 345,
-      averageScore: 78,
-      correctAnswers: 269,
-    },
-  };
+    return {
+      id: q.id,
+      bank_id: q.bankId || null,
+      type_id: type.id,
+      question_text: q.questionText,
+      language: "EN",
+      difficulty: q.difficulty || "Medium",
+      points: q.points || 5,
+      tags: [],
+      settings: q.settings || {},
+      correct_answer: correctAnswerConfig,
+      created_at: q.createdAt || new Date().toISOString(),
+      bank: null,
+      type,
+      topics: [],
+      answer_options: options,
+      ai_grading_config: null,
+      stats: {
+        createdBy: "Admin User",
+        usedInAssessments: 0,
+        totalAttempts: 0,
+        averageScore: 0,
+        correctAnswers: 0,
+      },
+    };
+  } catch (err) {
+    console.error("Failed to fetch mock question detail", err);
+    throw err;
+  }
 }
 
 
@@ -575,8 +496,8 @@ export async function getMockQuestionEditPageData(id: string): Promise<{
 
   const question = await getMockQuestionDetail(id);
   const [banks, topics] = await Promise.all([
-    getMockBanksSeed(),
-    getMockTopicsSeed(),
+    getMockBanks(),
+    getMockTopics(),
   ]);
 
   return {
