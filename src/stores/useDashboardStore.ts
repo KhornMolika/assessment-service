@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getDashboardOverviewSections, getDashboardAnalytics } from '@/src/components/dashboard/api/dashboard.api';
+import { getDashboardOverviewSections, getDashboardAnalytics } from '@/src/api/dashboard.api';
 import type { DashboardOverviewSections, DashboardAnalytics } from '@/src/types/dashboard.types';
 
 interface DashboardState {

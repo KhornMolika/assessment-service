@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getBankDetailPageData } from "@/src/components/content/api/content.api";
-import BankDetailView from "@/src/components/content/components/bank/detail/BankDetailView";
+import { getBankDetailPageData } from "@/src/api/content.api";
+import BankDetailView from "@/src/components/content/bank/detail/BankDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function BankDetailPageContent({

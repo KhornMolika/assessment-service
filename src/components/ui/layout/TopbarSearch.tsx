@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
+import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
 import { Label } from "@/src/components/ui/ui/label";
 import { Input } from "@/src/components/ui/ui/input";
 

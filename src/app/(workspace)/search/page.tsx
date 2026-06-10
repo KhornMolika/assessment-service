@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 import {
   getAssessmentCatalogPageData,
   getAssessmentTopics,
-} from "@/src/components/assessment/api/assessment.api";
+} from "@/src/api/assessment.api";
 import {
   getBankTopics,
   getQuestionTopics,
   getQuestionCatalogPageData,
-} from "@/src/components/content/api/content.api";
+} from "@/src/api/content.api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
@@ -25,7 +25,7 @@ import {
   assessmentMatchesTopic,
   bankMatchesTopic,
   questionMatchesTopic,
-} from "@/src/components/content/utils/topic-utils";
+} from "@/src/utils/topic-utils";
 import Link from "next/link";
 
 export const metadata: Metadata = {

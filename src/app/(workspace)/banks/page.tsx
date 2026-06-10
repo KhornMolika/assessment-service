@@ -1,16 +1,16 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getBankTopics, getBanks } from "@/src/components/content/api/content.api";
-import BanksCatalogToolbar from "@/src/components/content/components/bank/catalog/BanksCatalogToolbar";
-import BankGridInteractive from "@/src/components/content/components/bank/catalog/BankGridInteractive";
-import BanksHeader from "@/src/components/content/components/bank/catalog/BanksHeader";
+import { getBankTopics, getBanks } from "@/src/api/content.api";
+import BanksCatalogToolbar from "@/src/components/content/bank/catalog/BanksCatalogToolbar";
+import BankGridInteractive from "@/src/components/content/bank/catalog/BankGridInteractive";
+import BanksHeader from "@/src/components/content/bank/catalog/BanksHeader";
 import type { Bank } from "@/src/types/bank.types";
 import type { BankTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   bankMatchesTopic,
-} from "@/src/components/content/utils/topic-utils";
+} from "@/src/utils/topic-utils";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 import LinkPagination from "@/src/components/ui/navigation/LinkPagination";

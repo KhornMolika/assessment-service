@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getBankById, getTopics } from "@/src/components/content/api/content.api";
-import BankEditForm from "@/src/components/content/components/bank/edit/BankEditForm";
+import { getBankById, getTopics } from "@/src/api/content.api";
+import BankEditForm from "@/src/components/content/bank/edit/BankEditForm";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function EditBankPageContent({

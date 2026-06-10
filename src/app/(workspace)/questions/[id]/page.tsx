@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { getQuestionDetail } from "@/src/components/content/api/content.api";
-import QuestionDetailView from "@/src/components/content/components/question/detail/QuestionDetailView";
+import { getQuestionDetail } from "@/src/api/content.api";
+import QuestionDetailView from "@/src/components/content/question/detail/QuestionDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function QuestionDetailPageContent({

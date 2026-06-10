@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getAssessmentTopics } from "@/src/api/assessment.api";
 import {
   getBankTopics,
   getQuestionTopics,
   getTopics,
-} from "@/src/components/content/api/content.api";
-import TopicsManager from "@/src/components/content/components/topic/TopicsManager";
+} from "@/src/api/content.api";
+import TopicsManager from "@/src/components/content/topic/TopicsManager";
 import type { Topic } from "@/src/types";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { Badge } from "@/src/components/ui/ui/badge";

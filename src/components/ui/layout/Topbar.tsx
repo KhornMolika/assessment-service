@@ -1,10 +1,10 @@
-import { getAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getAssessmentTopics } from "@/src/api/assessment.api";
 import {
   getBankTopics,
   getQuestionTopics,
   getTopics,
-} from "@/src/components/content/api/content.api";
-import { getTopicOptions } from "@/src/components/content/utils/topic-utils";
+} from "@/src/api/content.api";
+import { getTopicOptions } from "@/src/utils/topic-utils";
 import TopbarControls from "./TopbarControls";
 
 async function getWorkspaceTopicOptions() {

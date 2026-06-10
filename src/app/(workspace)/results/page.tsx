@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getAssessmentResultsPageData } from "@/src/components/assessment/api/assessment.api";
-import ResultsExportButton from "@/src/components/assessment/components/results/ResultsExportButton";
-import ResultsToolbar from "@/src/components/assessment/components/results/ResultsToolbar";
-import { ResultsTable } from "@/src/components/assessment/components/results/ResultsTable";
-import { buildRows } from "@/src/components/assessment/components/results/results.utils";
-import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/components/content/utils/topic-utils";
+import { getAssessmentResultsPageData } from "@/src/api/assessment.api";
+import ResultsExportButton from "@/src/components/assessment/results/ResultsExportButton";
+import ResultsToolbar from "@/src/components/assessment/results/ResultsToolbar";
+import { ResultsTable } from "@/src/components/assessment/results/ResultsTable";
+import { buildRows } from "@/src/components/assessment/results/results.utils";
+import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/utils/topic-utils";
 import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";

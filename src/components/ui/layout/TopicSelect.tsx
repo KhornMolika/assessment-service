@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
+import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
 import {
   readManagedTopicsFromStorage,
   TOPICS_UPDATED_EVENT,
-} from "@/src/components/content/utils/topic-storage";
+} from "@/src/utils/topic-storage";
 import { useGlobalTopicFilter } from "@/src/hooks/use-global-topic-filter";
 import { Select } from "@/src/components/ui/ui/select";
 

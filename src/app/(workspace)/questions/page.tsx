@@ -5,17 +5,17 @@ import type { Metadata } from "next";
 import {
   getQuestionTopics,
   getQuestionCatalogPageData,
-} from "@/src/components/content/api/content.api";
-import QuestionBuilderAction from "@/src/components/content/components/question/catalog/QuestionBuilderAction";
-import QuestionsCatalogToolbar from "@/src/components/content/components/question/catalog/QuestionsCatalogToolbar";
-import QuestionsTableInteractive from "@/src/components/content/components/question/catalog/QuestionsTableInteractive";
+} from "@/src/api/content.api";
+import QuestionBuilderAction from "@/src/components/content/question/catalog/QuestionBuilderAction";
+import QuestionsCatalogToolbar from "@/src/components/content/question/catalog/QuestionsCatalogToolbar";
+import QuestionsTableInteractive from "@/src/components/content/question/catalog/QuestionsTableInteractive";
 import type { Bank } from "@/src/types/bank.types";
 import type { QuestionCatalogItem } from "@/src/types/question-catalog.types";
 import type { QuestionTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   questionMatchesTopic,
-} from "@/src/components/content/utils/topic-utils";
+} from "@/src/utils/topic-utils";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";

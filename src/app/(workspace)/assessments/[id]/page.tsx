@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getAssessmentDetailPageData } from "@/src/components/assessment/api/assessment.api";
-import AssessmentDetailView from "@/src/components/assessment/components/assessment-detail/AssessmentDetailView";
+import { getAssessmentDetailPageData } from "@/src/api/assessment.api";
+import AssessmentDetailView from "@/src/components/assessment/assessment-detail/AssessmentDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 export const unstable_instant = {

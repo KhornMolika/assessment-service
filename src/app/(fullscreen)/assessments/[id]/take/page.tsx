@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getAssessmentCatalogItemById, getAssessmentDetailPageData } from "@/src/components/assessment/api/assessment.api";
-import { AssessmentTakeScreen } from "@/src/components/assessment/components/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/components/assessment/components/session/AssessmentSessionLoading";
+import { getAssessmentCatalogItemById, getAssessmentDetailPageData } from "@/src/api/assessment.api";
+import { AssessmentTakeScreen } from "@/src/components/assessment/session/AssessmentSessionScreens";
+import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

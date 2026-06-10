@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
+import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
 
 const TOPIC_QUERY_PARAM = "topic";
 const TOPIC_STORAGE_KEY = "assessment-service:selected-topic";

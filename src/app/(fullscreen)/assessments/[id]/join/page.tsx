@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getAssessmentCatalogItemById } from "@/src/components/assessment/api/assessment.api";
-import { AssessmentJoinScreen } from "@/src/components/assessment/components/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/components/assessment/components/session/AssessmentSessionLoading";
+import { getAssessmentCatalogItemById } from "@/src/api/assessment.api";
+import { AssessmentJoinScreen } from "@/src/components/assessment/session/AssessmentSessionScreens";
+import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
 
 async function AssessmentJoinPageContent({
   params,

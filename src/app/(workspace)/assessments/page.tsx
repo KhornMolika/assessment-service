@@ -6,16 +6,16 @@ import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types
 import {
   getAssessmentCatalogPageData,
   getAssessmentTopics,
-} from "@/src/components/assessment/api/assessment.api";
-import AssessmentsCatalogLoading from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
-import AssessmentsCatalogToolbar from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogToolbar";
-import AssessmentsHeader from "@/src/components/assessment/components/assessment-catalog/AssessmentsHeader";
-import AssessmentsTableInteractive from "@/src/components/assessment/components/assessment-catalog/AssessmentsTableInteractive";
+} from "@/src/api/assessment.api";
+import AssessmentsCatalogLoading from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogLoading";
+import AssessmentsCatalogToolbar from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogToolbar";
+import AssessmentsHeader from "@/src/components/assessment/assessment-catalog/AssessmentsHeader";
+import AssessmentsTableInteractive from "@/src/components/assessment/assessment-catalog/AssessmentsTableInteractive";
 import type { AssessmentTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
   assessmentMatchesTopic,
-} from "@/src/components/content/utils/topic-utils";
+} from "@/src/utils/topic-utils";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import {

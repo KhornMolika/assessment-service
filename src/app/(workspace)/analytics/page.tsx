@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import {
   getAssessmentResultsPageData,
-} from "@/src/components/assessment/api/assessment.api";
-import AnalyticsAssessmentTable from "@/src/components/analytics/components/AnalyticsAssessmentTable";
-import AnalyticsDistributionCard from "@/src/components/analytics/components/AnalyticsDistributionCard";
-import AnalyticsFiltersControl from "@/src/components/analytics/components/AnalyticsFiltersControl";
-import AnalyticsQuestionBreakdownCard from "@/src/components/analytics/components/AnalyticsQuestionBreakdownCard";
-import { buildAnalyticsSnapshot } from "@/src/components/analytics/utils/analytics.utils";
-import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/components/content/utils/topic-utils";
+} from "@/src/api/assessment.api";
+import AnalyticsAssessmentTable from "@/src/components/analytics/AnalyticsAssessmentTable";
+import AnalyticsDistributionCard from "@/src/components/analytics/AnalyticsDistributionCard";
+import AnalyticsFiltersControl from "@/src/components/analytics/AnalyticsFiltersControl";
+import AnalyticsQuestionBreakdownCard from "@/src/components/analytics/AnalyticsQuestionBreakdownCard";
+import { buildAnalyticsSnapshot } from "@/src/utils/analytics.utils";
+import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/utils/topic-utils";
 import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getAssessmentResultSheetPageData } from "@/src/components/assessment/api/assessment.api";
-import ResultSheetDetailView from "@/src/components/assessment/components/results/ResultSheetDetailView";
+import { getAssessmentResultSheetPageData } from "@/src/api/assessment.api";
+import ResultSheetDetailView from "@/src/components/assessment/results/ResultSheetDetailView";
 import { ResultsPageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 export async function generateMetadata(): Promise<Metadata> {

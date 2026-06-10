@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import BankNewForm from "@/src/components/content/components/bank/new/BankNewForm";
-import { getTopics } from "@/src/components/content/api/content.api";
+import BankNewForm from "@/src/components/content/bank/new/BankNewForm";
+import { getTopics } from "@/src/api/content.api";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function NewBanksPageContent() {
