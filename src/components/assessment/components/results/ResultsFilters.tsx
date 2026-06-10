@@ -1,5 +1,7 @@
 import { ChevronDown, Search } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/ui/card";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
 
 export function ResultsFilters({
   assessmentOptions,
@@ -27,7 +29,7 @@ export function ResultsFilters({
       <CardContent className="p-4">
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_15rem_15rem]">
           <div className="relative">
-            <select
+            <Select
               value={selectedAssessment}
               onChange={(event) => onAssessmentChange(event.target.value)}
               className="w-full appearance-none rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-primary outline-none transition focus:border-primary"
@@ -35,13 +37,13 @@ export function ResultsFilters({
               {assessmentOptions.map((option) => (
                 <option key={option}>{option}</option>
               ))}
-            </select>
+            </Select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
           </div>
 
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
-            <input
+            <Input
               type="text"
               placeholder="Search by participant name..."
               value={searchQuery}
@@ -51,7 +53,7 @@ export function ResultsFilters({
           </div>
 
           <div className="relative">
-            <select
+            <Select
               value={sortBy}
               onChange={(event) => onSortChange(event.target.value)}
               className="w-full appearance-none rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-primary outline-none transition focus:border-primary"
@@ -60,12 +62,12 @@ export function ResultsFilters({
               <option value="submitted-old">Submitted: Oldest First</option>
               <option value="score-high">Score: High to Low</option>
               <option value="score-low">Score: Low to High</option>
-            </select>
+            </Select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
           </div>
 
           <div className="relative">
-            <select
+            <Select
               value={selectedStatus}
               onChange={(event) => onStatusChange(event.target.value)}
               className="w-full appearance-none rounded-lg border border-border bg-white px-4 py-2.5 pr-10 text-sm text-primary outline-none transition focus:border-primary"
@@ -74,7 +76,7 @@ export function ResultsFilters({
               <option>Passed</option>
               <option>Failed</option>
               <option>Pending Review</option>
-            </select>
+            </Select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
           </div>
         </div>

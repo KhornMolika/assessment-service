@@ -1,6 +1,7 @@
 "use client";
 
 import type { QuestionFormData } from "@/src/types/question-form.types";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 export default function QuestionRubricField({
   formData,
@@ -13,7 +14,7 @@ export default function QuestionRubricField({
   ) => void;
 }) {
   return (
-    <textarea
+    <Textarea
       value={formData.rubric}
       onChange={(event) => onChange("rubric", event.target.value)}
       placeholder="Describe what a strong response should include and how it should be evaluated."

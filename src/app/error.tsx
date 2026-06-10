@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function Error({
   error,
@@ -39,13 +40,13 @@ export default function Error({
         }
         action={
           <>
-            <button
+            <Button
               type="button"
               onClick={() => unstable_retry()}
               className="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-pm"
             >
               Try again
-            </button>
+            </Button>
             <Link
               href="/"
               className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"

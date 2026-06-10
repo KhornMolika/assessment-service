@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { Bank } from "@/src/types/bank.types";
 import type { Topic } from "@/src/types/topic.types";
 import { questionFormSchema } from "@/src/schemas/question-form.schema";
@@ -12,6 +12,7 @@ import QuestionRubricCard from "@/src/components/content/components/question-com
 import QuestionDetailsCard from "@/src/components/content/components/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/components/content/components/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/components/content/components/question-form/QuestionTypeSettingsCard";
+import { updateQuestionAction } from "../../../actions/question.actions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import QuestionEditHeader from "./QuestionEditHeader";
 
@@ -33,6 +34,7 @@ export default function QuestionEditForm({
     syncAiGradingFormState(initialFormData),
   );
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
@@ -61,8 +63,15 @@ export default function QuestionEditForm({
     }
 
     setValidationErrors([]);
-    console.log("Updating question:", questionId, formData);
-    router.push(`/questions/${questionId}`);
+    
+    startTransition(async () => {
+      const res = await updateQuestionAction(questionId, formData);
+      if (!res.success) {
+        setValidationErrors([res.error || "Failed to update question"]);
+      } else {
+        router.push(`/questions/${questionId}`);
+      }
+    });
   };
 
   const showAiGradingInstructions =
@@ -73,6 +82,7 @@ export default function QuestionEditForm({
       <QuestionEditHeader formId={editFormId} />
 
       <form id={editFormId} onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={isPending} className="space-y-6">
         {validationErrors.length > 0 ? (
           <StateMessage
             tone="error"
@@ -118,6 +128,7 @@ export default function QuestionEditForm({
             ) : null}
           </div>
         </div>
+        </fieldset>
       </form>
     </div>
   );

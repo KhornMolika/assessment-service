@@ -3,6 +3,8 @@ import type { Topic } from "@/src/types/topic.types";
 import type { QuestionFormData } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { Circle, FileText, GripVertical, Square, Star, Upload } from "lucide-react";
+import { Input } from "@/src/components/ui/ui/input";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 function getOptionLabel(index: number) {
   return String.fromCharCode(65 + index);
@@ -61,9 +63,9 @@ export default function QuestionPreviewCard({
           </div>
         );
       case "Short Answer":
-        return <input type="text" placeholder="Type your answer here..." disabled className="w-full rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
+        return <Input type="text" placeholder="Type your answer here..." disabled className="w-full rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
       case "Essay":
-        return <textarea placeholder="Type your answer here..." disabled rows={5} className="w-full resize-none rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
+        return <Textarea placeholder="Type your answer here..." disabled rows={5} className="w-full resize-none rounded-lg border border-border bg-muted px-4 py-2.75 text-sm text-gray-400" />;
       case "Fill in the Blank":
         return (
           <div className="rounded-lg border border-border bg-muted px-4 py-3">
@@ -72,7 +74,7 @@ export default function QuestionPreviewCard({
                 ? formData.fillInBlankText.split("_____").map((part, index, parts) => (
                     <span key={index}>
                       {part}
-                      {index < parts.length - 1 && <input type="text" disabled className="mx-1 inline-block w-24 border-b-2 border-primary bg-transparent px-2 py-1 text-center" />}
+                      {index < parts.length - 1 && <Input type="text" disabled className="mx-1 inline-block w-24 border-b-2 border-primary bg-transparent px-2 py-1 text-center" />}
                     </span>
                   ))
                 : "Text with blanks will appear here..."}

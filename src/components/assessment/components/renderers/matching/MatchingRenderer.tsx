@@ -1,4 +1,6 @@
 import type { QuestionRendererProps } from "../types";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
 
 function isMatchingValue(value: QuestionRendererProps["value"]): value is Record<string, string> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -30,11 +32,11 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
           <div className="text-center text-sm font-semibold text-primary/60">matches</div>
           <div className="space-y-3">
             <div className="rounded-2xl bg-white px-4 py-3 text-sm text-inkd">{option.text}</div>
-            <label className="block">
+            <Label className="block">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
                 Select matching option
               </span>
-              <select
+              <Select
                 disabled={disabled}
                 value={selectedPairs[option.id] ?? ""}
                 onChange={(event) =>
@@ -51,8 +53,8 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
                     {rightOption.text}
                   </option>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </Label>
           </div>
         </div>
       ))}

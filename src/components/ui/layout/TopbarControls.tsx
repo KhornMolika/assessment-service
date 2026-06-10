@@ -6,6 +6,7 @@ import { LocaleSwitch } from "@/src/components/ui/ui/locale-switch";
 import { useSidebar } from "@/src/components/ui/layout/sidebar-context";
 import { TopicSelect } from "./TopicSelect";
 import { TopbarSearch } from "./TopbarSearch";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function TopbarControls({
   topicOptions,
@@ -17,13 +18,13 @@ export default function TopbarControls({
 
   return (
     <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
-      <button
+      <Button
         onClick={() => setSidebarOpen(true)}
         className="rounded-lg p-2 hover:bg-gray-100 md:hidden"
-        aria-label="Open sidebar menu"
+        aria-label="Open sidebar menu" variant="ghost"
       >
         <Menu className="h-5 w-5" />
-      </button>
+      </Button>
 
       <div className="min-w-0 flex-1">
         <TopbarSearch />

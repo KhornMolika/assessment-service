@@ -5,6 +5,10 @@ import type {
   QuestionFormType,
 } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
+import { Textarea } from "@/src/components/ui/ui/textarea";
+import { Input } from "@/src/components/ui/ui/input";
 
 const questionTypes: QuestionFormType[] = [
   "Single Choice",
@@ -47,10 +51,10 @@ export default function QuestionDetailsCard({
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label htmlFor="questionText" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="questionText" className="mb-2 block text-sm font-semibold text-primary">
             Question Text *
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="questionText"
             placeholder="Enter your question here..."
             value={formData.questionText}
@@ -62,10 +66,10 @@ export default function QuestionDetailsCard({
         </div>
 
         <div>
-          <label htmlFor="questionType" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="questionType" className="mb-2 block text-sm font-semibold text-primary">
             Question Type *
-          </label>
-          <select
+          </Label>
+          <Select
             id="questionType"
             value={formData.questionType}
             onChange={(event) =>
@@ -76,14 +80,14 @@ export default function QuestionDetailsCard({
             {questionTypes.map((type) => (
               <option key={type}>{type}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
-          <label htmlFor="bank" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="bank" className="mb-2 block text-sm font-semibold text-primary">
             Question Bank
-          </label>
-          <select
+          </Label>
+          <Select
             id="bank"
             value={formData.bank}
             onChange={(event) => onChange("bank", event.target.value)}
@@ -95,17 +99,17 @@ export default function QuestionDetailsCard({
                 {bank.name}
               </option>
             ))}
-          </select>
+          </Select>
           <p className="mt-1 text-xs text-inkd">
             Optional. Questions can be created without a bank.
           </p>
         </div>
 
         <div>
-          <label htmlFor="ownerTopic" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="ownerTopic" className="mb-2 block text-sm font-semibold text-primary">
             Owner Topic *
-          </label>
-          <select
+          </Label>
+          <Select
             id="ownerTopic"
             value={formData.ownerTopicId}
             onChange={(event) => {
@@ -122,7 +126,7 @@ export default function QuestionDetailsCard({
                 {topic.name}
               </option>
             ))}
-          </select>
+          </Select>
           <p className="mt-1 text-xs text-inkd">
             Assign the primary topic owner for this question.
           </p>
@@ -130,10 +134,10 @@ export default function QuestionDetailsCard({
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="difficulty" className="mb-2 block text-sm font-semibold text-primary">
+            <Label htmlFor="difficulty" className="mb-2 block text-sm font-semibold text-primary">
               Difficulty
-            </label>
-            <select
+            </Label>
+            <Select
               id="difficulty"
               value={formData.difficulty}
               onChange={(event) =>
@@ -144,14 +148,14 @@ export default function QuestionDetailsCard({
               <option>Easy</option>
               <option>Medium</option>
               <option>Hard</option>
-            </select>
+            </Select>
           </div>
 
           <div>
-            <label htmlFor="points" className="mb-2 block text-sm font-semibold text-primary">
+            <Label htmlFor="points" className="mb-2 block text-sm font-semibold text-primary">
               Points *
-            </label>
-            <input
+            </Label>
+            <Input
               id="points"
               type="number"
               min="0"
@@ -163,10 +167,10 @@ export default function QuestionDetailsCard({
         </div>
 
         <div>
-          <label htmlFor="tags" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="tags" className="mb-2 block text-sm font-semibold text-primary">
             Tags
-          </label>
-          <input
+          </Label>
+          <Input
             id="tags"
             type="text"
             placeholder="e.g. Algebra, Equations, Chapter 3"
@@ -178,10 +182,10 @@ export default function QuestionDetailsCard({
         </div>
 
         <div>
-          <label htmlFor="language" className="mb-2 block text-sm font-semibold text-primary">
+          <Label htmlFor="language" className="mb-2 block text-sm font-semibold text-primary">
             Language
-          </label>
-          <select
+          </Label>
+          <Select
             id="language"
             value={formData.language}
             onChange={(event) =>
@@ -191,7 +195,7 @@ export default function QuestionDetailsCard({
           >
             <option>English (EN)</option>
             <option>Khmer (KH)</option>
-          </select>
+          </Select>
         </div>
       </CardContent>
     </Card>

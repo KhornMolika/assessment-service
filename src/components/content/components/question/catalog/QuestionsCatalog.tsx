@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -39,6 +39,9 @@ import {
   useDebouncedSearchParam,
   useUrlQueryUpdater,
 } from "@/src/hooks/use-url-query-state";
+import { Button } from "@/src/components/ui/ui/button";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
 
 function getQuestionTypeVariant(type: QuestionCatalogType) {
   switch (type) {
@@ -191,20 +194,20 @@ export default function QuestionsCatalog({
     bankFilter !== "All Banks";
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <PageHeaderCard
         title="Questions"
         description={`${questions.length} reusable questions across all banks.`}
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <button
+            <Button
               type="button"
               onClick={() => void handleCopyQuestionBuilder()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto" variant="secondary"
             >
               <Copy className="h-4 w-4" />
               {builderCopied ? "Copied" : "Question Builder"}
-            </button>
+            </Button>
             <Link
               href="/questions/new"
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
@@ -225,7 +228,7 @@ export default function QuestionsCatalog({
           <div className="grid gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_220px_260px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search questions..."
                 value={searchQuery}
@@ -234,7 +237,7 @@ export default function QuestionsCatalog({
               />
             </div>
 
-            <select
+            <Select
               value={typeFilter}
               onChange={(event) => {
                 setTypeFilter(event.target.value);
@@ -246,9 +249,9 @@ export default function QuestionsCatalog({
               {availableTypes.map((type) => (
                 <option key={type}>{type}</option>
               ))}
-            </select>
+            </Select>
 
-            <select
+            <Select
               value={bankFilter}
               onChange={(event) => {
                 setManualBankFilter(event.target.value);
@@ -260,7 +263,7 @@ export default function QuestionsCatalog({
               {availableBanks.map((bankName) => (
                 <option key={bankName}>{bankName}</option>
               ))}
-            </select>
+            </Select>
           </div>
         }
         isEmpty={filteredQuestions.length === 0}
@@ -274,7 +277,7 @@ export default function QuestionsCatalog({
             }
             action={
               hasActiveFilters ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
@@ -287,10 +290,10 @@ export default function QuestionsCatalog({
                       topic: null,
                     });
                   }}
-                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   Clear filters
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -364,20 +367,20 @@ export default function QuestionsCatalog({
                       >
                         <Edit className="h-4 w-4 text-inkd" />
                       </Link>
-                      <button
+                      <Button
                         onClick={() => handleCopyQuestion(question)}
                         className="rounded p-1 transition hover:bg-muted"
-                        title="Duplicate question"
+                        title="Duplicate question" variant="secondary"
                       >
                         <Copy className="h-4 w-4 text-inkd" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => setQuestionPendingDelete(question)}
                         className="rounded p-1 transition hover:bg-muted"
-                        title="Delete question"
+                        title="Delete question" variant="secondary"
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
-                      </button>
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -397,13 +400,13 @@ export default function QuestionsCatalog({
                   This action removes the selected question from the current list.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={() => setQuestionPendingDelete(null)}
                 className="rounded p-1 transition hover:bg-muted"
-                aria-label="Close delete confirmation"
+                aria-label="Close delete confirmation" variant="secondary"
               >
                 <X className="h-5 w-5 text-inkd" />
-              </button>
+              </Button>
             </div>
 
             <div className="mt-4 rounded-xl bg-muted p-4">
@@ -418,18 +421,18 @@ export default function QuestionsCatalog({
             </div>
 
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button
+              <Button
                 onClick={() => setQuestionPendingDelete(null)}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted" variant="secondary"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleDeleteQuestion(questionPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700" variant="destructive"
               >
                 Delete question
-              </button>
+              </Button>
             </div>
           </div>
         </div>

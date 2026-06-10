@@ -1,13 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { questionBankFormSchema } from "@/src/schemas/question-bank-form.schema";
 import type { Topic } from "@/src/types/topic.types";
+import { createBankAction } from "../../../actions/bank.actions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import BankNewHeader from "./BankNewHeader";
 import { NewQuestionBankFormData } from "@/src/types/question-bank-form.types";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 const createFormId = "question-bank-new-form";
 
@@ -31,6 +36,8 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
   const [formData, setFormData] = useState<NewQuestionBankFormData>(initialFormData);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  const [isPending, startTransition] = useTransition();
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const validationResult = questionBankFormSchema.safeParse(formData);
@@ -43,12 +50,21 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
     }
 
     setValidationErrors([]);
-    console.log("Creating bank:", {
-      ...formData,
-      tags: normalizeTags(formData.tags),
-    });
+    
+    startTransition(async () => {
+      const res = await createBankAction(formData.ownerTopicId, {
+        name: formData.name,
+        description: formData.description,
+        tags: normalizeTags(formData.tags),
+        visibility: formData.visibility,
+      });
 
-    router.push("/banks");
+      if (!res.success) {
+        setValidationErrors([res.error || "Failed to create bank"]);
+      } else {
+        router.push("/banks");
+      }
+    });
   };
 
   return (
@@ -79,10 +95,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
           ) : null}
 
           <div className="space-y-2">
-            <label htmlFor="bank-name" className="block text-sm font-semibold text-primary">
+            <Label htmlFor="bank-name" className="block text-sm font-semibold text-primary">
               Bank name *
-              </label>
-              <input
+              </Label>
+              <Input
                 id="bank-name"
                 type="text"
                 placeholder="e.g. Mathematics - Grade 11"
@@ -92,16 +108,17 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                   setValidationErrors([]);
                 }}
                 required
+                disabled={isPending}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
               />
             </div>
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
               <div className="space-y-2">
-                <label htmlFor="bank-description" className="block text-sm font-semibold text-primary">
+                <Label htmlFor="bank-description" className="block text-sm font-semibold text-primary">
                   Description
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="bank-description"
                   placeholder="Briefly describe the type of questions this bank should contain"
                   value={formData.description}
@@ -115,10 +132,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="bank-owner-topic" className="block text-sm font-semibold text-primary">
+                <Label htmlFor="bank-owner-topic" className="block text-sm font-semibold text-primary">
                   Owner Topic
-                </label>
-                <select
+                </Label>
+                <Select
                   id="bank-owner-topic"
                   value={formData.ownerTopicId}
                   onChange={(event) =>
@@ -135,17 +152,17 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                       {topic.name}
                     </option>
                   ))}
-                </select>
+                </Select>
                 <p className="text-xs text-inkd">
                   Assign the primary topic owner for this bank.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="bank-visibility" className="block text-sm font-semibold text-primary">
+                <Label htmlFor="bank-visibility" className="block text-sm font-semibold text-primary">
                   Visibility
-                </label>
-                <select
+                </Label>
+                <Select
                   id="bank-visibility"
                   value={formData.visibility}
                   onChange={(event) =>
@@ -162,7 +179,7 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                   <option value="PRIVATE">Private</option>
                   <option value="ORG">Organization</option>
                   <option value="PUBLIC">Public</option>
-                </select>
+                </Select>
                 <p className="text-xs text-inkd">
                   Choose who can discover and reuse this bank once it is published.
                 </p>
@@ -170,10 +187,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="bank-tags" className="block text-sm font-semibold text-primary">
+              <Label htmlFor="bank-tags" className="block text-sm font-semibold text-primary">
                 Tags
-              </label>
-              <input
+              </Label>
+              <Input
                 id="bank-tags"
                 type="text"
                 placeholder="e.g. Math, Grade 10, Midterm"

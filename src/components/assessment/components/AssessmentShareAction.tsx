@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Copy, PlayCircle, QrCode, Share2, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
+import { Button } from "@/src/components/ui/ui/button";
 
 function ShareQr({
   value,
@@ -40,7 +41,7 @@ function ModalShell({
       onClick={onClose}
     >
       <div
-        className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[24px] bg-white p-4 shadow-2xl sm:rounded-[28px] sm:p-6 lg:p-8"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-4 shadow-2xl sm:rounded-[28px] sm:p-6 lg:p-8"
         onClick={(event) => event.stopPropagation()}
       >
         {children}
@@ -83,14 +84,14 @@ export default function AssessmentShareAction({
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setShowShareModal(true)}
         className={buttonClassName}
       >
         <Share2 className="h-4 w-4" />
         <span className={labelClassName}>Share</span>
-      </button>
+      </Button>
 
       {showShareModal ? (
         <ModalShell onClose={() => setShowShareModal(false)}>
@@ -103,14 +104,14 @@ export default function AssessmentShareAction({
                 {assessment.title}
               </h3>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => setShowShareModal(false)}
               className="rounded-full p-2 text-inkd transition hover:bg-muted"
-              aria-label="Close share modal"
+              aria-label="Close share modal" variant="secondary"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
 
           {assessment.delivery_mode === "SELF_PACED" ? (
@@ -133,14 +134,14 @@ export default function AssessmentShareAction({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <button
+                <Button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   <Copy className="h-4 w-4" />
                   {copied ? "Copied" : "Copy link"}
-                </button>
+                </Button>
                 <Link
                   href={previewPath}
                   className="inline-flex w-full items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5"
@@ -149,13 +150,13 @@ export default function AssessmentShareAction({
                 </Link>
               </div>
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowShareModal(false)}
                 className="w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
               >
                 Done
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="mt-6 space-y-6">
@@ -165,13 +166,13 @@ export default function AssessmentShareAction({
               </p>
 
               <div className="grid gap-3 sm:grid-cols-3">
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowShareModal(false)}
-                  className="min-h-11 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="min-h-11 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   Cancel
-                </button>
+                </Button>
                 <Link
                   href={previewPath}
                   className="inline-flex min-h-11 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5 lg:col-span-2"

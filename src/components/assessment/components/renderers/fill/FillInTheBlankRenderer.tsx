@@ -1,4 +1,5 @@
 import type { QuestionRendererProps } from "../types";
+import { Input } from "@/src/components/ui/ui/input";
 
 function isBlankValue(value: QuestionRendererProps["value"]): value is Record<string, string> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -10,7 +11,7 @@ export function FillInTheBlankRenderer({ value, disabled, onChange }: QuestionRe
   return (
     <div className="grid gap-3">
       {[0, 1].map((index) => (
-        <input
+        <Input
           key={index}
           type="text"
           disabled={disabled}

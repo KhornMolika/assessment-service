@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { getMockBankTopics, getMockBanks } from "@/src/components/content/api/content.api";
+import { getBankTopics, getBanks } from "@/src/components/content/api/content.api";
 import BanksCatalogToolbar from "@/src/components/content/components/bank/catalog/BanksCatalogToolbar";
 import BankGridInteractive from "@/src/components/content/components/bank/catalog/BankGridInteractive";
 import BanksHeader from "@/src/components/content/components/bank/catalog/BanksHeader";
@@ -99,7 +99,7 @@ async function BanksPageContent({ searchParams }: { searchParams: BankSearchPara
     getSingleSearchParam(resolvedSearchParams.pageSize),
     6,
   );
-  const [banks, bankTopics] = await Promise.all([getMockBanks(), getMockBankTopics()]);
+  const [banks, bankTopics] = await Promise.all([getBanks(), getBankTopics()]);
   const filteredBanks = filterBanks({ banks, bankTopics, topicFilter, query });
   const totalPages = Math.max(1, Math.ceil(filteredBanks.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);

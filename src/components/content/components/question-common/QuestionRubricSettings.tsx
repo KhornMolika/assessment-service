@@ -3,6 +3,7 @@
 import type { QuestionFormData } from "@/src/types/question-form.types";
 import { getDefaultAiGradingInstruction } from "@/src/components/content/utils/question-ai-grading";
 import QuestionRubricField from "./QuestionRubricField";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function QuestionRubricSettings({
   formData,
@@ -19,7 +20,7 @@ export default function QuestionRubricSettings({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row">
-        <button
+        <Button
           type="button"
           onClick={() => onChange("aiGradingMode", "default")}
           className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
@@ -29,8 +30,8 @@ export default function QuestionRubricSettings({
           }`}
         >
           Use Default Template
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onChange("aiGradingMode", "custom")}
           className={`rounded-lg border px-4 py-2 text-sm font-semibold transition ${
@@ -40,7 +41,7 @@ export default function QuestionRubricSettings({
           }`}
         >
           Customize Instructions
-        </button>
+        </Button>
       </div>
 
       {formData.aiGradingMode === "default" ? (

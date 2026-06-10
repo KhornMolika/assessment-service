@@ -6,6 +6,15 @@ export type GradingStatus =
   | "AI_EVALUATED"
   | "MANUAL_REVISED";
 
+export interface AIGradingInsight {
+  suggestedScore: number | null;
+  reasoning: string | null;
+  keyPointsAddressed: string[];
+  keyPointsMissed: string[];
+  confidence: string | null;
+  flagForReview: boolean;
+}
+
 export interface AnswerEntry {
   id: string;
   sheet_id: string;
@@ -19,4 +28,5 @@ export interface AnswerEntry {
   grading_status: GradingStatus;
   graded_at: string | null;
   updated_at: string;
+  ai_grading?: AIGradingInsight;
 }

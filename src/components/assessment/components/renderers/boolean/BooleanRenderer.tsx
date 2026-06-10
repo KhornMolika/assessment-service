@@ -1,4 +1,5 @@
 import type { QuestionRendererProps } from "../types";
+import { Button } from "@/src/components/ui/ui/button";
 
 const booleanOptions = [
   { id: "true", label: "True", value: true },
@@ -9,7 +10,7 @@ export function BooleanRenderer({ value, disabled, onChange }: QuestionRendererP
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {booleanOptions.map((option) => (
-        <button
+        <Button
           key={option.id}
           type="button"
           disabled={disabled}
@@ -24,7 +25,7 @@ export function BooleanRenderer({ value, disabled, onChange }: QuestionRendererP
             Boolean
           </p>
           <p className="mt-2 text-base font-semibold">{option.label}</p>
-        </button>
+        </Button>
       ))}
     </div>
   );

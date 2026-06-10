@@ -1,8 +1,9 @@
 import type { QuestionRendererProps } from "../types";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 export function EssayRenderer({ value, disabled, onChange }: QuestionRendererProps) {
   return (
-    <textarea
+    <Textarea
       value={typeof value === "string" ? value : ""}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}

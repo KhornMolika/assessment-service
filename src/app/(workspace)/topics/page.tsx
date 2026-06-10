@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { getMockAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
 import {
-  getMockBankTopics,
-  getMockQuestionTopics,
-  getMockTopics,
+  getBankTopics,
+  getQuestionTopics,
+  getTopics,
 } from "@/src/components/content/api/content.api";
 import TopicsManager from "@/src/components/content/components/topic/TopicsManager";
 import type { Topic } from "@/src/types";
@@ -41,10 +41,10 @@ function countByTopic(topicIds: string[]) {
 
 export default async function TopicsPage() {
   const [topics, bankTopics, questionTopics, assessmentTopics] = await Promise.all([
-    getMockTopics(),
-    getMockBankTopics(),
-    getMockQuestionTopics(),
-    getMockAssessmentTopics(),
+    getTopics(),
+    getBankTopics(),
+    getQuestionTopics(),
+    getAssessmentTopics(),
   ]);
   const bankTopicIds = countByTopic(bankTopics.map((item) => item.topic_id));
   const questionTopicIds = countByTopic(questionTopics.map((item) => item.topic_id));

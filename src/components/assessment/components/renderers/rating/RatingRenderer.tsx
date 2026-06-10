@@ -1,10 +1,11 @@
 import type { QuestionRendererProps } from "../types";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function RatingRenderer({ value, disabled, onChange }: QuestionRendererProps) {
   return (
     <div className="grid gap-3 sm:grid-cols-5">
       {[1, 2, 3, 4, 5].map((score) => (
-        <button
+        <Button
           key={score}
           type="button"
           disabled={disabled}
@@ -19,7 +20,7 @@ export function RatingRenderer({ value, disabled, onChange }: QuestionRendererPr
           <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
             Rating
           </p>
-        </button>
+        </Button>
       ))}
     </div>
   );

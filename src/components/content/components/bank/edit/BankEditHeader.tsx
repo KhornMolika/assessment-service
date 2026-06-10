@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Save } from "lucide-react";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function BankEditHeader({ formId }: { formId: string }) {
   return (
@@ -17,14 +18,14 @@ export default function BankEditHeader({ formId }: { formId: string }) {
           >
             Cancel
           </Link>
-          <button
+          <Button
             type="submit"
             form={formId}
             className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-pm"
           >
             <Save className="h-4 w-4" />
             Save Changes
-          </button>
+          </Button>
         </>
       }
     />

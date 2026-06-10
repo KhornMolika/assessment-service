@@ -1,4 +1,7 @@
 import { ArrowRight, Users, Zap } from "lucide-react";
+import { Label } from "@/src/components/ui/ui/label";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
 
 export function JoinLobby({
   displayName,
@@ -38,32 +41,32 @@ export function JoinLobby({
       </div>
 
       <div className="rt-card-pop w-full rounded-[30px] border border-border bg-white/85 p-5 shadow-sm sm:p-6 lg:max-w-none lg:self-stretch lg:flex lg:flex-col lg:justify-center xl:min-h-[24rem]">
-        <label className="block space-y-2">
+        <Label className="block space-y-2">
           <span className="text-sm font-semibold text-primary">Display name</span>
-          <input
+          <Input
             type="text"
             value={displayName}
             onChange={(event) => onDisplayNameChange(event.target.value)}
             placeholder="Enter your display name"
             className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
           />
-        </label>
+        </Label>
         <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
             Next step
           </p>
           <p className="mt-2 text-sm leading-6 text-inkd">Waiting for host to start...</p>
         </div>
-        <button
+        <Button
           type="button"
           data-flow-event={eventName}
           disabled={displayName.trim().length === 0}
           onClick={onJoin}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
         >
           Join lobby
           <ArrowRight className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useDebouncedSearchParam } from "@/src/hooks/use-url-query-state";
+import { Input } from "@/src/components/ui/ui/input";
 
 export default function BanksCatalogToolbar() {
   const { inputValue: searchQuery, setInputValue: setSearchQuery } =
@@ -11,7 +12,7 @@ export default function BanksCatalogToolbar() {
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="relative w-full max-w-xl">
         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-        <input
+        <Input
           type="text"
           placeholder="Search banks"
           value={searchQuery}

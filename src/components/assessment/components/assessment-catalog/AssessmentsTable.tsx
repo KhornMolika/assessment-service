@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/ui/table";
+import { Button } from "@/src/components/ui/ui/button";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self-paced" : "Real-time";
@@ -95,14 +96,14 @@ function DeleteAssessmentModal({
             {assessment.title}
           </h3>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onClose}
           className="rounded-full p-2 text-inkd transition hover:bg-muted"
-          aria-label="Close delete modal"
+          aria-label="Close delete modal" variant="secondary"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
 
       <p className="mt-5 text-sm leading-6 text-inkd">
@@ -112,20 +113,20 @@ function DeleteAssessmentModal({
       </p>
 
       <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button
+        <Button
           type="button"
           onClick={onClose}
-          className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+          className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => onConfirm(assessment.id)}
-          className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600"
+          className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600" variant="destructive"
         >
           Delete assessment
-        </button>
+        </Button>
       </div>
     </ModalShell>
   );
@@ -216,22 +217,22 @@ export default function AssessmentsTable({
                   >
                     <Edit className="h-4 w-4" />
                   </Link>
-                  <button
+                  <Button
                     type="button"
                     title="Duplicate assessment"
                     onClick={() => onDuplicateAssessment(assessment)}
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
+                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted" variant="secondary"
                   >
                     <Copy className="h-4 w-4" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     title="Delete assessment"
                     onClick={() => setAssessmentToDelete(assessment)}
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-red-500 transition hover:bg-red-50"
+                    className="inline-flex items-center gap-1 rounded-md p-2 text-red-500 transition hover:bg-red-50" variant="destructive"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>

@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { QuestionRendererValue } from "../../renderers/types";
 import type { QuestionRound } from "../session.types";
 import { getAnswerResponseText } from "../session.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function SelfPacedConfirm({
   items,
@@ -29,23 +30,23 @@ export function SelfPacedConfirm({
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           {allowGoingBack ? (
-            <button
+            <Button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10" variant="ghost"
             >
               <ArrowLeft className="h-4 w-4" />
               Change answers
-            </button>
+            </Button>
           ) : null}
-          <button
+          <Button
             type="button"
             onClick={onSubmit}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-5 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-5 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]" variant="ghost"
           >
             {submitLabel}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
         </div>
       </div>

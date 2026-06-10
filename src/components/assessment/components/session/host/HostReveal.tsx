@@ -1,6 +1,7 @@
 import { Clock3 } from "lucide-react";
 import { QuestionRenderer } from "../../renderers/QuestionRenderer";
 import type { QuestionRound } from "../session.types";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function HostReveal({
   timerSeconds,
@@ -76,13 +77,13 @@ export function HostReveal({
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <button
+          <Button
             type="button"
             onClick={onSkip}
-            className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+            className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
           >
             Skip to correct answer
-          </button>
+          </Button>
           <div className="rounded-2xl bg-white/70 px-5 py-3 text-sm font-semibold text-primary shadow-sm">
             Live response wave and streak race in progress
           </div>

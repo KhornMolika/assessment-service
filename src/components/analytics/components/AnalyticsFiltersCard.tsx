@@ -3,6 +3,8 @@
 import { ChevronDown, Filter } from "lucide-react";
 import { Card, CardContent } from "@/src/components/ui/ui/card";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
 
 export default function AnalyticsFiltersCard({
   assessments,
@@ -30,11 +32,11 @@ export default function AnalyticsFiltersCard({
         </div>
 
         <div className="w-full lg:max-w-xs">
-          <label className="mb-2 block text-sm font-medium text-primary">
+          <Label className="mb-2 block text-sm font-medium text-primary">
             Assessment filter
-          </label>
+          </Label>
           <div className="relative">
-            <select
+            <Select
               value={selectedAssessmentId}
               onChange={(event) => onAssessmentChange(event.target.value)}
               className="w-full appearance-none rounded-xl border border-border bg-white px-4 py-3 pr-10 text-sm text-primary outline-none transition focus:border-primary"
@@ -45,7 +47,7 @@ export default function AnalyticsFiltersCard({
                   {assessment.title}
                 </option>
               ))}
-            </select>
+            </Select>
             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
           </div>
         </div>

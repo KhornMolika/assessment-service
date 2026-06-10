@@ -7,6 +7,7 @@ import DeleteBankModal from "@/src/components/content/components/bank/DeleteBank
 import type { Bank } from "@/src/types/bank.types";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+import { Button } from "@/src/components/ui/ui/button";
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -103,21 +104,21 @@ export default function BankCard({
               <Edit className="h-4 w-4" />
               Edit
             </Link>
-            <button
+            <Button
               type="button"
               className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-2 transition hover:bg-muted"
-              aria-label={`Duplicate ${bank.name}`}
+              aria-label={`Duplicate ${bank.name}`} variant="secondary"
             >
               <Copy className="h-4 w-4" />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setDeleteOpen(true)}
               className="inline-flex items-center justify-center rounded-lg border border-red-200 px-3 py-2 text-red-500 transition hover:bg-red-50"
-              aria-label={`Delete ${bank.name}`}
+              aria-label={`Delete ${bank.name}`} variant="destructive"
             >
               <Trash2 className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </CardContent>
       </Card>

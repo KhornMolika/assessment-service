@@ -11,6 +11,7 @@ import {
 import type { AssessmentCatalogItem } from "@/src/types";
 import type { QuestionOption } from "./session.types";
 import { formatStartDate, getParticipantIdentityLabel } from "./session.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 const realtimeOptionPalettes = [
   {
@@ -241,7 +242,7 @@ export function QuestionOptionButton({
 
   if (variant === "realtime") {
     return (
-      <button
+      <Button
         type="button"
         disabled={disabled}
         onClick={onClick}
@@ -257,12 +258,12 @@ export function QuestionOptionButton({
           {option.label}
         </span>
         <span className="text-base font-bold leading-6 sm:text-lg">{option.text}</span>
-      </button>
+      </Button>
     );
   }
 
   return (
-    <button
+    <Button
       type="button"
       disabled={disabled}
       onClick={onClick}
@@ -276,7 +277,7 @@ export function QuestionOptionButton({
         {option.label}
       </span>
       <span className="text-sm font-medium leading-6">{option.text}</span>
-    </button>
+    </Button>
   );
 }
 
@@ -389,10 +390,10 @@ export function ShareAnswerSheetPanel({ enabled }: { enabled: boolean }) {
       {enabled ? (
         <div className="mt-5 grid gap-3 xl:grid-cols-3">
           {shareDestinations.map((destination) => (
-            <button
+            <Button
               key={destination.name}
               type="button"
-              className="group rounded-3xl border border-border bg-muted/15 p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white hover:shadow-sm"
+              className="group rounded-3xl border border-border bg-muted/15 p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white hover:shadow-sm" variant="secondary"
             >
               <div className="flex items-start justify-between gap-3">
                 <span
@@ -404,7 +405,7 @@ export function ShareAnswerSheetPanel({ enabled }: { enabled: boolean }) {
               </div>
               <p className="mt-4 text-base font-semibold text-primary">{destination.name}</p>
               <p className="mt-2 text-sm leading-6 text-inkd">{destination.caption}</p>
-            </button>
+            </Button>
           ))}
         </div>
       ) : (

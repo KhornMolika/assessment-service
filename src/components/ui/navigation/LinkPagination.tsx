@@ -8,6 +8,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import { Select } from "@/src/components/ui/ui/select";
+import { Button } from "@/src/components/ui/ui/button";
 
 function getVisiblePages(currentPage: number, totalPages: number) {
   const maxButtons = 5;
@@ -112,7 +114,7 @@ export default function LinkPagination({
       <div className="flex gap-3 flex-row items-center justify-between">
         <div className="flex flex-wrap items-center gap-2 text-sm text-inkd">
           <span>Show</span>
-          <select
+          <Select
             value={pageSize}
             onChange={(event) => navigate({ pageSize: Number(event.target.value), page: null })}
             className="rounded-lg border border-border bg-card px-3 py-1 focus:outline-none focus:ring-2 focus:ring-pm"
@@ -125,7 +127,7 @@ export default function LinkPagination({
                 {option}
               </option>
             ))}
-          </select>
+          </Select>
           <span>
             of {totalItems} {itemLabel}
           </span>
@@ -140,26 +142,26 @@ export default function LinkPagination({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
         <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
-          <button
+          <Button
             onClick={() => navigate({ page: null })}
             disabled={currentPage === 1 || isSinglePage}
             className="hidden h-9 w-9 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
-            aria-label="First page"
+            aria-label="First page" variant="secondary"
           >
             <ChevronsLeft className="h-4 w-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigate({ page: Math.max(1, currentPage - 1) })}
             disabled={currentPage === 1 || isSinglePage}
             className="flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-3 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
-            aria-label="Previous page"
+            aria-label="Previous page" variant="secondary"
           >
             <ChevronLeft className="h-4 w-4" />
-          </button>
+          </Button>
 
           <div className="flex items-center gap-2 sm:hidden">
             {mobileVisiblePages.map((pageNumber) => (
-              <button
+              <Button
                 key={`mobile-${pageNumber}`}
                 onClick={() => navigate({ page: pageNumber })}
                 className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-3 text-sm font-semibold transition ${
@@ -169,13 +171,13 @@ export default function LinkPagination({
                 }`}
               >
                 {pageNumber}
-              </button>
+              </Button>
             ))}
           </div>
 
           <div className="hidden flex-wrap items-center gap-2 sm:flex">
             {visiblePages.map((pageNumber) => (
-              <button
+              <Button
                 key={pageNumber}
                 onClick={() => navigate({ page: pageNumber })}
                 className={`flex h-10 w-10 items-center justify-center rounded-xl font-semibold transition ${
@@ -185,26 +187,26 @@ export default function LinkPagination({
                 }`}
               >
                 {pageNumber}
-              </button>
+              </Button>
             ))}
           </div>
 
-          <button
+          <Button
             onClick={() => navigate({ page: Math.min(totalPages, currentPage + 1) })}
             disabled={currentPage === totalPages || isSinglePage}
             className="flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-3 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
-            aria-label="Next page"
+            aria-label="Next page" variant="secondary"
           >
             <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigate({ page: totalPages })}
             disabled={currentPage === totalPages || isSinglePage}
             className="hidden h-9 w-9 items-center justify-center rounded-xl border border-border transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
-            aria-label="Last page"
+            aria-label="Last page" variant="secondary"
           >
             <ChevronsRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

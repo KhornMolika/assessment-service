@@ -3,6 +3,7 @@ import type { QuestionRendererValue } from "../../renderers/types";
 import { QuestionRenderer } from "../../renderers/QuestionRenderer";
 import type { QuestionRound } from "../session.types";
 import { hasAnswerResponse } from "../session.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function SelfPacedQuiz({
   currentQuestion,
@@ -86,24 +87,24 @@ export function SelfPacedQuiz({
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <button
+          <Button
             type="button"
             disabled={disablePrevious}
             onClick={onPrevious}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
           >
             <ArrowLeft className="h-4 w-4" />
             Previous
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             disabled={!hasAnswerResponse(answerValue)}
             onClick={onNext}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-4 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-4 py-2.5 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
           >
             {nextLabel}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import type { QuestionRendererValue } from "../../renderers/types";
 import type { QuestionRound } from "../session.types";
 import { getAnswerResponseText, hasAnswerResponse } from "../session.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function JoinResult({
   currentRound,
@@ -69,14 +70,14 @@ export function JoinResult({
               The next question appears only after the host moves the session forward.
             </p>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onAdvance}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#277DA1_0%,#4CC9F0_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#277DA1_0%,#4CC9F0_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]" variant="ghost"
           >
             {isLastQuestion ? "See final standing" : "Preview host advance"}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

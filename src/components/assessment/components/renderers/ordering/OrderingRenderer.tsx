@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
 import type { QuestionRendererProps } from "../types";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function OrderingRenderer({
   question,
@@ -56,24 +57,24 @@ export function OrderingRenderer({
             </div>
             <span className="text-sm font-semibold leading-6 text-primary">{option.text}</span>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
                 disabled={disabled || index === 0}
                 onClick={() => moveOption(index, index - 1)}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-primary transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label={`Move ${option.text} up`}
+                aria-label={`Move ${option.text} up`} variant="secondary"
               >
                 <ArrowUp className="h-4 w-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 disabled={disabled || index === orderedOptions.length - 1}
                 onClick={() => moveOption(index, index + 1)}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border text-primary transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label={`Move ${option.text} down`}
+                aria-label={`Move ${option.text} down`} variant="secondary"
               >
                 <ArrowDown className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         ))}

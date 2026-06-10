@@ -1,4 +1,4 @@
-﻿export interface QuestionTopic {
+export interface QuestionTopic {
   id: string;
   name: string;
 }

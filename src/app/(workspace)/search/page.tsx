@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import {
   getAssessmentCatalogPageData,
-  getMockAssessmentTopics,
+  getAssessmentTopics,
 } from "@/src/components/assessment/api/assessment.api";
 import {
-  getMockBankTopics,
-  getMockQuestionTopics,
+  getBankTopics,
+  getQuestionTopics,
   getQuestionCatalogPageData,
 } from "@/src/components/content/api/content.api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
@@ -76,9 +76,9 @@ async function SearchPageContent({
   const [assessmentData, questionCatalogData, assessmentTopics, bankTopics, questionTopics] = await Promise.all([
     getAssessmentCatalogPageData(),
     getQuestionCatalogPageData(),
-    getMockAssessmentTopics(),
-    getMockBankTopics(),
-    getMockQuestionTopics(),
+    getAssessmentTopics(),
+    getBankTopics(),
+    getQuestionTopics(),
   ]);
   const bankMap = Object.fromEntries(
     questionCatalogData.banks.map((bank) => [bank.id, bank]),

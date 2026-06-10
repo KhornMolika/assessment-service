@@ -22,12 +22,13 @@ import {
 } from "@/src/hooks/use-global-topic-filter";
 import { useSidebar } from "@/src/components/ui/layout/sidebar-context";
 import SidebarNavLinks from "./SidebarNavLinks";
+import { Button } from "@/src/components/ui/ui/button";
 
 const workspaceNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Question Banks", href: "/banks", icon: Library },
-  { name: "Questions", href: "/questions", icon: HelpCircle },
   { name: "Topics", href: "/topics", icon: Tags },
+  { name: "Questions", href: "/questions", icon: HelpCircle },
+  { name: "Question Banks", href: "/banks", icon: Library },
   { name: "Assessments", href: "/assessments", icon: ClipboardList },
 ];
 
@@ -77,13 +78,13 @@ export default function Sidebar() {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
     >
-      <button
+      <Button
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-pm md:flex"
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} variant="secondary"
       >
         {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
-      </button>
+      </Button>
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
           {!collapsed ? (

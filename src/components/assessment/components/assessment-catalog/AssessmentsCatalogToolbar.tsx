@@ -6,6 +6,8 @@ import {
   useDebouncedSearchParam,
   useUrlQueryUpdater,
 } from "@/src/hooks/use-url-query-state";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
 
 const deliveryFilters: Array<{
   label: string;
@@ -29,7 +31,7 @@ export default function AssessmentsCatalogToolbar({
     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
       <div className="relative w-full max-w-xl">
         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-        <input
+        <Input
           type="text"
           placeholder="Search assessments by title, bank, or description..."
           value={searchQuery}
@@ -43,7 +45,7 @@ export default function AssessmentsCatalogToolbar({
           const isActive = filter.value === deliveryFilter;
 
           return (
-            <button
+            <Button
               key={filter.value}
               type="button"
               onClick={() => {
@@ -59,7 +61,7 @@ export default function AssessmentsCatalogToolbar({
               }`}
             >
               {filter.label}
-            </button>
+            </Button>
           );
         })}
       </div>

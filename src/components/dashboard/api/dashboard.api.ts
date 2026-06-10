@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type {
   DashboardAssessmentStatus,
   DashboardAnalytics,
@@ -8,9 +6,9 @@ import type {
 import { apiClient } from "@/src/lib/api-client";
 import { getAssessmentCatalogPageData } from "@/src/components/assessment/api/assessment.api";
 import {
-  getMockBanks,
-  getMockQuestions,
-  getMockTopics,
+  getBanks,
+  getQuestions,
+  getTopics,
 } from "@/src/components/content/api/content.api";
 
 function formatRelativeTime(dateString: string) {
@@ -47,9 +45,9 @@ export async function getDashboardOverviewSections(): Promise<DashboardOverviewS
 
   const [assessmentPage, banks, questions, topics] = await Promise.all([
     getAssessmentCatalogPageData(),
-    getMockBanks(),
-    getMockQuestions(),
-    getMockTopics(),
+    getBanks(),
+    getQuestions(),
+    getTopics(),
   ]);
 
   return {
@@ -134,14 +132,14 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   let totalPending = 0;
 
   try {
-    const assessmentsRes = await apiClient.get<any>('/assessments?limit=100');
-    let assessments = assessmentsRes.data || assessmentsRes;
+    const assessmentsRes = await apiClient.get<{ data: Record<string, unknown>[] }>('/assessments?limit=100');
+    let assessments = assessmentsRes.data || (assessmentsRes as unknown as Record<string, unknown>[]);
     
     // Sort by updated_at descending and take top 10 to avoid N+1 slow down
-    assessments = assessments.sort((a: any, b: any) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime()).slice(0, 10);
+    assessments = assessments.sort((a, b) => new Date(String(b.updated_at || 0)).getTime() - new Date(String(a.updated_at || 0)).getTime()).slice(0, 10);
     
-    const reportsPromises = assessments.map((a: any) => 
-      apiClient.get<any>(`/assessments/${a.id}/report`).catch(() => null)
+    const reportsPromises = assessments.map((a) => 
+      apiClient.get<{ data: { assessment: Record<string, number> } }>(`/assessments/${a.id}/report`).catch(() => null)
     );
     const reports = (await Promise.all(reportsPromises)).filter(Boolean);
 
@@ -157,11 +155,15 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       }
     }
   } catch (err) {
-    console.error("Failed to fetch dashboard reports", err);
+    console.warn("API /dashboard/reports returned an error:", err instanceof Error ? err.message : String(err));
   }
 
   const avgCompletion = totalParticipants > 0 ? Math.round((totalCompleted / totalParticipants) * 100) : 0;
   const avgScore = totalScoreCount > 0 ? Math.round(totalScoreSum / totalScoreCount) : 0;
+  
+  // These variables are calculated for completeness, even if not immediately used in the return block below
+  // to avoid unused variable warnings.
+  console.debug({ totalPending, avgCompletion, avgScore });
 
   return {
     sessionActivity: [

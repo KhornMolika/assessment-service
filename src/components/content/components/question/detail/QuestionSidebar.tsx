@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import type { QuestionDetailData } from "@/src/types/question-detail.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { getDifficultyColor } from "./QuestionDetailHero";
 import DeleteQuestionModal from "./DeleteQuestionModal";
+import { Button } from "@/src/components/ui/ui/button";
 
 function getLanguageName(code: string) {
   return code === "EN" ? "English" : code === "KH" ? "Khmer" : code;
@@ -35,18 +36,18 @@ export default function QuestionSidebar({
             >
               Edit Question
             </Link>
-            <button
+            <Button
               onClick={onDuplicate}
-              className="min-h-12 w-full rounded-lg border border-border px-4 py-3 text-sm font-semibold transition hover:bg-muted"
+              className="min-h-12 w-full rounded-lg border border-border px-4 py-3 text-sm font-semibold transition hover:bg-muted" variant="secondary"
             >
               Duplicate
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setShowDeleteModal(true)}
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50" variant="destructive"
             >
               <Trash2 className="h-4 w-4" />Delete
-            </button>
+            </Button>
           </CardContent>
         </Card>
 

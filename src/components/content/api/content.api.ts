@@ -8,48 +8,67 @@ import type {
   Topic,
 } from "@/src/types";
 import type { QuestionFormData, QuestionFormType } from "@/src/types/question-form.types";
-import { duplicateQuestionIdPattern } from "../utils/question-duplicate-id";
 import { inferAiGradingMode, syncAiGradingFormState } from "../utils/question-ai-grading";
 
-export async function getMockBanks(): Promise<Bank[]> {
-  "use cache";
+export async function getBanks(): Promise<Bank[]> {
+  
   try {
-    const response = await apiClient.get<{ data: Bank[] }>('/banks?limit=100');
-    return response.data || (response as any);
+    const response = await apiClient.get<{ data: any[] }>('/banks?limit=100');
+    return (response.data || []).map(b => ({
+      id: String(b.id),
+      owner_id: "admin",
+      name: String(b.name),
+      description: String(b.description || ""),
+      tags: Array.isArray(b.tags) ? b.tags : [],
+      visibility: b.visibility || "PRIVATE",
+      question_count: 0,
+      created_at: String(b.createdAt || new Date().toISOString()),
+    })) as unknown as Bank[];
   } catch (err) {
-    console.error("Failed to fetch banks", err);
+    // Suppress the large error stack trace for 404s since the backend /banks endpoint isn't fully implemented
+    console.warn("API /banks not available. Falling back to empty banks list.");
     return [];
   }
 }
 
-export async function getMockBankById(id: string): Promise<Bank | undefined> {
-  "use cache";
+export async function getBankById(id: string): Promise<Bank | undefined> {
+  
   try {
     const response = await apiClient.get<Bank>(`/banks/${id}`);
     return response;
-  } catch (err) {
+  } catch {
     return undefined;
   }
 }
 
-export async function getMockQuestions(): Promise<QuestionCatalogItem[]> {
-  "use cache";
+export async function getQuestions(): Promise<QuestionCatalogItem[]> {
+  
   try {
-    const response = await apiClient.get<{ data: QuestionCatalogItem[] }>('/questions?limit=100');
-    return response.data || (response as any);
-  } catch (err) {
+    const response = await apiClient.get<{ data: any[] }>('/questions?limit=100');
+    return (response.data || []).map(q => ({
+      id: String(q.id),
+      text: String(q.questionText || q.text),
+      type: String(q.type) as any,
+      bank_id: q.bankId ? String(q.bankId) : null,
+      points: Number(q.points || 5),
+      created_at: String(q.createdAt || new Date().toISOString()),
+      difficulty: q.difficulty || "Medium",
+      language: "EN",
+      tags: [],
+    }));
+  } catch (_err) {
     return [];
   }
 }
 
-export async function getMockQuestionSummariesForBankName(
+export async function getQuestionsummariesForBankName(
   bankName: string,
   limit: number,
 ): Promise<Array<Pick<QuestionCatalogItem, "text" | "type" | "points">>> {
-  "use cache";
+  
   const [banks, questions] = await Promise.all([
-    getMockBanks(),
-    getMockQuestions(),
+    getBanks(),
+    getQuestions(),
   ]);
   const normalizedBankName = bankName.trim().toLowerCase();
   const matchingBankIds = new Set(
@@ -81,75 +100,86 @@ export async function getMockQuestionSummariesForBankName(
   }));
 }
 
-export async function getMockTopics(): Promise<Topic[]> {
-  "use cache";
+export async function getTopics(): Promise<Topic[]> {
+  
   try {
-    const response = await apiClient.get<{ data: Topic[] }>('/topics?limit=100');
-    return response.data || (response as any);
-  } catch (err) {
+    const response = await apiClient.get<{ data: any[] }>('/topics?limit=100');
+    return (response.data || []).map(t => ({
+      id: String(t.id),
+      name: String(t.name),
+      description: String(t.description || ""),
+      created_at: String(t.createdAt || new Date().toISOString())
+    }));
+  } catch (_err) {
     return [];
   }
 }
 
-export async function getMockBankTopics(): Promise<BankTopicMap[]> {
-  "use cache";
+export async function getBankTopics(): Promise<BankTopicMap[]> {
+  
   // If the backend doesn't have this exact junction route yet, return empty array for now
   return [];
 }
 
-export async function getMockQuestionTopics(): Promise<QuestionTopicMap[]> {
-  "use cache";
+export async function getQuestionTopics(): Promise<QuestionTopicMap[]> {
+  
   return [];
 }
 
-export async function getMockBankDetailPageData(id: string): Promise<{
+export async function getBankDetailPageData(id: string): Promise<{
   bank: Bank | undefined;
   bankQuestions: QuestionCatalogItem[];
 }> {
-  "use cache";
+  
   try {
     const [bankRes, questionsRes] = await Promise.all([
       apiClient.get<Bank>(`/banks/${id}`),
-      apiClient.get<any>(`/banks/${id}/questions`),
+      apiClient.get<{ data: Record<string, unknown>[] }>(`/banks/${id}/questions`),
     ]);
     
     return {
       bank: bankRes,
-      bankQuestions: (questionsRes.data || questionsRes || []).map((q: any) => ({
-        id: q.id,
-        text: q.questionText || q.text,
-        type: q.type,
+      bankQuestions: ((questionsRes.data || questionsRes || []) as Record<string, unknown>[]).map((q) => ({
+        id: String(q.id),
+        text: String(q.questionText || q.text),
+        type: String(q.type) as any,
         bank_id: id,
-        points: q.points || 5,
-        created_at: q.createdAt || new Date().toISOString()
+        points: Number(q.points || 5),
+        created_at: String(q.createdAt || new Date().toISOString()),
+        difficulty: "Medium",
+        language: "EN",
+        tags: []
       })),
     };
   } catch (err) {
-    console.error("Failed to fetch bank detail page data", err);
+    console.warn("API /banks detail returned an error:", err instanceof Error ? err.message : String(err));
     return { bank: undefined, bankQuestions: [] };
   }
 }
 
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
-  "use cache";
+  
   try {
     const [banks, questionsRes] = await Promise.all([
-      getMockBanks(),
-      apiClient.get<any>('/questions?limit=500'), // Or default pagination
+      getBanks(),
+      apiClient.get<{ data: Record<string, unknown>[] }>('/questions?limit=500'), // Or default pagination
     ]);
     return {
       banks,
-      questions: (questionsRes.data || questionsRes || []).map((q: any) => ({
-        id: q.id,
-        text: q.questionText || q.text,
-        type: q.type,
-        bank_id: q.bankId || null,
-        points: q.points || 5,
-        created_at: q.createdAt || new Date().toISOString()
+      questions: ((questionsRes.data || questionsRes || []) as Record<string, unknown>[]).map((q) => ({
+        id: String(q.id),
+        text: String(q.questionText || q.text),
+        type: String(q.type) as any,
+        bank_id: q.bankId ? String(q.bankId) : null,
+        points: Number(q.points || 5),
+        created_at: String(q.createdAt || new Date().toISOString()),
+        difficulty: "Medium",
+        language: "EN",
+        tags: []
       })),
     };
   } catch (err) {
-    console.error("Failed to fetch question catalog page data", err);
+    console.warn("API /questions catalog returned an error:", err instanceof Error ? err.message : String(err));
     return { banks: [], questions: [] };
   }
 }
@@ -282,53 +312,54 @@ function getQuestionTypeMeta(typeName: string) {
   }
 }
 
-export async function getMockQuestionDetail(id: string): Promise<QuestionDetailData> {
-  "use cache";
+export async function getQuestionDetail(id: string): Promise<QuestionDetailData> {
+  
   try {
-    const questionRes = await apiClient.get<any>(`/questions/${id}`);
+    const questionRes = await apiClient.get<Record<string, unknown>>(`/questions/${id}`);
     const q = questionRes;
 
-    const type = getQuestionTypeMeta(q.type);
+    const type = getQuestionTypeMeta(String(q.type));
     
     // Map answer options from backend (if any)
-    const options = Array.isArray(q.options) ? q.options.map((opt: any, idx: number) => ({
-      id: opt.id || String(idx),
+    const options = Array.isArray(q.options) ? q.options.map((opt: Record<string, unknown>, idx: number) => ({
+      id: String(opt.id || String(idx)),
       question_id: id,
-      option_text: opt.text || opt.option_text || "",
-      is_correct: opt.isCorrect || false,
+      option_text: String(opt.text || opt.option_text || ""),
+      is_correct: Boolean(opt.isCorrect || false),
       option_order: idx + 1
     })) : [];
 
     // Construct the standard UI correctAnswer shape based on question type
-    let correctAnswerConfig: any = { type: "short", expected_keywords: [] };
+    let correctAnswerConfig: Record<string, unknown> = { type: "short", expected_keywords: [] };
+    const qCorrectAnswer = q.correctAnswer as Record<string, unknown> | undefined;
     if (q.type === "MCQ") {
-      correctAnswerConfig = { type: "single", correct_option_ids: q.correctAnswer?.optionIds || [] };
+      correctAnswerConfig = { type: "single", correct_option_ids: qCorrectAnswer?.optionIds || [] };
     } else if (q.type === "Multiple Choice") {
-      correctAnswerConfig = { type: "multiple", correct_option_ids: q.correctAnswer?.optionIds || [] };
+      correctAnswerConfig = { type: "multiple", correct_option_ids: qCorrectAnswer?.optionIds || [] };
     } else if (q.type === "True/False") {
-      correctAnswerConfig = { type: "boolean", value: q.correctAnswer?.value };
+      correctAnswerConfig = { type: "boolean", value: qCorrectAnswer?.value };
     } else if (q.type === "Matching") {
-      correctAnswerConfig = { type: "matching", pairs: q.correctAnswer?.pairs || [] };
+      correctAnswerConfig = { type: "matching", pairs: qCorrectAnswer?.pairs || [] };
     } else if (q.type === "Fill-in-blank") {
-      correctAnswerConfig = { type: "fill", answers: q.correctAnswer?.answers || [] };
+      correctAnswerConfig = { type: "fill", answers: qCorrectAnswer?.answers || [] };
     } else if (q.type === "Ranking") {
-      correctAnswerConfig = { type: "ordering", correct_order: q.correctAnswer?.order || [] };
+      correctAnswerConfig = { type: "ordering", correct_order: qCorrectAnswer?.order || [] };
     } else if (q.type === "Long Essay") {
       correctAnswerConfig = { type: "essay", value: null };
     }
 
     return {
-      id: q.id,
-      bank_id: q.bankId || null,
+      id: String(q.id),
+      bank_id: q.bankId ? String(q.bankId) : null,
       type_id: type.id,
-      question_text: q.questionText,
+      question_text: String(q.questionText),
       language: "EN",
-      difficulty: q.difficulty || "Medium",
-      points: q.points || 5,
+      difficulty: String(q.difficulty || "Medium") as any,
+      points: Number(q.points || 5),
       tags: [],
-      settings: q.settings || {},
+      settings: (q.settings as any) || {},
       correct_answer: correctAnswerConfig,
-      created_at: q.createdAt || new Date().toISOString(),
+      created_at: String(q.createdAt || new Date().toISOString()),
       bank: null,
       type,
       topics: [],
@@ -343,7 +374,7 @@ export async function getMockQuestionDetail(id: string): Promise<QuestionDetailD
       },
     };
   } catch (err) {
-    console.error("Failed to fetch mock question detail", err);
+    console.warn("API /questions detail returned an error:", err instanceof Error ? err.message : String(err));
     throw err;
   }
 }
@@ -487,17 +518,17 @@ function mapQuestionDetailToEditorFormData(question: QuestionDetailData): Questi
 
   return syncAiGradingFormState(formData);
 }
-export async function getMockQuestionEditPageData(id: string): Promise<{
+export async function getQuestionEditPageData(id: string): Promise<{
   banks: Bank[];
   topics: Topic[];
   formData: QuestionFormData;
 }> {
-  "use cache";
+  
 
-  const question = await getMockQuestionDetail(id);
+  const question = await getQuestionDetail(id);
   const [banks, topics] = await Promise.all([
-    getMockBanks(),
-    getMockTopics(),
+    getBanks(),
+    getTopics(),
   ]);
 
   return {

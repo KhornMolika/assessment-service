@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import type { Bank } from "@/src/types/bank.types";
 import type { Topic } from "@/src/types/topic.types";
 import QuestionRubricSettings from "@/src/components/content/components/question-common/QuestionRubricSettings";
@@ -15,6 +15,7 @@ import {
   supportsAiGradingInstructions,
   syncAiGradingFormState,
 } from "@/src/components/content/utils/question-ai-grading";
+import { createQuestionAction } from "../../../actions/question.actions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import QuestionNewHeader from "./QuestionNewHeader";
 
@@ -66,6 +67,7 @@ export default function QuestionNewForm({
   const router = useRouter();
   const [formData, setFormData] = useState<QuestionFormData>(() => syncAiGradingFormState(initialFormData));
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
@@ -95,8 +97,15 @@ export default function QuestionNewForm({
     }
 
     setValidationErrors([]);
-    console.log("Creating question:", formData);
-    router.push("/questions");
+    
+    startTransition(async () => {
+      const res = await createQuestionAction(formData.ownerTopicId, formData);
+      if (!res.success) {
+        setValidationErrors([res.error || "Failed to create question"]);
+      } else {
+        router.push("/questions");
+      }
+    });
   };
 
   const showAiGradingInstructions = formData.aiScoring && supportsAiGradingInstructions(formData.questionType);
@@ -106,6 +115,7 @@ export default function QuestionNewForm({
       <QuestionNewHeader formId={createFormId} />
 
       <form id={createFormId} onSubmit={handleSubmit} className="space-y-6">
+        <fieldset disabled={isPending} className="space-y-6">
         {validationErrors.length > 0 ? (
           <StateMessage
             tone="error"
@@ -151,6 +161,7 @@ export default function QuestionNewForm({
             <QuestionPreviewCard banks={banks} topics={topics} formData={formData} />
           </div>
         </div>
+        </fieldset>
       </form>
     </div>
   );

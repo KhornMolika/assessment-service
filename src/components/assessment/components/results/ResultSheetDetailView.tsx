@@ -1,13 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckCircle2, Download, Edit3, Save, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Download, Edit3, Save, ShieldAlert, Sparkles, RefreshCw, CheckCircle, XCircle } from "lucide-react";
 import type { AnswerEntry, GradingStatus } from "@/src/types/answer-entry.types";
 import type { AssessmentResultSheetPageData } from "@/src/types/assessment-results.types";
 import { BackButton } from "@/src/components/ui/navigation/BackButton";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { exportResultSheetCsv } from "./results.export";
+import { retryAIGrading } from "@/src/components/assessment/api/assessment.api";
+import { Button } from "@/src/components/ui/ui/button";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
 
 type EditableEntry = AnswerEntry & {
   review_mode: "read" | "edit";
@@ -103,6 +108,21 @@ export default function ResultSheetDetailView({
       review_mode: "read",
     })),
   );
+  const [retryingIds, setRetryingIds] = useState<Record<string, boolean>>({});
+
+  async function handleRetry(entryId: string) {
+    setRetryingIds((prev) => ({ ...prev, [entryId]: true }));
+    try {
+      const success = await retryAIGrading(data.assessment.id, data.answer_sheet.id, entryId);
+      if (success) {
+        alert("AI Grading retry queued. Please refresh shortly.");
+      } else {
+        alert("Failed to queue AI grading retry.");
+      }
+    } finally {
+      setRetryingIds((prev) => ({ ...prev, [entryId]: false }));
+    }
+  }
 
   const totalScore = useMemo(
     () => entries.reduce((sum, entry) => sum + (entry.score_awarded ?? 0), 0),
@@ -120,7 +140,7 @@ export default function ResultSheetDetailView({
 
   return (
     <div>
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -132,14 +152,14 @@ export default function ResultSheetDetailView({
             <p className="mt-2 text-sm text-inkd">{data.assessment.title}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
+            <Button
               type="button"
               onClick={() => exportResultSheetCsv(data)}
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pl"
             >
               <Download className="h-4 w-4" />
               Export CSV
-            </button>
+            </Button>
             <BackButton
               href="/results"
               label="Back to results"
@@ -207,15 +227,26 @@ export default function ResultSheetDetailView({
                     </div>
                     <div className="flex items-center gap-2">
                       {getGradingBadge(entry.grading_status)}
+                      {entry.ai_grading && entry.review_mode === "read" ? (
+                        <Button
+                          type="button"
+                          onClick={() => handleRetry(entry.id)}
+                          disabled={retryingIds[entry.id]}
+                          className="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50" variant="ghost"
+                        >
+                          <RefreshCw className={`h-4 w-4 ${retryingIds[entry.id] ? "animate-spin" : ""}`} />
+                          {retryingIds[entry.id] ? "Retrying..." : "Retry AI"}
+                        </Button>
+                      ) : null}
                       {isEditable && entry.review_mode === "read" ? (
-                        <button
+                        <Button
                           type="button"
                           onClick={() => updateEntry(entry.id, { review_mode: "edit" })}
-                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted"
+                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                         >
                           <Edit3 className="h-4 w-4" />
                           Edit review
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   </div>
@@ -224,7 +255,7 @@ export default function ResultSheetDetailView({
                   <div className="grid gap-4 lg:grid-cols-2">
                     <div className="rounded-xl bg-muted/40 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Participant response</p>
-                      <p className="mt-2 text-sm leading-6 text-primary">{formatResponse(entry)}</p>
+                      <p className="mt-2 text-sm leading-6 text-primary whitespace-pre-wrap">{formatResponse(entry)}</p>
                     </div>
                     <div className="rounded-xl bg-muted/40 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Correct answer</p>
@@ -232,11 +263,55 @@ export default function ResultSheetDetailView({
                     </div>
                   </div>
 
+                  {entry.ai_grading && (
+                    <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-5 shadow-sm">
+                      <div className="flex items-center gap-2 text-purple-700">
+                        <Sparkles className="h-5 w-5" />
+                        <h4 className="font-bold">AI Evaluation Insights</h4>
+                        {entry.ai_grading.flagForReview && (
+                          <Badge variant="pending" className="ml-2">Flagged for manual review</Badge>
+                        )}
+                      </div>
+                      <div className="mt-4 grid gap-6 md:grid-cols-[1fr_300px]">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Reasoning</p>
+                          <p className="mt-2 text-sm leading-relaxed text-purple-900/90 whitespace-pre-wrap">
+                            {entry.ai_grading.reasoning ?? "No reasoning provided."}
+                          </p>
+                        </div>
+                        <div className="space-y-4 rounded-xl bg-purple-100/50 p-4">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Suggested Score</p>
+                            <p className="mt-1 text-2xl font-bold text-purple-700">
+                              {entry.ai_grading.suggestedScore ?? 0} <span className="text-base font-normal text-purple-900/60">/ {entry.question_snapshot.points} pts</span>
+                            </p>
+                          </div>
+                          {(entry.ai_grading.keyPointsAddressed?.length > 0 || entry.ai_grading.keyPointsMissed?.length > 0) && (
+                            <div className="space-y-3 pt-2 border-t border-purple-200">
+                              {entry.ai_grading.keyPointsAddressed?.map((point, idx) => (
+                                <div key={`hit-${idx}`} className="flex items-start gap-2">
+                                  <CheckCircle className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
+                                  <span className="text-xs font-medium text-purple-900/80">{point}</span>
+                                </div>
+                              ))}
+                              {entry.ai_grading.keyPointsMissed?.map((point, idx) => (
+                                <div key={`miss-${idx}`} className="flex items-start gap-2">
+                                  <XCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
+                                  <span className="text-xs font-medium text-purple-900/80">{point}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {entry.review_mode === "edit" && isEditable ? (
                     <div className="grid gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 lg:grid-cols-3">
-                      <label className="block">
+                      <Label className="block">
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Score awarded</span>
-                        <input
+                        <Input
                           type="number"
                           min={0}
                           max={entry.question_snapshot.points}
@@ -248,10 +323,10 @@ export default function ResultSheetDetailView({
                           }
                           className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-primary outline-none transition focus:border-primary"
                         />
-                      </label>
-                      <label className="block">
+                      </Label>
+                      <Label className="block">
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Correctness</span>
-                        <select
+                        <Select
                           value={entry.is_correct === null ? "null" : entry.is_correct ? "true" : "false"}
                           onChange={(event) =>
                             updateEntry(entry.id, {
@@ -264,10 +339,10 @@ export default function ResultSheetDetailView({
                           <option value="null">Not set</option>
                           <option value="true">Correct</option>
                           <option value="false">Incorrect</option>
-                        </select>
-                      </label>
+                        </Select>
+                      </Label>
                       <div className="flex items-end">
-                        <button
+                        <Button
                           type="button"
                           onClick={() =>
                             updateEntry(entry.id, {
@@ -279,7 +354,7 @@ export default function ResultSheetDetailView({
                         >
                           <Save className="h-4 w-4" />
                           Save review
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (

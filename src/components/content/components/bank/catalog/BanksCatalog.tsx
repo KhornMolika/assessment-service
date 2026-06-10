@@ -18,6 +18,8 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
 import BankCard from "./BankCard";
 import BanksHeader from "./BanksHeader";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
 
 export default function BanksCatalog({
   banks,
@@ -83,7 +85,7 @@ export default function BanksCatalog({
     searchQuery.trim().length > 0 || topicFilter !== ALL_TOPICS_VALUE;
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <BanksHeader bankCount={bankItems.length} totalQuestions={totalQuestions} />
 
       <PaginatedCollectionCard
@@ -94,7 +96,7 @@ export default function BanksCatalog({
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search banks"
                 value={searchQuery}
@@ -115,7 +117,7 @@ export default function BanksCatalog({
             }
             action={
               hasActiveFilters ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
@@ -125,10 +127,10 @@ export default function BanksCatalog({
                       topic: null,
                     });
                   }}
-                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   Clear filters
-                </button>
+                </Button>
               ) : null
             }
           />

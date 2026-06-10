@@ -3,6 +3,7 @@ import { Copy, PlayCircle, QrCode, Radio, Volume2, VolumeX } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react";
 import type { RealtimeParticipant } from "../session.types";
 import { getAvatarColors, getAvatarVariant } from "../avatar.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function HostLobby({
   embedded,
@@ -54,22 +55,22 @@ export function HostLobby({
         <div className="mt-5 space-y-3">
           <div className="break-all rounded-2xl bg-white/5 p-4 text-sm text-white/80">{participantUrl}</div>
           <div className="flex gap-3">
-            <button
+            <Button
               type="button"
               onClick={onCopyLink}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10" variant="ghost"
             >
               <Copy className="h-4 w-4" />
               {copied ? "Copied" : "Copy link"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={onStart}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]" variant="ghost"
             >
               <PlayCircle className="h-4 w-4" />
               Start
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -82,14 +83,14 @@ export function HostLobby({
             <p className="mt-2 text-sm leading-6 text-inkd">New participants appear here as soon as they join the room.</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
               onClick={onToggleSound}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-primary transition hover:border-primary/35"
-              aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}
+              aria-label={soundEnabled ? "Mute sound" : "Unmute sound"} variant="ghost"
             >
               {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            </button>
+            </Button>
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
               <Radio className="h-4 w-4" />
               WAITING state

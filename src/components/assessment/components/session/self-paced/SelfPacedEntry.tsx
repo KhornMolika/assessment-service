@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, ShieldCheck } from "lucide-react";
 import { TimeLimitCard } from "../SessionShared";
+import { Label } from "@/src/components/ui/ui/label";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
 
 export function SelfPacedEntry({
   heading,
@@ -90,16 +93,16 @@ export function SelfPacedEntry({
 
           <div className="mt-6 grid gap-4">
             {requiresDisplayName ? (
-              <label className="block space-y-2">
+              <Label className="block space-y-2">
                 <span className="text-sm font-semibold text-primary">Display name</span>
-                <input
+                <Input
                   type="text"
                   value={displayName}
                   onChange={(event) => onDisplayNameChange(event.target.value)}
                   placeholder="Enter your display name"
                   className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
                 />
-              </label>
+              </Label>
             ) : (
               <div className="rounded-2xl border border-border bg-muted/20 p-4">
                 <p className="text-sm font-semibold text-primary">{helperTitle}</p>
@@ -127,15 +130,15 @@ export function SelfPacedEntry({
                 {backLabel}
               </Link>
             ) : null}
-            <button
+            <Button
               type="button"
               disabled={requiresDisplayName && displayName.trim().length === 0}
               onClick={onContinue}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
             >
               {ctaLabel}
               <ArrowRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

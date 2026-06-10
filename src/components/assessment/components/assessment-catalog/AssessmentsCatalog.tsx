@@ -20,6 +20,8 @@ import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedColle
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import AssessmentsHeader from "./AssessmentsHeader";
 import AssessmentsTable from "./AssessmentsTable";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
 
 const deliveryFilters: Array<{
   label: string;
@@ -130,7 +132,7 @@ export default function AssessmentsCatalog({
     deliveryFilter !== "ALL";
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 space-y-6">
       <AssessmentsHeader totalAssessments={stats.totalAssessments} />
 
       <PaginatedCollectionCard
@@ -141,7 +143,7 @@ export default function AssessmentsCatalog({
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
-              <input
+              <Input
                 type="text"
                 placeholder="Search assessments by title, bank, or description..."
                 value={searchQuery}
@@ -155,7 +157,7 @@ export default function AssessmentsCatalog({
                 const isActive = filter.value === deliveryFilter;
 
                 return (
-                  <button
+                  <Button
                     key={filter.value}
                     type="button"
                     onClick={() => {
@@ -169,7 +171,7 @@ export default function AssessmentsCatalog({
                     }`}
                   >
                     {filter.label}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -186,7 +188,7 @@ export default function AssessmentsCatalog({
             }
             action={
               hasActiveFilters ? (
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setSearchQuery("");
@@ -197,10 +199,10 @@ export default function AssessmentsCatalog({
                       topic: null,
                     });
                   }}
-                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   Clear filters
-                </button>
+                </Button>
               ) : null
             }
           />

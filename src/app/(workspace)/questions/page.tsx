@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 import {
-  getMockQuestionTopics,
+  getQuestionTopics,
   getQuestionCatalogPageData,
 } from "@/src/components/content/api/content.api";
 import QuestionBuilderAction from "@/src/components/content/components/question/catalog/QuestionBuilderAction";
@@ -125,7 +125,7 @@ async function QuestionsPageContent({
   const itemsPerPage = parsePositiveInteger(getSingleSearchParam(resolvedSearchParams.pageSize), 10);
   const [{ banks, questions }, questionTopics] = await Promise.all([
     getQuestionCatalogPageData(),
-    getMockQuestionTopics(),
+    getQuestionTopics(),
   ]);
   const filteredQuestions = filterQuestions({
     questions,

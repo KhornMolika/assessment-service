@@ -5,7 +5,7 @@ import type { AssessmentDeliveryMode } from "@/src/types/assessment.types";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import {
   getAssessmentCatalogPageData,
-  getMockAssessmentTopics,
+  getAssessmentTopics,
 } from "@/src/components/assessment/api/assessment.api";
 import AssessmentsCatalogLoading from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
 import AssessmentsCatalogToolbar from "@/src/components/assessment/components/assessment-catalog/AssessmentsCatalogToolbar";
@@ -130,7 +130,7 @@ async function AssessmentsPageContent({
 
   const [data, assessmentTopics] = await Promise.all([
     getAssessmentCatalogPageData(),
-    getMockAssessmentTopics(),
+    getAssessmentTopics(),
   ]);
   const filteredAssessments = filterAssessments({
     assessments: data.assessments,

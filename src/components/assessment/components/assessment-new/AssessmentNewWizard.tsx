@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Bank, QuestionCatalogItem } from "@/src/types";
 import type { Topic } from "@/src/types/topic.types";
@@ -14,6 +14,8 @@ import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import AssessmentNewHeader from "./AssessmentNewHeader";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
+import { createAssessmentAction, updateAssessmentAction } from "../../actions/assessment.actions";
+import { Button } from "@/src/components/ui/ui/button";
 
 const defaultFormData: NewAssessmentFormData = {
   title: "",
@@ -93,6 +95,7 @@ export default function AssessmentNewWizard({
     initialFormData ?? defaultFormData,
   );
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
 
   const getStepValidationMessages = (step: 1 | 2 | 3 | 4) => {
     const validationResult = assessmentFormSchema.safeParse(formData);
@@ -231,13 +234,21 @@ export default function AssessmentNewWizard({
     }
 
     setValidationErrors([]);
-    console.log(
-      mode === "edit"
-        ? "Saving assessment changes:"
-        : "Saving assessment draft:",
-      formData,
-    );
-    router.push(destination);
+    
+    startTransition(async () => {
+      let res;
+      if (mode === "edit" && assessmentId) {
+        res = await updateAssessmentAction(assessmentId, formData);
+      } else {
+        res = await createAssessmentAction(formData.ownerTopicId, formData);
+      }
+      
+      if (!res.success) {
+        setValidationErrors([res.error || "Failed to save assessment"]);
+      } else {
+        router.push(destination);
+      }
+    });
   };
 
   const handlePublish = () => {
@@ -253,13 +264,22 @@ export default function AssessmentNewWizard({
     }
 
     setValidationErrors([]);
-    console.log(
-      mode === "edit"
-        ? "Publishing assessment changes:"
-        : "Publishing assessment:",
-      formData,
-    );
-    router.push(destination);
+    
+    startTransition(async () => {
+      const finalData = { ...formData, status: "PUBLISHED" as const };
+      let res;
+      if (mode === "edit" && assessmentId) {
+        res = await updateAssessmentAction(assessmentId, finalData);
+      } else {
+        res = await createAssessmentAction(formData.ownerTopicId, finalData);
+      }
+      
+      if (!res.success) {
+        setValidationErrors([res.error || "Failed to publish assessment"]);
+      } else {
+        router.push(destination);
+      }
+    });
   };
 
   const headerTitle =
@@ -272,7 +292,7 @@ export default function AssessmentNewWizard({
       : "Configure delivery, choose questions, and shape participant experience before launch.";
 
   return (
-    <div className="space-y-6 px-4 py-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <AssessmentNewHeader
         title={headerTitle}
         description={headerDescription}
@@ -302,6 +322,7 @@ export default function AssessmentNewWizard({
 
           <div className="px-3 py-3 sm:px-4 sm:py-4">
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
+              <fieldset disabled={isPending}>
               {validationErrors.length > 0 ? (
                 <div className="mb-4">
                   <StateMessage
@@ -370,12 +391,13 @@ export default function AssessmentNewWizard({
                   onRemoveGradeLabel={handleRemoveGradeLabel}
                 />
               )}
+              </fieldset>
             </form>
           </div>
 
           <div className="border-t border-border/70 bg-slate-50/80 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
+              <Button
                 type="button"
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
@@ -386,10 +408,10 @@ export default function AssessmentNewWizard({
                 }`}
               >
                 Previous
-              </button>
+              </Button>
               <div className="sm:min-w-52">
                 {currentStep < 4 ? (
-                  <button
+                  <Button
                     type="button"
                     onClick={handleNext}
                     disabled={!canContinue}
@@ -400,15 +422,16 @@ export default function AssessmentNewWizard({
                     }`}
                   >
                     Continue
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     type="button"
                     onClick={handlePublish}
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d]"
+                    disabled={isPending}
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d] disabled:opacity-70" variant="ghost"
                   >
-                    {mode === "edit" ? "Save Changes" : "Save Assessment"}
-                  </button>
+                    {isPending ? "Saving..." : (mode === "edit" ? "Save Changes" : "Save Assessment")}
+                  </Button>
                 )}
               </div>
             </div>

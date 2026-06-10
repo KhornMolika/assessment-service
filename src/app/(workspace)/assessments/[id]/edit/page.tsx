@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getEditAssessmentPageData } from "@/src/components/assessment/api/assessment.api";
 import AssessmentNewLoading from "@/src/components/assessment/components/assessment-new/AssessmentNewLoading";
 import AssessmentNewWizard from "@/src/components/assessment/components/assessment-new/AssessmentNewWizard";
-import { getMockTopics } from "@/src/components/content/api/content.api";
+import { getTopics } from "@/src/components/content/api/content.api";
 
 async function EditAssessmentPageContent({
   params,
@@ -10,7 +10,7 @@ async function EditAssessmentPageContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [data, topics] = await Promise.all([getEditAssessmentPageData(id), getMockTopics()]);
+  const [data, topics] = await Promise.all([getEditAssessmentPageData(id), getTopics()]);
 
   return (
     <AssessmentNewWizard

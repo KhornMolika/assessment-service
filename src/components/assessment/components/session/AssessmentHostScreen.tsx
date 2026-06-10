@@ -35,6 +35,7 @@ import {
   buildQuestionRounds,
   resolveLeaderboardRound,
 } from "./session.utils";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function AssessmentHostScreen({
   assessment,
@@ -205,23 +206,23 @@ export function AssessmentHostScreen({
                   {participantUrl}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => void handleCopyLink()}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10" variant="ghost"
                   >
                     <Copy className="h-4 w-4" />
                     {copied ? "Copied" : "Copy link"}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     data-flow-event={realtimeEvents.startQuestion}
                     onClick={startSession}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]" variant="ghost"
                   >
                     <PlayCircle className="h-4 w-4" />
                     Start
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -238,14 +239,14 @@ export function AssessmentHostScreen({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setSoundEnabled((enabled) => !enabled)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white text-primary transition hover:border-primary/35"
-                    aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}
+                    aria-label={soundEnabled ? "Mute sound" : "Unmute sound"} variant="ghost"
                   >
                     {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                  </button>
+                  </Button>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
                     <Radio className="h-4 w-4" />
                     WAITING state
@@ -383,14 +384,14 @@ export function AssessmentHostScreen({
               </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
-                <button
+                <Button
                   type="button"
                   data-flow-event={realtimeEvents.questionResults}
                   onClick={skipToCorrectAnswer}
-                  className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                  className="rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                 >
                   Skip to correct answer
-                </button>
+                </Button>
                 <div className="rounded-2xl bg-white/70 px-5 py-3 text-sm font-semibold text-primary shadow-sm">
                   Live response wave and streak race in progress
                 </div>
@@ -411,7 +412,7 @@ export function AssessmentHostScreen({
                   {currentRound.question}
                 </h2>
               </div>
-              <button
+              <Button
                 type="button"
                 data-flow-event={realtimeEvents.showRank}
                 onClick={showLeaderboard}
@@ -419,7 +420,7 @@ export function AssessmentHostScreen({
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
@@ -480,15 +481,15 @@ export function AssessmentHostScreen({
                 </div>
                 <h1 className="mt-4 text-4xl font-bold text-primary">Leaderboard</h1>
               </div>
-              <button
+              <Button
                 type="button"
                 data-flow-event={questionIndex === rounds.length - 1 ? realtimeEvents.showFinalRank : realtimeEvents.startQuestion}
                 onClick={advanceToNextQuestion}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]" variant="ghost"
               >
                 {questionIndex === rounds.length - 1 ? "Show winner podium" : "Next question"}
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="rt-card-pop flex-1 rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] p-4 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] sm:p-5 lg:min-h-0 lg:p-6">

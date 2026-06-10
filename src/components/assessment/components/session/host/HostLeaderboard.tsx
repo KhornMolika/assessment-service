@@ -1,5 +1,6 @@
 import { ArrowRight, Trophy } from "lucide-react";
 import type { LeaderboardEntry } from "../session.types";
+import { Button } from "@/src/components/ui/ui/button";
 
 export function HostLeaderboard({
   leaderboard,
@@ -20,14 +21,14 @@ export function HostLeaderboard({
           </div>
           <h1 className="mt-4 text-4xl font-bold text-primary">Leaderboard</h1>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onNext}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]" variant="ghost"
         >
           {isLastQuestion ? "Show winner podium" : "Next question"}
           <ArrowRight className="h-4 w-4" />
-        </button>
+        </Button>
       </div>
 
       <div className="rt-card-pop flex-1 rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] p-4 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] sm:p-5 lg:min-h-0 lg:p-6">

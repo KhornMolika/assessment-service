@@ -4,6 +4,10 @@ import { Clock3, Plus, Sparkles, TimerReset, Trash2 } from "lucide-react";
 import type { Bank, QuestionCatalogDifficulty, QuestionCatalogItem } from "@/src/types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+import { Button } from "@/src/components/ui/ui/button";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
 
 export type AssessmentSettingsSection =
   | "SESSION_STRATEGY"
@@ -96,7 +100,7 @@ export default function AssessmentSettingsStep({
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid gap-4 lg:grid-cols-2">
-            <button
+            <Button
               type="button"
               onClick={() => onChange("sessionMode", "SELF_PACED")}
               className={`rounded-2xl border p-5 text-left transition ${
@@ -110,9 +114,9 @@ export default function AssessmentSettingsStep({
               <p className="mt-1 text-sm text-inkd">
                 Participants can enter on their own schedule and complete independently.
               </p>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => onChange("sessionMode", "REAL_TIME")}
               className={`rounded-2xl border p-5 text-left transition ${
@@ -126,11 +130,11 @@ export default function AssessmentSettingsStep({
               <p className="mt-1 text-sm text-inkd">
                 Host-led delivery with fixed launch windows and shared timing expectations.
               </p>
-            </button>
+            </Button>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <button
+            <Button
               type="button"
               onClick={() => onChange("questionSelection", "MANUAL")}
               className={`rounded-2xl border p-5 text-left transition ${
@@ -144,9 +148,9 @@ export default function AssessmentSettingsStep({
               <p className="mt-1 text-sm text-inkd">
                 Hand-pick the exact questions that will appear in this assessment.
               </p>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => onChange("questionSelection", "DYNAMIC")}
               className={`rounded-2xl border p-5 text-left transition ${
@@ -160,7 +164,7 @@ export default function AssessmentSettingsStep({
               <p className="mt-1 text-sm text-inkd">
                 Pull questions from a bank using total counts and difficulty distribution rules.
               </p>
-            </button>
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -179,8 +183,8 @@ export default function AssessmentSettingsStep({
         <CardContent className="space-y-6">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">Question bank</label>
-              <select
+              <Label className="text-sm font-semibold text-primary">Question bank</Label>
+              <Select
                 value={formData.selectedBankId}
                 onChange={(event) => onChange("selectedBankId", event.target.value)}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pm"
@@ -191,13 +195,13 @@ export default function AssessmentSettingsStep({
                     {bank.name} ({bank.question_count} questions)
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             {formData.questionSelection === "DYNAMIC" ? (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-primary">Total questions</label>
-                <input
+                <Label className="text-sm font-semibold text-primary">Total questions</Label>
+                <Input
                   type="number"
                   min={1}
                   value={formData.totalQuestions}
@@ -207,8 +211,8 @@ export default function AssessmentSettingsStep({
               </div>
             ) : (
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-primary">Search questions</label>
-                <input
+                <Label className="text-sm font-semibold text-primary">Search questions</Label>
+                <Input
                   type="text"
                   value={questionSearch}
                   onChange={(event) => onQuestionSearchChange(event.target.value)}
@@ -227,13 +231,13 @@ export default function AssessmentSettingsStep({
                   {formData.selectedQuestionIds.length === 1 ? "" : "s"} selected
                 </p>
                 {formData.selectedQuestionIds.length > 0 ? (
-                  <button
+                  <Button
                     type="button"
                     onClick={() => onChange("selectedQuestionIds", [])}
-                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary transition hover:bg-muted"
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary transition hover:bg-muted" variant="secondary"
                   >
                     Clear selection
-                  </button>
+                  </Button>
                 ) : null}
               </div>
 
@@ -245,7 +249,7 @@ export default function AssessmentSettingsStep({
                       const bank = banks.find((item) => item.id === question.bank_id);
 
                       return (
-                        <button
+                        <Button
                           key={question.id}
                           type="button"
                           onClick={() => onQuestionToggle(question.id)}
@@ -289,7 +293,7 @@ export default function AssessmentSettingsStep({
                               </div>
                             </div>
                           </div>
-                        </button>
+                        </Button>
                       );
                     })
                   ) : (
@@ -304,9 +308,9 @@ export default function AssessmentSettingsStep({
             <div className="grid gap-4 md:grid-cols-3">
               {formData.selectionRules.map((rule) => (
                 <div key={rule.difficulty} className="rounded-2xl border border-border bg-muted/40 p-4">
-                  <label className="block text-sm font-semibold text-primary">{rule.difficulty}</label>
+                  <Label className="block text-sm font-semibold text-primary">{rule.difficulty}</Label>
                   <p className="mt-1 text-xs text-inkd">Questions to pull from this difficulty bucket.</p>
-                  <input
+                  <Input
                     type="number"
                     min={0}
                     value={rule.count}
@@ -335,8 +339,8 @@ export default function AssessmentSettingsStep({
       <CardContent className="space-y-6">
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Time limit (minutes)</label>
-            <input
+            <Label className="text-sm font-semibold text-primary">Time limit (minutes)</Label>
+            <Input
               type="number"
               min={0}
               value={formData.timeLimitMinutes}
@@ -351,8 +355,8 @@ export default function AssessmentSettingsStep({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Starts at</label>
-            <input
+            <Label className="text-sm font-semibold text-primary">Starts at</Label>
+            <Input
               type="datetime-local"
               value={formData.startsAt}
               onChange={(event) => onChange("startsAt", event.target.value)}
@@ -361,8 +365,8 @@ export default function AssessmentSettingsStep({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Ends at</label>
-            <input
+            <Label className="text-sm font-semibold text-primary">Ends at</Label>
+            <Input
               type="datetime-local"
               value={formData.endsAt}
               onChange={(event) => onChange("endsAt", event.target.value)}
@@ -380,7 +384,7 @@ export default function AssessmentSettingsStep({
                   Randomize the order participants see to reduce predictable answer flow.
                 </p>
               </div>
-              <input
+              <Input
                 type="checkbox"
                 checked={formData.shuffleQuestions}
                 onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
@@ -397,7 +401,7 @@ export default function AssessmentSettingsStep({
                   Let participants revisit earlier questions instead of forcing one-way progression.
                 </p>
               </div>
-              <input
+              <Input
                 type="checkbox"
                 checked={formData.allowGoingBack}
                 onChange={(event) => onChange("allowGoingBack", event.target.checked)}
@@ -409,8 +413,8 @@ export default function AssessmentSettingsStep({
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Pass mark (%)</label>
-            <input
+            <Label className="text-sm font-semibold text-primary">Pass mark (%)</Label>
+            <Input
               type="number"
               min={0}
               max={100}
@@ -421,8 +425,8 @@ export default function AssessmentSettingsStep({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-primary">Show results</label>
-            <select
+            <Label className="text-sm font-semibold text-primary">Show results</Label>
+            <Select
               value={formData.showResults}
               onChange={(event) =>
                 onChange("showResults", event.target.value as NewAssessmentFormData["showResults"])
@@ -432,7 +436,7 @@ export default function AssessmentSettingsStep({
               <option value="IMMEDIATELY">Immediately after submit</option>
               <option value="MANUAL">Manual release</option>
               <option value="NEVER">Never show</option>
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -444,27 +448,27 @@ export default function AssessmentSettingsStep({
                 Define label thresholds like A, B, C, and pass/fail cutoffs.
               </p>
             </div>
-            <button
+            <Button
               type="button"
               onClick={onAddGradeLabel}
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary transition hover:bg-muted"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary transition hover:bg-muted" variant="secondary"
             >
               <Plus className="h-4 w-4" />
               Add label
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-3">
             {formData.gradeLabels.map((label, index) => (
               <div key={`${label.grade}-${index}`} className="grid gap-3 rounded-2xl border border-border bg-card p-4 md:grid-cols-[160px_minmax(0,1fr)_44px]">
-                <input
+                <Input
                   type="text"
                   value={label.grade}
                   onChange={(event) => onGradeLabelChange(index, "grade", event.target.value)}
                   placeholder="Grade label"
                   className="rounded-lg border border-border bg-card px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pm"
                 />
-                <input
+                <Input
                   type="number"
                   min={0}
                   max={100}
@@ -475,14 +479,14 @@ export default function AssessmentSettingsStep({
                   placeholder="Minimum percent"
                   className="rounded-lg border border-border bg-card px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pm"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => onRemoveGradeLabel(index)}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:bg-red-50"
-                  aria-label={`Remove grade label ${label.grade || index + 1}`}
+                  aria-label={`Remove grade label ${label.grade || index + 1}`} variant="destructive"
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             ))}
           </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Edit, Trash2 } from "lucide-react";
 import type { Bank } from "@/src/types";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function BankDetailHeader({
   bank,
@@ -33,14 +34,14 @@ export default function BankDetailHeader({
             <Edit className="h-4 w-4" />
             Edit bank
           </Link>
-          <button
+          <Button
             type="button"
             onClick={onDelete}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 sm:w-auto"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 sm:w-auto" variant="destructive"
           >
             <Trash2 className="h-4 w-4" />
             Delete bank
-          </button>
+          </Button>
         </>
       }
     />

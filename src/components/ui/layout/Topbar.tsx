@@ -1,8 +1,8 @@
-import { getMockAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
 import {
-  getMockBankTopics,
-  getMockQuestionTopics,
-  getMockTopics,
+  getBankTopics,
+  getQuestionTopics,
+  getTopics,
 } from "@/src/components/content/api/content.api";
 import { getTopicOptions } from "@/src/components/content/utils/topic-utils";
 import TopbarControls from "./TopbarControls";
@@ -11,10 +11,10 @@ async function getWorkspaceTopicOptions() {
   "use cache";
 
   const [topics, bankTopics, questionTopics, assessmentTopics] = await Promise.all([
-    getMockTopics(),
-    getMockBankTopics(),
-    getMockQuestionTopics(),
-    getMockAssessmentTopics(),
+    getTopics(),
+    getBankTopics(),
+    getQuestionTopics(),
+    getAssessmentTopics(),
   ]);
 
   return getTopicOptions({

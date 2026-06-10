@@ -5,6 +5,11 @@ import type {
 } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { Check, GripVertical, Plus, X } from "lucide-react";
+import { Label } from "@/src/components/ui/ui/label";
+import { Button } from "@/src/components/ui/ui/button";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 function getOptionLabel(index: number) {
   return String.fromCharCode(65 + index);
@@ -67,7 +72,7 @@ export default function QuestionTypeSettingsCard({
       case "Multiple Choices":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">Answer Options</label>
+            <Label className="mb-3 block text-sm font-semibold text-primary">Answer Options</Label>
             <p className="mb-3 text-xs text-inkd">
               {formData.questionType === "Single Choice"
                 ? "Click the circle to mark the correct answer"
@@ -85,7 +90,7 @@ export default function QuestionTypeSettingsCard({
                       isCorrect ? "border-acc bg-accp" : "border-border bg-card"
                     }`}
                   >
-                    <button
+                    <Button
                       type="button"
                       onClick={() => toggleCorrectAnswer(index)}
                       className={`flex h-5 w-5 shrink-0 items-center justify-center border-2 transition ${
@@ -97,11 +102,11 @@ export default function QuestionTypeSettingsCard({
                       }`}
                     >
                       {isCorrect && <Check className="h-3 w-3 text-white" />}
-                    </button>
+                    </Button>
                     <span className="w-6 text-sm font-semibold text-primary">
                       {getOptionLabel(index)}
                     </span>
-                    <input
+                    <Input
                       type="text"
                       placeholder={`Option ${getOptionLabel(index)}`}
                       value={option}
@@ -111,7 +116,7 @@ export default function QuestionTypeSettingsCard({
                       }`}
                     />
                     {formData.options.length > 2 && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() => {
                           const nextOptions = formData.options.filter((_, itemIndex) => itemIndex !== index);
@@ -124,22 +129,22 @@ export default function QuestionTypeSettingsCard({
                             nextCorrectAnswers.length > 0 ? nextCorrectAnswers : [0],
                           );
                         }}
-                        className="shrink-0 text-gray-400 transition hover:text-red-500"
+                        className="shrink-0 text-gray-400 transition hover:text-red-500" variant="ghost"
                       >
                         <X className="h-4 w-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 );
               })}
-              <button
+              <Button
                 type="button"
                 onClick={() => onChange("options", [...formData.options, ""])}
-                className="mt-2 flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary"
+                className="mt-2 flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
               >
                 <Plus className="h-4 w-4" />
                 Add Option
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -147,7 +152,7 @@ export default function QuestionTypeSettingsCard({
       case "True/False":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">Correct Answer</label>
+            <Label className="mb-3 block text-sm font-semibold text-primary">Correct Answer</Label>
             <div className="space-y-2">
               {[
                 { label: "True", value: true },
@@ -156,7 +161,7 @@ export default function QuestionTypeSettingsCard({
                 const isCorrect = formData.trueFalseAnswer === option.value;
 
                 return (
-                  <button
+                  <Button
                     key={option.label}
                     type="button"
                     onClick={() => onChange("trueFalseAnswer", option.value)}
@@ -174,7 +179,7 @@ export default function QuestionTypeSettingsCard({
                     <span className={`text-sm font-medium ${isCorrect ? "text-primary" : "text-gray-700"}`}>
                       {option.label}
                     </span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -184,14 +189,14 @@ export default function QuestionTypeSettingsCard({
       case "Short Answer":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">
+            <Label className="mb-3 block text-sm font-semibold text-primary">
               Acceptable Keywords/Answers
-            </label>
+            </Label>
             <p className="mb-3 text-xs text-inkd">Add keywords or phrases that should be in the answer</p>
             <div className="space-y-2">
               {formData.shortAnswerKeywords.map((keyword, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder={`Keyword ${index + 1}`}
                     value={keyword}
@@ -203,7 +208,7 @@ export default function QuestionTypeSettingsCard({
                     className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                   />
                   {formData.shortAnswerKeywords.length > 1 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() =>
                         onChange(
@@ -211,21 +216,21 @@ export default function QuestionTypeSettingsCard({
                           formData.shortAnswerKeywords.filter((_, itemIndex) => itemIndex !== index),
                         )
                       }
-                      className="text-gray-400 transition hover:text-red-500"
+                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
                 onClick={() => onChange("shortAnswerKeywords", [...formData.shortAnswerKeywords, ""])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary"
+                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
               >
                 <Plus className="h-4 w-4" />
                 Add Keyword
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -233,8 +238,8 @@ export default function QuestionTypeSettingsCard({
       case "Essay":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">Grading Guidelines</label>
-            <textarea
+            <Label className="mb-3 block text-sm font-semibold text-primary">Grading Guidelines</Label>
+            <Textarea
               placeholder="Provide guidelines for grading this essay question..."
               value={formData.explanation}
               onChange={(event) => onChange("explanation", event.target.value)}
@@ -248,9 +253,9 @@ export default function QuestionTypeSettingsCard({
         return (
           <div className="space-y-4">
             <div>
-              <label className="mb-3 block text-sm font-semibold text-primary">Text with Blanks</label>
+              <Label className="mb-3 block text-sm font-semibold text-primary">Text with Blanks</Label>
               <p className="mb-3 text-xs text-inkd">Use `_____` to create blanks in your text</p>
-              <textarea
+              <Textarea
                 placeholder="The capital of France is _____"
                 value={formData.fillInBlankText}
                 onChange={(event) => onChange("fillInBlankText", event.target.value)}
@@ -259,12 +264,12 @@ export default function QuestionTypeSettingsCard({
               />
             </div>
             <div>
-              <label className="mb-3 block text-sm font-semibold text-primary">Correct Answers for Blanks</label>
+              <Label className="mb-3 block text-sm font-semibold text-primary">Correct Answers for Blanks</Label>
               <div className="space-y-2">
                 {formData.fillInBlankAnswers.map((answer, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <span className="w-20 text-sm font-semibold text-primary">Blank {index + 1}:</span>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Correct answer"
                       value={answer}
@@ -276,7 +281,7 @@ export default function QuestionTypeSettingsCard({
                       className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                     />
                     {formData.fillInBlankAnswers.length > 1 && (
-                      <button
+                      <Button
                         type="button"
                         onClick={() =>
                           onChange(
@@ -284,21 +289,21 @@ export default function QuestionTypeSettingsCard({
                             formData.fillInBlankAnswers.filter((_, itemIndex) => itemIndex !== index),
                           )
                         }
-                        className="text-gray-400 transition hover:text-red-500"
+                        className="text-gray-400 transition hover:text-red-500" variant="ghost"
                       >
                         <X className="h-4 w-4" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
-                <button
+                <Button
                   type="button"
                   onClick={() => onChange("fillInBlankAnswers", [...formData.fillInBlankAnswers, ""])}
-                  className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary"
+                  className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
                 >
                   <Plus className="h-4 w-4" />
                   Add Blank Answer
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -307,13 +312,13 @@ export default function QuestionTypeSettingsCard({
       case "Matching":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">Matching Pairs</label>
+            <Label className="mb-3 block text-sm font-semibold text-primary">Matching Pairs</Label>
             <p className="mb-3 text-xs text-inkd">Create items to match between left and right columns</p>
             <div className="space-y-3">
               {formData.matchingPairs.map((pair, index) => (
                 <div key={index} className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="flex flex-1 items-center gap-3">
-                    <input
+                    <Input
                       type="text"
                       placeholder={`Left item ${index + 1}`}
                       value={pair.left}
@@ -321,7 +326,7 @@ export default function QuestionTypeSettingsCard({
                       className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                     />
                     <span className="text-inkd">?</span>
-                    <input
+                    <Input
                       type="text"
                       placeholder={`Right item ${index + 1}`}
                       value={pair.right}
@@ -330,7 +335,7 @@ export default function QuestionTypeSettingsCard({
                     />
                   </div>
                   {formData.matchingPairs.length > 2 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() =>
                         onChange(
@@ -338,21 +343,21 @@ export default function QuestionTypeSettingsCard({
                           formData.matchingPairs.filter((_, itemIndex) => itemIndex !== index),
                         )
                       }
-                      className="text-gray-400 transition hover:text-red-500"
+                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
                 onClick={() => onChange("matchingPairs", [...formData.matchingPairs, { left: "", right: "" }])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary"
+                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
               >
                 <Plus className="h-4 w-4" />
                 Add Pair
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -360,14 +365,14 @@ export default function QuestionTypeSettingsCard({
       case "Ordering":
         return (
           <div>
-            <label className="mb-3 block text-sm font-semibold text-primary">Items to Order</label>
+            <Label className="mb-3 block text-sm font-semibold text-primary">Items to Order</Label>
             <p className="mb-3 text-xs text-inkd">Add items in the correct order</p>
             <div className="space-y-2">
               {formData.orderItems.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <GripVertical className="h-4 w-4 text-gray-400" />
                   <span className="w-6 text-sm font-semibold text-primary">{index + 1}.</span>
-                  <input
+                  <Input
                     type="text"
                     placeholder={`Item ${index + 1}`}
                     value={item}
@@ -375,7 +380,7 @@ export default function QuestionTypeSettingsCard({
                     className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                   />
                   {formData.orderItems.length > 2 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() =>
                         onChange(
@@ -383,21 +388,21 @@ export default function QuestionTypeSettingsCard({
                           formData.orderItems.filter((_, itemIndex) => itemIndex !== index),
                         )
                       }
-                      className="text-gray-400 transition hover:text-red-500"
+                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
                     >
                       <X className="h-4 w-4" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
                 onClick={() => onChange("orderItems", [...formData.orderItems, ""])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary"
+                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
               >
                 <Plus className="h-4 w-4" />
                 Add Item
-              </button>
+              </Button>
             </div>
           </div>
         );
@@ -406,8 +411,8 @@ export default function QuestionTypeSettingsCard({
         return (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-primary">Rating Scale Settings</label>
-              <select
+              <Label className="mb-2 block text-sm font-semibold text-primary">Rating Scale Settings</Label>
+              <Select
                 value={formData.ratingScale}
                 onChange={(event) => onChange("ratingScale", Number(event.target.value))}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
@@ -416,12 +421,12 @@ export default function QuestionTypeSettingsCard({
                 <option value={5}>5 Points</option>
                 <option value={7}>7 Points</option>
                 <option value={10}>10 Points</option>
-              </select>
+              </Select>
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-xs text-inkd">Minimum Label</label>
-                <input
+                <Label className="mb-2 block text-xs text-inkd">Minimum Label</Label>
+                <Input
                   type="text"
                   value={formData.ratingLabels.min}
                   onChange={(event) =>
@@ -431,8 +436,8 @@ export default function QuestionTypeSettingsCard({
                 />
               </div>
               <div>
-                <label className="mb-2 block text-xs text-inkd">Maximum Label</label>
-                <input
+                <Label className="mb-2 block text-xs text-inkd">Maximum Label</Label>
+                <Input
                   type="text"
                   value={formData.ratingLabels.max}
                   onChange={(event) =>
@@ -449,7 +454,7 @@ export default function QuestionTypeSettingsCard({
         return (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-primary">Allowed File Types</label>
+              <Label className="mb-2 block text-sm font-semibold text-primary">Allowed File Types</Label>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {[
                   { label: "PDF", value: "pdf" },
@@ -462,7 +467,7 @@ export default function QuestionTypeSettingsCard({
                   const isSelected = formData.fileUploadTypes.includes(type.value);
 
                   return (
-                    <button
+                    <Button
                       key={type.value}
                       type="button"
                       onClick={() => {
@@ -487,15 +492,15 @@ export default function QuestionTypeSettingsCard({
                         </div>
                         {type.label}
                       </div>
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
             </div>
 
             <div>
-              <label className="mb-2 block text-xs text-inkd">Maximum File Size (MB)</label>
-              <select
+              <Label className="mb-2 block text-xs text-inkd">Maximum File Size (MB)</Label>
+              <Select
                 value={formData.fileUploadMaxSize}
                 onChange={(event) => onChange("fileUploadMaxSize", Number(event.target.value))}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
@@ -505,12 +510,12 @@ export default function QuestionTypeSettingsCard({
                 <option value={25}>25 MB</option>
                 <option value={50}>50 MB</option>
                 <option value={100}>100 MB</option>
-              </select>
+              </Select>
             </div>
 
             <div>
-              <label className="mb-2 block text-xs text-inkd">Number of Files Allowed</label>
-              <select
+              <Label className="mb-2 block text-xs text-inkd">Number of Files Allowed</Label>
+              <Select
                 value={formData.fileUploadMaxFiles}
                 onChange={(event) => onChange("fileUploadMaxFiles", Number(event.target.value))}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
@@ -520,7 +525,7 @@ export default function QuestionTypeSettingsCard({
                 <option value={3}>3 Files</option>
                 <option value={5}>5 Files</option>
                 <option value={10}>10 Files</option>
-              </select>
+              </Select>
             </div>
           </div>
         );

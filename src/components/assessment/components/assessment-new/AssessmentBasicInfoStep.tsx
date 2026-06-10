@@ -7,6 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/ui/card";
+import { Label } from "@/src/components/ui/ui/label";
+import { Select } from "@/src/components/ui/ui/select";
+import { Input } from "@/src/components/ui/ui/input";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 export default function AssessmentBasicInfoStep({
   formData,
@@ -33,10 +37,10 @@ export default function AssessmentBasicInfoStep({
         <div className="grid gap-6 xl:grid-cols-3">
           <div className="space-y-6 xl:col-span-2">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">
+              <Label className="text-sm font-semibold text-primary">
                 Title
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 value={formData.title}
                 onChange={(event) => onChange("title", event.target.value)}
@@ -45,10 +49,10 @@ export default function AssessmentBasicInfoStep({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">
+              <Label className="text-sm font-semibold text-primary">
                 Description
-              </label>
-              <textarea
+              </Label>
+              <Textarea
                 value={formData.description}
                 onChange={(event) =>
                   onChange("description", event.target.value)
@@ -62,10 +66,10 @@ export default function AssessmentBasicInfoStep({
 
           <div className="grid grid-cols-1  gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">
+              <Label className="text-sm font-semibold text-primary">
                 Owner Topic
-              </label>
-              <select
+              </Label>
+              <Select
                 value={formData.ownerTopicId}
                 onChange={(event) =>
                   onChange("ownerTopicId", event.target.value)
@@ -78,13 +82,13 @@ export default function AssessmentBasicInfoStep({
                     {topic.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">
+              <Label className="text-sm font-semibold text-primary">
                 Status
-              </label>
-              <select
+              </Label>
+              <Select
                 value={formData.status}
                 onChange={(event) =>
                   onChange(
@@ -97,14 +101,14 @@ export default function AssessmentBasicInfoStep({
                 <option value="DRAFT">Draft</option>
                 <option value="PUBLISHED">Published</option>
                 <option value="ARCHIVED">Archived</option>
-              </select>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-primary">
+              <Label className="text-sm font-semibold text-primary">
                 Participant Identity
-              </label>
-              <select
+              </Label>
+              <Select
                 value={formData.participantIdentity}
                 onChange={(event) =>
                   onChange(
@@ -118,7 +122,7 @@ export default function AssessmentBasicInfoStep({
                 <option value="ANONYMOUS">Anonymous participant</option>
                 <option value="INTERNAL">Internal participant</option>
                 <option value="EXTERNAL">External participant</option>
-              </select>
+              </Select>
             </div>
           </div>
         </div>

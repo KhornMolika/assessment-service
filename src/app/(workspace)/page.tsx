@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { getAssessmentCatalogPageData, getMockAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
+import { getAssessmentCatalogPageData, getAssessmentTopics } from "@/src/components/assessment/api/assessment.api";
 import { getDashboardOverviewSections } from "@/src/components/dashboard/api/dashboard.api";
 import DashboardPageView from "@/src/components/dashboard/components/DashboardPageView";
-import { getMockBankTopics, getMockBanks, getMockQuestionTopics, getMockQuestions, getMockTopics } from "@/src/components/content/api/content.api";
+import { getBankTopics, getBanks, getQuestionTopics, getQuestions, getTopics } from "@/src/components/content/api/content.api";
 import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
@@ -25,12 +25,12 @@ async function DashboardPageContent({
   const [dashboardOverview, assessmentPage, banks, questions, topics, assessmentTopics, bankTopics, questionTopics] = await Promise.all([
     getDashboardOverviewSections(),
     getAssessmentCatalogPageData(),
-    getMockBanks(),
-    getMockQuestions(),
-    getMockTopics(),
-    getMockAssessmentTopics(),
-    getMockBankTopics(),
-    getMockQuestionTopics(),
+    getBanks(),
+    getQuestions(),
+    getTopics(),
+    getAssessmentTopics(),
+    getBankTopics(),
+    getQuestionTopics(),
   ]);
 
   return (

@@ -1,4 +1,4 @@
-﻿import type { QuestionDetailData } from "@/src/types/question-detail.types";
+import type { QuestionDetailData } from "@/src/types/question-detail.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import QuestionTypePreview from "./QuestionTypePreview";
 

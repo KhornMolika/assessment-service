@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/ui/table";
+import { Button } from "@/src/components/ui/ui/button";
 
 function getQuestionTypeVariant(type: QuestionCatalogType) {
   switch (type) {
@@ -131,20 +132,20 @@ export default function QuestionsTableInteractive({
                     >
                       <Edit className="h-4 w-4 text-inkd" />
                     </Link>
-                    <button
+                    <Button
                       onClick={() => handleCopyQuestion(question)}
                       className="rounded p-1 transition hover:bg-muted"
-                      title="Duplicate question"
+                      title="Duplicate question" variant="secondary"
                     >
                       <Copy className="h-4 w-4 text-inkd" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => setQuestionPendingDelete(question)}
                       className="rounded p-1 transition hover:bg-muted"
-                      title="Delete question"
+                      title="Delete question" variant="secondary"
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
-                    </button>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -163,13 +164,13 @@ export default function QuestionsTableInteractive({
                   This action removes the selected question from the current list.
                 </p>
               </div>
-              <button
+              <Button
                 onClick={() => setQuestionPendingDelete(null)}
                 className="rounded p-1 transition hover:bg-muted"
-                aria-label="Close delete confirmation"
+                aria-label="Close delete confirmation" variant="secondary"
               >
                 <X className="h-5 w-5 text-inkd" />
-              </button>
+              </Button>
             </div>
 
             <div className="mt-4 rounded-xl bg-muted p-4">
@@ -184,18 +185,18 @@ export default function QuestionsTableInteractive({
             </div>
 
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button
+              <Button
                 onClick={() => setQuestionPendingDelete(null)}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted" variant="secondary"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleDeleteQuestion(questionPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700" variant="destructive"
               >
                 Delete question
-              </button>
+              </Button>
             </div>
           </div>
         </div>

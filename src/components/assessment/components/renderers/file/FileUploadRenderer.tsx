@@ -2,15 +2,17 @@
 
 import { Upload } from "lucide-react";
 import type { QuestionRendererProps } from "../types";
+import { Label } from "@/src/components/ui/ui/label";
+import { Input } from "@/src/components/ui/ui/input";
 
 export function FileUploadRenderer({ value, disabled, onChange }: QuestionRendererProps) {
   return (
-    <label
+    <Label
       className={`block rounded-[28px] border border-dashed border-border bg-muted/15 px-6 py-8 text-primary transition ${
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer hover:border-primary/40"
       }`}
     >
-      <input
+      <Input
         type="file"
         disabled={disabled}
         className="hidden"
@@ -39,6 +41,6 @@ export function FileUploadRenderer({ value, disabled, onChange }: QuestionRender
           </div>
         ) : null}
       </div>
-    </label>
+    </Label>
   );
 }

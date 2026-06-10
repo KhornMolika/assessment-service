@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_TOPICS_VALUE } from "@/src/components/content/utils/topic-utils";
+import { Label } from "@/src/components/ui/ui/label";
+import { Input } from "@/src/components/ui/ui/input";
 
 const GLOBAL_SEARCH_PATH = "/search";
 const GLOBAL_SEARCH_PARAM = "search";
@@ -80,9 +82,9 @@ export function TopbarSearch() {
         router.push(searchHref, { scroll: false });
       }}
     >
-      <label className="relative block">
+      <Label className="relative block">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkl" />
-        <input
+        <Input
           type="search"
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
@@ -90,7 +92,7 @@ export function TopbarSearch() {
           className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
           aria-label="Search assessments, banks, and questions"
         />
-      </label>
+      </Label>
     </form>
   );
 }

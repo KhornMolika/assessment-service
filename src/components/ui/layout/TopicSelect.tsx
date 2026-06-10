@@ -7,6 +7,7 @@ import {
   TOPICS_UPDATED_EVENT,
 } from "@/src/components/content/utils/topic-storage";
 import { useGlobalTopicFilter } from "@/src/hooks/use-global-topic-filter";
+import { Select } from "@/src/components/ui/ui/select";
 
 export function TopicSelect({
   topicOptions,
@@ -44,7 +45,7 @@ export function TopicSelect({
   }, [managedTopicOptions, topicOptions]);
 
   return (
-    <select
+    <Select
       value={selectedTopic}
       onChange={(event) => setSelectedTopic(event.target.value)}
       className="min-w-0 max-w-40 rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm sm:max-w-[12rem]"
@@ -56,6 +57,6 @@ export function TopicSelect({
           {topic.name}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }

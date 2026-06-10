@@ -1,14 +1,9 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { Edit3, Plus, Save, Search, Tags, Trash2, X } from "lucide-react";
 import type { Topic } from "@/src/types";
-import {
-  readManagedTopicsFromStorage,
-  TOPICS_STORAGE_KEY,
-  TOPICS_UPDATED_EVENT,
-} from "@/src/components/content/utils/topic-storage";
 import { Badge } from "@/src/components/ui/ui/badge";
 import {
   Card,
@@ -25,6 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/ui/table";
+import { createTopicAction, updateTopicAction, deleteTopicAction } from "../../actions/topic.actions";
+import { Label } from "@/src/components/ui/ui/label";
+import { Button } from "@/src/components/ui/ui/button";
+import { Input } from "@/src/components/ui/ui/input";
+import { Textarea } from "@/src/components/ui/ui/textarea";
 
 type TopicUsage = {
   banks: number;
@@ -46,34 +46,6 @@ const emptyForm: TopicFormState = {
   description: "",
 };
 
-function buildTopicId(name: string) {
-  const slug = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return `topic-${slug || Date.now()}`;
-}
-
-function readStoredTopics(initialTopics: EditableTopic[]) {
-  if (typeof window === "undefined") {
-    return initialTopics;
-  }
-
-  if (window.localStorage.getItem(TOPICS_STORAGE_KEY) == null) {
-    return initialTopics;
-  }
-
-  const storedTopics = readManagedTopicsFromStorage();
-  return storedTopics as EditableTopic[];
-}
-
-function writeStoredTopics(topics: EditableTopic[]) {
-  window.localStorage.setItem(TOPICS_STORAGE_KEY, JSON.stringify(topics));
-  window.dispatchEvent(new CustomEvent(TOPICS_UPDATED_EVENT, { detail: topics }));
-}
-
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -91,39 +63,30 @@ export default function TopicsManager({
 }: {
   topics: EditableTopic[];
 }) {
-  const [managedTopics, setManagedTopics] = useState(topics);
   const [query, setQuery] = useState("");
   const [form, setForm] = useState<TopicFormState>(emptyForm);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    setManagedTopics(readStoredTopics(topics));
-  }, [topics]);
+  const [isPending, startTransition] = useTransition();
 
   const filteredTopics = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     if (!normalizedQuery) {
-      return managedTopics;
+      return topics;
     }
 
-    return managedTopics.filter((topic) =>
+    return topics.filter((topic) =>
       [topic.name, topic.description, topic.id].some((value) =>
         value.toLowerCase().includes(normalizedQuery),
       ),
     );
-  }, [managedTopics, query]);
+  }, [topics, query]);
 
   const resetForm = () => {
     setForm(emptyForm);
     setEditingTopicId(null);
     setError("");
-  };
-
-  const saveTopics = (nextTopics: EditableTopic[]) => {
-    setManagedTopics(nextTopics);
-    writeStoredTopics(nextTopics);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -136,47 +99,20 @@ export default function TopicsManager({
       return;
     }
 
-    const duplicate = managedTopics.some(
-      (topic) =>
-        topic.name.toLowerCase() === name.toLowerCase() &&
-        topic.id !== editingTopicId,
-    );
+    startTransition(async () => {
+      let res;
+      if (editingTopicId) {
+        res = await updateTopicAction(editingTopicId, { name, description });
+      } else {
+        res = await createTopicAction({ name, description });
+      }
 
-    if (duplicate) {
-      setError("A topic with this name already exists.");
-      return;
-    }
-
-    if (editingTopicId) {
-      saveTopics(
-        managedTopics.map((topic) =>
-          topic.id === editingTopicId
-            ? {
-                ...topic,
-                name,
-                description,
-              }
-            : topic,
-        ),
-      );
-      resetForm();
-      return;
-    }
-
-    const nextTopic: EditableTopic = {
-      id: buildTopicId(name),
-      name,
-      description,
-      created_at: new Date().toISOString(),
-      usage: {
-        banks: 0,
-        questions: 0,
-        assessments: 0,
-      },
-    };
-
-    saveTopics([nextTopic, ...managedTopics]);
-    resetForm();
+      if (!res.success) {
+        setError(res.error || "Failed to save topic");
+      } else {
+        resetForm();
+      }
+    });
   };
 
   const handleEdit = (topic: EditableTopic) => {
@@ -192,14 +128,22 @@ export default function TopicsManager({
     const usageTotal = getUsageTotal(topic.usage);
 
     if (usageTotal > 0) {
-      setError("Only unused topics can be deleted in this mock workspace.");
+      setError("Only unused topics can be deleted.");
       return;
     }
 
-    saveTopics(managedTopics.filter((item) => item.id !== topic.id));
-    if (editingTopicId === topic.id) {
-      resetForm();
-    }
+    if (!confirm(`Are you sure you want to delete the topic "${topic.name}"?`)) return;
+
+    startTransition(async () => {
+      const res = await deleteTopicAction(topic.id);
+      if (!res.success) {
+        setError(res.error || "Failed to delete topic");
+      } else {
+        if (editingTopicId === topic.id) {
+          resetForm();
+        }
+      }
+    });
   };
 
   return (
@@ -213,15 +157,15 @@ export default function TopicsManager({
                 Manage the taxonomy used by banks, questions, assessments, and the global topic filter.
               </CardDescription>
             </div>
-            <label className="relative block w-full lg:max-w-xs">
+            <Label className="relative block w-full lg:max-w-xs">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkl" />
-              <input
+              <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search topics..."
                 className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
               />
-            </label>
+            </Label>
           </CardHeader>
           <CardContent className="px-0 pb-0 sm:px-0 sm:pb-0">
             <Table>
@@ -261,21 +205,22 @@ export default function TopicsManager({
                       </TableCell>
                       <TableCell>
                         <div className="flex justify-end gap-2">
-                          <button
+                          <Button
                             onClick={() => handleEdit(topic)}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-inkd transition hover:bg-muted hover:text-primary"
-                            aria-label={`Edit ${topic.name}`}
+                            disabled={isPending}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-inkd transition hover:bg-muted hover:text-primary disabled:opacity-50"
+                            aria-label={`Edit ${topic.name}`} variant="secondary"
                           >
                             <Edit3 className="h-4 w-4" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => handleDelete(topic)}
-                            disabled={usageTotal > 0}
+                            disabled={usageTotal > 0 || isPending}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label={`Delete ${topic.name}`}
+                            aria-label={`Delete ${topic.name}`} variant="destructive"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -303,22 +248,23 @@ export default function TopicsManager({
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="topic-name" className="mb-2 block text-sm font-semibold text-primary">
+                <Label htmlFor="topic-name" className="mb-2 block text-sm font-semibold text-primary">
                   Topic name
-                </label>
-                <input
+                </Label>
+                <Input
                   id="topic-name"
                   value={form.name}
                   onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                   className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                   placeholder="e.g. Algebra"
+                  disabled={isPending}
                 />
               </div>
               <div>
-                <label htmlFor="topic-description" className="mb-2 block text-sm font-semibold text-primary">
+                <Label htmlFor="topic-description" className="mb-2 block text-sm font-semibold text-primary">
                   Description
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="topic-description"
                   value={form.description}
                   onChange={(event) =>
@@ -327,6 +273,7 @@ export default function TopicsManager({
                   rows={5}
                   className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                   placeholder="Describe what this topic covers."
+                  disabled={isPending}
                 />
               </div>
               {error ? (
@@ -335,22 +282,24 @@ export default function TopicsManager({
                 </div>
               ) : null}
               <div className="flex flex-col gap-2 sm:flex-row">
-                <button
+                <Button
                   type="submit"
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                  disabled={isPending}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-70"
                 >
                   {editingTopicId ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  {editingTopicId ? "Save topic" : "Add topic"}
-                </button>
+                  {isPending ? (editingTopicId ? "Saving..." : "Adding...") : (editingTopicId ? "Save topic" : "Add topic")}
+                </Button>
                 {editingTopicId ? (
-                  <button
+                  <Button
                     type="button"
                     onClick={resetForm}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                    disabled={isPending}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted disabled:opacity-50" variant="secondary"
                   >
                     <X className="h-4 w-4" />
                     Cancel
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             </form>

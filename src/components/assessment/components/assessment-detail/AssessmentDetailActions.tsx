@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BarChart3, Copy, Edit, Trash2, X } from "lucide-react";
 import AssessmentShareAction from "@/src/components/assessment/components/AssessmentShareAction";
 import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
+import { Button } from "@/src/components/ui/ui/button";
 
 function ModalShell({
   children,
@@ -80,32 +81,32 @@ export default function AssessmentDetailActions({
         />
 
         {assessment.delivery_mode === "SELF_PACED" ? (
-          <button
+          <Button
             type="button"
             onClick={() => void handleCopyPlayer("self-paced")}
-            className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+            className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
           >
             <Copy className="h-4 w-4" />
             {copiedPlayer === "self-paced" ? "Copied" : "Self-Paced Player"}
-          </button>
+          </Button>
         ) : (
           <>
-            <button
+            <Button
               type="button"
               onClick={() => void handleCopyPlayer("host")}
-              className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+              className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
             >
               <Copy className="h-4 w-4" />
               {copiedPlayer === "host" ? "Copied" : "Host Player"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => void handleCopyPlayer("participant")}
-              className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+              className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
             >
               <Copy className="h-4 w-4" />
               {copiedPlayer === "participant" ? "Copied" : "Participant Player"}
-            </button>
+            </Button>
           </>
         )}
         <Link
@@ -115,14 +116,14 @@ export default function AssessmentDetailActions({
           <Edit className="h-4 w-4" />
           Edit
         </Link>
-        <button
+        <Button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+          className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50" variant="destructive"
         >
           <Trash2 className="h-4 w-4" />
           Delete
-        </button>
+        </Button>
         <Link
           href={`/assessments/${assessment.id}/reports`}
           className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
@@ -143,14 +144,14 @@ export default function AssessmentDetailActions({
                 {assessment.title}
               </h3>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => setShowDeleteModal(false)}
               className="rounded-full p-2 text-inkd transition hover:bg-muted"
-              aria-label="Close delete modal"
+              aria-label="Close delete modal" variant="secondary"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
 
           <p className="mt-6 text-sm leading-6 text-inkd">
@@ -160,23 +161,23 @@ export default function AssessmentDetailActions({
           </p>
 
           <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <button
+            <Button
               type="button"
               onClick={() => setShowDeleteModal(false)}
-              className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted"
+              className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 setShowDeleteModal(false);
                 router.push("/assessments");
               }}
-              className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600"
+              className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600" variant="destructive"
             >
               Delete
-            </button>
+            </Button>
           </div>
         </ModalShell>
       ) : null}
