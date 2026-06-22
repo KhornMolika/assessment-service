@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { apiClient } from "@/src/lib/api-client";
-import type { QuestionCatalogItem } from "@/src/types";
+import type { Question } from "@/src/types/api";
 
 export async function createQuestionAction(topicId: string, data: any) {
   try {
-    const newQuestion = await apiClient.post<QuestionCatalogItem>(`/topics/${topicId}/questions`, data);
+    const newQuestion = await apiClient.post<Question>(`/topics/${topicId}/questions`, data);
     revalidatePath("/questions");
     revalidatePath("/search");
     revalidatePath("/");
@@ -19,7 +19,7 @@ export async function createQuestionAction(topicId: string, data: any) {
 
 export async function updateQuestionAction(id: string, data: any) {
   try {
-    const updatedQuestion = await apiClient.patch<QuestionCatalogItem>(`/questions/${id}`, data);
+    const updatedQuestion = await apiClient.patch<Question>(`/questions/${id}`, data);
     revalidatePath(`/questions/${id}`);
     revalidatePath("/questions");
     revalidatePath("/search");

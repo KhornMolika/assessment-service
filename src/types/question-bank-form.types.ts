@@ -1,4 +1,4 @@
-import type { BankVisibility } from "./bank.types";
+import type { BankVisibility } from "./api";
 
 export interface NewQuestionBankFormData {
   name: string;

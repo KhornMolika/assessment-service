@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import type { Bank, EditQuestionBankFormData } from "@/src/types";
+import type { EditQuestionBankFormData } from "@/src/types";
+import { type QuestionBank, BankVisibility } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import { questionBankFormSchema } from "@/src/schemas/question-bank-form.schema";
 import { updateBankAction } from "@/src/lib/actions/bank.actions";
@@ -17,11 +18,11 @@ import { Textarea } from "@/src/components/ui/ui/textarea";
 
 const editFormId = "question-bank-edit-form";
 
-function toInitialFormData(bank: Bank): EditQuestionBankFormData {
+function toInitialFormData(bank: QuestionBank): EditQuestionBankFormData {
   return {
     name: bank.name,
-    description: bank.description,
-    tags: bank.tags.join(", "),
+    description: bank.description || "",
+    tags: bank.tags ? bank.tags.join(", ") : "",
     visibility: bank.visibility,
     ownerTopicId: "",
   };
@@ -38,7 +39,7 @@ export default function BankEditForm({
   bank,
   topics,
 }: {
-  bank: Bank;
+  bank: QuestionBank;
   topics: Topic[];
 }) {
   const router = useRouter();
@@ -183,7 +184,7 @@ export default function BankEditForm({
                     className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
                   >
                     <option value="PRIVATE">Private</option>
-                    <option value="ORG">Organization</option>
+                    <option value="SHARED">Shared</option>
                     <option value="PUBLIC">Public</option>
                   </Select>
                   <p className="text-xs text-inkd">

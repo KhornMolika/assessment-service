@@ -86,7 +86,7 @@ export default function AssessmentDetailActions({
             onClick={() => void handleCopyPlayer("self-paced")}
             className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
           >
-            <Copy className="h-4 w-4" />
+            <Copy className="h-5 w-5" />
             {copiedPlayer === "self-paced" ? "Copied" : "Self-Paced Player"}
           </Button>
         ) : (
@@ -96,7 +96,7 @@ export default function AssessmentDetailActions({
               onClick={() => void handleCopyPlayer("host")}
               className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="h-5 w-5" />
               {copiedPlayer === "host" ? "Copied" : "Host Player"}
             </Button>
             <Button
@@ -104,7 +104,7 @@ export default function AssessmentDetailActions({
               onClick={() => void handleCopyPlayer("participant")}
               className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
             >
-              <Copy className="h-4 w-4" />
+              <Copy className="h-5 w-5" />
               {copiedPlayer === "participant" ? "Copied" : "Participant Player"}
             </Button>
           </>
@@ -113,22 +113,22 @@ export default function AssessmentDetailActions({
           href={`/assessments/${assessment.id}/edit`}
           className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
         >
-          <Edit className="h-4 w-4" />
+          <Edit className="h-5 w-5" />
           Edit
         </Link>
         <Button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50" variant="destructive"
+          className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-300 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50" variant="outline"
         >
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-5 w-5" />
           Delete
         </Button>
         <Link
           href={`/assessments/${assessment.id}/reports`}
           className="hover:cursor-pointer inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
         >
-          <BarChart3 className="h-4 w-4" />
+          <BarChart3 className="h-5 w-5" />
           View report
         </Link>
       </div>

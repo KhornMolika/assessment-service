@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import DeleteBankModal from "@/src/components/content/bank/DeleteBankModal";
-import type { Bank, QuestionCatalogItem } from "@/src/types";
+import type { Question } from "@/src/types/api";
+import type { QuestionBank } from "@/src/types/api";
 import BankDetailHeader from "./BankDetailHeader";
 import BankRecentQuestions from "./BankRecentQuestions";
 import BankMetadataCard from "./BankMetadataCard";
@@ -13,8 +14,8 @@ export default function BankDetailView({
   bank,
   bankQuestions,
 }: {
-  bank: Bank;
-  bankQuestions: QuestionCatalogItem[];
+  bank: QuestionBank;
+  bankQuestions: Question[];
 }) {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);

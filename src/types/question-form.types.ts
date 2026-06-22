@@ -7,10 +7,8 @@ export type QuestionFormType =
   | "Fill in the Blank"
   | "Matching"
   | "Ordering"
-  | "Rating Scale"
-  | "File Upload";
+  | "Rating Scale";
 
-export type AiGradingMode = "default" | "custom";
 
 export interface MatchingPairFormValue {
   left: string;
@@ -27,29 +25,8 @@ export interface QuestionFormData {
   questionType: QuestionFormType;
   bank: string;
   ownerTopicId: string;
-  topicIds: string[];
   points: string;
   difficulty: "Easy" | "Medium" | "Hard";
-  language: "English (EN)" | "Khmer (KH)";
-  tags: string;
-  explanation: string;
-  mediaUrl: string;
-  options: string[];
-  correctAnswers: number[];
-  trueFalseAnswer: boolean;
-  shortAnswerKeywords: string[];
-  fillInBlankText: string;
-  fillInBlankAnswers: string[];
-  matchingPairs: MatchingPairFormValue[];
-  orderItems: string[];
-  ratingScale: number;
-  ratingLabels: RatingLabelsFormValue;
-  fileUploadTypes: string[];
-  fileUploadMaxSize: number;
-  fileUploadMaxFiles: number;
-  fileUploadInstructions: string;
-  aiScoring: boolean;
-  aiGradingMode: AiGradingMode;
-  manualModeration: boolean;
-  rubric: string;
+  options: any;
+  correctAnswers: any;
 }

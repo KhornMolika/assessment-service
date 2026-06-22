@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { apiClient } from '@/src/lib/api-client';
-import type { Bank, Topic, QuestionCatalogItem, BankTopicMap, QuestionTopicMap } from '@/src/types';
+import type { Topic, BankTopicMap, QuestionTopicMap } from '@/src/types';
+import type { QuestionBank, Question } from '@/src/types/api';
 
 interface ContentState {
-  banks: Bank[];
+  banks: QuestionBank[];
   topics: Topic[];
-  questions: QuestionCatalogItem[];
+  questions: Question[];
   bankTopics: BankTopicMap[];
   questionTopics: QuestionTopicMap[];
   
@@ -35,8 +36,8 @@ export const useContentStore = create<ContentState>((set, get) => ({
       // We'll assume the API provides paginated generic endpoints or we can adapt later.
       // Wait, the postman collection doesn't have a generic `GET /banks` listing, but `GET /topics/:topicId/banks`.
       // For now, let's just make a generic call and handle any adjustments later.
-      const response = await apiClient.get<{ data: Bank[] }>('/banks');
-      set({ banks: response.data || (response as unknown as Bank[]) });
+      const response = await apiClient.get<{ data: QuestionBank[] }>('/banks');
+      set({ banks: response.data || (response as unknown as QuestionBank[]) });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -59,8 +60,8 @@ export const useContentStore = create<ContentState>((set, get) => ({
   fetchQuestions: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await apiClient.get<{ data: QuestionCatalogItem[] }>('/questions');
-      set({ questions: response.data || (response as unknown as QuestionCatalogItem[]) });
+      const response = await apiClient.get<{ data: Question[] }>('/questions');
+      set({ questions: response.data || (response as unknown as Question[]) });
     } catch (error: any) {
       set({ error: error.message });
     } finally {

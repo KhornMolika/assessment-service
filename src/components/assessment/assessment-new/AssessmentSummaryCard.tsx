@@ -1,5 +1,5 @@
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
-import type { Bank, QuestionCatalogItem } from "@/src/types";
+import type { QuestionBank, Question } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
@@ -31,8 +31,8 @@ export default function AssessmentSummaryCard({
 }: {
   className?: string;
   formData: NewAssessmentFormData;
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
+  banks: QuestionBank[];
+  questions: Question[];
   topics: Topic[];
 }) {
   const selectedBank = banks.find((bank) => bank.id === formData.selectedBankId);

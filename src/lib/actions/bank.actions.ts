@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { apiClient } from "@/src/lib/api-client";
-import type { Bank } from "@/src/types";
+import type { QuestionBank } from "@/src/types/api";
 
 export async function createBankAction(topicId: string, data: { name: string; description: string; tags: string[]; visibility: string }) {
   try {
-    const newBank = await apiClient.post<Bank>(`/topics/${topicId}/banks`, data);
+    const newBank = await apiClient.post<QuestionBank>(`/topics/${topicId}/banks`, data);
     revalidatePath("/banks");
     revalidatePath("/search");
     revalidatePath("/");
@@ -19,7 +19,7 @@ export async function createBankAction(topicId: string, data: { name: string; de
 
 export async function updateBankAction(id: string, data: { name?: string; description?: string; tags?: string[]; visibility?: string }) {
   try {
-    const updatedBank = await apiClient.patch<Bank>(`/banks/${id}`, data);
+    const updatedBank = await apiClient.patch<QuestionBank>(`/banks/${id}`, data);
     revalidatePath(`/banks/${id}`);
     revalidatePath("/banks");
     revalidatePath("/search");

@@ -20,7 +20,7 @@ import {
   getHrefWithTopic,
   useSelectedTopic,
 } from "@/src/hooks/use-global-topic-filter";
-import { useSidebar } from "@/src/components/ui/layout/sidebar-context";
+import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
 import SidebarNavLinks from "./SidebarNavLinks";
 import { Button } from "@/src/components/ui/ui/button";
 

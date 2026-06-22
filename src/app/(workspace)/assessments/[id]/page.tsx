@@ -5,15 +5,7 @@ import { getAssessmentDetailPageData } from "@/src/api/assessment.api";
 import AssessmentDetailView from "@/src/components/assessment/assessment-detail/AssessmentDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
-export const unstable_instant = {
-  prefetch: "runtime",
-  samples: [
-    {
-      params: { id: "assessment-1" },
-      searchParams: { search: null, topic: null },
-    },
-  ],
-};
+
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

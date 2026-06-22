@@ -8,7 +8,7 @@ import AnalyticsFiltersControl from "@/src/components/analytics/AnalyticsFilters
 import AnalyticsQuestionBreakdownCard from "@/src/components/analytics/AnalyticsQuestionBreakdownCard";
 import { buildAnalyticsSnapshot } from "@/src/utils/analytics.utils";
 import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/utils/topic-utils";
-import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
+import Pagination from "@/src/components/ui/navigation/Pagination";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
 import { AnalyticsContentSkeleton } from "@/src/components/ui/layout/PageSkeletons";
@@ -141,7 +141,7 @@ async function AnalyticsPageContent({
         <AnalyticsAssessmentTable rows={paginatedAssessmentRows} />
       </PaginatedCollectionCard>
       {snapshot.assessmentRows.length > 0 ? (
-        <LinkPagination
+        <Pagination
           pathname="/analytics"
           searchParams={{
             topic: selectedTopic === ALL_TOPICS_VALUE ? null : selectedTopic,

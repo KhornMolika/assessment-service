@@ -12,12 +12,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import type { Bank } from "@/src/types/bank.types";
-import type {
-  QuestionCatalogItem,
-  QuestionCatalogType,
-} from "@/src/types/question-catalog.types";
-import type { QuestionTopicMap } from "@/src/types/topic.types";
+import type { QuestionBank, Question } from "@/src/types/api";
 import {
   ALL_TOPICS_VALUE,
   questionMatchesTopic,
@@ -43,20 +38,33 @@ import { Button } from "@/src/components/ui/ui/button";
 import { Select } from "@/src/components/ui/ui/select";
 import { Input } from "@/src/components/ui/ui/input";
 
-function getQuestionTypeVariant(type: QuestionCatalogType) {
+function getQuestionTypeVariant(type: string) {
   switch (type) {
-    case "MCQ":
-    case "Multiple Choice":
+    case "SINGLE_CHOICE":
+    case "MULTIPLE_CHOICE":
       return "info" as const;
-    case "True/False":
+    case "TRUE_FALSE":
       return "success" as const;
-    case "Short Answer":
+    case "SHORT_ANSWER":
       return "secondary" as const;
-    case "Long Essay":
+    case "ESSAY":
       return "pending" as const;
-    case "Rating":
+    case "RATING":
       return "warning" as const;
-    case "Matching":
+    case "MATCHING":
+      return "pending" as const;
+    default:
+      return "default" as const;
+  }
+}
+
+function getDifficultyVariant(difficulty: string) {
+  switch (difficulty?.toUpperCase()) {
+    case "EASY":
+      return "success" as const;
+    case "MEDIUM":
+      return "warning" as const;
+    case "HARD":
       return "pending" as const;
     default:
       return "default" as const;
@@ -66,11 +74,9 @@ function getQuestionTypeVariant(type: QuestionCatalogType) {
 export default function QuestionsCatalog({
   banks,
   initialQuestions,
-  questionTopics,
 }: {
-  banks: Bank[];
-  initialQuestions: QuestionCatalogItem[];
-  questionTopics: QuestionTopicMap[];
+  banks: QuestionBank[];
+  initialQuestions: Question[];
 }) {
   const searchParams = useSearchParams();
   const updateUrl = useUrlQueryUpdater();
@@ -84,7 +90,7 @@ export default function QuestionsCatalog({
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
   const [questionPendingDelete, setQuestionPendingDelete] =
-    useState<QuestionCatalogItem | null>(null);
+    useState<Question | null>(null);
 
   const bankMap = useMemo(
     () => Object.fromEntries(banks.map((bank) => [bank.id, bank])),
@@ -115,13 +121,9 @@ export default function QuestionsCatalog({
 
   const filteredQuestions = useMemo(() => {
     return questions.filter((question) => {
-      const bankName = question.bank_id
-        ? bankMap[question.bank_id]?.name ?? "Unknown bank"
-        : "Unassigned";
-
       if (
         searchQuery &&
-        !question.text.toLowerCase().includes(searchQuery.toLowerCase())
+        !question.questionText.toLowerCase().includes(searchQuery.toLowerCase())
       ) {
         return false;
       }
@@ -130,20 +132,9 @@ export default function QuestionsCatalog({
         return false;
       }
 
-      if (
-        topicFilter !== ALL_TOPICS_VALUE &&
-        !questionMatchesTopic(question.id, topicFilter, questionTopics)
-      ) {
-        return false;
-      }
-
-      if (bankFilter !== "All Banks" && bankName !== bankFilter) {
-        return false;
-      }
-
       return true;
     });
-  }, [bankFilter, bankMap, questionTopics, questions, searchQuery, topicFilter, typeFilter]);
+  }, [questions, searchQuery, typeFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
@@ -153,12 +144,12 @@ export default function QuestionsCatalog({
     activePage * itemsPerPage,
   );
 
-  const handleCopyQuestion = (question: QuestionCatalogItem) => {
+  const handleCopyQuestion = (question: Question) => {
     setQuestions((current) => {
-      const duplicatedQuestion: QuestionCatalogItem = {
+      const duplicatedQuestion: Question = {
         ...question,
         id: `copy-${question.id}-${current.length + 1}`,
-        text: `${question.text} (Copy)`,
+        questionText: `${question.questionText} (Copy)`,
       };
 
       return [duplicatedQuestion, ...current];
@@ -189,7 +180,6 @@ export default function QuestionsCatalog({
 
   const hasActiveFilters =
     searchQuery.trim().length > 0 ||
-    topicFilter !== ALL_TOPICS_VALUE ||
     typeFilter !== "All Types" ||
     bankFilter !== "All Banks";
 
@@ -197,7 +187,7 @@ export default function QuestionsCatalog({
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <PageHeaderCard
         title="Questions"
-        description={`${questions.length} reusable questions across all banks.`}
+        // description={`${questions.length} reusable questions across all topics.`}
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
@@ -287,7 +277,6 @@ export default function QuestionsCatalog({
                       page: null,
                       query: null,
                       bank: null,
-                      topic: null,
                     });
                   }}
                   className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
@@ -313,6 +302,7 @@ export default function QuestionsCatalog({
             <TableRow>
               <TableHead>Question</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Difficulty</TableHead>
               <TableHead>Bank</TableHead>
               <TableHead className="text-center">Points</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -320,36 +310,27 @@ export default function QuestionsCatalog({
           </TableHeader>
           <TableBody>
             {paginatedQuestions.map((question) => {
-              const bank = question.bank_id ? bankMap[question.bank_id] : undefined;
-
               return (
                 <TableRow key={question.id}>
                   <TableCell>
-                    <div className="max-w-xl">
+                    <div className="max-w-xl overflow-hidden">
                       <Link
                         href={`/questions/${question.id}`}
-                        className="line-clamp-3 font-medium text-primary transition hover:text-pm hover:underline"
+                        className="block truncate font-medium text-primary transition hover:text-pm hover:underline"
                       >
-                        {question.text}
+                        {question.questionText}
                       </Link>
-                      {question.tags.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {question.tags.map((tag) => (
-                            <span
-                              key={`${question.id}-${tag}`}
-                              className="rounded bg-muted px-2 py-0.5 text-xs text-inkd"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getQuestionTypeVariant(question.type)}>{question.type}</Badge>
+                    <Badge variant={getQuestionTypeVariant(question.type)}>{question.type.replace(/_/g, " ")}</Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-inkd">{bank?.name ?? "Unknown bank"}</TableCell>
+                  <TableCell>
+                    <Badge variant={getDifficultyVariant(question.difficulty)}>
+                      {question.difficulty}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-inkd">Unknown bank</TableCell>
                   <TableCell className="text-center font-semibold text-primary">{question.points}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-2">
@@ -411,12 +392,10 @@ export default function QuestionsCatalog({
 
             <div className="mt-4 rounded-xl bg-muted p-4">
               <div className="line-clamp-3 text-sm font-medium text-primary">
-                {questionPendingDelete.text}
+                {questionPendingDelete.questionText}
               </div>
               <div className="mt-2 text-xs text-inkd">
-                {questionPendingDelete.bank_id
-                  ? bankMap[questionPendingDelete.bank_id]?.name ?? "Unknown bank"
-                  : "Unassigned"} | {questionPendingDelete.type}
+                {questionPendingDelete.type.replace(/_/g, " ")}
               </div>
             </div>
 

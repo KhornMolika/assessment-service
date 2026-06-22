@@ -3,12 +3,10 @@
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useState, useTransition } from "react";
-import type { Bank } from "@/src/types/bank.types";
+import type { QuestionBank } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import { questionFormSchema } from "@/src/schemas/question-form.schema";
-import { supportsAiGradingInstructions, syncAiGradingFormState } from "@/src/utils/question-ai-grading";
 import type { QuestionFormData } from "@/src/types/question-form.types";
-import QuestionRubricCard from "@/src/components/content/question-common/QuestionRubricCard";
 import QuestionDetailsCard from "@/src/components/content/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/components/content/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/components/content/question-form/QuestionTypeSettingsCard";
@@ -25,14 +23,12 @@ export default function QuestionEditForm({
   initialFormData,
 }: {
   questionId: string;
-  banks: Bank[];
+  banks: QuestionBank[];
   topics: Topic[];
   initialFormData: QuestionFormData;
 }) {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuestionFormData>(() =>
-    syncAiGradingFormState(initialFormData),
-  );
+  const [formData, setFormData] = useState<QuestionFormData>(initialFormData);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -46,7 +42,7 @@ export default function QuestionEditForm({
         [field]: value,
       } as QuestionFormData;
 
-      return syncAiGradingFormState(next);
+      return next;
     });
     setValidationErrors([]);
   };
@@ -73,9 +69,6 @@ export default function QuestionEditForm({
       }
     });
   };
-
-  const showAiGradingInstructions =
-    formData.aiScoring && supportsAiGradingInstructions(formData.questionType);
 
   return (
     <div className="space-y-6">
@@ -113,19 +106,12 @@ export default function QuestionEditForm({
             <QuestionTypeSettingsCard
               formData={formData}
               onChange={handleChange}
-              title="Question Type Setup"
-              description="Adjust the response structure and correct-answer rules for this question type."
             />
             <QuestionPreviewCard
               banks={banks}
               topics={topics}
               formData={formData}
-              title="Answering Preview"
-              description="A quick creator-facing preview of how the question will behave."
             />
-            {showAiGradingInstructions ? (
-              <QuestionRubricCard formData={formData} onChange={handleChange} />
-            ) : null}
           </div>
         </div>
         </fieldset>

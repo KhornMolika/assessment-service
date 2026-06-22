@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { Bank, QuestionCatalogItem } from "@/src/types";
+import type { QuestionBank, Question } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import { assessmentFormSchema } from "@/src/schemas/assessment-form.schema";
 import type {
@@ -77,8 +77,8 @@ export default function AssessmentNewWizard({
   assessmentId,
   initialFormData,
 }: {
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
+  banks: QuestionBank[];
+  questions: Question[];
   topics: Topic[];
   mode?: "create" | "edit";
   assessmentId?: string;

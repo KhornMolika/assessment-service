@@ -1,5 +1,6 @@
 import { BookOpen, Calendar, Globe, Lock, Users } from "lucide-react";
-import type { Bank, EditQuestionBankFormData } from "@/src/types";
+import type { EditQuestionBankFormData } from "@/src/types";
+import type { QuestionBank, BankVisibility } from "@/src/types/api";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
@@ -11,22 +12,22 @@ function formatDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
-function getVisibilityBadgeVariant(visibility: Bank["visibility"]) {
+function getVisibilityBadgeVariant(visibility: BankVisibility) {
   switch (visibility) {
     case "PUBLIC":
       return "success" as const;
-    case "ORG":
+    case "SHARED":
       return "info" as const;
     default:
       return "secondary" as const;
   }
 }
 
-function renderVisibilityIcon(visibility: Bank["visibility"]) {
+function renderVisibilityIcon(visibility: BankVisibility) {
   switch (visibility) {
     case "PUBLIC":
       return <Globe className="mr-1 h-3.5 w-3.5" />;
-    case "ORG":
+    case "SHARED":
       return <Users className="mr-1 h-3.5 w-3.5" />;
     default:
       return <Lock className="mr-1 h-3.5 w-3.5" />;
@@ -37,7 +38,7 @@ export default function BankEditPreviewCard({
   bank,
   formData,
 }: {
-  bank: Bank;
+  bank: QuestionBank;
   formData: EditQuestionBankFormData;
 }) {
   const previewTags = formData.tags
@@ -60,7 +61,7 @@ export default function BankEditPreviewCard({
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">
             <BookOpen className="mr-1 h-3.5 w-3.5" />
-            {bank.question_count} questions
+            {bank.questionCount || 0} questions
           </Badge>
           <Badge variant={getVisibilityBadgeVariant(formData.visibility)}>
             {renderVisibilityIcon(formData.visibility)}
@@ -83,7 +84,7 @@ export default function BankEditPreviewCard({
 
         <div className="flex items-center gap-2 text-sm text-inkd">
           <Calendar className="h-4 w-4" />
-          Created {formatDate(bank.created_at)}
+          Created {formatDate(bank.createdAt)}
         </div>
       </CardContent>
     </Card>

@@ -14,9 +14,7 @@ import {
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { getHrefWithTopic } from "@/src/hooks/use-global-topic-filter";
-import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
-import type { Bank } from "@/src/types/bank.types";
-import type { QuestionCatalogItem } from "@/src/types/question-catalog.types";
+import type { Assessment, QuestionBank, Question } from "@/src/types/api";
 import type {
   AssessmentTopicMap,
   BankTopicMap,
@@ -49,9 +47,9 @@ export default function SearchPageView({
   bankTopics,
   questionTopics,
 }: {
-  assessments: AssessmentCatalogItem[];
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
+  assessments: Assessment[];
+  banks: QuestionBank[];
+  questions: Question[];
   assessmentTopics: AssessmentTopicMap[];
   bankTopics: BankTopicMap[];
   questionTopics: QuestionTopicMap[];
@@ -79,11 +77,10 @@ export default function SearchPageView({
       }
 
       return (
-        includesQuery(assessment.title, normalizedQuery) ||
+        includesQuery(assessment.name, normalizedQuery) ||
         includesQuery(assessment.description, normalizedQuery) ||
-        includesQuery(assessment.question_bank_name, normalizedQuery) ||
-        includesQuery(assessment.delivery_mode, normalizedQuery) ||
-        includesQuery(assessment.lifecycle, normalizedQuery)
+        includesQuery(assessment.type, normalizedQuery) ||
+        includesQuery(assessment.status, normalizedQuery)
       );
     });
   }, [assessmentTopics, assessments, normalizedQuery, selectedTopic]);
@@ -105,7 +102,7 @@ export default function SearchPageView({
         includesQuery(bank.name, normalizedQuery) ||
         includesQuery(bank.description, normalizedQuery) ||
         includesQuery(bank.visibility, normalizedQuery) ||
-        bank.tags.some((tag) => includesQuery(tag, normalizedQuery))
+        (bank.tags && bank.tags.some((tag) => includesQuery(tag, normalizedQuery)))
       );
     });
   }, [bankTopics, banks, normalizedQuery, selectedTopic]);
@@ -123,18 +120,13 @@ export default function SearchPageView({
         return false;
       }
 
-      const bankName = question.bank_id ? bankMap[question.bank_id]?.name ?? "" : "";
-
       return (
-        includesQuery(question.text, normalizedQuery) ||
+        includesQuery(question.questionText, normalizedQuery) ||
         includesQuery(question.type, normalizedQuery) ||
-        includesQuery(question.difficulty, normalizedQuery) ||
-        includesQuery(question.language, normalizedQuery) ||
-        includesQuery(bankName, normalizedQuery) ||
-        question.tags.some((tag) => includesQuery(tag, normalizedQuery))
+        includesQuery(question.difficulty, normalizedQuery)
       );
     });
-  }, [bankMap, normalizedQuery, questionTopics, questions, selectedTopic]);
+  }, [normalizedQuery, questionTopics, questions, selectedTopic]);
 
   const totalResults =
     filteredAssessments.length + filteredBanks.length + filteredQuestions.length;
@@ -188,17 +180,14 @@ export default function SearchPageView({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="info">
-                        {assessment.delivery_mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
+                        {assessment.type}
                       </Badge>
-                      <Badge variant="secondary">{assessment.lifecycle}</Badge>
+                      <Badge variant="secondary">{assessment.status}</Badge>
                     </div>
-                    <div className="mt-3 font-semibold text-primary">{assessment.title}</div>
+                    <div className="mt-3 font-semibold text-primary">{assessment.name}</div>
                     <p className="mt-2 text-sm text-inkd">
                       {assessment.description || "No description provided."}
                     </p>
-                    <div className="mt-3 text-xs text-inkd">
-                      Bank: {assessment.question_bank_name} | {assessment.question_count} questions
-                    </div>
                   </Link>
                 ))
               )}
@@ -222,12 +211,12 @@ export default function SearchPageView({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="secondary">{bank.visibility}</Badge>
-                      <Badge variant="info">{bank.question_count} questions</Badge>
+                      <Badge variant="info">{bank.questionCount || 0} questions</Badge>
                     </div>
                     <div className="mt-3 font-semibold text-primary">{bank.name}</div>
                     <p className="mt-2 text-sm text-inkd">{bank.description}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      {bank.tags.map((tag) => (
+                      {bank.tags?.map((tag) => (
                         <span
                           key={`${bank.id}-${tag}`}
                           className="rounded-full bg-muted px-2 py-1 text-xs text-inkd"
@@ -258,16 +247,13 @@ export default function SearchPageView({
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="info">{question.type}</Badge>
+                      <Badge variant="info">{question.type.replace(/_/g, " ")}</Badge>
                       <Badge variant="secondary">{question.difficulty}</Badge>
                     </div>
                     <div className="mt-3 line-clamp-3 font-semibold text-primary">
-                      {question.text}
+                      {question.questionText}
                     </div>
                     <div className="mt-3 text-xs text-inkd">
-                      Bank:{" "}
-                      {question.bank_id ? bankMap[question.bank_id]?.name ?? "Unknown bank" : "Unassigned"}
-                      {" | "}
                       {question.points} pts
                     </div>
                   </Link>

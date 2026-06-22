@@ -19,15 +19,11 @@ import type { Participant } from "@/src/types/participant.types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import type {
   AssessmentTopicMap,
-  Bank,
-  QuestionCatalogItem,
   Topic,
 } from "@/src/types";
-import {
-  getBanks,
-  getQuestions,
-  getTopics,
-} from "@/src/api/content.api";
+import { getBanks } from "@/src/api/bank.api";
+import { getQuestions } from "@/src/api/question.api";
+import { getTopics } from "@/src/api/topic.api";
 
 
 import { apiClient } from "@/src/lib/api-client";
@@ -59,7 +55,7 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
   const endOfWeek = getEndOfWeek(now);
   let assessments: AssessmentCatalogItem[] = [];
   try {
-    const res = await apiClient.get<{ data: any[] }>('/assessments?limit=100');
+    const res = await apiClient.get<{ data: any[] }>('/assessments?limit=10');
     const rawData = res.data || (res as any) || [];
     
     assessments = rawData.map((a: any) => ({
@@ -472,31 +468,16 @@ export async function getAssessmentScopedResultsPageData(
   }
 }
 
-export async function getNewAssessmentPageData(): Promise<{
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
-}> {
-  
-
-  const [banks, questions] = await Promise.all([getBanks(), getQuestions()]);
-
-  return {
-    banks,
-    questions,
-  };
-}
+// Removed getNewAssessmentPageData
 
 export async function getEditAssessmentPageData(id: string): Promise<{
   assessmentId: string;
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
   initialFormData: NewAssessmentFormData;
 }> {
   
   try {
-    const [banks, questions, assessmentRes, settingsRes, assignedRes] = await Promise.all([
+    const [banks, assessmentRes, settingsRes, assignedRes] = await Promise.all([
       getBanks(),
-      getQuestions(),
       apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
       apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`).catch(() => null),
       apiClient.get<{ data: Record<string, unknown>[] }>(`/assessments/${id}/questions`).catch(() => null),
@@ -510,8 +491,6 @@ export async function getEditAssessmentPageData(id: string): Promise<{
 
     return {
       assessmentId: id,
-      banks,
-      questions,
       initialFormData: {
         title: assessment.name || "",
         description: assessment.description || "",

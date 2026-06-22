@@ -1,23 +1,15 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
 import type { AssessmentDeliveryMode } from "@/src/types/assessment.types";
-import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
-import {
-  getAssessmentCatalogPageData,
-  getAssessmentTopics,
-} from "@/src/api/assessment.api";
+import { fetchGlobalAssessments, fetchTopicAssessments } from "@/src/actions/assessment-actions";
 import AssessmentsCatalogLoading from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogLoading";
 import AssessmentsCatalogToolbar from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogToolbar";
 import AssessmentsHeader from "@/src/components/assessment/assessment-catalog/AssessmentsHeader";
 import AssessmentsTableInteractive from "@/src/components/assessment/assessment-catalog/AssessmentsTableInteractive";
-import type { AssessmentTopicMap } from "@/src/types/topic.types";
-import {
-  ALL_TOPICS_VALUE,
-  assessmentMatchesTopic,
-} from "@/src/utils/topic-utils";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
-import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
+import Pagination from "@/src/components/ui/navigation/Pagination";
 import {
   Card,
   CardContent,
@@ -25,54 +17,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/ui/card";
+import { useTopicStore } from "@/src/stores/topic-store";
+import { useSearchParams } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Assessments",
-};
-
-type AssessmentSearchParams = Promise<{
-  topic?: string | string[];
-  query?: string | string[];
-  page?: string | string[];
-  pageSize?: string | string[];
-  delivery?: string | string[];
-}>;
-
-function getSingleSearchParam(
-  value: string | string[] | undefined,
-  fallback = "",
-) {
-  if (Array.isArray(value)) {
-    return value[0] ?? fallback;
-  }
-
+function getSingleSearchParam(value: string | string[] | null | undefined, fallback = "") {
+  if (Array.isArray(value)) return value[0] ?? fallback;
   return value ?? fallback;
 }
 
-function parsePositiveInteger(value: string | undefined, fallback: number) {
+function parsePositiveInteger(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
-
-  if (Number.isNaN(parsed) || parsed < 1) {
-    return fallback;
-  }
-
+  if (Number.isNaN(parsed) || parsed < 1) return fallback;
   return parsed;
 }
 
-function parseDeliveryFilter(value: string | undefined): "ALL" | AssessmentDeliveryMode {
+function parseDeliveryFilter(value: string | null | undefined): "ALL" | AssessmentDeliveryMode {
   return value === "SELF_PACED" || value === "REAL_TIME" ? value : "ALL";
 }
 
 function filterAssessments({
   assessments,
-  assessmentTopics,
-  topicFilter,
   deliveryFilter,
   query,
 }: {
-  assessments: AssessmentCatalogItem[];
-  assessmentTopics: AssessmentTopicMap[];
-  topicFilter: string;
+  assessments: any[];
   deliveryFilter: "ALL" | AssessmentDeliveryMode;
   query: string;
 }) {
@@ -80,13 +48,6 @@ function filterAssessments({
 
   return assessments.filter((assessment) => {
     if (deliveryFilter !== "ALL" && assessment.delivery_mode !== deliveryFilter) {
-      return false;
-    }
-
-    if (
-      topicFilter !== ALL_TOPICS_VALUE &&
-      !assessmentMatchesTopic(assessment.id, topicFilter, assessmentTopics)
-    ) {
       return false;
     }
 
@@ -98,66 +59,79 @@ function filterAssessments({
       assessment.title,
       assessment.question_bank_name,
       assessment.description ?? "",
+      assessment.name ?? "",
     ];
 
     return haystacks.some((value) =>
-      value.toLowerCase().includes(normalizedQuery),
+      value?.toLowerCase().includes(normalizedQuery),
     );
   });
 }
 
-async function AssessmentsPageContent({
-  searchParams,
-}: {
-  searchParams: AssessmentSearchParams;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const topicFilter =
-    getSingleSearchParam(resolvedSearchParams.topic, ALL_TOPICS_VALUE) ||
-    ALL_TOPICS_VALUE;
-  const query = getSingleSearchParam(resolvedSearchParams.query);
-  const deliveryFilter = parseDeliveryFilter(
-    getSingleSearchParam(resolvedSearchParams.delivery),
-  );
-  const currentPage = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams.page),
-    1,
-  );
-  const itemsPerPage = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams.pageSize),
-    10,
-  );
+function AssessmentsPageContent() {
+  const searchParams = useSearchParams();
+  const query = getSingleSearchParam(searchParams.get("query"));
+  const deliveryFilter = parseDeliveryFilter(searchParams.get("delivery"));
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
 
-  const [data, assessmentTopics] = await Promise.all([
-    getAssessmentCatalogPageData(),
-    getAssessmentTopics(),
-  ]);
+  const activeTopic = useTopicStore((s) => s.activeTopic);
+
+  const [assessments, setAssessments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchResources() {
+      setIsLoading(true);
+      try {
+        let fetchedAssessments;
+        if (activeTopic === null) {
+          fetchedAssessments = await fetchGlobalAssessments();
+        } else {
+          fetchedAssessments = await fetchTopicAssessments(activeTopic.id);
+        }
+
+        if (isMounted) {
+          setAssessments(fetchedAssessments);
+        }
+      } catch (err) {
+        console.error("Failed to fetch assessments:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    fetchResources();
+    return () => { isMounted = false };
+  }, [activeTopic?.id ?? 'all']);
+
+  if (isLoading) {
+    return <AssessmentsCatalogLoading />;
+  }
+
   const filteredAssessments = filterAssessments({
-    assessments: data.assessments,
-    assessmentTopics,
-    topicFilter,
+    assessments,
     deliveryFilter,
     query,
   });
+  
   const totalPages = Math.max(1, Math.ceil(filteredAssessments.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const paginatedAssessments = filteredAssessments.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage,
   );
-  const hasActiveFilters =
-    query.trim().length > 0 ||
-    topicFilter !== ALL_TOPICS_VALUE ||
-    deliveryFilter !== "ALL";
+  
+  const hasActiveFilters = query.trim().length > 0 || deliveryFilter !== "ALL";
 
   return (
     <div className="space-y-6 px-4 py-4">
-      <AssessmentsHeader totalAssessments={data.stats.totalAssessments} />
+      <AssessmentsHeader totalAssessments={assessments.length} />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
-            <CardTitle>Assessment catalog</CardTitle>
+            <CardTitle>Assessment catalog {activeTopic ? `(${activeTopic.name})` : ""}</CardTitle>
             <CardDescription>
               Track readiness, delivery mode, and performance signals across the workspace.
             </CardDescription>
@@ -172,8 +146,8 @@ async function AssessmentsPageContent({
                 title={hasActiveFilters ? "No assessments found" : "No assessments available"}
                 description={
                   hasActiveFilters
-                    ? "No assessments match the current search, topic, and delivery filters."
-                    : "Assessment records will appear here once they are available in the workspace."
+                    ? "No assessments match the current search and delivery filters."
+                    : "Assessment records will appear here once they are available."
                 }
                 action={
                   hasActiveFilters ? (
@@ -187,16 +161,15 @@ async function AssessmentsPageContent({
                 }
               />
             ) : (
-              <AssessmentsTableInteractive assessments={paginatedAssessments} />
+              <AssessmentsTableInteractive assessments={paginatedAssessments as any} />
             )}
           </div>
         </CardContent>
 
         {filteredAssessments.length > 0 ? (
-          <LinkPagination
+          <Pagination
             pathname="/assessments"
             searchParams={{
-              topic: topicFilter === ALL_TOPICS_VALUE ? null : topicFilter,
               query: query || null,
               delivery: deliveryFilter === "ALL" ? null : deliveryFilter,
               pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
@@ -215,14 +188,10 @@ async function AssessmentsPageContent({
   );
 }
 
-export default function AssessmentsPage({
-  searchParams,
-}: {
-  searchParams: AssessmentSearchParams;
-}) {
+export default function AssessmentsPage() {
   return (
     <Suspense fallback={<AssessmentsCatalogLoading />}>
-      <AssessmentsPageContent searchParams={searchParams} />
+      <AssessmentsPageContent />
     </Suspense>
   );
 }

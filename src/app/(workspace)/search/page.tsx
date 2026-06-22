@@ -4,11 +4,10 @@ import {
   getAssessmentCatalogPageData,
   getAssessmentTopics,
 } from "@/src/api/assessment.api";
-import {
-  getBankTopics,
-  getQuestionTopics,
-  getQuestionCatalogPageData,
-} from "@/src/api/content.api";
+import { getBankTopics } from "@/src/api/bank.api";
+import { getQuestionTopics } from "@/src/api/question.api";
+import { getBanks } from "@/src/lib/services/banks";
+import { getQuestions } from "@/src/lib/services/questions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
@@ -73,15 +72,18 @@ async function SearchPageContent({
   const selectedTopic =
     getSingleSearchParam(resolvedSearchParams?.topic) ?? ALL_TOPICS_VALUE;
   const normalizedQuery = query.toLowerCase();
-  const [assessmentData, questionCatalogData, assessmentTopics, bankTopics, questionTopics] = await Promise.all([
+  const [assessmentData, banksRes, questionsRes, assessmentTopics, bankTopics, questionTopics] = await Promise.all([
     getAssessmentCatalogPageData(),
-    getQuestionCatalogPageData(),
+    getBanks(1, 100),
+    getQuestions(1, 500),
     getAssessmentTopics(),
     getBankTopics(),
     getQuestionTopics(),
   ]);
+  const banks = banksRes.data;
+  const questions = questionsRes.data;
   const bankMap = Object.fromEntries(
-    questionCatalogData.banks.map((bank) => [bank.id, bank]),
+    banks.map((bank) => [bank.id, bank]),
   );
   const filteredAssessments = normalizedQuery
     ? assessmentData.assessments.filter((assessment) => {
@@ -102,7 +104,7 @@ async function SearchPageContent({
       })
     : [];
   const filteredBanks = normalizedQuery
-    ? questionCatalogData.banks.filter((bank) => {
+    ? banks.filter((bank) => {
         if (
           selectedTopic !== ALL_TOPICS_VALUE &&
           !bankMatchesTopic(bank.id, selectedTopic, bankTopics)
@@ -112,14 +114,12 @@ async function SearchPageContent({
 
         return (
           includesQuery(bank.name, normalizedQuery) ||
-          includesQuery(bank.description, normalizedQuery) ||
-          includesQuery(bank.visibility, normalizedQuery) ||
-          bank.tags.some((tag) => includesQuery(tag, normalizedQuery))
+          includesQuery(bank.description, normalizedQuery)
         );
       })
     : [];
   const filteredQuestions = normalizedQuery
-    ? questionCatalogData.questions.filter((question) => {
+    ? questions.filter((question) => {
         if (
           selectedTopic !== ALL_TOPICS_VALUE &&
           !questionMatchesTopic(question.id, selectedTopic, questionTopics)
@@ -127,15 +127,13 @@ async function SearchPageContent({
           return false;
         }
 
-        const bankName = question.bank_id ? bankMap[question.bank_id]?.name ?? "" : "";
+        const bankName = question.topicId ? bankMap[question.topicId]?.name ?? "" : "";
 
         return (
-          includesQuery(question.text, normalizedQuery) ||
+          includesQuery(question.questionText, normalizedQuery) ||
           includesQuery(question.type, normalizedQuery) ||
           includesQuery(question.difficulty, normalizedQuery) ||
-          includesQuery(question.language, normalizedQuery) ||
-          includesQuery(bankName, normalizedQuery) ||
-          question.tags.some((tag) => includesQuery(tag, normalizedQuery))
+          includesQuery(bankName, normalizedQuery)
         );
       })
     : [];
@@ -222,8 +220,7 @@ async function SearchPageContent({
                     className="block rounded-2xl border border-border/70 bg-white p-4 transition hover:bg-muted/30"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="secondary">{bank.visibility}</Badge>
-                      <Badge variant="info">{bank.question_count} questions</Badge>
+                      <Badge variant="info">{bank.questionCount || 0} questions</Badge>
                     </div>
                     <div className="mt-3 font-semibold text-primary">{bank.name}</div>
                     <p className="mt-2 text-sm text-inkd">{bank.description}</p>
@@ -263,11 +260,11 @@ async function SearchPageContent({
                       <Badge variant="secondary">{question.difficulty}</Badge>
                     </div>
                     <div className="mt-3 line-clamp-3 font-semibold text-primary">
-                      {question.text}
+                      {question.questionText}
                     </div>
                     <div className="mt-3 text-xs text-inkd">
                       Bank:{" "}
-                      {question.bank_id ? bankMap[question.bank_id]?.name ?? "Unknown bank" : "Unassigned"}
+                      {question.topicId ? bankMap[question.topicId]?.name ?? "Unknown bank" : "Unassigned"}
                       {" | "}
                       {question.points} pts
                     </div>

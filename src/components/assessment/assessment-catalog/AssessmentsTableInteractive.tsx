@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import AssessmentsTable from "./AssessmentsTable";
 
@@ -10,6 +10,10 @@ export default function AssessmentsTableInteractive({
   assessments: AssessmentCatalogItem[];
 }) {
   const [catalogAssessments, setCatalogAssessments] = useState(assessments);
+
+  useEffect(() => {
+    setCatalogAssessments(assessments);
+  }, [assessments]);
 
   const handleDeleteAssessment = (assessmentId: string) => {
     setCatalogAssessments((currentAssessments) =>

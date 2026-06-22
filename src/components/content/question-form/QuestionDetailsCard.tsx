@@ -1,14 +1,12 @@
-import type { Bank } from "@/src/types/bank.types";
+import type { QuestionBank } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
-import type {
-  QuestionFormData,
-  QuestionFormType,
-} from "@/src/types/question-form.types";
+import type { QuestionFormData, QuestionFormType } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { Label } from "@/src/components/ui/ui/label";
 import { Select } from "@/src/components/ui/ui/select";
 import { Textarea } from "@/src/components/ui/ui/textarea";
 import { Input } from "@/src/components/ui/ui/input";
+import { Settings2, Database, FolderTree, Star, Hash } from "lucide-react";
 
 const questionTypes: QuestionFormType[] = [
   "Single Choice",
@@ -20,17 +18,13 @@ const questionTypes: QuestionFormType[] = [
   "Matching",
   "Ordering",
   "Rating Scale",
-  "File Upload",
 ];
 
 export type QuestionDetailsCardProps = {
-  banks: Bank[];
+  banks: QuestionBank[];
   topics: Topic[];
   formData: QuestionFormData;
-  onChange: <K extends keyof QuestionFormData>(
-    field: K,
-    value: QuestionFormData[K],
-  ) => void;
+  onChange: <K extends keyof QuestionFormData>(field: K, value: QuestionFormData[K]) => void;
   title?: string;
   description?: string;
 };
@@ -44,106 +38,60 @@ export default function QuestionDetailsCard({
   description,
 }: QuestionDetailsCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+    <Card className="border-slate-200/60 shadow-sm overflow-hidden bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
+      <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+        <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
+          <Settings2 className="h-5 w-5 text-yellow-500" />
+          {title}
+        </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="questionText" className="mb-2 block text-sm font-semibold text-primary">
-            Question Text *
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-2">
+          <Label htmlFor="questionText" className="block text-sm font-bold text-slate-800">
+            Question Text <span className="text-red-500">*</span>
           </Label>
           <Textarea
             id="questionText"
-            placeholder="Enter your question here..."
+            placeholder="What is the capital of France?"
             value={formData.questionText}
             onChange={(event) => onChange("questionText", event.target.value)}
             rows={4}
             required
-            className="w-full resize-none rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
+            className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
           />
         </div>
 
-        <div>
-          <Label htmlFor="questionType" className="mb-2 block text-sm font-semibold text-primary">
-            Question Type *
-          </Label>
-          <Select
-            id="questionType"
-            value={formData.questionType}
-            onChange={(event) =>
-              onChange("questionType", event.target.value as QuestionFormType)
-            }
-            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-          >
-            {questionTypes.map((type) => (
-              <option key={type}>{type}</option>
-            ))}
-          </Select>
-        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 p-5 bg-slate-50/50 rounded-2xl border border-slate-100">
+          {/* Row 1: Topic | Question Type */}
+          <div className="space-y-2">
+            <Label htmlFor="questionType" className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <Settings2 className="h-4 w-4 text-slate-400" />
+              Question Type <span className="text-red-500">*</span>
+            </Label>
+            <Select
+              id="questionType"
+              value={formData.questionType}
+              onChange={(event) => onChange("questionType", event.target.value as QuestionFormType)}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+            >
+              {questionTypes.map((type) => (
+                <option key={type}>{type}</option>
+              ))}
+            </Select>
+          </div>
 
-        <div>
-          <Label htmlFor="bank" className="mb-2 block text-sm font-semibold text-primary">
-            Question Bank
-          </Label>
-          <Select
-            id="bank"
-            value={formData.bank}
-            onChange={(event) => onChange("bank", event.target.value)}
-            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-          >
-            <option value="">No bank assigned</option>
-            {banks.map((bank) => (
-              <option key={bank.id} value={bank.id}>
-                {bank.name}
-              </option>
-            ))}
-          </Select>
-          <p className="mt-1 text-xs text-inkd">
-            Optional. Questions can be created without a bank.
-          </p>
-        </div>
-
-        <div>
-          <Label htmlFor="ownerTopic" className="mb-2 block text-sm font-semibold text-primary">
-            Owner Topic *
-          </Label>
-          <Select
-            id="ownerTopic"
-            value={formData.ownerTopicId}
-            onChange={(event) => {
-              const nextOwnerTopicId = event.target.value;
-
-              onChange("ownerTopicId", nextOwnerTopicId);
-              onChange("topicIds", nextOwnerTopicId ? [nextOwnerTopicId] : []);
-            }}
-            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-          >
-            <option value="">Select a topic owner</option>
-            {topics.map((topic) => (
-              <option key={topic.id} value={topic.id}>
-                {topic.name}
-              </option>
-            ))}
-          </Select>
-          <p className="mt-1 text-xs text-inkd">
-            Assign the primary topic owner for this question.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="difficulty" className="mb-2 block text-sm font-semibold text-primary">
+          {/* Row 2: Difficulty | Points */}
+          <div className="space-y-2">
+            <Label htmlFor="difficulty" className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <Star className="h-4 w-4 text-yellow-500" />
               Difficulty
             </Label>
             <Select
               id="difficulty"
               value={formData.difficulty}
-              onChange={(event) =>
-                onChange("difficulty", event.target.value as QuestionFormData["difficulty"])
-              }
-              className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
+              onChange={(event) => onChange("difficulty", event.target.value as QuestionFormData["difficulty"])}
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             >
               <option>Easy</option>
               <option>Medium</option>
@@ -151,9 +99,10 @@ export default function QuestionDetailsCard({
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="points" className="mb-2 block text-sm font-semibold text-primary">
-              Points *
+          <div className="space-y-2">
+            <Label htmlFor="points" className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <Hash className="h-4 w-4 text-green-500" />
+              Points <span className="text-red-500">*</span>
             </Label>
             <Input
               id="points"
@@ -161,44 +110,11 @@ export default function QuestionDetailsCard({
               min="0"
               value={formData.points}
               onChange={(event) => onChange("points", event.target.value)}
-              className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500"
             />
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="tags" className="mb-2 block text-sm font-semibold text-primary">
-            Tags
-          </Label>
-          <Input
-            id="tags"
-            type="text"
-            placeholder="e.g. Algebra, Equations, Chapter 3"
-            value={formData.tags}
-            onChange={(event) => onChange("tags", event.target.value)}
-            className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-          />
-          <p className="mt-1 text-xs text-inkd">Separate tags with commas</p>
-        </div>
-
-        <div>
-          <Label htmlFor="language" className="mb-2 block text-sm font-semibold text-primary">
-            Language
-          </Label>
-          <Select
-            id="language"
-            value={formData.language}
-            onChange={(event) =>
-              onChange("language", event.target.value as QuestionFormData["language"])
-            }
-            className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-          >
-            <option>English (EN)</option>
-            <option>Khmer (KH)</option>
-          </Select>
         </div>
       </CardContent>
     </Card>
   );
 }
-

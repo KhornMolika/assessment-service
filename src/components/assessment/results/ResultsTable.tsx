@@ -100,10 +100,10 @@ export function ResultsTable({
               <div className="flex items-center justify-center">
                 <Link
                   href={`/results/${result.sheet_id}`}
-                  className="rounded-lg p-2 text-inkd transition hover:bg-muted hover:text-primary"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
                   title="View details"
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-5 w-5" />
                 </Link>
               </div>
             </TableCell>

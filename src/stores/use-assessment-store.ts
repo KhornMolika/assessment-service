@@ -26,7 +26,7 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
   fetchAssessments: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await apiClient.get<{ data: AssessmentCatalogItem[] }>('/assessments?limit=100');
+      const response = await apiClient.get<{ data: AssessmentCatalogItem[] }>('/assessments?limit=10');
       set({ assessments: response.data || (response as unknown as AssessmentCatalogItem[]) });
     } catch (error: any) {
       set({ error: error.message });
@@ -38,7 +38,7 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
   fetchParticipants: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await apiClient.get<{ data: Participant[] }>('/participants?limit=100');
+      const response = await apiClient.get<{ data: Participant[] }>('/participants?limit=10');
       set({ participants: response.data || (response as unknown as Participant[]) });
     } catch (error: any) {
       set({ error: error.message });

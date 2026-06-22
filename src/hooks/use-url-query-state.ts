@@ -66,6 +66,10 @@ export function useDebouncedSearchParam({
   }, [searchValueFromUrl]);
 
   useEffect(() => {
+    if (inputValue === searchValueFromUrl) {
+      return;
+    }
+
     const timeoutId = window.setTimeout(() => {
       updateUrl({
         [key]: inputValue.trim() ? inputValue.trim() : null,
@@ -74,7 +78,7 @@ export function useDebouncedSearchParam({
     }, delay);
 
     return () => window.clearTimeout(timeoutId);
-  }, [delay, inputValue, key, updateUrl]);
+  }, [delay, inputValue, key, updateUrl, searchValueFromUrl]);
 
   return {
     inputValue,

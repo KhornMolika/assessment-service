@@ -167,7 +167,9 @@ assessment-service/
 ## Architecture Patterns
 
 ### Domain-Based Component Organization
+
 Every domain follows this internal structure:
+
 ```
 src/components/<domain>/
 ├── api/<domain>.api.ts      # API functions — use "use cache" directive, call apiClient
@@ -180,6 +182,7 @@ src/components/<domain>/
 ```
 
 ### Pages are Async Server Components
+
 ```typescript
 // src/app/(workspace)/assessments/page.tsx
 export default async function Page({ searchParams }) {
@@ -187,12 +190,14 @@ export default async function Page({ searchParams }) {
   return <AssessmentsCatalog data={data} />;
 }
 ```
+
 - Data fetching happens in the page (Server Component)
 - Data functions are co-located in the domain `api/` directory
 - Use `"use cache"` on data functions for Next.js 16 caching
 - Use `<Suspense>` with skeleton `loading.tsx` for streaming
 
 ### Interactive Components are Client Components
+
 - Tables with sorting/filtering: `"use client"` with local state
 - Forms: `"use client"` with controlled inputs
 - Session screens: `"use client"` with `useState` for phase management
@@ -204,29 +209,31 @@ export default async function Page({ searchParams }) {
 OAuth2 Client Credentials flow, fully automatic:
 
 ```typescript
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from "@/lib/api-client";
 
 // GET
-const data = await apiClient.get<ResponseType>('/assessments?topic=123');
+const data = await apiClient.get<ResponseType>("/assessments?topic=123");
 
 // POST
-const result = await apiClient.post<ResponseType>('/assessments', body);
+const result = await apiClient.post<ResponseType>("/assessments", body);
 
 // PATCH
-await apiClient.patch<ResponseType>('/assessments/456', body);
+await apiClient.patch<ResponseType>("/assessments/456", body);
 
 // DELETE
-await apiClient.delete('/assessments/456');
+await apiClient.delete("/assessments/456");
 ```
 
 **How it works:**
+
 1. First API call → `authenticate()`: POSTs `clientId` + `clientSecret` to `/auth/token`
 2. Caches `access_token` in memory with 10-second expiry buffer
 3. All subsequent calls inject `Authorization: Bearer <token>` header
 4. Token refresh is automatic on expiry
 
 **Environment variables** (`.env.local`):
-- `NEXT_PUBLIC_API_URL=http://localhost:3001`
+
+- `API_URL=http://localhost:3001`
 - `API_CLIENT_ID=<uuid>`
 - `API_CLIENT_SECRET=<secret>`
 
@@ -235,6 +242,7 @@ await apiClient.delete('/assessments/456');
 ## State Management
 
 ### Zustand Stores (server data)
+
 - `useContentStore` — banks, topics, questions (with `fetchAllContent()`)
 - `useAssessmentStore` — assessments, participants, answerSheets
 - `useDashboardStore` — overview sections, analytics
@@ -242,11 +250,13 @@ await apiClient.delete('/assessments/456');
 All stores follow the same pattern: `data[]`, `isLoading`, `error`, `fetch*()` actions.
 
 ### URL Query State (UI filters)
+
 - `useGlobalTopicFilter()` — reads/writes `?topic=` query param, persists to `localStorage`
 - `useUrlQueryUpdater()` — generic URL query param updater
 - `useDebouncedSearchParam()` — debounced search input (300ms default, key: "query")
 
 ### Local State (session screens)
+
 Session flows (take, host, join, preview) use local `useState` for phase/step management. They do NOT use Zustand. The docs reference future Zustand + `persist` middleware for self-paced state recovery.
 
 ---
@@ -270,6 +280,7 @@ QuestionRenderer.tsx (dispatcher)
 ```
 
 **Props interface** (`types.ts`):
+
 ```typescript
 interface QuestionRendererProps {
   question: Question;
@@ -288,14 +299,18 @@ interface QuestionRendererProps {
 ## Session Screen Patterns
 
 ### Self-Paced Flow (`AssessmentTakeScreen`)
+
 Phases: `entry` → `quiz` → `confirm` → `result`
+
 - Entry: identity form + timer display
 - Quiz: progress bar, question nav, prev/next
 - Confirm: review all answers before submit
 - Result: score, grade, answer sheet
 
 ### Real-Time Host Flow (`AssessmentHostScreen`)
+
 Phases: `lobby` → `reveal` → `correct` → `leaderboard` → `winner`
+
 - Lobby: QR code, participant roster, start button
 - Reveal: live timer, response count
 - Correct: bar chart distribution, correct answer highlight
@@ -303,13 +318,16 @@ Phases: `lobby` → `reveal` → `correct` → `leaderboard` → `winner`
 - Winner: podium (top 3)
 
 ### Real-Time Join Flow (`AssessmentJoinScreen`)
+
 Phases: `lobby` → `waiting` → `pick_option` → `result` → `final`
+
 - Lobby: display name form
 - Waiting: "Waiting for host..."
 - Result: correct/wrong, points earned
 - Final: final score and rank
 
 ### Preview Screens
+
 `AssessmentPreviewScreen` handles both `SELF_PACED` and `REAL_TIME` modes for creators to preview the participant experience before publishing.
 
 ---
@@ -317,12 +335,14 @@ Phases: `lobby` → `waiting` → `pick_option` → `result` → `final`
 ## Form Patterns
 
 ### Multi-Step Wizard (`AssessmentNewWizard`)
+
 - Step 1: `AssessmentBasicInfoStep` — title, description, type, delivery mode
 - Step 2: `AssessmentSettingsStep` — time limit, pass mark, grade labels, participant identity
 - State managed in the wizard component, passed down to steps as props
 - Reused for edit mode (pre-populated from existing data)
 
 ### Question Forms
+
 - `QuestionNewForm` / `QuestionEditForm` — text, type selector, options, correct answer, rubric
 - `QuestionDetailsCard`, `QuestionTypeSettingsCard`, `QuestionPreviewCard` — shared across new/edit
 - `QuestionRubricCard`, `QuestionRubricField`, `QuestionRubricSettings` — AI grading rubric config
@@ -333,15 +353,18 @@ Phases: `lobby` → `waiting` → `pick_option` → `result` → `final`
 ## Real-Time UI (WebSocket)
 
 ### Event Contract
+
 See `docs/realtime-websocket-events.md` for the strict event contract.
 
 **Client → Server:**
+
 - `JOIN_ROOM` — `{ roomId, role, participantId? }`
 - `START_Q` — host advances to next question
 - `SUBMIT_ANS` — `{ choice?, response?, timeTaken }`
 - `REVEAL_ANSWERS` — host forces answer reveal
 
 **Server → Client:**
+
 - `ROOM_UPDATE` — `{ count, participants }`
 - `NEW_QUESTION` — `{ q: {id, text, type}, options, endTime }`
 - `Q_RESULTS` — `{ correct, stats: [{optionId, count}] }`
@@ -349,12 +372,15 @@ See `docs/realtime-websocket-events.md` for the strict event contract.
 - `SHOW_FINAL_RANK` — `{ id, name, score, rank }` (top 3)
 
 ### Event Constants
+
 All event names are defined in `realtime.events.ts` with direction maps. Import constants, never hardcode event strings.
 
 ### Audio Effects
+
 `useRealtimeAudio` hook in `realtime.effects.ts` — Web Audio API tones for countdown, correct/wrong answers, leaderboard reveals.
 
 ### Current State
+
 Session screens use **mock data** (demo participant roster, mock leaderboard) for UI development. Socket.IO integration is planned but not yet connected.
 
 ---
@@ -362,13 +388,14 @@ Session screens use **mock data** (demo participant roster, mock leaderboard) fo
 ## Next.js 16 Specifics
 
 ### Config (`next.config.ts`)
+
 ```typescript
 const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
     staleTimes: {
-      dynamic: 120,    // 2 min stale time
-      static: 300,     // 5 min stale time
+      dynamic: 120, // 2 min stale time
+      static: 300, // 5 min stale time
     },
     turbopackFileSystemCacheForDev: true,
   },
@@ -376,21 +403,27 @@ const nextConfig: NextConfig = {
 ```
 
 ### `"use cache"` Directive
+
 Data functions use the `"use cache"` directive for persistent caching:
+
 ```typescript
 // src/components/assessment/api/assessment.api.ts
 export async function getAssessmentsCatalog(params: QueryParams) {
   "use cache";
-  const response = await apiClient.get<PaginatedResponse>('/assessments', { params });
+  const response = await apiClient.get<PaginatedResponse>("/assessments", {
+    params,
+  });
   return response.data;
 }
 ```
 
 ### Route Groups
+
 - `(workspace)` — no URL segment, wraps pages in `WorkspaceShell` layout
 - `(fullscreen)` — no URL segment, no shared shell, full-screen pages
 
 ### Loading States
+
 - `loading.tsx` files provide Suspense boundaries automatically
 - `PageSkeletons.tsx` provides `WorkspacePageSkeleton`, `AnalyticsContentSkeleton`, `TopbarSkeleton`
 
@@ -404,7 +437,10 @@ All validation schemas in `src/schemas/`. Key patterns:
 // Discriminated union for correct answers
 const correctAnswerSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("SINGLE_CHOICE"), optionId: uuidSchema }),
-  z.object({ type: z.literal("MULTIPLE_CHOICE"), optionIds: z.array(uuidSchema) }),
+  z.object({
+    type: z.literal("MULTIPLE_CHOICE"),
+    optionIds: z.array(uuidSchema),
+  }),
   // ... etc for all types
 ]);
 ```
@@ -429,12 +465,12 @@ Schemas mirror the TypeScript types in `src/types/`. Always update both.
 
 ## Scripts Quick Reference
 
-| Command | Purpose |
-|---------|---------|
-| `pnpm dev` | Dev server (Turbopack) |
-| `pnpm build` | Production build |
-| `pnpm start` | Run production build |
-| `pnpm lint` | ESLint |
+| Command      | Purpose                |
+| ------------ | ---------------------- |
+| `pnpm dev`   | Dev server (Turbopack) |
+| `pnpm build` | Production build       |
+| `pnpm start` | Run production build   |
+| `pnpm lint`  | ESLint                 |
 
 ---
 

@@ -1,5 +1,5 @@
 "use client";
-import { useSidebar } from "@/src/components/ui/layout/sidebar-context";
+import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
 
 export default function Overlay() {
   const { sidebarOpen, setSidebarOpen } = useSidebar();

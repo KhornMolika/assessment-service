@@ -28,7 +28,7 @@
         "id": "total-questions",
         "label": "Total Questions",
         "value": "0",
-        "helper": "Reusable questions available across all banks and assessments.",
+        "helper": "Reusable questions available across all topics and assessments.",
         "icon": "helpCircle",
         "tone": "success"
       }

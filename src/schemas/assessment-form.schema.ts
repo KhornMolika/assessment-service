@@ -24,7 +24,6 @@ export const assessmentFormSchema = z
     endsAt: z.string(),
     passMark: z.number().min(0, "Pass mark cannot be below 0.").max(100, "Pass mark cannot be above 100."),
     shuffleQuestions: z.boolean(),
-    allowGoingBack: z.boolean(),
     gradeLabels: z.array(
       z.object({
         grade: z.string(),

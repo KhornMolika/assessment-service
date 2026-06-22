@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getBankDetailPageData } from "@/src/api/content.api";
+import { getBankById, getBankQuestions } from "@/src/lib/services/banks";
 import BankDetailView from "@/src/components/content/bank/detail/BankDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
@@ -10,7 +10,11 @@ async function BankDetailPageContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { bank, bankQuestions } = await getBankDetailPageData(id);
+  const [bank, bankQuestionsRes] = await Promise.all([
+    getBankById(id).catch(() => null),
+    getBankQuestions(id, 1, 100).catch(() => ({ data: [] }))
+  ]);
+  const bankQuestions = bankQuestionsRes?.data || [];
 
   if (!bank) {
     notFound();

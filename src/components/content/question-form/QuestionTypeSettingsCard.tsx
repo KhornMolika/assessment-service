@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
-import type {
-  MatchingPairFormValue,
-  QuestionFormData,
-} from "@/src/types/question-form.types";
+import type { QuestionFormData } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
-import { Check, GripVertical, Plus, X } from "lucide-react";
+import { Check, GripVertical, Plus, X, Type, ListOrdered, Link as LinkIcon, Edit3, MessageSquare, Star, FileQuestion } from "lucide-react";
 import { Label } from "@/src/components/ui/ui/label";
 import { Button } from "@/src/components/ui/ui/button";
 import { Select } from "@/src/components/ui/ui/select";
@@ -23,531 +20,584 @@ export default function QuestionTypeSettingsCard({
   extraContent,
 }: {
   formData: QuestionFormData;
-  onChange: <K extends keyof QuestionFormData>(
-    field: K,
-    value: QuestionFormData[K],
-  ) => void;
+  onChange: <K extends keyof QuestionFormData>(field: K, value: QuestionFormData[K]) => void;
   title?: string;
   description?: string;
   extraContent?: ReactNode;
 }) {
-  const updateOption = (index: number, value: string) => {
-    const nextOptions = [...formData.options];
-    nextOptions[index] = value;
-    onChange("options", nextOptions);
-  };
-
-  const updateMatchingPair = (
-    index: number,
-    side: keyof MatchingPairFormValue,
-    value: string,
-  ) => {
-    const nextPairs = [...formData.matchingPairs];
-    nextPairs[index] = { ...nextPairs[index], [side]: value };
-    onChange("matchingPairs", nextPairs);
-  };
-
-  const updateOrderItem = (index: number, value: string) => {
-    const nextItems = [...formData.orderItems];
-    nextItems[index] = value;
-    onChange("orderItems", nextItems);
-  };
-
-  const toggleCorrectAnswer = (index: number) => {
-    if (formData.questionType === "Single Choice") {
-      onChange("correctAnswers", [index]);
-      return;
-    }
-
-    const nextCorrectAnswers = formData.correctAnswers.includes(index)
-      ? formData.correctAnswers.filter((itemIndex) => itemIndex !== index)
-      : [...formData.correctAnswers, index];
-
-    onChange("correctAnswers", nextCorrectAnswers.length > 0 ? nextCorrectAnswers : [0]);
-  };
-
   const renderContent = () => {
     switch (formData.questionType) {
       case "Single Choice":
-      case "Multiple Choices":
-        return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">Answer Options</Label>
-            <p className="mb-3 text-xs text-inkd">
-              {formData.questionType === "Single Choice"
-                ? "Click the circle to mark the correct answer"
-                : "Check all correct answers"}
-            </p>
-            <div className="space-y-2">
-              {formData.options.map((option, index) => {
-                const isCorrect = formData.correctAnswers.includes(index);
-                const isSingleChoice = formData.questionType === "Single Choice";
+      case "Multiple Choices": {
+        const isMultiple = formData.questionType === "Multiple Choices";
+        const options = Array.isArray(formData.options) ? formData.options : [];
+        const correctIds = isMultiple 
+          ? (formData.correctAnswers?.optionIds || []) 
+          : (formData.correctAnswers?.optionId ? [formData.correctAnswers.optionId] : []);
 
+        const updateOption = (index: number, val: string) => {
+          const newOpts = [...options];
+          newOpts[index] = { ...newOpts[index], text: val };
+          onChange("options", newOpts);
+        };
+
+        const toggleCorrect = (id: string) => {
+          if (!isMultiple) {
+            onChange("correctAnswers", { optionId: id });
+          } else {
+            const newIds = correctIds.includes(id) 
+              ? correctIds.filter((cid: string) => cid !== id) 
+              : [...correctIds, id];
+            onChange("correctAnswers", { optionIds: newIds });
+          }
+        };
+
+        const addOption = () => {
+          const newId = `opt_${Date.now()}`;
+          onChange("options", [...options, { id: newId, text: "" }]);
+        };
+
+        const removeOption = (index: number, id: string) => {
+          const newOpts = options.filter((_: any, i: number) => i !== index);
+          onChange("options", newOpts);
+          if (!isMultiple && correctIds.includes(id)) {
+            onChange("correctAnswers", { optionId: newOpts[0]?.id || "" });
+          } else if (isMultiple && correctIds.includes(id)) {
+            onChange("correctAnswers", { optionIds: correctIds.filter((cid: string) => cid !== id) });
+          }
+        };
+
+        return (
+          <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
+                <ListOrdered className="h-5 w-5" />
+              </div>
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Answer Options</Label>
+                <p className="text-xs text-slate-500">
+                  {isMultiple ? "Check all correct answers" : "Select the single correct answer"}
+                </p>
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              {options.map((opt: any, index: number) => {
+                const isCorrect = correctIds.includes(opt.id);
                 return (
                   <div
-                    key={index}
-                    className={`flex items-center gap-3 rounded-lg border px-4 py-3 transition ${
-                      isCorrect ? "border-acc bg-accp" : "border-border bg-card"
+                    key={opt.id}
+                    className={`group flex items-center gap-3 rounded-xl border-2 px-4 py-3 transition-all duration-300 hover:shadow-md ${
+                      isCorrect ? "border-yellow-500 bg-yellow-50/50" : "border-slate-200 bg-white hover:border-yellow-300"
                     }`}
                   >
-                    <Button
+                    <button
                       type="button"
-                      onClick={() => toggleCorrectAnswer(index)}
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center border-2 transition ${
-                        isSingleChoice ? "rounded-full" : "rounded"
+                      onClick={() => toggleCorrect(opt.id)}
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center transition-all duration-200 ${
+                        !isMultiple ? "rounded-full" : "rounded-md"
                       } ${
                         isCorrect
-                          ? "border-pl bg-pl"
-                          : "border-gray-400 bg-white hover:border-pl"
+                          ? "bg-yellow-500 text-white border-transparent"
+                          : "border-2 border-slate-300 bg-white hover:border-yellow-400"
                       }`}
                     >
-                      {isCorrect && <Check className="h-3 w-3 text-white" />}
-                    </Button>
-                    <span className="w-6 text-sm font-semibold text-primary">
+                      {isCorrect && <Check className="h-4 w-4" />}
+                    </button>
+                    <span className="w-6 text-sm font-bold text-slate-400">
                       {getOptionLabel(index)}
                     </span>
                     <Input
                       type="text"
                       placeholder={`Option ${getOptionLabel(index)}`}
-                      value={option}
-                      onChange={(event) => updateOption(index, event.target.value)}
-                      className={`flex-1 border-none bg-transparent text-sm outline-none ${
-                        isCorrect ? "font-medium text-primary" : "text-gray-700"
-                      }`}
+                      value={opt.text}
+                      onChange={(e) => updateOption(index, e.target.value)}
+                      className="flex-1 border-none bg-transparent shadow-none focus-visible:ring-0 px-0 text-sm font-medium text-slate-700 placeholder:text-slate-400"
                     />
-                    {formData.options.length > 2 && (
-                      <Button
+                    {options.length > 2 && (
+                      <button
                         type="button"
-                        onClick={() => {
-                          const nextOptions = formData.options.filter((_, itemIndex) => itemIndex !== index);
-                          const nextCorrectAnswers = formData.correctAnswers
-                            .filter((itemIndex) => itemIndex !== index)
-                            .map((itemIndex) => (itemIndex > index ? itemIndex - 1 : itemIndex));
-                          onChange("options", nextOptions);
-                          onChange(
-                            "correctAnswers",
-                            nextCorrectAnswers.length > 0 ? nextCorrectAnswers : [0],
-                          );
-                        }}
-                        className="shrink-0 text-gray-400 transition hover:text-red-500" variant="ghost"
+                        onClick={() => removeOption(index, opt.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
                       >
                         <X className="h-4 w-4" />
-                      </Button>
+                      </button>
                     )}
                   </div>
                 );
               })}
               <Button
                 type="button"
-                onClick={() => onChange("options", [...formData.options, ""])}
-                className="mt-2 flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
+                onClick={addOption}
+                variant="outline"
+                className="w-full mt-2 border-dashed border-2 border-slate-300 text-slate-500 hover:text-yellow-600 hover:border-yellow-300 hover:bg-yellow-50 transition-all rounded-xl py-6"
               >
-                <Plus className="h-4 w-4" />
-                Add Option
+                <Plus className="h-4 w-4 mr-2" /> Add Option
               </Button>
             </div>
           </div>
         );
+      }
 
-      case "True/False":
+      case "True/False": {
+        const isTrue = formData.correctAnswers?.value === true;
+        const setCorrect = (val: boolean) => onChange("correctAnswers", { value: val });
+        const labels = formData.options || { trueLabel: "True", falseLabel: "False" };
+
         return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">Correct Answer</Label>
-            <div className="space-y-2">
-              {[
-                { label: "True", value: true },
-                { label: "False", value: false },
-              ].map((option) => {
-                const isCorrect = formData.trueFalseAnswer === option.value;
+          <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600">
+                <Check className="h-5 w-5" />
+              </div>
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Correct Answer</Label>
+                <p className="text-xs text-slate-500">Select whether the statement is true or false</p>
+              </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: labels.trueLabel, value: true },
+                { label: labels.falseLabel, value: false },
+              ].map((opt) => {
+                const isCorrect = isTrue === opt.value;
                 return (
-                  <Button
-                    key={option.label}
+                  <button
+                    key={opt.label}
                     type="button"
-                    onClick={() => onChange("trueFalseAnswer", option.value)}
-                    className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition ${
-                      isCorrect ? "border-acc bg-accp" : "border-border bg-card hover:border-acc"
+                    onClick={() => setCorrect(opt.value)}
+                    className={`flex flex-col items-center justify-center p-6 rounded-2xl border-2 transition-all duration-300 hover:shadow-lg ${
+                      isCorrect 
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700" 
+                        : "border-slate-200 bg-white text-slate-500 hover:border-emerald-300"
                     }`}
                   >
-                    <div
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                        isCorrect ? "border-pl bg-pl" : "border-gray-400 bg-white"
-                      }`}
-                    >
-                      {isCorrect && <Check className="h-3 w-3 text-white" />}
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full mb-3 ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-slate-100'}`}>
+                      {isCorrect && <Check className="h-5 w-5" />}
                     </div>
-                    <span className={`text-sm font-medium ${isCorrect ? "text-primary" : "text-gray-700"}`}>
-                      {option.label}
-                    </span>
-                  </Button>
+                    <span className="font-bold">{opt.label}</span>
+                  </button>
                 );
               })}
             </div>
           </div>
         );
+      }
 
       case "Short Answer":
+      case "Essay": {
+        const keywords = formData.correctAnswers?.keyPointsExpected || [];
+        const updateKeyword = (index: number, val: string) => {
+          const newKws = [...keywords];
+          newKws[index] = val;
+          onChange("correctAnswers", { ...formData.correctAnswers, keyPointsExpected: newKws });
+        };
+        const removeKeyword = (index: number) => {
+          onChange("correctAnswers", { ...formData.correctAnswers, keyPointsExpected: keywords.filter((_: any, i: number) => i !== index) });
+        };
+
         return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">
-              Acceptable Keywords/Answers
-            </Label>
-            <p className="mb-3 text-xs text-inkd">Add keywords or phrases that should be in the answer</p>
-            <div className="space-y-2">
-              {formData.shortAnswerKeywords.map((keyword, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    type="text"
-                    placeholder={`Keyword ${index + 1}`}
-                    value={keyword}
-                    onChange={(event) => {
-                      const nextKeywords = [...formData.shortAnswerKeywords];
-                      nextKeywords[index] = event.target.value;
-                      onChange("shortAnswerKeywords", nextKeywords);
-                    }}
-                    className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  />
-                  {formData.shortAnswerKeywords.length > 1 && (
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        onChange(
-                          "shortAnswerKeywords",
-                          formData.shortAnswerKeywords.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                  <MessageSquare className="h-5 w-5" />
                 </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => onChange("shortAnswerKeywords", [...formData.shortAnswerKeywords, ""])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
-              >
-                <Plus className="h-4 w-4" />
-                Add Keyword
-              </Button>
+                <div>
+                  <Label className="block text-sm font-bold text-slate-800">Word Count Limits</Label>
+                  <p className="text-xs text-slate-500">Set boundaries for the response</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-slate-600">Minimum Words</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.options?.minWords || 0} 
+                    onChange={(e) => onChange("options", { ...formData.options, minWords: parseInt(e.target.value) || 0 })}
+                    className="rounded-xl border-slate-200 focus:ring-blue-500/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-slate-600">Maximum Words</Label>
+                  <Input 
+                    type="number" 
+                    value={formData.options?.maxWords || 0} 
+                    onChange={(e) => onChange("options", { ...formData.options, maxWords: parseInt(e.target.value) || 0 })}
+                    className="rounded-xl border-slate-200 focus:ring-blue-500/50"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        );
 
-      case "Essay":
-        return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">Grading Guidelines</Label>
-            <Textarea
-              placeholder="Provide guidelines for grading this essay question..."
-              value={formData.explanation}
-              onChange={(event) => onChange("explanation", event.target.value)}
-              rows={4}
-              className="w-full resize-none rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-            />
-          </div>
-        );
-
-      case "Fill in the Blank":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label className="mb-3 block text-sm font-semibold text-primary">Text with Blanks</Label>
-              <p className="mb-3 text-xs text-inkd">Use `_____` to create blanks in your text</p>
-              <Textarea
-                placeholder="The capital of France is _____"
-                value={formData.fillInBlankText}
-                onChange={(event) => onChange("fillInBlankText", event.target.value)}
-                rows={3}
-                className="w-full resize-none rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              />
-            </div>
-            <div>
-              <Label className="mb-3 block text-sm font-semibold text-primary">Correct Answers for Blanks</Label>
-              <div className="space-y-2">
-                {formData.fillInBlankAnswers.map((answer, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span className="w-20 text-sm font-semibold text-primary">Blank {index + 1}:</span>
-                    <Input
+            <div className="space-y-4">
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Expected Key Points</Label>
+                <p className="text-xs text-slate-500">Keywords the AI will look for when grading</p>
+              </div>
+              <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                {keywords.map((kw: string, index: number) => (
+                  <div key={index} className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg pl-3 pr-1 py-1 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:border-blue-500 transition-all">
+                    <input
                       type="text"
-                      placeholder="Correct answer"
-                      value={answer}
-                      onChange={(event) => {
-                        const nextAnswers = [...formData.fillInBlankAnswers];
-                        nextAnswers[index] = event.target.value;
-                        onChange("fillInBlankAnswers", nextAnswers);
-                      }}
-                      className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
+                      value={kw}
+                      onChange={(e) => updateKeyword(index, e.target.value)}
+                      placeholder="Keyword"
+                      className="border-none bg-transparent text-sm w-24 focus:outline-none font-medium text-slate-700"
                     />
-                    {formData.fillInBlankAnswers.length > 1 && (
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          onChange(
-                            "fillInBlankAnswers",
-                            formData.fillInBlankAnswers.filter((_, itemIndex) => itemIndex !== index),
-                          )
-                        }
-                        className="text-gray-400 transition hover:text-red-500" variant="ghost"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <button onClick={() => removeKeyword(index)} className="p-1 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors">
+                      <X className="h-3 w-3" />
+                    </button>
                   </div>
                 ))}
-                <Button
-                  type="button"
-                  onClick={() => onChange("fillInBlankAnswers", [...formData.fillInBlankAnswers, ""])}
-                  className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
+                <button
+                  onClick={() => onChange("correctAnswers", { ...formData.correctAnswers, keyPointsExpected: [...keywords, ""] })}
+                  className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
                 >
                   <Plus className="h-4 w-4" />
-                  Add Blank Answer
-                </Button>
+                </button>
               </div>
             </div>
-          </div>
-        );
 
-      case "Matching":
-        return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">Matching Pairs</Label>
-            <p className="mb-3 text-xs text-inkd">Create items to match between left and right columns</p>
             <div className="space-y-3">
-              {formData.matchingPairs.map((pair, index) => (
-                <div key={index} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="flex flex-1 items-center gap-3">
-                    <Input
-                      type="text"
-                      placeholder={`Left item ${index + 1}`}
-                      value={pair.left}
-                      onChange={(event) => updateMatchingPair(index, "left", event.target.value)}
-                      className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                    />
-                    <span className="text-inkd">?</span>
-                    <Input
-                      type="text"
-                      placeholder={`Right item ${index + 1}`}
-                      value={pair.right}
-                      onChange={(event) => updateMatchingPair(index, "right", event.target.value)}
-                      className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                    />
-                  </div>
-                  {formData.matchingPairs.length > 2 && (
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        onChange(
-                          "matchingPairs",
-                          formData.matchingPairs.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+              <Label className="block text-sm font-bold text-slate-800">Model Answer Reference</Label>
+              <Textarea
+                placeholder="Provide a perfect example answer for AI grading reference..."
+                value={formData.correctAnswers?.modelAnswerReference || ""}
+                onChange={(e) => onChange("correctAnswers", { ...formData.correctAnswers, modelAnswerReference: e.target.value })}
+                className="rounded-xl border-slate-200 min-h-[100px] focus:ring-blue-500/50"
+              />
+            </div>
+          </div>
+        );
+      }
+
+      case "Fill in the Blank": {
+        const answers = formData.correctAnswers?.answers || [];
+        
+        return (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-pink-100 rounded-lg text-pink-600">
+                  <Edit3 className="h-5 w-5" />
                 </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => onChange("matchingPairs", [...formData.matchingPairs, { left: "", right: "" }])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
-              >
-                <Plus className="h-4 w-4" />
-                Add Pair
-              </Button>
-            </div>
-          </div>
-        );
-
-      case "Ordering":
-        return (
-          <div>
-            <Label className="mb-3 block text-sm font-semibold text-primary">Items to Order</Label>
-            <p className="mb-3 text-xs text-inkd">Add items in the correct order</p>
-            <div className="space-y-2">
-              {formData.orderItems.map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-gray-400" />
-                  <span className="w-6 text-sm font-semibold text-primary">{index + 1}.</span>
-                  <Input
-                    type="text"
-                    placeholder={`Item ${index + 1}`}
-                    value={item}
-                    onChange={(event) => updateOrderItem(index, event.target.value)}
-                    className="flex-1 rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  />
-                  {formData.orderItems.length > 2 && (
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        onChange(
-                          "orderItems",
-                          formData.orderItems.filter((_, itemIndex) => itemIndex !== index),
-                        )
-                      }
-                      className="text-gray-400 transition hover:text-red-500" variant="ghost"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
+                <div>
+                  <Label className="block text-sm font-bold text-slate-800">Template Text</Label>
+                  <p className="text-xs text-slate-500">Use `[blank_1]`, `[blank_2]`, etc. to define blanks</p>
                 </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => onChange("orderItems", [...formData.orderItems, ""])}
-                className="flex items-center gap-2 text-sm font-semibold text-acc transition hover:text-primary" variant="ghost"
-              >
-                <Plus className="h-4 w-4" />
-                Add Item
-              </Button>
-            </div>
-          </div>
-        );
-
-      case "Rating Scale":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label className="mb-2 block text-sm font-semibold text-primary">Rating Scale Settings</Label>
-              <Select
-                value={formData.ratingScale}
-                onChange={(event) => onChange("ratingScale", Number(event.target.value))}
-                className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              >
-                <option value={3}>3 Points</option>
-                <option value={5}>5 Points</option>
-                <option value={7}>7 Points</option>
-                <option value={10}>10 Points</option>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <Label className="mb-2 block text-xs text-inkd">Minimum Label</Label>
-                <Input
-                  type="text"
-                  value={formData.ratingLabels.min}
-                  onChange={(event) =>
-                    onChange("ratingLabels", { ...formData.ratingLabels, min: event.target.value })
-                  }
-                  className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                />
               </div>
-              <div>
-                <Label className="mb-2 block text-xs text-inkd">Maximum Label</Label>
-                <Input
-                  type="text"
-                  value={formData.ratingLabels.max}
-                  onChange={(event) =>
-                    onChange("ratingLabels", { ...formData.ratingLabels, max: event.target.value })
-                  }
-                  className="w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                />
-              </div>
+              <Textarea
+                value={formData.options?.template || ""}
+                onChange={(e) => onChange("options", { template: e.target.value })}
+                placeholder="The [blank_1] is the powerhouse of the [blank_2]."
+                className="rounded-xl border-slate-200 min-h-[100px] focus:ring-pink-500/50 text-base leading-relaxed"
+              />
             </div>
-          </div>
-        );
 
-      case "File Upload":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label className="mb-2 block text-sm font-semibold text-primary">Allowed File Types</Label>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {[
-                  { label: "PDF", value: "pdf" },
-                  { label: "Word (DOC, DOCX)", value: "doc" },
-                  { label: "Images (JPG, PNG)", value: "image" },
-                  { label: "Excel (XLS, XLSX)", value: "excel" },
-                  { label: "PowerPoint (PPT, PPTX)", value: "ppt" },
-                  { label: "Text (TXT)", value: "txt" },
-                ].map((type) => {
-                  const isSelected = formData.fileUploadTypes.includes(type.value);
-
-                  return (
-                    <Button
-                      key={type.value}
-                      type="button"
-                      onClick={() => {
-                        const nextTypes = isSelected
-                          ? formData.fileUploadTypes.filter((item) => item !== type.value)
-                          : [...formData.fileUploadTypes, type.value];
-                        onChange("fileUploadTypes", nextTypes.length > 0 ? nextTypes : ["pdf"]);
-                      }}
-                      className={`rounded-lg border px-3 py-2 text-left text-xs font-medium transition ${
-                        isSelected
-                          ? "border-acc bg-accp text-primary"
-                          : "border-border bg-card text-gray-700 hover:border-acc"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`flex h-4 w-4 items-center justify-center rounded border-2 ${
-                            isSelected ? "border-pl bg-pl" : "border-gray-400"
-                          }`}
-                        >
-                          {isSelected && <Check className="h-3 w-3 text-white" />}
+            <div className="space-y-3">
+              <Label className="block text-sm font-bold text-slate-800">Accepted Answers per Blank</Label>
+              <div className="space-y-3">
+                {answers.map((ansGroup: string[], index: number) => (
+                  <div key={index} className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+                    <span className="text-xs font-bold text-pink-600 uppercase tracking-wider">[blank_{index + 1}]</span>
+                    <div className="flex flex-wrap gap-2">
+                      {ansGroup.map((ans, i) => (
+                        <div key={i} className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg pl-3 pr-1 py-1 shadow-sm">
+                          <input
+                            value={ans}
+                            onChange={(e) => {
+                              const newGroups = [...answers];
+                              newGroups[index][i] = e.target.value;
+                              onChange("correctAnswers", { answers: newGroups });
+                            }}
+                            className="border-none bg-transparent text-sm w-24 focus:outline-none font-medium text-slate-700"
+                          />
+                          <button 
+                            onClick={() => {
+                              const newGroups = [...answers];
+                              newGroups[index] = newGroups[index].filter((_: any, idx: number) => idx !== i);
+                              onChange("correctAnswers", { answers: newGroups });
+                            }} 
+                            className="p-1 text-slate-400 hover:text-red-500"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
                         </div>
-                        {type.label}
-                      </div>
-                    </Button>
-                  );
-                })}
+                      ))}
+                      <button
+                        onClick={() => {
+                          const newGroups = [...answers];
+                          newGroups[index] = [...newGroups[index], ""];
+                          onChange("correctAnswers", { answers: newGroups });
+                        }}
+                        className="flex items-center justify-center h-8 w-8 bg-pink-100 text-pink-600 rounded-lg hover:bg-pink-200"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onChange("correctAnswers", { answers: [...answers, [""]] })}
+                    className="text-pink-600 border-pink-200 hover:bg-pink-50"
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Add Blank Definition
+                  </Button>
+                </div>
               </div>
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-xs text-inkd">Maximum File Size (MB)</Label>
-              <Select
-                value={formData.fileUploadMaxSize}
-                onChange={(event) => onChange("fileUploadMaxSize", Number(event.target.value))}
-                className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              >
-                <option value={5}>5 MB</option>
-                <option value={10}>10 MB</option>
-                <option value={25}>25 MB</option>
-                <option value={50}>50 MB</option>
-                <option value={100}>100 MB</option>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="mb-2 block text-xs text-inkd">Number of Files Allowed</Label>
-              <Select
-                value={formData.fileUploadMaxFiles}
-                onChange={(event) => onChange("fileUploadMaxFiles", Number(event.target.value))}
-                className="w-full rounded-lg border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              >
-                <option value={1}>1 File</option>
-                <option value={2}>2 Files</option>
-                <option value={3}>3 Files</option>
-                <option value={5}>5 Files</option>
-                <option value={10}>10 Files</option>
-              </Select>
             </div>
           </div>
         );
+      }
+
+      case "Matching": {
+        const leftSide = formData.options?.leftSide || [];
+        const rightSide = formData.options?.rightSide || [];
+        const pairs = formData.correctAnswers?.pairs || [];
+
+        return (
+          <div className="space-y-4 animate-in fade-in duration-500">
+             <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-orange-100 rounded-lg text-orange-600">
+                <LinkIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Matching Pairs</Label>
+                <p className="text-xs text-slate-500">Define the pairs; they will be shuffled for participants.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {pairs.map((pair: any, index: number) => {
+                const lText = leftSide.find((l:any) => l.id === pair.leftId)?.text || "";
+                const rText = rightSide.find((r:any) => r.id === pair.rightId)?.text || "";
+
+                return (
+                  <div key={index} className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-200">
+                    <Input
+                      placeholder="Left item"
+                      value={lText}
+                      onChange={(e) => {
+                        const newL = [...leftSide];
+                        newL[index] = { id: pair.leftId, text: e.target.value };
+                        onChange("options", { ...formData.options, leftSide: newL });
+                      }}
+                      className="bg-white rounded-lg border-slate-300"
+                    />
+                    <div className="text-orange-400">
+                      <LinkIcon className="h-4 w-4" />
+                    </div>
+                    <Input
+                      placeholder="Right item"
+                      value={rText}
+                      onChange={(e) => {
+                        const newR = [...rightSide];
+                        newR[index] = { id: pair.rightId, text: e.target.value };
+                        onChange("options", { ...formData.options, rightSide: newR });
+                      }}
+                      className="bg-white rounded-lg border-slate-300"
+                    />
+                    {pairs.length > 2 && (
+                      <button
+                        onClick={() => {
+                          onChange("options", {
+                            leftSide: leftSide.filter((_:any, i:number) => i !== index),
+                            rightSide: rightSide.filter((_:any, i:number) => i !== index),
+                          });
+                          onChange("correctAnswers", {
+                            pairs: pairs.filter((_:any, i:number) => i !== index)
+                          });
+                        }}
+                        className="p-2 text-slate-400 hover:text-red-500 bg-white rounded-lg border border-slate-200"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const newIdx = Date.now();
+                  const lId = `l_${newIdx}`;
+                  const rId = `r_${newIdx}`;
+                  onChange("options", {
+                    leftSide: [...leftSide, { id: lId, text: "" }],
+                    rightSide: [...rightSide, { id: rId, text: "" }]
+                  });
+                  onChange("correctAnswers", {
+                    pairs: [...pairs, { leftId: lId, rightId: rId }]
+                  });
+                }}
+                className="w-full border-dashed border-2 border-slate-300 text-slate-500 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Pair
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      case "Ordering": {
+        const options = formData.options || [];
+        
+        return (
+          <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+                <ListOrdered className="h-5 w-5" />
+              </div>
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Correct Sequence</Label>
+                <p className="text-xs text-slate-500">Add items in the exact order they should be arranged.</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {options.map((opt: any, index: number) => (
+                <div key={opt.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md hover:border-purple-300">
+                  <div className="flex h-6 w-6 items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-md text-xs">
+                    {index + 1}
+                  </div>
+                  <Input
+                    value={opt.text}
+                    onChange={(e) => {
+                      const newOpts = [...options];
+                      newOpts[index] = { ...opt, text: e.target.value };
+                      onChange("options", newOpts);
+                    }}
+                    placeholder={`Item ${index + 1}`}
+                    className="flex-1 border-none bg-transparent shadow-none focus-visible:ring-0 px-0 font-medium"
+                  />
+                  {options.length > 2 && (
+                    <button
+                      onClick={() => {
+                        const newOpts = options.filter((_:any, i:number) => i !== index);
+                        onChange("options", newOpts);
+                        onChange("correctAnswers", { sequence: newOpts.map((o:any) => o.id) });
+                      }}
+                      className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const id = `opt_${Date.now()}`;
+                  const newOpts = [...options, { id, text: "" }];
+                  onChange("options", newOpts);
+                  onChange("correctAnswers", { sequence: newOpts.map((o:any) => o.id) });
+                }}
+                className="w-full border-dashed border-2 border-slate-300 text-slate-500 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Step
+              </Button>
+            </div>
+          </div>
+        );
+      }
+
+      case "Rating Scale": {
+        const min = formData.options?.min || 1;
+        const max = formData.options?.max || 5;
+        const lowLabel = formData.options?.lowLabel || "";
+        const highLabel = formData.options?.highLabel || "";
+
+        return (
+          <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600">
+                <Star className="h-5 w-5" />
+              </div>
+              <div>
+                <Label className="block text-sm font-bold text-slate-800">Rating Scale Configuration</Label>
+                <p className="text-xs text-slate-500">Configure the range and labels for the rating.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 p-5 bg-slate-50 rounded-2xl border border-slate-200">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-600 uppercase">Min Value</Label>
+                  <Select
+                    value={String(min)}
+                    onChange={(e) => onChange("options", { ...formData.options, min: parseInt(e.target.value) })}
+                    className="bg-white"
+                  >
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-600 uppercase">Min Label</Label>
+                  <Input 
+                    value={lowLabel}
+                    onChange={(e) => onChange("options", { ...formData.options, lowLabel: e.target.value })}
+                    placeholder="e.g. Strongly Disagree"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-600 uppercase">Max Value</Label>
+                  <Select
+                    value={String(max)}
+                    onChange={(e) => onChange("options", { ...formData.options, max: parseInt(e.target.value) })}
+                    className="bg-white"
+                  >
+                    <option value="3">3</option>
+                    <option value="5">5</option>
+                    <option value="7">7</option>
+                    <option value="10">10</option>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-600 uppercase">Max Label</Label>
+                  <Input 
+                    value={highLabel}
+                    onChange={(e) => onChange("options", { ...formData.options, highLabel: e.target.value })}
+                    placeholder="e.g. Strongly Agree"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
       default:
-        return null;
+        return (
+          <div className="flex flex-col items-center justify-center p-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl">
+            <FileQuestion className="h-12 w-12 mb-3 text-slate-300" />
+            <p className="text-sm font-medium">Select a question type to configure its settings</p>
+          </div>
+        );
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
+    <Card className="border-slate-200/60 shadow-sm overflow-hidden bg-white/50 backdrop-blur-sm">
+      <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+        <CardTitle className="text-lg text-slate-800">{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="pt-6">
         {renderContent()}
         {extraContent}
       </CardContent>
     </Card>
   );
 }
-
-
-

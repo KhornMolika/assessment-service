@@ -1,160 +1,132 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import type { Metadata } from "next";
-import {
-  getQuestionTopics,
-  getQuestionCatalogPageData,
-} from "@/src/api/content.api";
+import { fetchTopicQuestions, fetchGlobalQuestions } from "@/src/actions/question-actions";
+import { fetchGlobalBanks } from "@/src/actions/bank-actions";
+import { fetchTopics } from "@/src/actions/topic-actions";
 import QuestionBuilderAction from "@/src/components/content/question/catalog/QuestionBuilderAction";
 import QuestionsCatalogToolbar from "@/src/components/content/question/catalog/QuestionsCatalogToolbar";
 import QuestionsTableInteractive from "@/src/components/content/question/catalog/QuestionsTableInteractive";
-import type { Bank } from "@/src/types/bank.types";
-import type { QuestionCatalogItem } from "@/src/types/question-catalog.types";
-import type { QuestionTopicMap } from "@/src/types/topic.types";
-import {
-  ALL_TOPICS_VALUE,
-  questionMatchesTopic,
-} from "@/src/utils/topic-utils";
+import type { QuestionBank, Question } from "@/src/types/api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
-import LinkPagination from "@/src/components/ui/navigation/LinkPagination";
+import Pagination from "@/src/components/ui/navigation/Pagination";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/ui/card";
+import { useTopicStore } from "@/src/stores/topic-store";
+import { useSearchParams } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Questions",
-};
-
-type QuestionSearchParams = Promise<{
-  topic?: string | string[];
-  query?: string | string[];
-  page?: string | string[];
-  pageSize?: string | string[];
-  type?: string | string[];
-  bank?: string | string[];
-}>;
-
-function getSingleSearchParam(
-  value: string | string[] | undefined,
-  fallback = "",
-) {
-  if (Array.isArray(value)) {
-    return value[0] ?? fallback;
-  }
-
+// Utility functions
+function getSingleSearchParam(value: string | string[] | null | undefined, fallback = "") {
+  if (Array.isArray(value)) return value[0] ?? fallback;
   return value ?? fallback;
 }
 
-function parsePositiveInteger(value: string | undefined, fallback: number) {
+function parsePositiveInteger(value: string | null | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
-
-  if (Number.isNaN(parsed) || parsed < 1) {
-    return fallback;
-  }
-
+  if (Number.isNaN(parsed) || parsed < 1) return fallback;
   return parsed;
 }
 
 function filterQuestions({
   questions,
-  banks,
-  questionTopics,
   query,
   typeFilter,
-  bankFilter,
-  topicFilter,
 }: {
-  questions: QuestionCatalogItem[];
-  banks: Bank[];
-  questionTopics: QuestionTopicMap[];
+  questions: any[];
   query: string;
   typeFilter: string;
-  bankFilter: string;
-  topicFilter: string;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
-  const bankMap = Object.fromEntries(banks.map((bank) => [bank.id, bank]));
-
   return questions.filter((question) => {
-    const bankName = question.bank_id
-      ? bankMap[question.bank_id]?.name ?? "Unknown bank"
-      : "Unassigned";
-
-    if (normalizedQuery && !question.text.toLowerCase().includes(normalizedQuery)) {
-      return false;
-    }
-
-    if (typeFilter !== "All Types" && question.type !== typeFilter) {
-      return false;
-    }
-
-    if (
-      topicFilter !== ALL_TOPICS_VALUE &&
-      !questionMatchesTopic(question.id, topicFilter, questionTopics)
-    ) {
-      return false;
-    }
-
-    if (bankFilter !== "All Banks" && bankName !== bankFilter) {
-      return false;
-    }
-
+    if (normalizedQuery && !question.questionText?.toLowerCase().includes(normalizedQuery)) return false;
+    if (typeFilter !== "All Types" && question.type !== typeFilter) return false;
     return true;
   });
 }
 
-async function QuestionsPageContent({
-  searchParams,
-}: {
-  searchParams: QuestionSearchParams;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const topicFilter =
-    getSingleSearchParam(resolvedSearchParams.topic, ALL_TOPICS_VALUE) ||
-    ALL_TOPICS_VALUE;
-  const query = getSingleSearchParam(resolvedSearchParams.query);
-  const typeFilter = getSingleSearchParam(resolvedSearchParams.type, "All Types") || "All Types";
-  const bankFilter = getSingleSearchParam(resolvedSearchParams.bank, "All Banks") || "All Banks";
-  const currentPage = parsePositiveInteger(getSingleSearchParam(resolvedSearchParams.page), 1);
-  const itemsPerPage = parsePositiveInteger(getSingleSearchParam(resolvedSearchParams.pageSize), 10);
-  const [{ banks, questions }, questionTopics] = await Promise.all([
-    getQuestionCatalogPageData(),
-    getQuestionTopics(),
-  ]);
+function QuestionsPageContent() {
+  const searchParams = useSearchParams();
+  const query = getSingleSearchParam(searchParams.get("query"));
+  const typeFilter = getSingleSearchParam(searchParams.get("type"), "All Types") || "All Types";
+  const bankFilter = getSingleSearchParam(searchParams.get("bank"), "All Banks") || "All Banks";
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
+  
+  const activeTopic = useTopicStore((s) => s.activeTopic);
+  
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [banks, setBanks] = useState<QuestionBank[]>([]);
+  const [topics, setTopics] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchResources() {
+      setIsLoading(true);
+      try {
+        const [fetchedBanks, fetchedTopics] = await Promise.all([
+          fetchGlobalBanks(),
+          fetchTopics()
+        ]);
+        if (isMounted) {
+          setBanks(fetchedBanks || []);
+          setTopics(fetchedTopics || []);
+        }
+
+        let fetchedQuestions;
+        if (activeTopic === null) {
+          fetchedQuestions = await fetchGlobalQuestions();
+        } else {
+          fetchedQuestions = await fetchTopicQuestions(activeTopic.id);
+        }
+
+        if (isMounted) {
+          setQuestions(fetchedQuestions);
+        }
+      } catch (err) {
+        console.error("Failed to fetch questions:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    fetchResources();
+    return () => { isMounted = false };
+  }, [activeTopic?.id ?? 'all']);
+
+  if (isLoading) {
+    return <WorkspacePageSkeleton />;
+  }
+
   const filteredQuestions = filterQuestions({
     questions,
-    banks,
-    questionTopics,
     query,
     typeFilter,
-    bankFilter,
-    topicFilter,
   });
+  
   const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const paginatedQuestions = filteredQuestions.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage,
   );
-  const availableTypes = Array.from(new Set(questions.map((question) => question.type))).sort();
+  
+  const availableTypes = Array.from(new Set(questions.map((q) => q.type))).filter(Boolean).sort() as string[];
   const availableBanks = banks.map((bank) => bank.name);
-  const hasActiveFilters =
-    query.trim().length > 0 ||
-    topicFilter !== ALL_TOPICS_VALUE ||
-    typeFilter !== "All Types" ||
-    bankFilter !== "All Banks";
+  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "All Types" || bankFilter !== "All Banks";
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Questions"
-        description={`${questions.length} reusable questions across all banks.`}
+        description={`${questions.length} reusable questions ${activeTopic ? `in ${activeTopic.name}` : "across all topics"}.`}
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <QuestionBuilderAction />
@@ -189,7 +161,7 @@ async function QuestionsPageContent({
                 description={
                   hasActiveFilters
                     ? "No questions match the current search, bank, topic, and type filters."
-                    : "Questions will appear here after they are added to one or more banks."
+                    : "Questions will appear here after they are added."
                 }
                 action={
                   hasActiveFilters ? (
@@ -203,18 +175,21 @@ async function QuestionsPageContent({
                 }
               />
             ) : (
-              <QuestionsTableInteractive questions={paginatedQuestions} banks={banks} />
+              <QuestionsTableInteractive
+                questions={paginatedQuestions}
+                banks={banks}
+                topics={topics}
+              />
             )}
           </div>
         </CardContent>
         {filteredQuestions.length > 0 ? (
-          <LinkPagination
+          <Pagination
             pathname="/questions"
             searchParams={{
-              topic: topicFilter === ALL_TOPICS_VALUE ? null : topicFilter,
               query: query || null,
-              type: typeFilter === "All Types" ? null : typeFilter,
-              bank: bankFilter === "All Banks" ? null : bankFilter,
+              type: typeFilter === "ALL" ? null : typeFilter,
+              bank: bankFilter === "ALL" ? null : bankFilter,
               pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
             }}
             currentPage={activePage}
@@ -222,6 +197,7 @@ async function QuestionsPageContent({
             pageSize={itemsPerPage}
             defaultPageSize={10}
             totalItems={filteredQuestions.length}
+            pageSizeOptions={[5, 10, 20, 50]}
             itemLabel="questions"
           />
         ) : null}
@@ -230,14 +206,10 @@ async function QuestionsPageContent({
   );
 }
 
-export default function QuestionsPage({
-  searchParams,
-}: {
-  searchParams: QuestionSearchParams;
-}) {
+export default function QuestionsPage() {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <QuestionsPageContent searchParams={searchParams} />
+      <QuestionsPageContent />
     </Suspense>
   );
 }

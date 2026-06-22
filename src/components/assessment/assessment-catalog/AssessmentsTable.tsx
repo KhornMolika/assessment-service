@@ -206,32 +206,34 @@ export default function AssessmentsTable({
                   <Link
                     href={`/assessments/${assessment.id}`}
                     title="View assessment"
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className="h-5 w-5" />
                   </Link>
                   <Link
                     href={`/assessments/${assessment.id}/edit`}
                     title="Edit assessment"
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-5 w-5" />
                   </Link>
                   <Button
                     type="button"
                     title="Duplicate assessment"
+                    size="icon"
                     onClick={() => onDuplicateAssessment(assessment)}
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-inkd transition hover:bg-muted" variant="secondary"
+                    className="h-8 w-8 rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600" variant="ghost"
                   >
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-5 w-5" />
                   </Button>
                   <Button
                     type="button"
                     title="Delete assessment"
+                    size="icon"
                     onClick={() => setAssessmentToDelete(assessment)}
-                    className="inline-flex items-center gap-1 rounded-md p-2 text-red-500 transition hover:bg-red-50" variant="destructive"
+                    className="h-8 w-8 rounded-md text-red-500 transition hover:bg-red-50 hover:text-red-600" variant="ghost"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5" />
                   </Button>
                 </div>
               </TableCell>

@@ -1,10 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useMemo, useState, useTransition } from "react";
-import { Edit3, Plus, Save, Search, Tags, Trash2, X } from "lucide-react";
-import type { Topic } from "@/src/types";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { ChevronDown, ChevronLeft, ChevronRight, Edit3, Eye, Plus, Save, Search, Tags, Trash2, X } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import type { Topic } from "@/src/types/api";
 import { Badge } from "@/src/components/ui/ui/badge";
+import { Modal } from "@/src/components/ui/ui/modal";
 import {
   Card,
   CardContent,
@@ -25,6 +28,7 @@ import { Label } from "@/src/components/ui/ui/label";
 import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
 import { Textarea } from "@/src/components/ui/ui/textarea";
+import Pagination from "@/src/components/ui/navigation/Pagination";
 
 type TopicUsage = {
   banks: number;
@@ -60,33 +64,79 @@ function getUsageTotal(usage: TopicUsage) {
 
 export default function TopicsManager({
   topics,
+  totalTopics,
+  currentPage,
+  itemsPerPage,
+  currentSearch,
 }: {
   topics: EditableTopic[];
+  totalTopics: number;
+  currentPage: number;
+  itemsPerPage: number;
+  currentSearch: string;
 }) {
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [query, setQuery] = useState(currentSearch);
   const [form, setForm] = useState<TopicFormState>(emptyForm);
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [previewTopic, setPreviewTopic] = useState<EditableTopic | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const filteredTopics = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    if (!normalizedQuery) {
-      return topics;
+  const updateParams = (updates: Record<string, string | number | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    let hasChanges = false;
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === null || value === "") {
+        if (params.has(key)) {
+          params.delete(key);
+          hasChanges = true;
+        }
+      } else {
+        if (params.get(key) !== String(value)) {
+          params.set(key, String(value));
+          hasChanges = true;
+        }
+      }
     }
+    if (hasChanges) {
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  };
 
-    return topics.filter((topic) =>
-      [topic.name, topic.description, topic.id].some((value) =>
-        value.toLowerCase().includes(normalizedQuery),
-      ),
-    );
-  }, [topics, query]);
+  // Debounced search
+  useEffect(() => {
+    if (query === currentSearch) return; // prevent loop on init
+    const timer = setTimeout(() => {
+      updateParams({ search: query || null, page: 1 });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const totalPages = Math.ceil(totalTopics / itemsPerPage);
+  const paginatedTopics = topics;
+
+  const getPaginationRange = () => {
+    const range: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) range.push(i);
+    } else {
+      if (currentPage <= 3) {
+        range.push(1, 2, 3, 4, 5, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        range.push(1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        range.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return range;
+  };
 
   const resetForm = () => {
     setForm(emptyForm);
     setEditingTopicId(null);
-    setError("");
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -95,7 +145,15 @@ export default function TopicsManager({
     const description = form.description.trim();
 
     if (!name) {
-      setError("Topic name is required.");
+      toast.error("Topic name is required.");
+      return;
+    }
+    if (name.length > 255) {
+      toast.error("Topic name cannot exceed 255 characters.");
+      return;
+    }
+    if (description.length > 500) {
+      toast.error("Description cannot exceed 500 characters.");
       return;
     }
 
@@ -108,8 +166,9 @@ export default function TopicsManager({
       }
 
       if (!res.success) {
-        setError(res.error || "Failed to save topic");
+        toast.error(res.error || "Failed to save topic");
       } else {
+        toast.success(editingTopicId ? "Topic updated successfully." : "Topic created successfully.");
         resetForm();
       }
     });
@@ -119,16 +178,17 @@ export default function TopicsManager({
     setEditingTopicId(topic.id);
     setForm({
       name: topic.name,
-      description: topic.description,
+      description: topic.description || "",
     });
-    setError("");
+    // Scroll to the form so the user knows it's active
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = (topic: EditableTopic) => {
     const usageTotal = getUsageTotal(topic.usage);
 
     if (usageTotal > 0) {
-      setError("Only unused topics can be deleted.");
+      toast.error("Only unused topics can be deleted.");
       return;
     }
 
@@ -137,8 +197,9 @@ export default function TopicsManager({
     startTransition(async () => {
       const res = await deleteTopicAction(topic.id);
       if (!res.success) {
-        setError(res.error || "Failed to delete topic");
+        toast.error(res.error || "Failed to delete topic");
       } else {
+        toast.success("Topic deleted successfully.");
         if (editingTopicId === topic.id) {
           resetForm();
         }
@@ -148,78 +209,91 @@ export default function TopicsManager({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="overflow-hidden">
-          <CardHeader className="gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Card className="flex h-fit flex-col overflow-hidden lg:col-span-2">
+          <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
               <CardTitle>Topic library</CardTitle>
-              <CardDescription>
-                Manage the taxonomy used by banks, questions, assessments, and the global topic filter.
-              </CardDescription>
+              <CardDescription>Manage reusable topics to categorize banks, questions, and assessments.</CardDescription>
             </div>
-            <Label className="relative block w-full lg:max-w-xs">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkl" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search topics..."
-                className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-              />
-            </Label>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+                <Input
+                  placeholder="Search topics..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full rounded-xl border-border bg-card pl-9 focus:ring-pm"
+                />
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="px-0 pb-0 sm:px-0 sm:pb-0">
+          <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/40">
-                  <TableHead>Topic</TableHead>
-                  <TableHead>Usage</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="font-semibold text-primary">Topic</TableHead>
+                  <TableHead className="hidden font-semibold text-primary sm:table-cell">Usage</TableHead>
+                  <TableHead className="font-semibold text-primary">Created</TableHead>
+                  <TableHead className="text-right font-semibold text-primary">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTopics.map((topic) => {
+                {paginatedTopics.map((topic) => {
                   const usageTotal = getUsageTotal(topic.usage);
 
                   return (
                     <TableRow key={topic.id}>
                       <TableCell>
-                        <div className="font-semibold text-primary">{topic.name}</div>
-                        <div className="mt-1 max-w-xl text-sm text-inkd">
+                        <div className="font-semibold text-primary wrap-break-word line-clamp-2">{topic.name}</div>
+                        <div className="mt-1 line-clamp-2 w-100 whitespace-normal wrap-break-word text-sm text-inkd">
                           {topic.description || "No description provided."}
                         </div>
-                        <div className="mt-2 text-xs text-inkd">{topic.id}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant={usageTotal > 0 ? "info" : "secondary"}>
-                            {usageTotal} mapped
-                          </Badge>
-                          <Badge variant="secondary">{topic.usage.banks} banks</Badge>
-                          <Badge variant="secondary">{topic.usage.questions} questions</Badge>
-                          <Badge variant="secondary">{topic.usage.assessments} assessments</Badge>
+                          {usageTotal === 0 ? (
+                            <Badge variant="secondary" className="text-inkd">-</Badge>
+                          ) : (
+                            <>
+                              <Badge variant="info">{usageTotal} mapped</Badge>
+                              {topic.usage.banks > 0 && <Badge variant="secondary">{topic.usage.banks} banks</Badge>}
+                              {topic.usage.questions > 0 && <Badge variant="secondary">{topic.usage.questions} questions</Badge>}
+                              {topic.usage.assessments > 0 && <Badge variant="secondary">{topic.usage.assessments} assessments</Badge>}
+                            </>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-inkd">
-                        {formatDate(topic.created_at)}
+                        {formatDate(topic.createdAt)}
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            onClick={() => setPreviewTopic(topic)}
+                            size="icon"
+                            className="h-8 w-8 rounded text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                            title={`Preview ${topic.name}`} variant="ghost"
+                          >
+                            <Eye className="h-5 w-5" />
+                          </Button>
                           <Button
                             onClick={() => handleEdit(topic)}
                             disabled={isPending}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-inkd transition hover:bg-muted hover:text-primary disabled:opacity-50"
-                            aria-label={`Edit ${topic.name}`} variant="secondary"
+                            size="icon"
+                            className="h-8 w-8 rounded text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                            title={`Edit ${topic.name}`} variant="ghost"
                           >
-                            <Edit3 className="h-4 w-4" />
+                            <Edit3 className="h-5 w-5" />
                           </Button>
                           <Button
                             onClick={() => handleDelete(topic)}
                             disabled={usageTotal > 0 || isPending}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label={`Delete ${topic.name}`} variant="destructive"
+                            size="icon"
+                            className="h-8 w-8 rounded text-red-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+                            title={`Delete ${topic.name}`} variant="ghost"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-5 w-5" />
                           </Button>
                         </div>
                       </TableCell>
@@ -228,10 +302,22 @@ export default function TopicsManager({
                 })}
               </TableBody>
             </Table>
+            {totalTopics > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={itemsPerPage}
+                totalItems={totalTopics}
+                pageSizeOptions={[10, 20, 50, 100]}
+                itemLabel="topics"
+                onPageChange={(page) => updateParams({ page })}
+                onPageSizeChange={(limit) => updateParams({ limit, page: 1 })}
+              />
+            )}
           </CardContent>
         </Card>
 
-        <Card className="h-fit">
+        <Card className="sticky top-24 h-fit">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary">
@@ -270,17 +356,12 @@ export default function TopicsManager({
                   onChange={(event) =>
                     setForm((current) => ({ ...current, description: event.target.value }))
                   }
-                  rows={5}
+                  rows={2}
                   className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
                   placeholder="Describe what this topic covers."
                   disabled={isPending}
                 />
               </div>
-              {error ? (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
-              ) : null}
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
                   type="submit"
@@ -306,6 +387,28 @@ export default function TopicsManager({
           </CardContent>
         </Card>
       </div>
+
+      <Modal open={!!previewTopic} onClose={() => setPreviewTopic(null)}>
+        {previewTopic && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-primary">{previewTopic.name}</h2>
+            <div className="max-w-full text-sm text-inkd whitespace-normal wrap-break-word">
+              {previewTopic.description || "No description provided."}
+            </div>
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+              <Badge variant="info">{getUsageTotal(previewTopic.usage)} mapped</Badge>
+              {previewTopic.usage.banks > 0 && <Badge variant="secondary">{previewTopic.usage.banks} banks</Badge>}
+              {previewTopic.usage.questions > 0 && <Badge variant="secondary">{previewTopic.usage.questions} questions</Badge>}
+              {previewTopic.usage.assessments > 0 && <Badge variant="secondary">{previewTopic.usage.assessments} assessments</Badge>}
+            </div>
+            <div className="mt-6 flex justify-end">
+              <Button onClick={() => setPreviewTopic(null)} variant="outline">
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

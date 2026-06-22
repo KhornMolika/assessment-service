@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
-import type { Bank } from "@/src/types/bank.types";
+import type { QuestionBank } from "@/src/types/api";
 import type { BankTopicMap } from "@/src/types/topic.types";
 import {
   ALL_TOPICS_VALUE,
@@ -25,7 +25,7 @@ export default function BanksCatalog({
   banks,
   bankTopics,
 }: {
-  banks: Bank[];
+  banks: QuestionBank[];
   bankTopics: BankTopicMap[];
 }) {
   const searchParams = useSearchParams();
@@ -52,7 +52,7 @@ export default function BanksCatalog({
         return true;
       }
 
-      const haystacks = [bank.name, bank.description, bank.visibility, ...bank.tags];
+      const haystacks = [bank.name, bank.description || "", bank.visibility, ...(bank.tags || [])];
 
       return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
     });
@@ -66,7 +66,7 @@ export default function BanksCatalog({
   );
 
   const totalQuestions = useMemo(
-    () => bankItems.reduce((sum, bank) => sum + bank.question_count, 0),
+    () => bankItems.reduce((sum, bank) => sum + (bank.questionCount || 0), 0),
     [bankItems],
   );
 

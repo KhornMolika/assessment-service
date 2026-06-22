@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock3, Plus, Sparkles, TimerReset, Trash2 } from "lucide-react";
-import type { Bank, QuestionCatalogDifficulty, QuestionCatalogItem } from "@/src/types";
+import type { QuestionBank, Question } from "@/src/types/api";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { Button } from "@/src/components/ui/ui/button";
@@ -14,29 +14,29 @@ export type AssessmentSettingsSection =
   | "QUESTION_CONFIGURATION"
   | "TIMING_RULES";
 
-function getQuestionTypeTone(type: QuestionCatalogItem["type"]) {
+function getQuestionTypeTone(type: string) {
   switch (type) {
-    case "MCQ":
-    case "Multiple Choice":
+    case "SINGLE_CHOICE":
+    case "MULTIPLE_CHOICE":
       return "bg-blue-100 text-blue-700";
-    case "True/False":
+    case "TRUE_FALSE":
       return "bg-green-100 text-green-700";
-    case "Short Answer":
+    case "SHORT_ANSWER":
       return "bg-amber-100 text-amber-700";
-    case "Long Essay":
+    case "ESSAY":
       return "bg-rose-100 text-rose-700";
-    case "Matching":
+    case "MATCHING":
       return "bg-indigo-100 text-indigo-700";
     default:
       return "bg-slate-100 text-slate-700";
   }
 }
 
-function getDifficultyTone(difficulty: QuestionCatalogDifficulty) {
+function getDifficultyTone(difficulty: string) {
   switch (difficulty) {
-    case "Easy":
+    case "EASY":
       return "bg-emerald-100 text-emerald-700";
-    case "Medium":
+    case "MEDIUM":
       return "bg-yellow-100 text-yellow-700";
     default:
       return "bg-red-100 text-red-700";
@@ -59,8 +59,8 @@ export default function AssessmentSettingsStep({
 }: {
   section: AssessmentSettingsSection;
   formData: NewAssessmentFormData;
-  banks: Bank[];
-  questions: QuestionCatalogItem[];
+  banks: QuestionBank[];
+  questions: Question[];
   questionSearch: string;
   onQuestionSearchChange: (value: string) => void;
   onChange: <K extends keyof NewAssessmentFormData>(
@@ -78,7 +78,7 @@ export default function AssessmentSettingsStep({
   onRemoveGradeLabel: (index: number) => void;
 }) {
   const filteredQuestions = questions.filter((question) => {
-    if (formData.selectedBankId && question.bank_id !== formData.selectedBankId) {
+    if (formData.selectedBankId && question.topicId !== formData.selectedBankId) {
       return false;
     }
 
@@ -86,7 +86,7 @@ export default function AssessmentSettingsStep({
       return true;
     }
 
-    return question.text.toLowerCase().includes(questionSearch.trim().toLowerCase());
+    return question.questionText.toLowerCase().includes(questionSearch.trim().toLowerCase());
   });
 
   if (section === "SESSION_STRATEGY") {
@@ -192,7 +192,7 @@ export default function AssessmentSettingsStep({
                 <option value="">All banks</option>
                 {banks.map((bank) => (
                   <option key={bank.id} value={bank.id}>
-                    {bank.name} ({bank.question_count} questions)
+                    {bank.name} ({bank.questionCount || 0} questions)
                   </option>
                 ))}
               </Select>
@@ -246,7 +246,7 @@ export default function AssessmentSettingsStep({
                   {filteredQuestions.length > 0 ? (
                     filteredQuestions.map((question) => {
                       const selected = formData.selectedQuestionIds.includes(question.id);
-                      const bank = banks.find((item) => item.id === question.bank_id);
+                      const bank = banks.find((item) => item.id === question.topicId);
 
                       return (
                         <Button
@@ -265,7 +265,7 @@ export default function AssessmentSettingsStep({
                                 <span
                                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getQuestionTypeTone(question.type)}`}
                                 >
-                                  {question.type}
+                                  {question.type.replace(/_/g, " ")}
                                 </span>
                                 <span
                                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getDifficultyTone(question.difficulty)}`}
@@ -277,7 +277,7 @@ export default function AssessmentSettingsStep({
                                 </span>
                               </div>
                               <p className="text-sm font-semibold leading-6 text-primary sm:text-base">
-                                {question.text}
+                                {question.questionText}
                               </p>
                             </div>
                             <div className="flex shrink-0 items-center justify-between gap-3 sm:block sm:text-right">
@@ -375,7 +375,7 @@ export default function AssessmentSettingsStep({
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-1">
           <div className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -388,23 +388,6 @@ export default function AssessmentSettingsStep({
                 type="checkbox"
                 checked={formData.shuffleQuestions}
                 onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
-                className="mt-1 h-4 w-4 accent-(--p)"
-              />
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-semibold text-primary">Allow going back</h3>
-                <p className="mt-1 text-sm text-inkd">
-                  Let participants revisit earlier questions instead of forcing one-way progression.
-                </p>
-              </div>
-              <Input
-                type="checkbox"
-                checked={formData.allowGoingBack}
-                onChange={(event) => onChange("allowGoingBack", event.target.checked)}
                 className="mt-1 h-4 w-4 accent-(--p)"
               />
             </div>

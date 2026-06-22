@@ -1,4 +1,4 @@
-import type { Bank } from "@/src/types";
+import type { QuestionBank } from "@/src/types/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
 function formatDate(dateString: string) {
@@ -9,24 +9,24 @@ function formatDate(dateString: string) {
   }).format(new Date(dateString));
 }
 
-function getVisibilityLabel(visibility: Bank["visibility"]) {
+function getVisibilityLabel(visibility: QuestionBank["visibility"]) {
   switch (visibility) {
     case "PUBLIC":
       return "Public";
-    case "ORG":
+    case "SHARED":
       return "Organization";
     default:
       return "Private";
   }
 }
 
-export default function BankMetadataCard({ bank }: { bank: Bank }) {
+export default function BankMetadataCard({ bank }: { bank: QuestionBank }) {
   const rows = [
     { label: "Name", value: bank.name },
-    { label: "Description", value: bank.description },
-    { label: "Question count", value: String(bank.question_count) },
+    { label: "Description", value: bank.description || "" },
+    { label: "Question count", value: String(bank.questionCount || 0) },
     { label: "Visibility", value: getVisibilityLabel(bank.visibility) },
-    { label: "Created", value: formatDate(bank.created_at) },
+    { label: "Created", value: formatDate(bank.createdAt) },
   ];
 
   return (

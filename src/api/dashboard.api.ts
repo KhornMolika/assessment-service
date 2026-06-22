@@ -5,11 +5,9 @@ import type {
 } from "@/src/types/dashboard.types";
 import { apiClient } from "@/src/lib/api-client";
 import { getAssessmentCatalogPageData } from "@/src/api/assessment.api";
-import {
-  getBanks,
-  getQuestions,
-  getTopics,
-} from "@/src/api/content.api";
+import { getBanks } from "@/src/api/bank.api";
+import { getQuestions } from "@/src/api/question.api";
+import { getTopics } from "@/src/api/topic.api";
 
 function formatRelativeTime(dateString: string) {
   const now = new Date();

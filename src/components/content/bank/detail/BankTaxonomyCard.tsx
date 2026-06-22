@@ -1,7 +1,7 @@
-import type { Bank } from "@/src/types";
+import type { QuestionBank } from "@/src/types/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
-export default function BankTaxonomyCard({ bank }: { bank: Bank }) {
+export default function BankTaxonomyCard({ bank }: { bank: QuestionBank }) {
   return (
     <Card>
       <CardHeader>
@@ -12,7 +12,7 @@ export default function BankTaxonomyCard({ bank }: { bank: Bank }) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
-          {bank.tags.map((tag) => (
+          {(bank.tags || []).map((tag) => (
             <span
               key={`${bank.id}-${tag}`}
               className="rounded-lg bg-[#D8F3DC] px-4 py-2 text-sm font-medium text-primary"

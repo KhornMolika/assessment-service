@@ -1,80 +1,85 @@
-import type { QuestionDetailData } from "@/src/types/question-detail.types";
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { MoreHorizontal, Edit, Copy, Trash2 } from "lucide-react";
+import type { ApiQuestionResponse } from "@/src/types/question-detail.types";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
-
-function getDifficultyColor(difficulty: string) {
-  switch (difficulty.toLowerCase()) {
-    case "easy":
-      return "bg-green-100 text-green-700";
-    case "medium":
-      return "bg-yellow-100 text-yellow-700";
-    case "hard":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-}
-
-function getTypeColor(typeName: string) {
-  switch (typeName) {
-    case "MCQ":
-    case "Multiple Choice":
-      return "bg-blue-100 text-blue-700";
-    case "True/False":
-      return "bg-green-100 text-green-700";
-    case "Short Answer":
-      return "bg-purple-100 text-purple-700";
-    case "Long Essay":
-      return "bg-red-100 text-red-700";
-    case "Rating":
-      return "bg-yellow-100 text-yellow-700";
-    case "Ranking":
-      return "bg-orange-100 text-orange-700";
-    case "Fill-in-blank":
-      return "bg-pink-100 text-pink-700";
-    case "Matching":
-      return "bg-indigo-100 text-indigo-700";
-    case "File Upload":
-      return "bg-slate-100 text-slate-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-}
-
-export { getDifficultyColor, getTypeColor };
+import { Button } from "@/src/components/ui/ui/button";
+import DeleteQuestionModal from "./DeleteQuestionModal";
 
 export default function QuestionDetailHero({
   question,
+  onDuplicate,
 }: {
-  question: QuestionDetailData;
+  question: ApiQuestionResponse;
+  onDuplicate: () => void;
 }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <div className="px-4 pb-6 pt-2 sm:px-6 sm:py-8">
-      <div className="mx-auto max-w-5xl">
-        <PageHeaderCard
+    <div className="w-full pb-6">
+      <PageHeaderCard
           backHref="/questions"
-          backLabel="Back to questions"
-          title={question.question_text}
-          description={
-            <div className="flex flex-col gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-              <span className="break-all">Question ID: {question.id}</span>
-              <span>Used in {question.stats.usedInAssessments} assessments</span>
+          title={question.text}
+          actions={
+            <div className="relative" ref={menuRef}>
+              <Button
+                onClick={() => setShowMenu(!showMenu)}
+                variant="ghost"
+                className="flex h-10 w-10 items-center justify-center rounded-full p-0 text-primary transition hover:bg-muted/50"
+                aria-label="More actions"
+              >
+                <MoreHorizontal className="h-6 w-6" />
+              </Button>
+              
+              {showMenu && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
+                  <Link
+                    href={`/questions/${question.id}/edit`}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+                  >
+                    <Edit className="h-4 w-4" /> Edit
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      onDuplicate();
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                  >
+                    <Copy className="h-4 w-4" /> Duplicate
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowDeleteModal(true);
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </button>
+                </div>
+              )}
             </div>
           }
-          meta={
-            <>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold ${getTypeColor(question.type.name)}`}>
-                {question.type.name}
-              </span>
-              <span className={`rounded-full px-3 py-1 text-xs font-bold ${getDifficultyColor(question.difficulty)}`}>
-                {question.difficulty}
-              </span>
-              <span className="rounded-full border border-border/70 bg-white px-3 py-1 text-xs font-semibold text-primary/75">
-                {question.points} {question.points === 1 ? "Point" : "Points"}
-              </span>
-            </>
-          }
         />
-      </div>
+      
+      <DeleteQuestionModal 
+        open={showDeleteModal} 
+        question={question as any} 
+        onClose={() => setShowDeleteModal(false)} 
+      />
     </div>
   );
 }

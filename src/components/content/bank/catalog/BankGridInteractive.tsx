@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import type { Bank } from "@/src/types/bank.types";
+import { useState, useEffect } from "react";
+import type { QuestionBank } from "@/src/types/api";
 import BankCard from "./BankCard";
 
-export default function BankGridInteractive({ banks }: { banks: Bank[] }) {
+export default function BankGridInteractive({ banks }: { banks: QuestionBank[] }) {
   const [bankItems, setBankItems] = useState(banks);
+
+  useEffect(() => {
+    setBankItems(banks);
+  }, [banks]);
 
   const handleDeleteBank = (bankId: string) => {
     setBankItems((current) => current.filter((bank) => bank.id !== bankId));

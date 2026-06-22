@@ -10,9 +10,7 @@ export default function QuestionEditHeader({
   return (
     <PageHeaderCard
       backHref="/questions"
-      backLabel="Back to questions"
       title="Edit Question"
-      description="Refine wording, grading settings, and metadata before reuse."
       actions={
         <Button
           type="submit"

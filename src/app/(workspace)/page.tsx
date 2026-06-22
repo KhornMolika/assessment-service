@@ -1,7 +1,12 @@
 import { Suspense } from "react";
-import { getAssessmentCatalogPageData, getAssessmentTopics } from "@/src/api/assessment.api";
+import {
+  getAssessmentCatalogPageData,
+  getAssessmentTopics,
+} from "@/src/api/assessment.api";
 import DashboardPageView from "@/src/components/dashboard/DashboardPageView";
-import { getTopics } from "@/src/api/content.api";
+import { getBanks } from "@/src/api/bank.api";
+import { getQuestions } from "@/src/api/question.api";
+import { getTopics } from "@/src/api/topic.api";
 import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
@@ -21,7 +26,7 @@ async function DashboardPageContent({
   const resolvedSearchParams = await searchParams;
   const selectedTopic =
     getSingleSearchParam(resolvedSearchParams?.topic) ?? ALL_TOPICS_VALUE;
-  
+
   const [assessmentPage, topics, assessmentTopics] = await Promise.all([
     getAssessmentCatalogPageData(),
     getTopics(),
@@ -38,14 +43,28 @@ async function DashboardPageContent({
   );
 }
 
-export default function DashboardPage({
-  searchParams,
-}: {
-  searchParams?: Promise<DashboardSearchParams>;
-}) {
-  return (
-    <Suspense fallback={<WorkspacePageSkeleton />}>
-      <DashboardPageContent searchParams={searchParams} />
-    </Suspense>
-  );
+// export default async function DashboardPage({
+//   searchParams,
+// }: {
+//   searchParams?: Promise<DashboardSearchParams>;
+// }) {
+//   console.time("banks");
+//   const banks = await getBanks();
+//   console.timeEnd("banks");
+
+//   console.time("questions");
+//   const questions = await getQuestions();
+//   console.timeEnd("questions");
+
+//   return <h1>Hello World</h1>;
+
+//   // return (
+//   //   <Suspense fallback={<WorkspacePageSkeleton />}>
+//   //     <DashboardPageContent searchParams={searchParams} />
+//   //   </Suspense>
+//   // );
+// }
+
+export default async function DashboardPage() {
+  return <h1>Hello World</h1>;
 }

@@ -9,6 +9,7 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import BankNewHeader from "./BankNewHeader";
 import { NewQuestionBankFormData } from "@/src/types/question-bank-form.types";
+import { BankVisibility } from "@/src/types/api";
 import { Label } from "@/src/components/ui/ui/label";
 import { Select } from "@/src/components/ui/ui/select";
 import { Input } from "@/src/components/ui/ui/input";
@@ -20,7 +21,7 @@ const initialFormData: NewQuestionBankFormData = {
   name: "",
   description: "",
   tags: "",
-  visibility: "ORG",
+  visibility: BankVisibility.SHARED,
   ownerTopicId: "",
 };
 
@@ -177,7 +178,7 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                   className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
                 >
                   <option value="PRIVATE">Private</option>
-                  <option value="ORG">Organization</option>
+                  <option value="SHARED">Shared</option>
                   <option value="PUBLIC">Public</option>
                 </Select>
                 <p className="text-xs text-inkd">

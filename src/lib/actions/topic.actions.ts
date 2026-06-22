@@ -1,12 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { apiClient } from "@/src/lib/api-client";
-import type { Topic } from "@/src/types";
+import { createTopic, updateTopic, deleteTopic } from "../services/topics";
 
 export async function createTopicAction(data: { name: string; description: string }) {
   try {
-    const newTopic = await apiClient.post<Topic>("/topics", data);
+    const newTopic = await createTopic(data);
     revalidatePath("/topics");
     revalidatePath("/assessments");
     revalidatePath("/");
@@ -19,7 +18,7 @@ export async function createTopicAction(data: { name: string; description: strin
 
 export async function updateTopicAction(id: string, data: { name: string; description: string }) {
   try {
-    const updatedTopic = await apiClient.patch<Topic>(`/topics/${id}`, data);
+    const updatedTopic = await updateTopic(id, data);
     revalidatePath("/topics");
     revalidatePath("/assessments");
     revalidatePath("/");
@@ -32,7 +31,7 @@ export async function updateTopicAction(id: string, data: { name: string; descri
 
 export async function deleteTopicAction(id: string) {
   try {
-    await apiClient.delete(`/topics/${id}`);
+    await deleteTopic(id);
     revalidatePath("/topics");
     revalidatePath("/assessments");
     revalidatePath("/");

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getQuestionEditPageData } from "@/src/api/content.api";
+import { getQuestionEditPageData } from "@/src/api/question.api";
 import QuestionEditForm from "@/src/components/content/question/edit/QuestionEditForm";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 

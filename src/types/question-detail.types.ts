@@ -59,3 +59,25 @@ export interface QuestionDetailData {
   ai_grading_config: QuestionAiGradingConfig | null;
   stats: QuestionPerformanceStats;
 }
+
+export interface ApiQuestionResponse {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  topic?: {
+    id: string;
+    createdAt?: string;
+    updatedAt?: string;
+    name?: string;
+    slug?: string;
+    description?: string;
+  };
+  bankId?: string;
+  type: string;
+  difficulty: string;
+  points: number;
+  options: any;
+  text: string;
+  correctAnswers: any;
+  topicId: string | null;
+}

@@ -3,16 +3,12 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { LocaleSwitch } from "@/src/components/ui/ui/locale-switch";
-import { useSidebar } from "@/src/components/ui/layout/sidebar-context";
-import { TopicSelect } from "./TopicSelect";
+import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
+import { TopicSelector } from "@/src/components/topic-selector";
 import { TopbarSearch } from "./TopbarSearch";
 import { Button } from "@/src/components/ui/ui/button";
 
-export default function TopbarControls({
-  topicOptions,
-}: {
-  topicOptions: Array<{ id: string; name: string }>;
-}) {
+export default function TopbarControls() {
   const { setSidebarOpen } = useSidebar();
   const [locale, setLocale] = useState<"EN" | "KH">("EN");
 
@@ -31,7 +27,7 @@ export default function TopbarControls({
       </div>
 
       <div className="order-2 flex min-w-0 items-center gap-2 sm:gap-3">
-        <TopicSelect topicOptions={topicOptions} />
+        <TopicSelector />
 
         <LocaleSwitch
           value={locale}

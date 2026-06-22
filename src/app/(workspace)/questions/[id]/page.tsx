@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getQuestionDetail } from "@/src/api/content.api";
+import { getQuestionDetailRaw } from "@/src/api/question.api";
 import QuestionDetailView from "@/src/components/content/question/detail/QuestionDetailView";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
@@ -9,7 +9,7 @@ async function QuestionDetailPageContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const question = await getQuestionDetail(id);
+  const question = await getQuestionDetailRaw(id);
 
   return <QuestionDetailView question={question} />;
 }
