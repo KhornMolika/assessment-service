@@ -59,10 +59,8 @@ function formatLifecycle(lifecycle: AssessmentLifecycle) {
 
 export default function AssessmentsTable({
   assessments,
-  onDuplicateAssessment,
 }: {
   assessments: AssessmentCatalogItem[];
-  onDuplicateAssessment: (assessment: AssessmentCatalogItem) => void;
 }) {
   const [assessmentToDelete, setAssessmentToDelete] =
     useState<AssessmentCatalogItem | null>(null);
@@ -153,15 +151,13 @@ export default function AssessmentsTable({
                   >
                     <Edit className="h-5 w-5" />
                   </Link>
-                  <Button
-                    type="button"
+                  <Link
+                    href={`/assessments/${assessment.id}/duplicate`}
                     title="Duplicate assessment"
-                    size="icon"
-                    onClick={() => onDuplicateAssessment(assessment)}
-                    className="h-8 w-8 rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600" variant="ghost"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
                   >
                     <Copy className="h-5 w-5" />
-                  </Button>
+                  </Link>
                   <Button
                     type="button"
                     title="Delete assessment"

@@ -104,29 +104,13 @@ export default function AssessmentsCatalog({
     });
   };
 
-  const handleDuplicateAssessment = (assessment: AssessmentCatalogItem) => {
-    setCatalogAssessments((currentAssessments) => {
-      const duplicate: AssessmentCatalogItem = {
-        ...assessment,
-        id: `copy-${assessment.id}-${currentAssessments.length + 1}`,
-        title: `${assessment.title} (Copy)`,
-        lifecycle: "DRAFT",
-        participant_count: 0,
-        pass_rate: "-",
-        average_score: "-",
-      };
-
-      return [duplicate, ...currentAssessments];
-    });
-  };
-
   const hasActiveFilters =
     searchQuery.trim().length > 0 ||
     topicFilter !== ALL_TOPICS_VALUE ||
     deliveryFilter !== "ALL";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 space-y-6">
+    <div className="w-full space-y-6">
       <AssessmentsHeader totalAssessments={stats.totalAssessments} />
 
       <PaginatedCollectionCard
@@ -214,7 +198,6 @@ export default function AssessmentsCatalog({
       >
         <AssessmentsTable
           assessments={paginatedAssessments}
-          onDuplicateAssessment={handleDuplicateAssessment}
         />
       </PaginatedCollectionCard>
     </div>

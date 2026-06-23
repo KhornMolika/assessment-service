@@ -6,7 +6,7 @@ import { getTopics } from "@/src/api/topic.api";
 import { getBanks } from "@/src/lib/services/banks";
 import { getQuestions } from "@/src/lib/services/questions";
 
-async function EditAssessmentPageContent({
+async function DuplicateAssessmentPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -19,26 +19,32 @@ async function EditAssessmentPageContent({
     getQuestions(1, 500)
   ]);
 
+  // Adjust formData for duplication
+  const formData = {
+    ...data.initialFormData,
+    name: `${data.initialFormData.name} (Copy)`,
+    status: "DRAFT" as const,
+  };
+
   return (
     <AssessmentForm
-      mode="edit"
-      assessmentId={data.assessmentId}
+      mode="duplicate"
       banks={banksRes.data}
       questions={questionsRes.data}
       topics={topics}
-      initialFormData={data.initialFormData}
+      initialFormData={formData}
     />
   );
 }
 
-export default function EditAssessmentPage({
+export default function DuplicateAssessmentPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   return (
     <Suspense fallback={<AssessmentNewLoading />}>
-      <EditAssessmentPageContent params={params} />
+      <DuplicateAssessmentPageContent params={params} />
     </Suspense>
   );
 }

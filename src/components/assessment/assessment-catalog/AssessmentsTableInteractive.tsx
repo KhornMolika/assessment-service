@@ -15,26 +15,9 @@ export default function AssessmentsTableInteractive({
     setCatalogAssessments(assessments);
   }, [assessments]);
 
-  const handleDuplicateAssessment = (assessment: AssessmentCatalogItem) => {
-    setCatalogAssessments((currentAssessments) => {
-      const duplicate: AssessmentCatalogItem = {
-        ...assessment,
-        id: `copy-${assessment.id}-${currentAssessments.length + 1}`,
-        title: `${assessment.title} (Copy)`,
-        lifecycle: "DRAFT",
-        participant_count: 0,
-        pass_rate: "-",
-        average_score: "-",
-      };
-
-      return [duplicate, ...currentAssessments];
-    });
-  };
-
   return (
     <AssessmentsTable
       assessments={catalogAssessments}
-      onDuplicateAssessment={handleDuplicateAssessment}
     />
   );
 }

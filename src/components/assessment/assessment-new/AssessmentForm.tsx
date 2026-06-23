@@ -11,15 +11,19 @@ import type {
 } from "@/src/types/assessment-form.types";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
-import AssessmentNewHeader from "./AssessmentNewHeader";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
+import AssessmentQuestionStep from "./AssessmentQuestionStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
 import { createAssessmentAction, updateAssessmentAction, publishAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { Button } from "@/src/components/ui/ui/button";
 import { toast } from "sonner";
 
+import { useTopicStore } from "@/src/stores/topic-store";
+
 const defaultFormData: NewAssessmentFormData = {
-  title: "",
+  name: "",
+  type: "QUIZ",
   description: "",
   ownerTopicId: "",
   status: "DRAFT",
@@ -40,7 +44,6 @@ const defaultFormData: NewAssessmentFormData = {
   endsAt: "",
   passMark: 50,
   shuffleQuestions: true,
-  allowGoingBack: true,
   gradeLabels: [
     { grade: "A", minPercent: 90 },
     { grade: "B", minPercent: 80 },
@@ -51,16 +54,12 @@ const defaultFormData: NewAssessmentFormData = {
   showResults: "IMMEDIATELY",
 };
 
-const stepValidationFields: Record<1 | 2 | 3 | 4, string[]> = {
-  1: ["title", "ownerTopicId"],
-  2: ["sessionMode", "questionSelection"],
-  3: [
-    "selectedBankId",
-    "selectedQuestionIds",
-    "totalQuestions",
-    "selectionRules",
-  ],
-  4: [
+const stepValidationFields: Record<1 | 2 | 3, string[]> = {
+  1: ["name"],
+  2: [
+    "sessionMode",
+    "questionSelection",
+    "participantIdentity",
     "timeLimitMinutes",
     "startsAt",
     "endsAt",
@@ -68,9 +67,15 @@ const stepValidationFields: Record<1 | 2 | 3 | 4, string[]> = {
     "gradeLabels",
     "showResults",
   ],
+  3: [
+    "selectedBankId",
+    "selectedQuestionIds",
+    "totalQuestions",
+    "selectionRules",
+  ],
 };
 
-export default function AssessmentNewWizard({
+export default function AssessmentForm({
   banks,
   questions,
   topics,
@@ -81,25 +86,33 @@ export default function AssessmentNewWizard({
   banks: QuestionBank[];
   questions: Question[];
   topics: Topic[];
-  mode?: "create" | "edit";
+  mode?: "create" | "edit" | "duplicate";
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
 }) {
   const router = useRouter();
+  const activeTopic = useTopicStore((s) => s.activeTopic);
+  
   const formId =
     mode === "edit" && assessmentId
       ? `assessment-edit-form-${assessmentId}`
-      : "assessment-new-form";
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+      : mode === "duplicate"
+        ? "assessment-duplicate-form"
+        : "assessment-new-form";
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [questionSearch, setQuestionSearch] = useState("");
   const [formData, setFormData] = useState<NewAssessmentFormData>(
-    initialFormData ?? defaultFormData,
+    initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || "" },
   );
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  const getStepValidationMessages = (step: 1 | 2 | 3 | 4) => {
-    const validationResult = assessmentFormSchema.safeParse(formData);
+  const getStepValidationMessages = (step: 1 | 2 | 3) => {
+    const dataToValidate = {
+      ...formData,
+      ownerTopicId: activeTopic?.id || formData.ownerTopicId || "TEMP_TOPIC" // satisfy schema for missing topic since we handle it externally
+    };
+    const validationResult = assessmentFormSchema.safeParse(dataToValidate);
 
     if (validationResult.success) {
       return [];
@@ -119,11 +132,11 @@ export default function AssessmentNewWizard({
   };
 
   const isStepComplete = (step: number) => {
-    if (![1, 2, 3, 4].includes(step)) {
+    if (![1, 2, 3].includes(step)) {
       return false;
     }
 
-    return getStepValidationMessages(step as 1 | 2 | 3 | 4).length === 0;
+    return getStepValidationMessages(step as 1 | 2 | 3).length === 0;
   };
 
   const canContinue = isStepComplete(currentStep);
@@ -150,7 +163,7 @@ export default function AssessmentNewWizard({
     }
 
     setValidationErrors([]);
-    setCurrentStep((currentStep + 1) as 1 | 2 | 3 | 4);
+    setCurrentStep((currentStep + 1) as 1 | 2 | 3);
   };
 
   const handlePrevious = () => {
@@ -159,7 +172,7 @@ export default function AssessmentNewWizard({
     }
 
     setValidationErrors([]);
-    setCurrentStep((currentStep - 1) as 1 | 2 | 3 | 4);
+    setCurrentStep((currentStep - 1) as 1 | 2 | 3);
   };
 
   const handleQuestionToggle = (questionId: string) => {
@@ -223,7 +236,14 @@ export default function AssessmentNewWizard({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const validationResult = assessmentFormSchema.safeParse(formData);
+    if (mode !== "edit" && !activeTopic) return;
+    
+    const submitData = {
+      ...formData,
+      ownerTopicId: activeTopic?.id || formData.ownerTopicId
+    };
+    
+    const validationResult = assessmentFormSchema.safeParse(submitData);
 
     if (!validationResult.success) {
       setValidationErrors(
@@ -239,9 +259,9 @@ export default function AssessmentNewWizard({
     startTransition(async () => {
       let res;
       if (mode === "edit" && assessmentId) {
-        res = await updateAssessmentAction(assessmentId, formData);
+        res = await updateAssessmentAction(assessmentId, submitData);
       } else {
-        res = await createAssessmentAction(formData.ownerTopicId, formData);
+        res = await createAssessmentAction(submitData.ownerTopicId, submitData);
       }
       
       if (!res.success) {
@@ -255,7 +275,14 @@ export default function AssessmentNewWizard({
   };
 
   const handlePublish = () => {
-    const validationResult = assessmentFormSchema.safeParse(formData);
+    if (mode !== "edit" && !activeTopic) return;
+    
+    const submitData = {
+      ...formData,
+      ownerTopicId: activeTopic?.id || formData.ownerTopicId
+    };
+    
+    const validationResult = assessmentFormSchema.safeParse(submitData);
 
     if (!validationResult.success) {
       setValidationErrors(
@@ -271,9 +298,9 @@ export default function AssessmentNewWizard({
     startTransition(async () => {
       let currentAssessmentId = assessmentId;
       
-      // If creating new and publishing immediately
+      // If creating new or duplicating and publishing immediately
       if (mode !== "edit" || !currentAssessmentId) {
-        const createRes = await createAssessmentAction(formData.ownerTopicId, formData);
+        const createRes = await createAssessmentAction(submitData.ownerTopicId, submitData);
         if (!createRes.success || !createRes.assessment) {
           setValidationErrors([createRes.error || "Failed to create assessment for publishing"]);
           return;
@@ -281,7 +308,7 @@ export default function AssessmentNewWizard({
         currentAssessmentId = (createRes.assessment as any).data?.id || createRes.assessment.id;
       } else {
         // If editing existing, save draft first
-        const updateRes = await updateAssessmentAction(currentAssessmentId, formData);
+        const updateRes = await updateAssessmentAction(currentAssessmentId, submitData);
         if (!updateRes.success) {
           setValidationErrors([updateRes.error || "Failed to save assessment before publishing"]);
           return;
@@ -303,8 +330,10 @@ export default function AssessmentNewWizard({
 
   const headerTitle =
     mode === "edit"
-      ? `Edit ${formData.title || "Assessment"}`
-      : "Create New Assessment";
+      ? `Edit ${formData.name || "Assessment"}`
+      : mode === "duplicate"
+        ? `Duplicate ${formData.name || "Assessment"}`
+        : "Create New Assessment";
   const headerDescription =
     mode === "edit"
       ? "Update assessment settings, question strategy, and participant rules."
@@ -312,19 +341,19 @@ export default function AssessmentNewWizard({
 
   return (
     <div className="w-full space-y-6">
-      <AssessmentNewHeader
+      <PageHeaderCard
         title={headerTitle}
         description={headerDescription}
-        cancelHref={destination}
-        cancelLabel={mode === "edit" ? "Back" : "Cancel"}
+        backHref={destination}
+        backLabel={mode === "edit" ? "Back" : "Cancel"}
       />
 
-      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="min-w-0 rounded-[1.75rem] border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_340px]">
+        <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
           <div className="border-b border-border/70 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
-                <h2 className="text-xl font-bold text-primary">
+                <h2 className="text-xl font-bold text-[#14352b]">
                   {mode === "edit"
                     ? "Assessment Setup"
                     : "Build Your Assessment"}
@@ -336,12 +365,29 @@ export default function AssessmentNewWizard({
                 </p>
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                Step {currentStep} of 4
+                Step {currentStep} of 3
               </div>
             </div>
           </div>
 
           <div className="px-3 py-3 sm:px-4 sm:py-4">
+            {mode !== "edit" && !activeTopic && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-md">
+                <div className="flex">
+                  <div className="shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      You must select a global Topic from the topbar before creating a new assessment.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {mode === "edit" && formData.status !== "DRAFT" && (
               <div className="mb-6">
                 <StateMessage
@@ -352,7 +398,7 @@ export default function AssessmentNewWizard({
               </div>
             )}
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending || (mode === "edit" && formData.status !== "DRAFT")}>
+              <fieldset disabled={isPending || (mode === "edit" && formData.status !== "DRAFT") || (mode !== "edit" && !activeTopic)}>
               {validationErrors.length > 0 ? (
                 <div className="mb-4">
                   <StateMessage
@@ -377,37 +423,14 @@ export default function AssessmentNewWizard({
                 />
               ) : currentStep === 2 ? (
                 <AssessmentSettingsStep
-                  section="SESSION_STRATEGY"
                   formData={formData}
-                  banks={banks}
-                  questions={questions}
-                  questionSearch={questionSearch}
-                  onQuestionSearchChange={setQuestionSearch}
                   onChange={handleChange}
-                  onQuestionToggle={handleQuestionToggle}
-                  onSelectionRuleChange={handleSelectionRuleChange}
-                  onGradeLabelChange={handleGradeLabelChange}
-                  onAddGradeLabel={handleAddGradeLabel}
-                  onRemoveGradeLabel={handleRemoveGradeLabel}
-                />
-              ) : currentStep === 3 ? (
-                <AssessmentSettingsStep
-                  section="QUESTION_CONFIGURATION"
-                  formData={formData}
-                  banks={banks}
-                  questions={questions}
-                  questionSearch={questionSearch}
-                  onQuestionSearchChange={setQuestionSearch}
-                  onChange={handleChange}
-                  onQuestionToggle={handleQuestionToggle}
-                  onSelectionRuleChange={handleSelectionRuleChange}
                   onGradeLabelChange={handleGradeLabelChange}
                   onAddGradeLabel={handleAddGradeLabel}
                   onRemoveGradeLabel={handleRemoveGradeLabel}
                 />
               ) : (
-                <AssessmentSettingsStep
-                  section="TIMING_RULES"
+                <AssessmentQuestionStep
                   formData={formData}
                   banks={banks}
                   questions={questions}
@@ -416,9 +439,6 @@ export default function AssessmentNewWizard({
                   onChange={handleChange}
                   onQuestionToggle={handleQuestionToggle}
                   onSelectionRuleChange={handleSelectionRuleChange}
-                  onGradeLabelChange={handleGradeLabelChange}
-                  onAddGradeLabel={handleAddGradeLabel}
-                  onRemoveGradeLabel={handleRemoveGradeLabel}
                 />
               )}
               </fieldset>
@@ -433,22 +453,22 @@ export default function AssessmentNewWizard({
                 disabled={currentStep === 1}
                 className={`inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition sm:w-auto ${
                   currentStep === 1
-                    ? "cursor-not-allowed border-border bg-muted text-inkl"
-                    : "border-border bg-white text-primary hover:bg-muted"
+                    ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
+                    : "border-[#e6e2d6] bg-[#fdfbf7] text-[#4a473e] hover:bg-[#f2efe6]"
                 }`}
               >
                 Previous
               </Button>
               <div className="sm:min-w-52">
-                {currentStep < 4 ? (
+                {currentStep < 3 ? (
                   <Button
                     type="button"
                     onClick={handleNext}
                     disabled={!canContinue}
                     className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
                       canContinue
-                        ? "bg-primary text-white hover:bg-pm"
-                        : "cursor-not-allowed bg-muted text-inkl"
+                        ? "bg-[#14352b] text-[#fdfbf7] hover:bg-[#1a4436] shadow-sm"
+                        : "cursor-not-allowed bg-slate-100 text-slate-400"
                     }`}
                   >
                     Continue
@@ -457,7 +477,7 @@ export default function AssessmentNewWizard({
                   <Button
                     type="button"
                     disabled
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-muted px-4 py-3 text-sm font-semibold text-inkl transition cursor-not-allowed"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-400 transition cursor-not-allowed"
                   >
                     Editing Locked
                   </Button>
@@ -466,7 +486,7 @@ export default function AssessmentNewWizard({
                     type="button"
                     onClick={handlePublish}
                     disabled={isPending}
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#2D6A4F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#214b3d] disabled:opacity-70" variant="ghost"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#d95d50] px-4 py-3 text-sm font-semibold text-[#fdfbf7] transition hover:bg-[#c95347] shadow-sm disabled:opacity-70" variant="ghost"
                   >
                     {isPending ? "Saving..." : (mode === "edit" ? "Save Changes" : "Save Assessment")}
                   </Button>
