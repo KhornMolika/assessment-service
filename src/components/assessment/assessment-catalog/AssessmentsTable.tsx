@@ -19,6 +19,11 @@ import {
 } from "@/src/components/ui/ui/table";
 import { Button } from "@/src/components/ui/ui/button";
 
+import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { deleteAssessmentAction } from "@/src/lib/actions/assessment.actions";
+
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self-paced" : "Real-time";
 }
@@ -50,103 +55,32 @@ function formatLifecycle(lifecycle: AssessmentLifecycle) {
   return lifecycle.charAt(0) + lifecycle.slice(1).toLowerCase();
 }
 
-function ModalShell({
-  children,
-  onClose,
-}: {
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg rounded-[28px] bg-white p-6 shadow-2xl sm:p-8"
-        onClick={(event) => event.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
 
-function DeleteAssessmentModal({
-  assessment,
-  onClose,
-  onConfirm,
-}: {
-  assessment: AssessmentCatalogItem | null;
-  onClose: () => void;
-  onConfirm: (assessmentId: string) => void;
-}) {
-  if (!assessment) {
-    return null;
-  }
-
-  return (
-    <ModalShell onClose={onClose}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-red-500">
-            Delete Assessment
-          </p>
-          <h3 className="mt-2 text-2xl font-bold text-primary">
-            {assessment.title}
-          </h3>
-        </div>
-        <Button
-          type="button"
-          onClick={onClose}
-          className="rounded-full p-2 text-inkd transition hover:bg-muted"
-          aria-label="Close delete modal" variant="secondary"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <p className="mt-5 text-sm leading-6 text-inkd">
-        Are you sure you want to delete this assessment? This action removes{" "}
-        <span className="font-semibold text-primary">{assessment.title}</span>{" "}
-        from the catalog view and cannot be undone.
-      </p>
-
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          onClick={onClose}
-          className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
-        >
-          Cancel
-        </Button>
-        <Button
-          type="button"
-          onClick={() => onConfirm(assessment.id)}
-          className="rounded-xl bg-red-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-600" variant="destructive"
-        >
-          Delete assessment
-        </Button>
-      </div>
-    </ModalShell>
-  );
-}
 
 export default function AssessmentsTable({
   assessments,
-  onDuplicateAssessment,
-  onDeleteAssessment,
 }: {
   assessments: AssessmentCatalogItem[];
-  onDuplicateAssessment: (assessment: AssessmentCatalogItem) => void;
-  onDeleteAssessment: (assessmentId: string) => void;
 }) {
   const [assessmentToDelete, setAssessmentToDelete] =
     useState<AssessmentCatalogItem | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const handleDeleteConfirm = (assessmentId: string) => {
-    onDeleteAssessment(assessmentId);
-    setAssessmentToDelete(null);
+  const handleDeleteConfirm = () => {
+    if (!assessmentToDelete) return;
+    startTransition(async () => {
+      try {
+        const res = await deleteAssessmentAction(assessmentToDelete.id);
+        if (res.success) {
+          toast.success("Assessment deleted successfully");
+          setAssessmentToDelete(null);
+        } else {
+          toast.error(res.error || "Failed to delete assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
   };
 
   return (
@@ -217,15 +151,13 @@ export default function AssessmentsTable({
                   >
                     <Edit className="h-5 w-5" />
                   </Link>
-                  <Button
-                    type="button"
+                  <Link
+                    href={`/assessments/${assessment.id}/duplicate`}
                     title="Duplicate assessment"
-                    size="icon"
-                    onClick={() => onDuplicateAssessment(assessment)}
-                    className="h-8 w-8 rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600" variant="ghost"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
                   >
                     <Copy className="h-5 w-5" />
-                  </Button>
+                  </Link>
                   <Button
                     type="button"
                     title="Delete assessment"
@@ -242,10 +174,14 @@ export default function AssessmentsTable({
         </TableBody>
       </Table>
 
-      <DeleteAssessmentModal
-        assessment={assessmentToDelete}
+      <DeleteConfirmModal
+        open={!!assessmentToDelete}
         onClose={() => setAssessmentToDelete(null)}
         onConfirm={handleDeleteConfirm}
+        title="Delete Assessment"
+        entityName={assessmentToDelete?.title || ""}
+        description="Are you sure you want to delete this assessment? This action removes it from the catalog and cannot be undone."
+        isPending={isPending}
       />
     </>
   );

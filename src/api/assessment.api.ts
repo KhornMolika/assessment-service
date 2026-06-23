@@ -651,7 +651,8 @@ export async function getEditAssessmentPageData(id: string): Promise<{
     return {
       assessmentId: id,
       initialFormData: {
-        title: assessment.name || "",
+        name: assessment.name || "",
+        type: assessment.type || "QUIZ",
         description: assessment.description || "",
         ownerTopicId: assessment.topicId || "",
         status: assessment.status || "DRAFT",
@@ -681,7 +682,6 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           : "",
         passMark: settings.passMark || 70,
         shuffleQuestions: !!settings.isShuffle,
-        allowGoingBack: !!settings.allowReview,
         gradeLabels: [
           { grade: "A", minPercent: 90 },
           { grade: "B", minPercent: 80 },
