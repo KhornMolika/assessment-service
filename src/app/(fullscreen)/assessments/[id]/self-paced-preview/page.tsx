@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import {
   getAssessmentCatalogItemById,
   getAssessmentDetailPageData,
-} from "@/src/domains/assessment/api/assessment.api";
-import { AssessmentPreviewScreen } from "@/src/domains/assessment/components/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/domains/assessment/components/session/AssessmentSessionLoading";
+} from "@/src/api/assessment.api";
+import { AssessmentPreviewScreen } from "@/src/components/assessment/session/AssessmentSessionScreens";
+import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
 
 async function AssessmentSelfPacedPreviewPageContent({
   params,

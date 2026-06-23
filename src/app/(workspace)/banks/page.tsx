@@ -1,125 +1,137 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
-import { getMockBankTopics, getMockBanks } from "@/src/domains/content/api/content.api";
-import BanksCatalogToolbar from "@/src/domains/content/components/bank/catalog/BanksCatalogToolbar";
-import BankGridInteractive from "@/src/domains/content/components/bank/catalog/BankGridInteractive";
-import BanksHeader from "@/src/domains/content/components/bank/catalog/BanksHeader";
-import type { Bank } from "@/src/domains/content/types/bank.types";
-import type { BankTopicMap } from "@/src/domains/content/types/topic.types";
-import {
-  ALL_TOPICS_VALUE,
-  bankMatchesTopic,
-} from "@/src/domains/content/utils/topic-utils";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
+import { fetchTopicBanks, fetchGlobalBanks } from "@/src/actions/bank-actions";
+import BanksCatalogToolbar from "@/src/components/content/bank/catalog/BanksCatalogToolbar";
+import BankTableInteractive from "@/src/components/content/bank/catalog/BankTableInteractive";
+import BanksHeader from "@/src/components/content/bank/catalog/BanksHeader";
+import type { QuestionBank } from "@/src/types/api";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
+import Pagination from "@/src/components/ui/navigation/Pagination";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/src/shared/components/ui/card";
-
-export const metadata: Metadata = {
-  title: "Question Banks",
-};
-
-type BankSearchParams = Promise<{
-  topic?: string | string[];
-  query?: string | string[];
-  page?: string | string[];
-  pageSize?: string | string[];
-}>;
+} from "@/src/components/ui/ui/card";
+import { useTopicStore } from "@/src/stores/topic-store";
+import { useSearchParams } from "next/navigation";
 
 function getSingleSearchParam(
-  value: string | string[] | undefined,
+  value: string | string[] | null | undefined,
   fallback = "",
 ) {
-  if (Array.isArray(value)) {
-    return value[0] ?? fallback;
-  }
-
+  if (Array.isArray(value)) return value[0] ?? fallback;
   return value ?? fallback;
 }
 
-function parsePositiveInteger(value: string | undefined, fallback: number) {
+function parsePositiveInteger(
+  value: string | null | undefined,
+  fallback: number,
+) {
   const parsed = Number.parseInt(value ?? "", 10);
-
-  if (Number.isNaN(parsed) || parsed < 1) {
-    return fallback;
-  }
-
+  if (Number.isNaN(parsed) || parsed < 1) return fallback;
   return parsed;
 }
 
 function filterBanks({
   banks,
-  bankTopics,
-  topicFilter,
   query,
 }: {
-  banks: Bank[];
-  bankTopics: BankTopicMap[];
-  topicFilter: string;
+  banks: QuestionBank[];
   query: string;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
 
   return banks.filter((bank) => {
-    if (
-      topicFilter !== ALL_TOPICS_VALUE &&
-      !bankMatchesTopic(bank.id, topicFilter, bankTopics)
-    ) {
-      return false;
-    }
-
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    const haystacks = [bank.name, bank.description, bank.visibility, ...bank.tags];
-
-    return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
+    if (!normalizedQuery) return true;
+    const haystacks = [
+      bank.name,
+      bank.description || "",
+      bank.visibility,
+      ...(bank.tags || []),
+    ];
+    return haystacks.some((value) =>
+      value.toLowerCase().includes(normalizedQuery),
+    );
   });
 }
 
-async function BanksPageContent({ searchParams }: { searchParams: BankSearchParams }) {
-  const resolvedSearchParams = await searchParams;
-  const topicFilter =
-    getSingleSearchParam(resolvedSearchParams.topic, ALL_TOPICS_VALUE) ||
-    ALL_TOPICS_VALUE;
-  const query = getSingleSearchParam(resolvedSearchParams.query);
-  const currentPage = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams.page),
+function BanksPageContent() {
+  const searchParams = useSearchParams();
+  const query = getSingleSearchParam(searchParams.get("query"));
+  const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
+
+  const activeTopic = useTopicStore((s) => s.activeTopic);
+
+  const [banks, setBanks] = useState<QuestionBank[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchResources() {
+      setIsLoading(true);
+      try {
+        let fetchedBanks;
+        if (activeTopic === null) {
+          fetchedBanks = await fetchGlobalBanks();
+        } else {
+          fetchedBanks = await fetchTopicBanks(activeTopic.id);
+        }
+
+        if (isMounted) {
+          setBanks(fetchedBanks);
+        }
+      } catch (err) {
+        console.error("Failed to fetch banks:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    fetchResources();
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTopic?.id ?? "all"]);
+
+  if (isLoading) {
+    return <WorkspacePageSkeleton />;
+  }
+
+  const filteredBanks = filterBanks({ banks, query });
+  const totalPages = Math.max(
     1,
+    Math.ceil(filteredBanks.length / itemsPerPage),
   );
-  const itemsPerPage = parsePositiveInteger(
-    getSingleSearchParam(resolvedSearchParams.pageSize),
-    6,
-  );
-  const [banks, bankTopics] = await Promise.all([getMockBanks(), getMockBankTopics()]);
-  const filteredBanks = filterBanks({ banks, bankTopics, topicFilter, query });
-  const totalPages = Math.max(1, Math.ceil(filteredBanks.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const paginatedBanks = filteredBanks.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage,
   );
-  const totalQuestions = banks.reduce((sum, bank) => sum + bank.question_count, 0);
-  const hasActiveFilters = query.trim().length > 0 || topicFilter !== ALL_TOPICS_VALUE;
+  // simplified total questions count
+  const totalQuestions = banks.reduce(
+    (sum, bank: any) => sum + (bank.questionCount || 0),
+    0,
+  );
+  const hasActiveFilters = query.trim().length > 0;
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
-            <CardTitle>Bank library</CardTitle>
+            <CardTitle>
+              Bank library {activeTopic ? `(${activeTopic.name})` : ""}
+            </CardTitle>
             <CardDescription>
-              Search, scan metadata, and jump into bank-specific authoring workflows.
+              Search, scan metadata, and jump into bank-specific authoring
+              workflows.
             </CardDescription>
           </div>
         </CardHeader>
@@ -129,11 +141,13 @@ async function BanksPageContent({ searchParams }: { searchParams: BankSearchPara
           <div>
             {filteredBanks.length === 0 ? (
               <StateMessage
-                title={hasActiveFilters ? "No banks found" : "No banks available"}
+                title={
+                  hasActiveFilters ? "No banks found" : "No banks available"
+                }
                 description={
                   hasActiveFilters
                     ? "No question banks match the current search or topic filter."
-                    : "Question banks will appear here once they are added to the workspace."
+                    : "Question banks will appear here once they are added."
                 }
                 action={
                   hasActiveFilters ? (
@@ -147,25 +161,24 @@ async function BanksPageContent({ searchParams }: { searchParams: BankSearchPara
                 }
               />
             ) : (
-              <BankGridInteractive banks={paginatedBanks} />
+              <BankTableInteractive banks={paginatedBanks as any} />
             )}
           </div>
         </CardContent>
 
         {filteredBanks.length > 0 ? (
-          <LinkPagination
+          <Pagination
             pathname="/banks"
             searchParams={{
-              topic: topicFilter === ALL_TOPICS_VALUE ? null : topicFilter,
               query: query || null,
-              pageSize: itemsPerPage === 6 ? null : String(itemsPerPage),
+              pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
             }}
             currentPage={activePage}
             totalPages={totalPages}
             pageSize={itemsPerPage}
-            defaultPageSize={6}
+            defaultPageSize={10}
             totalItems={filteredBanks.length}
-            pageSizeOptions={[6, 9, 12, 24]}
+            pageSizeOptions={[5, 10, 20, 50]}
             itemLabel="banks"
           />
         ) : null}
@@ -174,10 +187,10 @@ async function BanksPageContent({ searchParams }: { searchParams: BankSearchPara
   );
 }
 
-export default function BanksPage({ searchParams }: { searchParams: BankSearchParams }) {
+export default function BanksPage() {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <BanksPageContent searchParams={searchParams} />
+      <BanksPageContent />
     </Suspense>
   );
 }

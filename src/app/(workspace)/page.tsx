@@ -1,10 +1,14 @@
 import { Suspense } from "react";
-import { getAssessmentCatalogPageData, getMockAssessmentTopics } from "@/src/domains/assessment/api/assessment.api";
-import { getDashboardOverviewSections } from "@/src/domains/dashboard/api/dashboard.api";
-import DashboardPageView from "@/src/domains/dashboard/components/DashboardPageView";
-import { getMockBankTopics, getMockBanks, getMockQuestionTopics, getMockQuestions, getMockTopics } from "@/src/domains/content/api/content.api";
-import { ALL_TOPICS_VALUE } from "@/src/domains/content/utils/topic-utils";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import {
+  getAssessmentCatalogPageData,
+  getAssessmentTopics,
+} from "@/src/api/assessment.api";
+import DashboardPageView from "@/src/components/dashboard/DashboardPageView";
+import { getBanks } from "@/src/api/bank.api";
+import { getQuestions } from "@/src/api/question.api";
+import { getTopics } from "@/src/api/topic.api";
+import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 type DashboardSearchParams = {
   topic?: string | string[];
@@ -22,40 +26,45 @@ async function DashboardPageContent({
   const resolvedSearchParams = await searchParams;
   const selectedTopic =
     getSingleSearchParam(resolvedSearchParams?.topic) ?? ALL_TOPICS_VALUE;
-  const [dashboardOverview, assessmentPage, banks, questions, topics, assessmentTopics, bankTopics, questionTopics] = await Promise.all([
-    getDashboardOverviewSections(),
+
+  const [assessmentPage, topics, assessmentTopics] = await Promise.all([
     getAssessmentCatalogPageData(),
-    getMockBanks(),
-    getMockQuestions(),
-    getMockTopics(),
-    getMockAssessmentTopics(),
-    getMockBankTopics(),
-    getMockQuestionTopics(),
+    getTopics(),
+    getAssessmentTopics(),
   ]);
 
   return (
     <DashboardPageView
-      quickLaunchpad={dashboardOverview.quickLaunchpad}
       assessments={assessmentPage.assessments}
-      banks={banks}
-      questions={questions}
       topics={topics}
       assessmentTopics={assessmentTopics}
-      bankTopics={bankTopics}
-      questionTopics={questionTopics}
       selectedTopic={selectedTopic}
     />
   );
 }
 
-export default function DashboardPage({
-  searchParams,
-}: {
-  searchParams?: Promise<DashboardSearchParams>;
-}) {
-  return (
-    <Suspense fallback={<WorkspacePageSkeleton />}>
-      <DashboardPageContent searchParams={searchParams} />
-    </Suspense>
-  );
+// export default async function DashboardPage({
+//   searchParams,
+// }: {
+//   searchParams?: Promise<DashboardSearchParams>;
+// }) {
+//   console.time("banks");
+//   const banks = await getBanks();
+//   console.timeEnd("banks");
+
+//   console.time("questions");
+//   const questions = await getQuestions();
+//   console.timeEnd("questions");
+
+//   return <h1>Hello World</h1>;
+
+//   // return (
+//   //   <Suspense fallback={<WorkspacePageSkeleton />}>
+//   //     <DashboardPageContent searchParams={searchParams} />
+//   //   </Suspense>
+//   // );
+// }
+
+export default async function DashboardPage() {
+  return <h1>Hello World</h1>;
 }

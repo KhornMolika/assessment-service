@@ -1,4 +1,4 @@
-import AssessmentsCatalogLoading from "@/src/domains/assessment/components/assessment-catalog/AssessmentsCatalogLoading";
+import AssessmentsCatalogLoading from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogLoading";
 
 export default function Loading() {
   return <AssessmentsCatalogLoading />;
