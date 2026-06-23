@@ -26,6 +26,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
   
   const [previewTopic, setPreviewTopic] = useState<Topic | null>(null);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
@@ -33,6 +34,8 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
 
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [editFormData, setEditFormData] = useState({ name: "", description: "" });
+  const [duplicateFormData, setDuplicateFormData] = useState({ name: "", description: "" });
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -83,6 +86,21 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
     }
   };
 
+  const handleDuplicateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await createTopic(duplicateFormData);
+      toast.success("Topic duplicated successfully");
+      setIsDuplicateModalOpen(false);
+      await refreshTopics();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to duplicate topic");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (!deletingTopicId) return;
     setIsSaving(true);
@@ -113,8 +131,14 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
     setIsEditModalOpen(true);
   };
 
+  const openDuplicateModal = (topic: Topic) => {
+    setDuplicateFormData({ name: `${topic.name} (Copy)`, description: topic.description || "" });
+    setIsDuplicateModalOpen(true);
+  };
+
   const openDeleteModal = (id: string) => {
     setDeletingTopicId(id);
+    setDeleteConfirmation("");
     setIsDeleteModalOpen(true);
   };
 
@@ -124,9 +148,11 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage
   );
+  
+  const deletingTopic = topics.find(t => t.id === deletingTopicId);
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Topics"
         description="Manage and organize your assessment topics."
@@ -153,14 +179,14 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                       <TableHead>Name</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>Created</TableHead>
-                      <TableHead className="w-[100px] text-right">Actions</TableHead>
+                      <TableHead className="w-25 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {paginatedTopics.map((topic) => (
                       <TableRow key={topic.id}>
                         <TableCell className="font-medium">{topic.name}</TableCell>
-                        <TableCell className="text-inkd truncate max-w-[200px]">{topic.description || "—"}</TableCell>
+                        <TableCell className="text-inkd truncate max-w-50">{topic.description || "—"}</TableCell>
                         <TableCell className="text-inkd whitespace-nowrap">
                           {new Date(topic.createdAt).toLocaleDateString()}
                         </TableCell>
@@ -173,7 +199,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                               title="View topic"
                               className="h-8 w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
                             >
-                              <Eye className="h-[18px] w-[18px]" />
+                              <Eye className="h-4.5 w-4.5" />
                             </Btn>
                             <Btn 
                               variant="ghost" 
@@ -182,16 +208,16 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                               title="Edit topic"
                               className="h-8 w-8 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
                             >
-                              <Edit2 className="h-[18px] w-[18px]" />
+                              <Edit2 className="h-4.5 w-4.5" />
                             </Btn>
                             <Btn 
                               variant="ghost" 
                               size="icon" 
-                              onClick={() => toast.info("Duplicate topic coming soon")} 
+                              onClick={() => openDuplicateModal(topic)} 
                               title="Duplicate topic"
                               className="h-8 w-8 rounded-lg text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
                             >
-                              <Copy className="h-[18px] w-[18px]" />
+                              <Copy className="h-4.5 w-4.5" />
                             </Btn>
                             <Btn 
                               variant="ghost" 
@@ -200,7 +226,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                               title="Delete topic"
                               className="h-8 w-8 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
                             >
-                              <Trash2 className="h-[18px] w-[18px]" />
+                              <Trash2 className="h-4.5 w-4.5" />
                             </Btn>
                           </div>
                         </TableCell>
@@ -267,7 +293,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
               </div>
               <div>
                 <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</Label>
-                <div className="mt-1 text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100 min-h-[80px]">
+                <div className="mt-1 text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-100 min-h-20">
                   {previewTopic.description || <span className="italic text-slate-400">No description provided</span>}
                 </div>
               </div>
@@ -316,14 +342,47 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-slate-900">Delete Topic</h2>
-          <p className="text-sm text-slate-600">Are you sure you want to delete this topic? This action cannot be undone and may affect associated questions and assessments.</p>
+          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+            <p className="text-sm text-red-800 font-medium">
+              Warning: If you delete this topic, all child resources (Questions, Question Banks, and Assessments) will be deleted too. This action cannot be undone.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="delete-confirm">Type <strong>delete</strong> to delete {deletingTopic?.name || "this topic"}</Label>
+            <Input 
+              id="delete-confirm" 
+              value={deleteConfirmation} 
+              onChange={(e) => setDeleteConfirmation(e.target.value)} 
+              placeholder="delete" 
+              autoComplete="off"
+            />
+          </div>
           <div className="flex justify-end gap-2 pt-4">
             <Btn type="button" variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Btn>
-            <Btn type="button" variant="destructive" onClick={handleDeleteConfirm} disabled={isSaving}>
+            <Btn type="button" variant="destructive" onClick={handleDeleteConfirm} disabled={isSaving || deleteConfirmation.toLowerCase() !== "delete"}>
               {isSaving ? "Deleting..." : "Delete Topic"}
             </Btn>
           </div>
         </div>
+      </Modal>
+
+      {/* Duplicate Modal */}
+      <Modal open={isDuplicateModalOpen} onClose={() => setIsDuplicateModalOpen(false)}>
+        <form onSubmit={handleDuplicateSubmit} className="space-y-4">
+          <h2 className="text-xl font-bold text-slate-900">Duplicate Topic</h2>
+          <div className="space-y-2">
+            <Label htmlFor="duplicate-name">Name *</Label>
+            <Input id="duplicate-name" required value={duplicateFormData.name} onChange={(e) => setDuplicateFormData({ ...duplicateFormData, name: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="duplicate-description">Description</Label>
+            <Textarea id="duplicate-description" value={duplicateFormData.description} onChange={(e) => setDuplicateFormData({ ...duplicateFormData, description: e.target.value })} rows={3} />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Btn type="button" variant="outline" onClick={() => setIsDuplicateModalOpen(false)}>Cancel</Btn>
+            <Btn type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Duplicate Topic"}</Btn>
+          </div>
+        </form>
       </Modal>
     </div>
   );

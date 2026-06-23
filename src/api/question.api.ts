@@ -1,7 +1,10 @@
 import { apiClient } from "@/src/lib/api-client";
 import type { QuestionTopicMap, Topic } from "@/src/types";
 import type { QuestionBank, Question } from "@/src/types/api";
-import type { QuestionFormData, QuestionFormType } from "@/src/types/question-form.types";
+import type {
+  QuestionFormData,
+  QuestionFormType,
+} from "@/src/types/question-form.types";
 import type { QuestionDetailData } from "@/src/types/question-detail.types";
 
 import { getBanks } from "./bank.api";
@@ -13,10 +16,11 @@ export interface QuestionCatalogPageData {
 }
 
 export async function getQuestions(): Promise<Question[]> {
-  
   try {
-    const response = await apiClient.get<{ data: any[] }>('/questions?limit=100');
-    return (response.data || []).map(q => ({
+    const response = await apiClient.get<{ data: any[] }>(
+      "/questions?limit=5000",
+    );
+    return (response.data || []).map((q) => ({
       id: String(q.id),
       questionText: String(q.questionText || q.text),
       type: String(q.type) as any,
@@ -38,11 +42,7 @@ export async function getQuestionsummariesForBankName(
   bankName: string,
   limit: number,
 ): Promise<Array<Pick<Question, "questionText" | "type" | "points">>> {
-  
-  const [banks, questions] = await Promise.all([
-    getBanks(),
-    getQuestions(),
-  ]);
+  const [banks, questions] = await Promise.all([getBanks(), getQuestions()]);
   const normalizedBankName = bankName.trim().toLowerCase();
   const matchingBankIds = new Set(
     banks
@@ -64,7 +64,9 @@ export async function getQuestionsummariesForBankName(
     )
     .slice(0, limit);
   const selectedQuestions =
-    matchingQuestions.length > 0 ? matchingQuestions : questions.slice(0, limit);
+    matchingQuestions.length > 0
+      ? matchingQuestions
+      : questions.slice(0, limit);
 
   return selectedQuestions.map(({ questionText, type, points }) => ({
     questionText,
@@ -73,19 +75,21 @@ export async function getQuestionsummariesForBankName(
   }));
 }
 export async function getQuestionTopics(): Promise<QuestionTopicMap[]> {
-  
   return [];
 }
 export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageData> {
-  
   try {
     const [banks, questionsRes] = await Promise.all([
       getBanks(),
-      apiClient.get<{ data: Record<string, unknown>[] }>('/questions?limit=10'), // Or default pagination
+      apiClient.get<{ data: Record<string, unknown>[] }>(
+        "/questions?limit=500",
+      ), // Or default pagination
     ]);
     return {
       banks,
-      questions: ((questionsRes.data || questionsRes || []) as Record<string, unknown>[]).map((q) => ({
+      questions: (
+        (questionsRes.data || questionsRes || []) as Record<string, unknown>[]
+      ).map((q) => ({
         id: String(q.id),
         questionText: String(q.questionText || q.text),
         type: String(q.type) as any,
@@ -100,7 +104,10 @@ export async function getQuestionCatalogPageData(): Promise<QuestionCatalogPageD
       })),
     };
   } catch (err) {
-    console.warn("Failed to fetch question catalog page data:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch question catalog page data:",
+      err instanceof Error ? err.message : err,
+    );
     return { banks: [], questions: [] };
   }
 }
@@ -122,7 +129,10 @@ function getQuestionTypeMeta(typeName: string) {
     case "Multiple Choice":
       return {
         id: "multiple-choice",
-        name: typeName === "MULTIPLE_CHOICE" ? "MULTIPLE_CHOICE" : "Multiple Choice",
+        name:
+          typeName === "MULTIPLE_CHOICE"
+            ? "MULTIPLE_CHOICE"
+            : "Multiple Choice",
         grading_strategy: "DEDUCTIVE",
         has_options: true,
         supports_ai: false,
@@ -163,7 +173,8 @@ function getQuestionTypeMeta(typeName: string) {
         supports_ai: true,
         is_manual_only: false,
         default_max_score: 10,
-        description: "Open-ended written response for manual or AI-assisted grading.",
+        description:
+          "Open-ended written response for manual or AI-assisted grading.",
       };
     case "Rating":
       return {
@@ -192,13 +203,17 @@ function getQuestionTypeMeta(typeName: string) {
     case "Fill-in-blank":
       return {
         id: "fill",
-        name: typeName === "FILL_IN_THE_BLANK" ? "FILL_IN_THE_BLANK" : "Fill-in-blank",
+        name:
+          typeName === "FILL_IN_THE_BLANK"
+            ? "FILL_IN_THE_BLANK"
+            : "Fill-in-blank",
         grading_strategy: "DEDUCTIVE",
         has_options: false,
         supports_ai: false,
         is_manual_only: false,
         default_max_score: 3,
-        description: "Learner fills one or more blanks in a sentence or template.",
+        description:
+          "Learner fills one or more blanks in a sentence or template.",
       };
     case "Matching":
       return {
@@ -224,8 +239,9 @@ function getQuestionTypeMeta(typeName: string) {
       };
   }
 }
-export async function getQuestionDetail(id: string): Promise<QuestionDetailData> {
-  
+export async function getQuestionDetail(
+  id: string,
+): Promise<QuestionDetailData> {
   try {
     const [questionRes, banks, allTopics] = await Promise.all([
       apiClient.get<any>(`/questions/${id}`),
@@ -235,53 +251,90 @@ export async function getQuestionDetail(id: string): Promise<QuestionDetailData>
     const q = questionRes?.data ? questionRes.data : questionRes;
 
     const type = getQuestionTypeMeta(String(q.type));
-    
-    const qCorrectAnswer = (q.correctAnswer || q.correctAnswers) as Record<string, unknown> | undefined;
-    
+
+    const qCorrectAnswer = (q.correctAnswer || q.correctAnswers) as
+      | Record<string, unknown>
+      | undefined;
+
     let correctOptionIds: string[] = [];
     if (q.type === "SINGLE_CHOICE" || q.type === "MCQ") {
-      correctOptionIds = (qCorrectAnswer?.optionIds as string[]) || (qCorrectAnswer?.optionId ? [qCorrectAnswer.optionId as string] : []);
+      correctOptionIds =
+        (qCorrectAnswer?.optionIds as string[]) ||
+        (qCorrectAnswer?.optionId ? [qCorrectAnswer.optionId as string] : []);
     } else if (q.type === "MULTIPLE_CHOICE" || q.type === "Multiple Choice") {
       correctOptionIds = (qCorrectAnswer?.optionIds as string[]) || [];
     }
 
     // Map answer options from backend (if any)
-    const options = Array.isArray(q.options) ? q.options.map((opt: Record<string, unknown>, idx: number) => {
-      const optId = String(opt.id || String(idx));
-      return {
-        id: optId,
-        question_id: id,
-        option_text: String(opt.text || opt.option_text || ""),
-        is_correct: Boolean(opt.isCorrect || correctOptionIds.includes(optId)),
-        option_order: idx + 1
-      };
-    }) : [];
+    const options = Array.isArray(q.options)
+      ? q.options.map((opt: Record<string, unknown>, idx: number) => {
+          const optId = String(opt.id || String(idx));
+          return {
+            id: optId,
+            question_id: id,
+            option_text: String(opt.text || opt.option_text || ""),
+            is_correct: Boolean(
+              opt.isCorrect || correctOptionIds.includes(optId),
+            ),
+            option_order: idx + 1,
+          };
+        })
+      : [];
 
-    let correctAnswerConfig: Record<string, unknown> = { type: "short", expected_keywords: [] };
+    let correctAnswerConfig: Record<string, unknown> = {
+      type: "short",
+      expected_keywords: [],
+    };
     if (q.type === "SINGLE_CHOICE" || q.type === "MCQ") {
-      correctAnswerConfig = { type: "single", correct_option_ids: correctOptionIds };
+      correctAnswerConfig = {
+        type: "single",
+        correct_option_ids: correctOptionIds,
+      };
     } else if (q.type === "MULTIPLE_CHOICE" || q.type === "Multiple Choice") {
-      correctAnswerConfig = { type: "multiple", correct_option_ids: correctOptionIds };
+      correctAnswerConfig = {
+        type: "multiple",
+        correct_option_ids: correctOptionIds,
+      };
     } else if (q.type === "TRUE_FALSE" || q.type === "True/False") {
       correctAnswerConfig = { type: "boolean", value: qCorrectAnswer?.value };
     } else if (q.type === "MATCHING" || q.type === "Matching") {
-      const leftOptions = (q.options?.leftSide || []) as Record<string, string>[];
-      const rightOptions = (q.options?.rightSide || []) as Record<string, string>[];
-      const pairs = (qCorrectAnswer?.pairs || []) as { leftId: string; rightId: string }[];
-      
-      const mappedPairs = pairs.map(p => {
-        const leftOpt = leftOptions.find(l => String(l.id) === String(p.leftId));
-        const rightOpt = rightOptions.find(r => String(r.id) === String(p.rightId));
+      const leftOptions = (q.options?.leftSide || []) as Record<
+        string,
+        string
+      >[];
+      const rightOptions = (q.options?.rightSide || []) as Record<
+        string,
+        string
+      >[];
+      const pairs = (qCorrectAnswer?.pairs || []) as {
+        leftId: string;
+        rightId: string;
+      }[];
+
+      const mappedPairs = pairs.map((p) => {
+        const leftOpt = leftOptions.find(
+          (l) => String(l.id) === String(p.leftId),
+        );
+        const rightOpt = rightOptions.find(
+          (r) => String(r.id) === String(p.rightId),
+        );
         return {
           left: leftOpt?.text || p.leftId,
-          right: rightOpt?.text || p.rightId
+          right: rightOpt?.text || p.rightId,
         };
       });
       correctAnswerConfig = { type: "matching", pairs: mappedPairs };
     } else if (q.type === "FILL_IN_THE_BLANK" || q.type === "Fill-in-blank") {
-      correctAnswerConfig = { type: "fill", answers: qCorrectAnswer?.answers || [] };
+      correctAnswerConfig = {
+        type: "fill",
+        answers: qCorrectAnswer?.answers || [],
+      };
     } else if (q.type === "ORDERING" || q.type === "Ranking") {
-      correctAnswerConfig = { type: "ordering", sequence: qCorrectAnswer?.sequence || [], correct_order: qCorrectAnswer?.order || [] };
+      correctAnswerConfig = {
+        type: "ordering",
+        sequence: qCorrectAnswer?.sequence || [],
+        correct_order: qCorrectAnswer?.order || [],
+      };
     } else if (q.type === "ESSAY" || q.type === "Long Essay") {
       correctAnswerConfig = { type: "essay", value: null };
     } else {
@@ -289,13 +342,23 @@ export async function getQuestionDetail(id: string): Promise<QuestionDetailData>
     }
 
     let bankId = q.bankId ? String(q.bankId) : null;
-    let topicId = q.topicId ? String(q.topicId) : q.topic?.id ? String(q.topic.id) : null;
-    
-    const assignedBank = bankId ? banks.find(b => String(b.id) === bankId) || null : null;
-    const assignedTopic = topicId ? allTopics.find(t => String(t.id) === topicId) : null;
-    
+    let topicId = q.topicId
+      ? String(q.topicId)
+      : q.topic?.id
+        ? String(q.topic.id)
+        : null;
+
+    const assignedBank = bankId
+      ? banks.find((b) => String(b.id) === bankId) || null
+      : null;
+    const assignedTopic = topicId
+      ? allTopics.find((t) => String(t.id) === topicId)
+      : null;
+
     // For now, mapping topicId to the topics array
-    const assignedTopics = assignedTopic ? [{ id: assignedTopic.id, name: assignedTopic.name }] : [];
+    const assignedTopics = assignedTopic
+      ? [{ id: assignedTopic.id, name: assignedTopic.name }]
+      : [];
 
     return {
       id: String(q.id),
@@ -309,7 +372,9 @@ export async function getQuestionDetail(id: string): Promise<QuestionDetailData>
       settings: (q.settings as any) || {},
       correct_answer: correctAnswerConfig,
       created_at: String(q.createdAt || new Date().toISOString()),
-      bank: assignedBank ? { id: assignedBank.id, name: assignedBank.name, owner_id: "" } : null,
+      bank: assignedBank
+        ? { id: assignedBank.id, name: assignedBank.name, owner_id: "" }
+        : null,
       type,
       topics: assignedTopics,
       answer_options: options,
@@ -323,47 +388,106 @@ export async function getQuestionDetail(id: string): Promise<QuestionDetailData>
       },
     };
   } catch (err) {
-    console.warn("Failed to fetch mock question detail:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch mock question detail:",
+      err instanceof Error ? err.message : err,
+    );
     throw err;
   }
 }
 function mapCatalogTypeToEditorType(typeName: string): QuestionFormType {
-  switch (typeName) {
-    case "MCQ":
+  const normalized = typeName.toUpperCase();
+  switch (normalized) {
+    case "SINGLE_CHOICE":
       return "Single Choice";
-    case "Multiple Choice":
+    case "MULTIPLE_CHOICE":
       return "Multiple Choices";
-    case "True/False":
+    case "TRUE_FALSE":
       return "True/False";
-    case "Short Answer":
+    case "SHORT_ANSWER":
       return "Short Answer";
-    case "Long Essay":
+    case "ESSAY":
       return "Essay";
-    case "Rating":
+    case "RATING":
       return "Rating Scale";
-    case "Ranking":
+    case "ORDERING":
       return "Ordering";
-    case "Fill-in-blank":
+    case "FILL_IN_THE_BLANK":
       return "Fill in the Blank";
-    case "Matching":
+    case "MATCHING":
       return "Matching";
     default:
       return "Short Answer";
   }
 }
 
-function mapApiToFormData(question: import("@/src/types/question-detail.types").ApiQuestionResponse): QuestionFormData {
+function mapApiToFormData(
+  question: import("@/src/types/question-detail.types").ApiQuestionResponse,
+): QuestionFormData {
   const questionType = mapCatalogTypeToEditorType(question.type);
-  const difficulty = question.difficulty === "HARD" ? "Hard" : question.difficulty === "EASY" ? "Easy" : "Medium";
+  const difficulty =
+    question.difficulty === "HARD"
+      ? "Hard"
+      : question.difficulty === "EASY"
+        ? "Easy"
+        : "Medium";
+
+  let options = question.options;
+  let correctAnswers =
+    question.correctAnswers || (question as any).correctAnswer || {};
+
+  // Ensure topicId is properly captured
+  const topicId = question.topic?.id || question.topicId || "";
+
+  // Normalize old formats to new UI format if needed
+  if (Array.isArray(options)) {
+    options = options.map((opt: any, index: number) => ({
+      id: opt.id || `opt_${index}`,
+      text: opt.text || opt.option_text || opt.optionText || "",
+    }));
+  }
+
+  // Handle specific question types if they are missing required UI structure
+  if (questionType === "True/False" && !options) {
+    options = { trueLabel: "True", falseLabel: "False" };
+  } else if (
+    questionType === "Fill in the Blank" &&
+    (!options || !options.template)
+  ) {
+    options = {
+      template: typeof options === "string" ? options : options?.template || "",
+    };
+  } else if (
+    (questionType === "Single Choice" || questionType === "Multiple Choices") &&
+    Array.isArray(question.options)
+  ) {
+    // Legacy support: extract correct answers from options if correctAnswers is empty
+    if (Object.keys(correctAnswers).length === 0) {
+      const correctOpts = question.options.filter(
+        (opt: any) => opt.isCorrect || opt.is_correct,
+      );
+      if (questionType === "Single Choice" && correctOpts.length > 0) {
+        correctAnswers = { optionId: correctOpts[0].id || "opt_0" };
+      } else if (
+        questionType === "Multiple Choices" &&
+        correctOpts.length > 0
+      ) {
+        correctAnswers = {
+          optionIds: correctOpts.map((o: any, i: number) => o.id || `opt_${i}`),
+        };
+      }
+    }
+  }
+
   return {
-    questionText: question.text,
+    questionText: question.questionText || (question as any).text || "",
     questionType,
     bank: question.bankId || "",
-    ownerTopicId: question.topic?.id || "",
-    points: String(question.points),
+    ownerTopicId: topicId,
+    points: String(question.points || 1),
     difficulty,
-    options: question.options,
-    correctAnswers: question.correctAnswers,
+    options,
+    correctAnswers,
   };
 }
 
@@ -373,10 +497,7 @@ export async function getQuestionEditPageData(id: string): Promise<{
   formData: QuestionFormData;
 }> {
   const question = await getQuestionDetailRaw(id);
-  const [banks, topics] = await Promise.all([
-    getBanks(),
-    getTopics(),
-  ]);
+  const [banks, topics] = await Promise.all([getBanks(), getTopics()]);
 
   return {
     banks,
@@ -385,13 +506,18 @@ export async function getQuestionEditPageData(id: string): Promise<{
   };
 }
 
-export async function getQuestionDetailRaw(id: string): Promise<import("@/src/types/question-detail.types").ApiQuestionResponse> {
+export async function getQuestionDetailRaw(
+  id: string,
+): Promise<import("@/src/types/question-detail.types").ApiQuestionResponse> {
   try {
     const response = await apiClient.get<any>(`/questions/${id}`);
     const data = response?.data ? response.data : response;
     return data;
   } catch (err) {
-    console.warn("Failed to fetch raw question detail:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch raw question detail:",
+      err instanceof Error ? err.message : err,
+    );
     throw err;
   }
 }

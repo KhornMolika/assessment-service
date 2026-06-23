@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react";
 import type { QuestionBank } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import type { QuestionFormData } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
-import { CheckCircle, Circle, Square, Type, AlignLeft, GripVertical, Check } from "lucide-react";
+import { CheckCircle, Circle, Square, Type, AlignLeft, GripVertical, Check, Star, ChevronUp, ChevronDown } from "lucide-react";
 
 function getOptionLabel(index: number) {
   return String.fromCharCode(65 + index);
@@ -25,11 +26,30 @@ export default function QuestionPreviewCard({
   showAnswers?: boolean;
   hideMetadata?: boolean;
 }) {
-  const selectedBank = banks.find((bank) => bank.id === formData.bank);
   const ownerTopic = topics.find((topic) => topic.id === formData.ownerTopicId);
-  const selectedTopics = ownerTopic ? [ownerTopic] : [];
 
   const { questionType, options, correctAnswers } = formData;
+  
+  const [orderingState, setOrderingState] = useState<any[]>([]);
+  const [matchingState, setMatchingState] = useState<Record<string, string>>({});
+  const [fillInBlankState, setFillInBlankState] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    if (questionType === "Ordering" && !showAnswers) {
+      const opts = Array.isArray(options) ? [...options] : [];
+      setOrderingState(opts.sort(() => Math.random() - 0.5));
+    }
+  }, [options, questionType, showAnswers]);
+
+  const moveOrderingItem = (index: number, direction: 'up' | 'down') => {
+    const newOrder = [...orderingState];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newOrder.length) return;
+    const temp = newOrder[index];
+    newOrder[index] = newOrder[targetIndex];
+    newOrder[targetIndex] = temp;
+    setOrderingState(newOrder);
+  };
 
   const renderPreview = () => {
     switch (questionType) {
@@ -115,7 +135,7 @@ export default function QuestionPreviewCard({
             {itemsToRender.map((opt: any, index: number) => (
               <div
                 key={index}
-                className={`flex items-center gap-3 rounded-xl border-2 px-4 py-3 text-sm font-medium ${
+                className={`flex items-center gap-3 rounded-xl border-2 px-4 py-1 text-sm font-medium ${
                   showAnswers ? "border-purple-300 bg-purple-50 text-purple-800" : "border-slate-100 bg-slate-50 text-slate-700"
                 }`}
               >
@@ -124,7 +144,14 @@ export default function QuestionPreviewCard({
                     {index + 1}
                   </span>
                 ) : (
-                  <GripVertical className="h-4 w-4 text-slate-400 shrink-0" />
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <button onClick={() => moveOrderingItem(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                      <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
+                    <button onClick={() => moveOrderingItem(index, 'down')} disabled={index === itemsToRender.length - 1} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                      <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
+                  </div>
                 )}
                 <span>{opt.text || `Item ${index + 1}`}</span>
               </div>
@@ -160,12 +187,26 @@ export default function QuestionPreviewCard({
                       <path d="m12 5 7 7-7 7"></path>
                     </svg>
                   </div>
-                  <div className={`flex-1 rounded-xl border-2 px-4 py-3 text-sm font-medium text-center relative flex items-center justify-center ${
-                    showAnswers ? "border-orange-400 bg-orange-50 text-orange-800" : "border-slate-200 bg-slate-50 text-slate-700"
-                  }`}>
-                    <span>{displayRightText}</span>
-                    {showAnswers && <CheckCircle className="absolute right-3 h-4 w-4 text-orange-500" />}
-                  </div>
+                  {showAnswers ? (
+                    <div className={`flex-1 rounded-xl border-2 px-4 py-3 text-sm font-medium text-center relative flex items-center justify-center border-orange-400 bg-orange-50 text-orange-800`}>
+                      <span>{displayRightText}</span>
+                      <CheckCircle className="absolute right-3 h-4 w-4 text-orange-500" />
+                    </div>
+                  ) : (
+                    <div className="flex-1 relative">
+                      <select
+                        value={matchingState[pair.leftId] || ""}
+                        onChange={(e) => setMatchingState(prev => ({ ...prev, [pair.leftId]: e.target.value }))}
+                        className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white pl-4 pr-10 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm cursor-pointer"
+                      >
+                        <option value="" disabled>Select match...</option>
+                        {rightSide.map((r: any, rIndex: number) => (
+                          <option key={r.id} value={r.id}>{r.text || `Right ${rIndex + 1}`}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -177,13 +218,38 @@ export default function QuestionPreviewCard({
         const template = options?.template || "Your template will appear here...";
         const answers = correctAnswers?.answers || [];
         
-        const formattedTemplate = template.replace(/\[blank_\d+\]/g, (match: string) => {
-          return `<span class="bg-pink-100 text-pink-700 font-bold px-1.5 py-0.5 rounded shadow-sm">${match}</span>`;
-        });
+        const renderFillInTheBlankTemplate = () => {
+          const parts = template.split(/(\[blank_\d+\])/g);
+          return (
+            <div className="leading-loose text-slate-800 text-base">
+              {parts.map((part: string, index: number) => {
+                const match = part.match(/\[blank_(\d+)\]/);
+                if (match) {
+                  const blankIdx = parseInt(match[1], 10) - 1;
+                  if (showAnswers) {
+                     return <span key={index} className="bg-pink-100 text-pink-700 font-bold px-2 py-1 mx-1 rounded shadow-sm">{part}</span>;
+                  }
+                  return (
+                    <input 
+                      key={index}
+                      className="mx-1 inline-block w-32 border-b-2 border-slate-300 bg-white px-2 py-1 text-center text-sm font-bold text-slate-700 placeholder:text-slate-300 placeholder:font-normal focus:border-pink-500 focus:outline-none focus:ring-0 transition-colors shadow-sm rounded-t-md"
+                      placeholder={`Blank ${blankIdx + 1}`}
+                      value={fillInBlankState[blankIdx] || ""}
+                      onChange={(e) => setFillInBlankState(prev => ({...prev, [blankIdx]: e.target.value}))}
+                    />
+                  );
+                }
+                return <span key={index}>{part}</span>;
+              })}
+            </div>
+          );
+        };
 
         return (
           <div className="space-y-4">
-            <div className="p-5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: formattedTemplate }} />
+            <div className="p-5 rounded-xl bg-slate-50 border border-slate-200">
+              {renderFillInTheBlankTemplate()}
+            </div>
             
             {showAnswers && answers.length > 0 && (
               <div className="rounded-xl border border-pink-200 bg-pink-50/50 p-4">
@@ -259,21 +325,24 @@ export default function QuestionPreviewCard({
       }
 
       case "Rating Scale": {
-        const min = options?.min || 1;
         const max = options?.max || 5;
         const lowLabel = options?.lowLabel || "Low";
         const highLabel = options?.highLabel || "High";
 
         return (
-          <div className="flex items-center justify-between p-6 bg-slate-50 border border-slate-200 rounded-2xl">
-            <div className="text-center">
-              <div className="text-3xl font-black text-slate-300">{min}</div>
-              <div className="text-xs text-slate-500 mt-1 uppercase font-bold tracking-wider">{lowLabel}</div>
+          <div className="space-y-4 pt-2">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+              {Array.from({ length: max }).map((_, i) => (
+                <Star 
+                  key={i} 
+                  className="h-8 w-8 sm:h-10 sm:w-10 text-slate-200 fill-slate-50 transition-colors hover:text-yellow-400 hover:fill-yellow-400 cursor-pointer" 
+                  strokeWidth={1.5}
+                />
+              ))}
             </div>
-            <div className="flex-1 border-t-2 border-dashed border-slate-200 mx-6"></div>
-            <div className="text-center">
-              <div className="text-3xl font-black text-slate-800">{max}</div>
-              <div className="text-xs text-slate-800 mt-1 uppercase font-bold tracking-wider">{highLabel}</div>
+            <div className="flex justify-between px-2 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-center w-1/3 text-left">{lowLabel}</span>
+              <span className="text-center w-1/3 text-right">{highLabel}</span>
             </div>
           </div>
         );

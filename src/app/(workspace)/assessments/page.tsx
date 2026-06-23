@@ -3,7 +3,10 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import type { AssessmentDeliveryMode } from "@/src/types/assessment.types";
-import { fetchGlobalAssessments, fetchTopicAssessments } from "@/src/actions/assessment-actions";
+import {
+  fetchGlobalAssessments,
+  fetchTopicAssessments,
+} from "@/src/actions/assessment-actions";
 import AssessmentsCatalogLoading from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogLoading";
 import AssessmentsCatalogToolbar from "@/src/components/assessment/assessment-catalog/AssessmentsCatalogToolbar";
 import AssessmentsHeader from "@/src/components/assessment/assessment-catalog/AssessmentsHeader";
@@ -20,18 +23,26 @@ import {
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
 
-function getSingleSearchParam(value: string | string[] | null | undefined, fallback = "") {
+function getSingleSearchParam(
+  value: string | string[] | null | undefined,
+  fallback = "",
+) {
   if (Array.isArray(value)) return value[0] ?? fallback;
   return value ?? fallback;
 }
 
-function parsePositiveInteger(value: string | null | undefined, fallback: number) {
+function parsePositiveInteger(
+  value: string | null | undefined,
+  fallback: number,
+) {
   const parsed = Number.parseInt(value ?? "", 10);
   if (Number.isNaN(parsed) || parsed < 1) return fallback;
   return parsed;
 }
 
-function parseDeliveryFilter(value: string | null | undefined): "ALL" | AssessmentDeliveryMode {
+function parseDeliveryFilter(
+  value: string | null | undefined,
+): "ALL" | AssessmentDeliveryMode {
   return value === "SELF_PACED" || value === "REAL_TIME" ? value : "ALL";
 }
 
@@ -47,7 +58,10 @@ function filterAssessments({
   const normalizedQuery = query.trim().toLowerCase();
 
   return assessments.filter((assessment) => {
-    if (deliveryFilter !== "ALL" && assessment.delivery_mode !== deliveryFilter) {
+    if (
+      deliveryFilter !== "ALL" &&
+      assessment.delivery_mode !== deliveryFilter
+    ) {
       return false;
     }
 
@@ -102,8 +116,10 @@ function AssessmentsPageContent() {
       }
     }
     fetchResources();
-    return () => { isMounted = false };
-  }, [activeTopic?.id ?? 'all']);
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTopic?.id ?? "all"]);
 
   if (isLoading) {
     return <AssessmentsCatalogLoading />;
@@ -114,26 +130,32 @@ function AssessmentsPageContent() {
     deliveryFilter,
     query,
   });
-  
-  const totalPages = Math.max(1, Math.ceil(filteredAssessments.length / itemsPerPage));
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredAssessments.length / itemsPerPage),
+  );
   const activePage = Math.min(currentPage, totalPages);
   const paginatedAssessments = filteredAssessments.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage,
   );
-  
+
   const hasActiveFilters = query.trim().length > 0 || deliveryFilter !== "ALL";
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <AssessmentsHeader totalAssessments={assessments.length} />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
-            <CardTitle>Assessment catalog {activeTopic ? `(${activeTopic.name})` : ""}</CardTitle>
+            <CardTitle>
+              Assessment catalog {activeTopic ? `(${activeTopic.name})` : ""}
+            </CardTitle>
             <CardDescription>
-              Track readiness, delivery mode, and performance signals across the workspace.
+              Track readiness, delivery mode, and performance signals across the
+              workspace.
             </CardDescription>
           </div>
         </CardHeader>
@@ -143,7 +165,11 @@ function AssessmentsPageContent() {
           <div>
             {filteredAssessments.length === 0 ? (
               <StateMessage
-                title={hasActiveFilters ? "No assessments found" : "No assessments available"}
+                title={
+                  hasActiveFilters
+                    ? "No assessments found"
+                    : "No assessments available"
+                }
                 description={
                   hasActiveFilters
                     ? "No assessments match the current search and delivery filters."
@@ -161,7 +187,9 @@ function AssessmentsPageContent() {
                 }
               />
             ) : (
-              <AssessmentsTableInteractive assessments={paginatedAssessments as any} />
+              <AssessmentsTableInteractive
+                assessments={paginatedAssessments as any}
+              />
             )}
           </div>
         </CardContent>

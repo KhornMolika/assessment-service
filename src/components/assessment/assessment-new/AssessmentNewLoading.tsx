@@ -1,14 +1,10 @@
-function SkeletonBlock({
-  className,
-}: {
-  className: string;
-}) {
+function SkeletonBlock({ className }: { className: string }) {
   return <div className={`animate-pulse rounded-2xl bg-muted ${className}`} />;
 }
 
 export default function AssessmentNewLoading() {
   return (
-    <div className="space-y-6 px-4 py-4 sm:px-6 lg:px-8">
+    <div className="space-y-6 sm:px-6 lg:px-8">
       <div className="space-y-3">
         <SkeletonBlock className="h-10 w-72" />
         <SkeletonBlock className="h-4 w-96 max-w-full" />

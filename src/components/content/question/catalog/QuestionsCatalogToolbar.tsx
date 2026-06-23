@@ -2,68 +2,77 @@
 
 import { Search } from "lucide-react";
 import { useUrlQueryUpdater, useDebouncedSearchParam } from "@/src/hooks/use-url-query-state";
-import { Select } from "@/src/components/ui/ui/select";
 import { Input } from "@/src/components/ui/ui/input";
+import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
+
+function formatEnumText(text: string) {
+  if (text === "All Types") return "All Types";
+  if (text === "All Difficulties") return "All Difficulties";
+  if (text === "FILL_IN_THE_BLANK") return "Fill in the Blank";
+  if (text === "TRUE_FALSE") return "True/False";
+  return text
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export default function QuestionsCatalogToolbar({
   availableTypes,
-  availableBanks,
   typeFilter,
-  bankFilter,
+  difficultyFilter,
 }: {
   availableTypes: string[];
-  availableBanks: string[];
   typeFilter: string;
-  bankFilter: string;
+  difficultyFilter: string;
 }) {
   const updateUrl = useUrlQueryUpdater();
   const { inputValue: searchQuery, setInputValue: setSearchQuery } =
     useDebouncedSearchParam({ key: "query" });
 
+  const typeOptions = ["All Types", ...availableTypes].map(t => ({
+    value: t,
+    label: formatEnumText(t)
+  }));
+
+  const diffOptions = ["All Difficulties", "EASY", "MEDIUM", "HARD"].map(d => ({
+    value: d,
+    label: formatEnumText(d)
+  }));
+
   return (
-    <div className="grid gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_220px_260px]">
+    <div className="grid gap-4 px-4 pt-4 sm:px-6 sm:pt-6 lg:grid-cols-[minmax(0,1fr)_220px_220px]">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
         <Input
           type="text"
           placeholder="Search questions..."
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"
+          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C8A246]/50 focus:border-[#C8A246] shadow-sm transition-all"
         />
       </div>
 
-      <Select
+      <DropdownSelect
         value={typeFilter}
-        onChange={(event) => {
+        options={typeOptions}
+        onChange={(val) => {
           updateUrl({
-            type: event.target.value === "All Types" ? null : event.target.value,
+            type: val === "All Types" ? null : val,
             page: null,
           });
         }}
-        className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
-      >
-        <option>All Types</option>
-        {availableTypes.map((type) => (
-          <option key={type}>{type}</option>
-        ))}
-      </Select>
+      />
 
-      <Select
-        value={bankFilter}
-        onChange={(event) => {
+      <DropdownSelect
+        value={difficultyFilter}
+        options={diffOptions}
+        onChange={(val) => {
           updateUrl({
-            bank: event.target.value === "All Banks" ? null : event.target.value,
+            difficulty: val === "All Difficulties" ? null : val,
             page: null,
           });
         }}
-        className="rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
-      >
-        <option>All Banks</option>
-        {availableBanks.map((bankName) => (
-          <option key={bankName}>{bankName}</option>
-        ))}
-      </Select>
+      />
     </div>
   );
 }

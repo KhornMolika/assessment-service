@@ -101,7 +101,7 @@ function TableCardSkeleton({
 
 export function WorkspacePageSkeleton() {
   return (
-    <div className="space-y-6 py-10 px-8">
+    <div className="space-y-6">
       <PageHeaderSkeleton />
       <CardGridSkeleton />
       <TableCardSkeleton />
@@ -111,7 +111,7 @@ export function WorkspacePageSkeleton() {
 
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6">
       <PageHeaderSkeleton hasActions={false} />
       <AnalyticsContentSkeleton />
     </div>

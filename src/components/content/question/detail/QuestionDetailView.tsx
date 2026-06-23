@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { createMockQuestionDuplicateId } from "@/src/utils/question-duplicate-id";
 import type { ApiQuestionResponse } from "@/src/types/question-detail.types";
 import QuestionDetailHero from "./QuestionDetailHero";
 import QuestionDetailsCard from "./QuestionDetailsCard";
@@ -9,16 +7,9 @@ import QuestionOptionsAndAnswers from "./QuestionOptionsAndAnswers";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
 export default function QuestionDetailView({ question }: { question: ApiQuestionResponse }) {
-  const router = useRouter();
-
-  const handleDuplicate = () => {
-    const duplicateId = createMockQuestionDuplicateId(question.id);
-    router.push(`/questions/${duplicateId}`);
-  };
-
   return (
     <div>
-      <QuestionDetailHero question={question} onDuplicate={handleDuplicate} />
+      <QuestionDetailHero question={question} />
 
       <div className="w-full">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
@@ -30,6 +21,14 @@ export default function QuestionDetailView({ question }: { question: ApiQuestion
                 <CardDescription>Details on expected answers and formatting options.</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
+                <div className="mb-6 pb-6 border-b border-slate-100">
+                  <div className="flex items-start gap-3">
+                    <span className="text-sm font-black text-indigo-300 mt-0.5">Q.</span>
+                    <p className="flex-1 text-[15px] font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
+                      {question.questionText}
+                    </p>
+                  </div>
+                </div>
                 <QuestionOptionsAndAnswers question={question} />
               </CardContent>
             </Card>

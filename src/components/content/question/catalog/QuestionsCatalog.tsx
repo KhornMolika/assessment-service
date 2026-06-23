@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Copy,
@@ -89,8 +89,12 @@ export default function QuestionsCatalog({
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
-  const [questionPendingDelete, setQuestionPendingDelete] =
-    useState<Question | null>(null);
+  const [questionPendingDelete, setQuestionPendingDelete] = useState<Question | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
+  useEffect(() => {
+    setQuestions(initialQuestions);
+  }, [initialQuestions]);
 
   const bankMap = useMemo(
     () => Object.fromEntries(banks.map((bank) => [bank.id, bank])),
@@ -399,16 +403,36 @@ export default function QuestionsCatalog({
               </div>
             </div>
 
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-inkd">
+                Please type <strong>delete</strong> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="delete"
+              />
+            </div>
+
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
-                onClick={() => setQuestionPendingDelete(null)}
+                onClick={() => {
+                  setQuestionPendingDelete(null);
+                  setDeleteConfirmText("");
+                }}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted" variant="secondary"
               >
                 Cancel
               </Button>
               <Button
-                onClick={() => handleDeleteQuestion(questionPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700" variant="destructive"
+                onClick={() => {
+                  handleDeleteQuestion(questionPendingDelete.id);
+                  setDeleteConfirmText("");
+                }}
+                disabled={deleteConfirmText.toLowerCase() !== "delete"}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed" variant="destructive"
               >
                 Delete question
               </Button>

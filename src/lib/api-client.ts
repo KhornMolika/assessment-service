@@ -83,21 +83,35 @@ async function apiFetch<T>(
       headers.set("Content-Type", "application/json");
     }
 
-    let response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    const maxRetries = 3;
+    let attempt = 0;
+    let response: Response;
 
-    if (response.status === 401) {
-      cachedToken = null;
-      tokenExpiresAt = 0;
-      token = await getAccessToken();
-      headers.set("Authorization", `Bearer ${token}`);
-
+    while (true) {
       response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
         headers,
       });
+
+      if (response.status === 401 && attempt === 0) {
+        cachedToken = null;
+        tokenExpiresAt = 0;
+        token = await getAccessToken();
+        headers.set("Authorization", `Bearer ${token}`);
+        attempt++;
+        continue;
+      }
+
+      if (response.status === 429 && attempt < maxRetries) {
+        attempt++;
+        const retryAfter = response.headers.get("Retry-After");
+        const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : 2000 * Math.pow(2, attempt);
+        console.warn(`[429] Rate limited at ${endpoint}. Retrying in ${waitTime}ms... (Attempt ${attempt}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      break;
     }
 
     if (!response.ok) {
@@ -107,6 +121,12 @@ async function apiFetch<T>(
         const extractedMessage = errBody?.error?.message || errBody?.message;
         if (extractedMessage) {
           errorMessage = Array.isArray(extractedMessage) ? extractedMessage[0] : extractedMessage;
+        }
+        
+        // Append validation details if they exist so they bubble up to the UI
+        const details = errBody?.error?.details;
+        if (Array.isArray(details) && details.length > 0) {
+          errorMessage += `: ${details.join(", ")}`;
         }
       } catch (e) {
         // ignore parse error

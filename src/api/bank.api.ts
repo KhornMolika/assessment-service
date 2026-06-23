@@ -3,11 +3,11 @@ import type { BankTopicMap } from "@/src/types";
 import type { QuestionBank, Question } from "@/src/types/api";
 
 export async function getBanks(): Promise<QuestionBank[]> {
-  console.log(process.env.API_URL + '/banks')
-  
+  console.log(process.env.API_URL + "/banks");
+
   try {
-    const response = await apiClient.get<{ data: any[] }>('/banks?limit=10');
-    return (response.data || []).map(b => ({
+    const response = await apiClient.get<{ data: any[] }>("/banks?limit=500");
+    return (response.data || []).map((b) => ({
       id: String(b.id),
       owner_id: "admin",
       name: String(b.name),
@@ -18,12 +18,17 @@ export async function getBanks(): Promise<QuestionBank[]> {
       created_at: String(b.createdAt || new Date().toISOString()),
     })) as unknown as QuestionBank[];
   } catch (err) {
-    console.warn("Failed to fetch banks:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch banks:",
+      err instanceof Error ? err.message : err,
+    );
     return [];
   }
 }
 
-export async function getBankById(id: string): Promise<QuestionBank | undefined> {
+export async function getBankById(
+  id: string,
+): Promise<QuestionBank | undefined> {
   try {
     const response = await apiClient.get<QuestionBank>(`/banks/${id}`);
     return response;
@@ -44,12 +49,16 @@ export async function getBankDetailPageData(id: string): Promise<{
   try {
     const [bankRes, questionsRes] = await Promise.all([
       apiClient.get<QuestionBank>(`/banks/${id}`),
-      apiClient.get<{ data: Record<string, unknown>[] }>(`/banks/${id}/questions`),
+      apiClient.get<{ data: Record<string, unknown>[] }>(
+        `/banks/${id}/questions`,
+      ),
     ]);
-    
+
     return {
       bank: bankRes,
-      bankQuestions: ((questionsRes.data || questionsRes || []) as Record<string, unknown>[]).map((q) => ({
+      bankQuestions: (
+        (questionsRes.data || questionsRes || []) as Record<string, unknown>[]
+      ).map((q) => ({
         id: String(q.id),
         questionText: String(q.questionText || q.text),
         type: String(q.type) as any,
@@ -64,7 +73,10 @@ export async function getBankDetailPageData(id: string): Promise<{
       })),
     };
   } catch (err) {
-    console.warn("Failed to fetch bank detail page data:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch bank detail page data:",
+      err instanceof Error ? err.message : err,
+    );
     return { bank: undefined, bankQuestions: [] };
   }
 }

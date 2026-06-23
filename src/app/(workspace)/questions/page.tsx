@@ -39,15 +39,18 @@ function filterQuestions({
   questions,
   query,
   typeFilter,
+  difficultyFilter,
 }: {
   questions: any[];
   query: string;
   typeFilter: string;
+  difficultyFilter: string;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
   return questions.filter((question) => {
     if (normalizedQuery && !question.questionText?.toLowerCase().includes(normalizedQuery)) return false;
     if (typeFilter !== "All Types" && question.type !== typeFilter) return false;
+    if (difficultyFilter !== "All Difficulties" && question.difficulty?.toUpperCase() !== difficultyFilter.toUpperCase()) return false;
     return true;
   });
 }
@@ -56,7 +59,7 @@ function QuestionsPageContent() {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const typeFilter = getSingleSearchParam(searchParams.get("type"), "All Types") || "All Types";
-  const bankFilter = getSingleSearchParam(searchParams.get("bank"), "All Banks") || "All Banks";
+  const difficultyFilter = getSingleSearchParam(searchParams.get("difficulty"), "All Difficulties") || "All Difficulties";
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   
@@ -109,6 +112,7 @@ function QuestionsPageContent() {
     questions,
     query,
     typeFilter,
+    difficultyFilter,
   });
   
   const totalPages = Math.max(1, Math.ceil(filteredQuestions.length / itemsPerPage));
@@ -119,8 +123,7 @@ function QuestionsPageContent() {
   );
   
   const availableTypes = Array.from(new Set(questions.map((q) => q.type))).filter(Boolean).sort() as string[];
-  const availableBanks = banks.map((bank) => bank.name);
-  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "All Types" || bankFilter !== "All Banks";
+  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "All Types" || difficultyFilter !== "All Difficulties";
 
   return (
     <div className="space-y-6">
@@ -150,9 +153,8 @@ function QuestionsPageContent() {
         <CardContent className="space-y-6 px-0 pb-0 sm:px-0 sm:pb-0">
           <QuestionsCatalogToolbar
             availableTypes={availableTypes}
-            availableBanks={availableBanks}
             typeFilter={typeFilter}
-            bankFilter={bankFilter}
+            difficultyFilter={difficultyFilter}
           />
           <div className={filteredQuestions.length === 0 ? "px-4 pb-4 sm:px-6 sm:pb-6" : undefined}>
             {filteredQuestions.length === 0 ? (
@@ -188,8 +190,8 @@ function QuestionsPageContent() {
             pathname="/questions"
             searchParams={{
               query: query || null,
-              type: typeFilter === "ALL" ? null : typeFilter,
-              bank: bankFilter === "ALL" ? null : bankFilter,
+              type: typeFilter === "All Types" ? null : typeFilter,
+              difficulty: difficultyFilter === "All Difficulties" ? null : difficultyFilter,
               pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
             }}
             currentPage={activePage}

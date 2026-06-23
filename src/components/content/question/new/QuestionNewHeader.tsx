@@ -3,7 +3,15 @@ import { Save } from "lucide-react";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { Button } from "@/src/components/ui/ui/button";
 
-export default function QuestionNewHeader({ formId }: { formId: string }) {
+export default function QuestionNewHeader({ 
+  formId, 
+  disabled = false, 
+  isPending = false 
+}: { 
+  formId: string;
+  disabled?: boolean;
+  isPending?: boolean;
+}) {
   return (
     <PageHeaderCard
       backHref="/questions"
@@ -20,10 +28,11 @@ export default function QuestionNewHeader({ formId }: { formId: string }) {
           <Button
             type="submit"
             form={formId}
-            className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-pm"
+            disabled={disabled || isPending}
+            className={`flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-pm ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <Save className="h-4 w-4" />
-            Save Question
+            {isPending ? "Saving..." : "Save Question"}
           </Button>
         </div>
       }

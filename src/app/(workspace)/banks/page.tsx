@@ -20,12 +20,18 @@ import {
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
 
-function getSingleSearchParam(value: string | string[] | null | undefined, fallback = "") {
+function getSingleSearchParam(
+  value: string | string[] | null | undefined,
+  fallback = "",
+) {
   if (Array.isArray(value)) return value[0] ?? fallback;
   return value ?? fallback;
 }
 
-function parsePositiveInteger(value: string | null | undefined, fallback: number) {
+function parsePositiveInteger(
+  value: string | null | undefined,
+  fallback: number,
+) {
   const parsed = Number.parseInt(value ?? "", 10);
   if (Number.isNaN(parsed) || parsed < 1) return fallback;
   return parsed;
@@ -42,8 +48,15 @@ function filterBanks({
 
   return banks.filter((bank) => {
     if (!normalizedQuery) return true;
-    const haystacks = [bank.name, bank.description || "", bank.visibility, ...(bank.tags || [])];
-    return haystacks.some((value) => value.toLowerCase().includes(normalizedQuery));
+    const haystacks = [
+      bank.name,
+      bank.description || "",
+      bank.visibility,
+      ...(bank.tags || []),
+    ];
+    return haystacks.some((value) =>
+      value.toLowerCase().includes(normalizedQuery),
+    );
   });
 }
 
@@ -80,34 +93,45 @@ function BanksPageContent() {
       }
     }
     fetchResources();
-    return () => { isMounted = false };
-  }, [activeTopic?.id ?? 'all']);
+    return () => {
+      isMounted = false;
+    };
+  }, [activeTopic?.id ?? "all"]);
 
   if (isLoading) {
     return <WorkspacePageSkeleton />;
   }
 
   const filteredBanks = filterBanks({ banks, query });
-  const totalPages = Math.max(1, Math.ceil(filteredBanks.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredBanks.length / itemsPerPage),
+  );
   const activePage = Math.min(currentPage, totalPages);
   const paginatedBanks = filteredBanks.slice(
     (activePage - 1) * itemsPerPage,
     activePage * itemsPerPage,
   );
   // simplified total questions count
-  const totalQuestions = banks.reduce((sum, bank: any) => sum + (bank.questionCount || 0), 0);
+  const totalQuestions = banks.reduce(
+    (sum, bank: any) => sum + (bank.questionCount || 0),
+    0,
+  );
   const hasActiveFilters = query.trim().length > 0;
 
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
-            <CardTitle>Bank library {activeTopic ? `(${activeTopic.name})` : ""}</CardTitle>
+            <CardTitle>
+              Bank library {activeTopic ? `(${activeTopic.name})` : ""}
+            </CardTitle>
             <CardDescription>
-              Search, scan metadata, and jump into bank-specific authoring workflows.
+              Search, scan metadata, and jump into bank-specific authoring
+              workflows.
             </CardDescription>
           </div>
         </CardHeader>
@@ -117,7 +141,9 @@ function BanksPageContent() {
           <div>
             {filteredBanks.length === 0 ? (
               <StateMessage
-                title={hasActiveFilters ? "No banks found" : "No banks available"}
+                title={
+                  hasActiveFilters ? "No banks found" : "No banks available"
+                }
                 description={
                   hasActiveFilters
                     ? "No question banks match the current search or topic filter."

@@ -1,14 +1,10 @@
-function SkeletonBlock({
-  className,
-}: {
-  className: string;
-}) {
+function SkeletonBlock({ className }: { className: string }) {
   return <div className={`animate-pulse rounded-2xl bg-muted ${className}`} />;
 }
 
 export default function AssessmentsCatalogLoading() {
   return (
-    <div className="space-y-6 px-4 py-4">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-3">
           <SkeletonBlock className="h-10 w-64" />
@@ -19,7 +15,10 @@ export default function AssessmentsCatalogLoading() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }, (_, index) => (
-          <div key={index} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div
+            key={index}
+            className="rounded-2xl border border-border bg-card p-6 shadow-sm"
+          >
             <div className="flex items-start justify-between">
               <div className="space-y-3">
                 <SkeletonBlock className="h-3 w-28" />

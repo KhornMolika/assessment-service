@@ -73,7 +73,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-30 md:translate-x-0
+      className={`fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-50 md:translate-x-0
         ${collapsed ? "w-20" : "w-72"}
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
@@ -81,7 +81,7 @@ export default function Sidebar() {
       <Button
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-primary shadow-sm transition hover:bg-muted focus:outline-none focus:ring-2 focus:ring-pm md:flex"
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} variant="secondary"
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} variant="secondary" size="icon"
       >
         {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
       </Button>

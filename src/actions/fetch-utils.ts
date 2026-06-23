@@ -1,28 +1,24 @@
-import { getAccessToken } from "@/src/lib/session";
+import { apiClient } from "@/src/lib/api-client";
 
-const API_URL = process.env.API_URL || "http://localhost:3001/api/v1";
-
-export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-  const token = await getAccessToken();
-  const headers = new Headers(options.headers);
+export async function fetchWithAuth<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const method = options.method?.toUpperCase() || "GET";
   
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  if (method === "GET") {
+    return apiClient.get(endpoint, options);
+  } else if (method === "POST") {
+    // We assume body is a stringified JSON if it's a string, or parse it back
+    // apiClient expects an object for body, but fetchWithAuth was receiving JSON.stringify(payload)
+    const bodyObj = typeof options.body === "string" ? JSON.parse(options.body) : options.body;
+    return apiClient.post(endpoint, bodyObj, options);
+  } else if (method === "PATCH") {
+    const bodyObj = typeof options.body === "string" ? JSON.parse(options.body) : options.body;
+    return apiClient.patch(endpoint, bodyObj, options);
+  } else if (method === "PUT") {
+    const bodyObj = typeof options.body === "string" ? JSON.parse(options.body) : options.body;
+    return apiClient.put(endpoint, bodyObj, options);
+  } else if (method === "DELETE") {
+    return apiClient.delete(endpoint, options);
   }
   
-  if (!headers.has("Content-Type") && options.method && options.method !== "GET" && options.method !== "DELETE") {
-    headers.set("Content-Type", "application/json");
-  }
-
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!res.ok) {
-    throw new Error(`API error: ${res.status} ${res.statusText}`);
-  }
-
-  if (res.status === 204) return null;
-  return res.json();
+  throw new Error(`Unsupported method ${method} in fetchWithAuth`);
 }

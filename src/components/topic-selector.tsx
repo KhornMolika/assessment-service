@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { fetchTopics } from "@/src/actions/topic-actions";
+import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 
 export function TopicSelector() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const { activeTopic, topics, isLoading, setActiveTopic, setTopics, setLoading } = useTopicStore();
+  const { activeTopic, topics, setActiveTopic, setTopics } = useTopicStore();
+  const [isFetching, setIsFetching] = useState(topics.length === 0);
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadTopics() {
-      setLoading(true);
+      setIsFetching(true);
       try {
         const fetchedTopics = await fetchTopics();
         if (isMounted) {
@@ -35,7 +37,7 @@ export function TopicSelector() {
         console.error("Failed to fetch topics", error);
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setIsFetching(false);
         }
       }
     }
@@ -44,6 +46,7 @@ export function TopicSelector() {
     if (topics.length === 0) {
       loadTopics();
     } else {
+      setIsFetching(false);
       // Sync URL if topics are already loaded
       const topicParam = searchParams.get("topic");
       if (topicParam) {
@@ -57,10 +60,9 @@ export function TopicSelector() {
     return () => {
       isMounted = false;
     };
-  }, [searchParams, setActiveTopic, setLoading, setTopics, topics.length]); // Intentionally not including activeTopic to avoid loops
+  }, [searchParams, setActiveTopic, setTopics, topics.length]); // Intentionally not including activeTopic to avoid loops
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
+  const handleChange = (selectedId: string) => {
     if (selectedId === "") {
       setActiveTopic(null);
       // Remove ?topic completely from URL
@@ -79,7 +81,7 @@ export function TopicSelector() {
     }
   };
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <div className="flex w-40 sm:w-50 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium shadow-sm h-10 animate-pulse">
         <div className="h-4 w-20 bg-slate-200 rounded"></div>
@@ -87,19 +89,24 @@ export function TopicSelector() {
     );
   }
 
+  const topicOptions = [
+    { value: "", label: "All Topics" },
+    ...topics
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((t) => ({ value: t.id, label: t.name })),
+  ];
+
   return (
-    <select
-      value={activeTopic?.id ?? ""}
-      onChange={handleChange}
-      className="w-40 sm:w-50 rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-ink shadow-sm transition hover:bg-accent focus:outline-none focus:ring-2 focus:ring-pm h-10"
-      aria-label="Filter workspace by topic"
-    >
-      <option value="">All Topics</option>
-      {topics.map((topic) => (
-        <option key={topic.id} value={topic.id}>
-          {topic.name}
-        </option>
-      ))}
-    </select>
+    <div className="w-40 sm:w-50">
+      <DropdownSelect
+        value={activeTopic?.id ?? ""}
+        options={topicOptions}
+        onChange={handleChange}
+        searchable
+        searchPlaceholder="Search topics..."
+        className="w-full"
+      />
+    </div>
   );
 }

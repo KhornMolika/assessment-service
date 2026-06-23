@@ -31,6 +31,7 @@ export const useTopicStore = create<TopicStore>()(
     {
       name: 'topic-store', // name of the item in the storage (must be unique)
       storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+      partialize: (state) => ({ activeTopic: state.activeTopic }),
     }
   )
 );

@@ -6,7 +6,13 @@ import { questionBankFormSchema } from "@/src/schemas/question-bank-form.schema"
 import type { Topic } from "@/src/types/topic.types";
 import { createBankAction } from "@/src/lib/actions/bank.actions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/ui/card";
 import BankNewHeader from "./BankNewHeader";
 import { NewQuestionBankFormData } from "@/src/types/question-bank-form.types";
 import { BankVisibility } from "@/src/types/api";
@@ -34,7 +40,8 @@ function normalizeTags(tags: string) {
 
 export default function BankNewForm({ topics }: { topics: Topic[] }) {
   const router = useRouter();
-  const [formData, setFormData] = useState<NewQuestionBankFormData>(initialFormData);
+  const [formData, setFormData] =
+    useState<NewQuestionBankFormData>(initialFormData);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const [isPending, startTransition] = useTransition();
@@ -45,13 +52,15 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
 
     if (!validationResult.success) {
       setValidationErrors(
-        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
+        Array.from(
+          new Set(validationResult.error.issues.map((issue) => issue.message)),
+        ),
       );
       return;
     }
 
     setValidationErrors([]);
-    
+
     startTransition(async () => {
       const res = await createBankAction(formData.ownerTopicId, {
         name: formData.name,
@@ -69,35 +78,39 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
   };
 
   return (
-    <div className="space-y-6 px-4 py-4 sm:px-6">
+    <div className="space-y-6 sm:px-6">
       <BankNewHeader formId={createFormId} />
 
       <Card>
         <CardHeader>
           <CardTitle>Bank details</CardTitle>
-        <CardDescription>
-          Give this bank a clear name, a useful summary, and tags people can actually search for.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form id={createFormId} onSubmit={handleSubmit} className="space-y-6">
-          {validationErrors.length > 0 ? (
-            <StateMessage
-              tone="error"
-              title="Please fix the bank form"
-              description={
-                <div className="space-y-1">
-                  {validationErrors.map((message) => (
-                    <div key={message}>{message}</div>
-                  ))}
-                </div>
-              }
-            />
-          ) : null}
+          <CardDescription>
+            Give this bank a clear name, a useful summary, and tags people can
+            actually search for.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form id={createFormId} onSubmit={handleSubmit} className="space-y-6">
+            {validationErrors.length > 0 ? (
+              <StateMessage
+                tone="error"
+                title="Please fix the bank form"
+                description={
+                  <div className="space-y-1">
+                    {validationErrors.map((message) => (
+                      <div key={message}>{message}</div>
+                    ))}
+                  </div>
+                }
+              />
+            ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="bank-name" className="block text-sm font-semibold text-primary">
-              Bank name *
+            <div className="space-y-2">
+              <Label
+                htmlFor="bank-name"
+                className="block text-sm font-semibold text-primary"
+              >
+                Bank name *
               </Label>
               <Input
                 id="bank-name"
@@ -105,7 +118,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                 placeholder="e.g. Mathematics - Grade 11"
                 value={formData.name}
                 onChange={(event) => {
-                  setFormData((current) => ({ ...current, name: event.target.value }));
+                  setFormData((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }));
                   setValidationErrors([]);
                 }}
                 required
@@ -116,7 +132,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
 
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
               <div className="space-y-2">
-                <Label htmlFor="bank-description" className="block text-sm font-semibold text-primary">
+                <Label
+                  htmlFor="bank-description"
+                  className="block text-sm font-semibold text-primary"
+                >
                   Description
                 </Label>
                 <Textarea
@@ -124,7 +143,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                   placeholder="Briefly describe the type of questions this bank should contain"
                   value={formData.description}
                   onChange={(event) => {
-                    setFormData((current) => ({ ...current, description: event.target.value }));
+                    setFormData((current) => ({
+                      ...current,
+                      description: event.target.value,
+                    }));
                     setValidationErrors([]);
                   }}
                   rows={5}
@@ -133,18 +155,22 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bank-owner-topic" className="block text-sm font-semibold text-primary">
+                <Label
+                  htmlFor="bank-owner-topic"
+                  className="block text-sm font-semibold text-primary"
+                >
                   Owner Topic
                 </Label>
                 <Select
                   id="bank-owner-topic"
                   value={formData.ownerTopicId}
-                  onChange={(event) =>
-                    {
-                      setFormData((current) => ({ ...current, ownerTopicId: event.target.value }));
-                      setValidationErrors([]);
-                    }
-                  }
+                  onChange={(event) => {
+                    setFormData((current) => ({
+                      ...current,
+                      ownerTopicId: event.target.value,
+                    }));
+                    setValidationErrors([]);
+                  }}
                   className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
                 >
                   <option value="">Select a topic owner</option>
@@ -160,21 +186,23 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="bank-visibility" className="block text-sm font-semibold text-primary">
+                <Label
+                  htmlFor="bank-visibility"
+                  className="block text-sm font-semibold text-primary"
+                >
                   Visibility
                 </Label>
                 <Select
                   id="bank-visibility"
                   value={formData.visibility}
-                  onChange={(event) =>
-                    {
-                      setFormData((current) => ({
-                        ...current,
-                        visibility: event.target.value as NewQuestionBankFormData["visibility"],
-                      }));
-                      setValidationErrors([]);
-                    }
-                  }
+                  onChange={(event) => {
+                    setFormData((current) => ({
+                      ...current,
+                      visibility: event.target
+                        .value as NewQuestionBankFormData["visibility"],
+                    }));
+                    setValidationErrors([]);
+                  }}
                   className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"
                 >
                   <option value="PRIVATE">Private</option>
@@ -182,13 +210,17 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                   <option value="PUBLIC">Public</option>
                 </Select>
                 <p className="text-xs text-inkd">
-                  Choose who can discover and reuse this bank once it is published.
+                  Choose who can discover and reuse this bank once it is
+                  published.
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bank-tags" className="block text-sm font-semibold text-primary">
+              <Label
+                htmlFor="bank-tags"
+                className="block text-sm font-semibold text-primary"
+              >
                 Tags
               </Label>
               <Input
@@ -197,7 +229,10 @@ export default function BankNewForm({ topics }: { topics: Topic[] }) {
                 placeholder="e.g. Math, Grade 10, Midterm"
                 value={formData.tags}
                 onChange={(event) => {
-                  setFormData((current) => ({ ...current, tags: event.target.value }));
+                  setFormData((current) => ({
+                    ...current,
+                    tags: event.target.value,
+                  }));
                   setValidationErrors([]);
                 }}
                 className="w-full rounded-lg border border-border bg-card px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pm"

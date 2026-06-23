@@ -6,13 +6,14 @@ import { useState, useTransition } from "react";
 import type { QuestionBank } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import { questionFormSchema } from "@/src/schemas/question-form.schema";
-import type { QuestionFormData } from "@/src/types/question-form.types";
+import type { QuestionFormData, QuestionFormType } from "@/src/types/question-form.types";
 import QuestionDetailsCard from "@/src/components/content/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/components/content/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/components/content/question-form/QuestionTypeSettingsCard";
 import { updateQuestionAction } from "@/src/lib/actions/question.actions";
-import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { toast } from "sonner";
 import QuestionEditHeader from "./QuestionEditHeader";
+import { getDefaultOptionsAndAnswers, mapToApiPayload } from "@/src/utils/question-form-utils";
 
 const editFormId = "question-edit-form";
 
@@ -29,7 +30,6 @@ export default function QuestionEditForm({
 }) {
   const router = useRouter();
   const [formData, setFormData] = useState<QuestionFormData>(initialFormData);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
   const handleChange = <K extends keyof QuestionFormData>(
@@ -37,14 +37,15 @@ export default function QuestionEditForm({
     value: QuestionFormData[K],
   ) => {
     setFormData((current) => {
-      const next = {
-        ...current,
-        [field]: value,
-      } as QuestionFormData;
-
+      let next = { ...current, [field]: value } as QuestionFormData;
+      
+      if (field === "questionType") {
+        const defaults = getDefaultOptionsAndAnswers(value as QuestionFormType);
+        next.options = defaults.options;
+        next.correctAnswers = defaults.correctAnswers;
+      }
       return next;
     });
-    setValidationErrors([]);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -52,20 +53,23 @@ export default function QuestionEditForm({
     const validationResult = questionFormSchema.safeParse(formData);
 
     if (!validationResult.success) {
-      setValidationErrors(
-        Array.from(new Set(validationResult.error.issues.map((issue) => issue.message))),
-      );
+      const issues = Array.from(new Set(validationResult.error.issues.map((issue) => issue.message)));
+      toast.error("Validation failed", { description: issues.join("\n") });
       return;
     }
-
-    setValidationErrors([]);
     
     startTransition(async () => {
-      const res = await updateQuestionAction(questionId, formData);
-      if (!res.success) {
-        setValidationErrors([res.error || "Failed to update question"]);
-      } else {
-        router.push(`/questions/${questionId}`);
+      try {
+        const payload = mapToApiPayload(formData, true);
+        const res = await updateQuestionAction(questionId, payload);
+        if (!res.success) {
+          toast.error("Failed to update question", { description: res.error });
+        } else {
+          toast.success("Question updated successfully");
+          router.push(`/questions/${questionId}`);
+        }
+      } catch (err: any) {
+        toast.error("Validation failed", { description: err.message || "Failed to update question" });
       }
     });
   };
@@ -76,22 +80,9 @@ export default function QuestionEditForm({
 
       <form id={editFormId} onSubmit={handleSubmit} className="space-y-6">
         <fieldset disabled={isPending} className="space-y-6">
-        {validationErrors.length > 0 ? (
-          <StateMessage
-            tone="error"
-            title="Please fix the question form"
-            description={
-              <div className="space-y-1">
-                {validationErrors.map((message) => (
-                  <div key={message}>{message}</div>
-                ))}
-              </div>
-            }
-          />
-        ) : null}
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <div className="space-y-6">
+        <div className="space-y-6 flex flex-col">
+          <div className="relative z-20">
             <QuestionDetailsCard
               banks={banks}
               topics={topics}
@@ -102,7 +93,7 @@ export default function QuestionEditForm({
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 relative z-10">
             <QuestionTypeSettingsCard
               formData={formData}
               onChange={handleChange}

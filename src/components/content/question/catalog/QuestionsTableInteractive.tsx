@@ -61,77 +61,11 @@ export default function QuestionsTableInteractive({
 }) {
   const [items, setItems] = useState(questions);
   const [questionPendingDelete, setQuestionPendingDelete] = useState<Question | null>(null);
-  const [questionPendingDuplicate, setQuestionPendingDuplicate] = useState<Question | null>(null);
-  const [duplicateForm, setDuplicateForm] = useState({
-    questionText: "",
-    points: 1,
-    difficulty: "MEDIUM",
-    topicId: "",
-  });
-  const [isPending, startTransition] = useTransition();
-
-  const [topicSearch, setTopicSearch] = useState("");
-  const [isTopicDropdownOpen, setIsTopicDropdownOpen] = useState(false);
-  
-  const selectedTopic = topics?.find((t) => t.id === duplicateForm.topicId);
-  const isActivelySearching = topicSearch !== (selectedTopic?.name || "");
-
-  const filteredTopics = topics?.filter((t) => {
-    if (!isActivelySearching) return true;
-    return t.name.toLowerCase().includes(topicSearch.toLowerCase());
-  }) || [];
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   useEffect(() => {
     setItems(questions);
   }, [questions]);
-
-  const handleOpenDuplicate = (question: Question) => {
-    setQuestionPendingDuplicate(question);
-    const initialTopicId = question.topicId || (topics && topics.length > 0 ? topics[0].id : "");
-    const initialTopic = topics?.find((t) => t.id === initialTopicId);
-
-    setDuplicateForm({
-      questionText: `${question.questionText} (Copy)`,
-      points: question.points,
-      difficulty: question.difficulty,
-      topicId: initialTopicId,
-    });
-    setTopicSearch(initialTopic ? initialTopic.name : "");
-  };
-
-  const handleConfirmDuplicate = () => {
-    if (!questionPendingDuplicate) return;
-
-    if (!duplicateForm.topicId) {
-      toast.error("Cannot duplicate question: missing topic ID.");
-      return;
-    }
-
-    startTransition(async () => {
-      const duplicateData = {
-        ...questionPendingDuplicate,
-        questionText: duplicateForm.questionText,
-        points: duplicateForm.points,
-        difficulty: duplicateForm.difficulty as any,
-        topicId: duplicateForm.topicId,
-      };
-
-      // Remove generated fields
-      delete (duplicateData as any).id;
-      delete (duplicateData as any).createdAt;
-      delete (duplicateData as any).updatedAt;
-
-      const res = await createQuestionAction(duplicateForm.topicId, duplicateData);
-
-      if (res.success && res.question) {
-        toast.success("Question duplicated successfully");
-        setItems((current) => [res.question!, ...current]);
-        setQuestionPendingDuplicate(null);
-      } else {
-        toast.error(res.error || "Failed to duplicate question");
-      }
-    });
-  };
 
   const handleDeleteQuestion = (questionId: string) => {
     setItems((current) => current.filter((question) => question.id !== questionId));
@@ -189,14 +123,13 @@ export default function QuestionsTableInteractive({
                     >
                       <Edit className="h-5 w-5" />
                     </Link>
-                    <Button
-                      onClick={() => handleOpenDuplicate(question)}
-                      size="icon"
-                      className="h-8 w-8 rounded text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
-                      title="Duplicate question" variant="ghost"
+                    <Link
+                      href={`/questions/${question.id}/duplicate`}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                      title="Duplicate question"
                     >
                       <Copy className="h-5 w-5" />
-                    </Button>
+                    </Link>
                     <Button
                       onClick={() => setQuestionPendingDelete(question)}
                       size="icon"
@@ -224,7 +157,10 @@ export default function QuestionsTableInteractive({
                 </p>
               </div>
               <Button
-                onClick={() => setQuestionPendingDelete(null)}
+                onClick={() => {
+                  setQuestionPendingDelete(null);
+                  setDeleteConfirmText("");
+                }}
                 className="rounded p-1 transition hover:bg-muted"
                 aria-label="Close delete confirmation" variant="secondary"
               >
@@ -241,141 +177,38 @@ export default function QuestionsTableInteractive({
               </div>
             </div>
 
+            <div className="mt-4">
+              <label className="mb-2 block text-sm font-medium text-inkd">
+                Please type <strong>delete</strong> to confirm:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="Type 'delete'"
+              />
+            </div>
+
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <Button
-                onClick={() => setQuestionPendingDelete(null)}
+                onClick={() => {
+                  setQuestionPendingDelete(null);
+                  setDeleteConfirmText("");
+                }}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-muted" variant="secondary"
               >
                 Cancel
               </Button>
               <Button
-                onClick={() => handleDeleteQuestion(questionPendingDelete.id)}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700" variant="destructive"
+                onClick={() => {
+                  handleDeleteQuestion(questionPendingDelete.id);
+                  setDeleteConfirmText("");
+                }}
+                disabled={deleteConfirmText.toLowerCase() !== "delete"}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed" variant="destructive"
               >
                 Delete question
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {questionPendingDuplicate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-primary">Duplicate question</h2>
-                <p className="mt-2 text-sm text-inkd">
-                  Modify the details below to create a new question based on the selected one.
-                </p>
-              </div>
-              <Button
-                onClick={() => setQuestionPendingDuplicate(null)}
-                className="rounded p-1 transition hover:bg-muted"
-                aria-label="Close duplicate modal" variant="secondary"
-              >
-                <X className="h-5 w-5 text-inkd" />
-              </Button>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-primary">Topic</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={topicSearch}
-                    onChange={(e) => {
-                      setTopicSearch(e.target.value);
-                      setIsTopicDropdownOpen(true);
-                      setDuplicateForm({ ...duplicateForm, topicId: "" });
-                    }}
-                    onFocus={() => setIsTopicDropdownOpen(true)}
-                    onBlur={() => {
-                      // Delay to allow mousedown on dropdown items to fire
-                      setTimeout(() => setIsTopicDropdownOpen(false), 200);
-                    }}
-                    placeholder="Search for a topic..."
-                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  />
-                  {isTopicDropdownOpen && (
-                    <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-border bg-card shadow-lg">
-                      {filteredTopics.length > 0 ? (
-                        filteredTopics.map((t) => (
-                          <div
-                            key={t.id}
-                            className={`cursor-pointer px-4 py-2 text-sm hover:bg-muted ${
-                              duplicateForm.topicId === t.id
-                                ? "bg-muted font-medium text-pm"
-                                : "text-primary"
-                            }`}
-                            onMouseDown={() => {
-                              setDuplicateForm({ ...duplicateForm, topicId: t.id });
-                              setTopicSearch(t.name);
-                              setIsTopicDropdownOpen(false);
-                            }}
-                          >
-                            {t.name}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-sm text-inkd">No topics found.</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-primary">Question text</label>
-                <textarea
-                  value={duplicateForm.questionText}
-                  onChange={(e) => setDuplicateForm({ ...duplicateForm, questionText: e.target.value })}
-                  className="w-full resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  rows={4}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-primary">Difficulty</label>
-                  <select
-                    value={duplicateForm.difficulty}
-                    onChange={(e) => setDuplicateForm({ ...duplicateForm, difficulty: e.target.value })}
-                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  >
-                    <option value="EASY">Easy</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HARD">Hard</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-primary">Points</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={duplicateForm.points}
-                    onChange={(e) => setDuplicateForm({ ...duplicateForm, points: parseInt(e.target.value) || 1 })}
-                    className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pm"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex justify-end gap-3">
-              <Button
-                onClick={() => setQuestionPendingDuplicate(null)}
-                disabled={isPending}
-                className="rounded-xl border border-border px-5 py-2.5 text-sm font-medium transition hover:bg-muted" variant="secondary"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleConfirmDuplicate}
-                disabled={isPending}
-                className="inline-flex rounded-xl bg-pm px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-pm/90 disabled:opacity-50"
-              >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save as new question
               </Button>
             </div>
           </div>

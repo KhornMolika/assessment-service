@@ -2,7 +2,7 @@
 
 import { fetchWithAuth } from "./fetch-utils";
 
-export type CreateQuestionPayload = 
+export type CreateQuestionPayload =
   | {
       type: "SINGLE_CHOICE";
       questionText: string;
@@ -99,7 +99,10 @@ export interface Question {
   correctAnswers: any;
 }
 
-export async function createQuestion(topicId: string, payload: CreateQuestionPayload): Promise<Question> {
+export async function createQuestion(
+  topicId: string,
+  payload: CreateQuestionPayload,
+): Promise<Question> {
   const data = await fetchWithAuth(`/topics/${topicId}/questions`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -107,7 +110,10 @@ export async function createQuestion(topicId: string, payload: CreateQuestionPay
   return data.data || data;
 }
 
-export async function updateQuestion(id: string, payload: Partial<Omit<CreateQuestionPayload, 'type'>>): Promise<Question> {
+export async function updateQuestion(
+  id: string,
+  payload: Partial<Omit<CreateQuestionPayload, "type">>,
+): Promise<Question> {
   const data = await fetchWithAuth(`/questions/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
@@ -121,12 +127,16 @@ export async function deleteQuestion(id: string): Promise<void> {
   });
 }
 
-export async function fetchTopicQuestions(topicId: string): Promise<Question[]> {
-  const data = await fetchWithAuth(`/topics/${topicId}/questions?page=1&limit=100`);
+export async function fetchTopicQuestions(
+  topicId: string,
+): Promise<Question[]> {
+  const data = await fetchWithAuth(
+    `/topics/${topicId}/questions?page=1&limit=500`,
+  );
   return Array.isArray(data.data) ? data.data : data;
 }
 
 export async function fetchGlobalQuestions(): Promise<Question[]> {
-  const data = await fetchWithAuth(`/questions?page=1&limit=100`);
+  const data = await fetchWithAuth(`/questions?page=1&limit=500`);
   return Array.isArray(data.data) ? data.data : data;
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { QuestionFormData } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
-import { Check, GripVertical, Plus, X, Type, ListOrdered, Link as LinkIcon, Edit3, MessageSquare, Star, FileQuestion } from "lucide-react";
+import { Check, GripVertical, Plus, X, Type, ListOrdered, Link as LinkIcon, Edit3, MessageSquare, Star, FileQuestion, ChevronUp, ChevronDown } from "lucide-react";
 import { Label } from "@/src/components/ui/ui/label";
 import { Button } from "@/src/components/ui/ui/button";
 import { Select } from "@/src/components/ui/ui/select";
@@ -15,7 +15,7 @@ function getOptionLabel(index: number) {
 export default function QuestionTypeSettingsCard({
   formData,
   onChange,
-  title = "Type Settings",
+  title = "Question Settings",
   description,
   extraContent,
 }: {
@@ -246,12 +246,13 @@ export default function QuestionTypeSettingsCard({
                       placeholder="Keyword"
                       className="border-none bg-transparent text-sm w-24 focus:outline-none font-medium text-slate-700"
                     />
-                    <button onClick={() => removeKeyword(index)} className="p-1 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors">
+                    <button type="button" onClick={() => removeKeyword(index)} className="p-1 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors">
                       <X className="h-3 w-3" />
                     </button>
                   </div>
                 ))}
                 <button
+                  type="button"
                   onClick={() => onChange("correctAnswers", { ...formData.correctAnswers, keyPointsExpected: [...keywords, ""] })}
                   className="flex items-center justify-center h-8 w-8 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
                 >
@@ -315,6 +316,7 @@ export default function QuestionTypeSettingsCard({
                             className="border-none bg-transparent text-sm w-24 focus:outline-none font-medium text-slate-700"
                           />
                           <button 
+                            type="button"
                             onClick={() => {
                               const newGroups = [...answers];
                               newGroups[index] = newGroups[index].filter((_: any, idx: number) => idx !== i);
@@ -327,6 +329,7 @@ export default function QuestionTypeSettingsCard({
                         </div>
                       ))}
                       <button
+                        type="button"
                         onClick={() => {
                           const newGroups = [...answers];
                           newGroups[index] = [...newGroups[index], ""];
@@ -404,6 +407,7 @@ export default function QuestionTypeSettingsCard({
                     />
                     {pairs.length > 2 && (
                       <button
+                        type="button"
                         onClick={() => {
                           onChange("options", {
                             leftSide: leftSide.filter((_:any, i:number) => i !== index),
@@ -448,6 +452,15 @@ export default function QuestionTypeSettingsCard({
       case "Ordering": {
         const options = formData.options || [];
         
+        const moveOpt = (index: number, dir: 'up'|'down') => {
+          const target = dir === 'up' ? index - 1 : index + 1;
+          if (target < 0 || target >= options.length) return;
+          const newOpts = [...options];
+          [newOpts[index], newOpts[target]] = [newOpts[target], newOpts[index]];
+          onChange("options", newOpts);
+          onChange("correctAnswers", { sequence: newOpts.map((o:any) => o.id) });
+        };
+
         return (
           <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex items-center gap-2 mb-4">
@@ -463,7 +476,15 @@ export default function QuestionTypeSettingsCard({
             <div className="space-y-3">
               {options.map((opt: any, index: number) => (
                 <div key={opt.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md hover:border-purple-300">
-                  <div className="flex h-6 w-6 items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-md text-xs">
+                  <div className="flex flex-col gap-1">
+                    <button type="button" onClick={() => moveOpt(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                      <ChevronUp className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </button>
+                    <button type="button" onClick={() => moveOpt(index, 'down')} disabled={index === options.length - 1} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                      <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </button>
+                  </div>
+                  <div className="flex h-8 w-8 items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-md text-sm shrink-0">
                     {index + 1}
                   </div>
                   <Input
@@ -478,6 +499,7 @@ export default function QuestionTypeSettingsCard({
                   />
                   {options.length > 2 && (
                     <button
+                      type="button"
                       onClick={() => {
                         const newOpts = options.filter((_:any, i:number) => i !== index);
                         onChange("options", newOpts);
@@ -553,14 +575,11 @@ export default function QuestionTypeSettingsCard({
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-slate-600 uppercase">Max Value</Label>
                   <Select
-                    value={String(max)}
-                    onChange={(e) => onChange("options", { ...formData.options, max: parseInt(e.target.value) })}
-                    className="bg-white"
+                    value="5"
+                    disabled
+                    className="bg-slate-100 text-slate-500 cursor-not-allowed opacity-70"
                   >
-                    <option value="3">3</option>
                     <option value="5">5</option>
-                    <option value="7">7</option>
-                    <option value="10">10</option>
                   </Select>
                 </div>
                 <div className="space-y-2">
@@ -589,8 +608,8 @@ export default function QuestionTypeSettingsCard({
   };
 
   return (
-    <Card className="border-slate-200/60 shadow-sm overflow-hidden bg-white/50 backdrop-blur-sm">
-      <CardHeader className="bg-slate-50/50 border-b border-slate-100">
+    <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm">
+      <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
         <CardTitle className="text-lg text-slate-800">{title}</CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>

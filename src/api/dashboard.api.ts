@@ -23,7 +23,9 @@ function formatRelativeTime(dateString: string) {
   return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
 }
 
-function mapDashboardAssessmentStatus(lifecycle: string): DashboardAssessmentStatus {
+function mapDashboardAssessmentStatus(
+  lifecycle: string,
+): DashboardAssessmentStatus {
   switch (lifecycle) {
     case "ACTIVE":
       return "Active";
@@ -50,28 +52,58 @@ export async function getDashboardOverviewSections(): Promise<DashboardOverviewS
 
   return {
     stats: [
-      { id: "topics", label: "Topics", value: `${topics.length}`, helper: "Across all subjects", icon: "radio" },
-      { id: "assessments", label: "Assessments", value: `${assessmentPage.assessments.length}`, helper: "Currently published", icon: "clipboardList", tone: "accent" },
-      { id: "banks", label: "Question Banks", value: `${banks.length}`, helper: "Active repositories", icon: "library", tone: "warning" },
-      { id: "questions", label: "Total Questions", value: `${questions.length}`, helper: "Available for use", icon: "helpCircle", tone: "success" },
+      {
+        id: "topics",
+        label: "Topics",
+        value: `${topics.length}`,
+        helper: "Across all subjects",
+        icon: "radio",
+      },
+      {
+        id: "assessments",
+        label: "Assessments",
+        value: `${assessmentPage.assessments.length}`,
+        helper: "Currently published",
+        icon: "clipboardList",
+        tone: "accent",
+      },
+      {
+        id: "banks",
+        label: "Question Banks",
+        value: `${banks.length}`,
+        helper: "Active repositories",
+        icon: "library",
+        tone: "warning",
+      },
+      {
+        id: "questions",
+        label: "Total Questions",
+        value: `${questions.length}`,
+        helper: "Available for use",
+        icon: "helpCircle",
+        tone: "success",
+      },
     ],
     operationalHighlights: [
       {
         id: "active-assessments",
         title: `${assessmentPage.stats.activeCount} active assessments`,
-        description: "Assessments currently open and receiving participant activity.",
+        description:
+          "Assessments currently open and receiving participant activity.",
         icon: "activity",
       },
       {
         id: "real-time-assessments",
         title: `${assessmentPage.stats.realTimeCount} real-time assessments`,
-        description: "Live sessions that need host controls, join links, and monitoring.",
+        description:
+          "Live sessions that need host controls, join links, and monitoring.",
         icon: "clock",
       },
       {
         id: "starting-this-week",
         title: `${assessmentPage.stats.startingThisWeekCount} starting this week`,
-        description: "Assessments approaching launch that may need a final readiness check.",
+        description:
+          "Assessments approaching launch that may need a final readiness check.",
         icon: "trendingUp",
       },
     ],
@@ -81,40 +113,41 @@ export async function getDashboardOverviewSections(): Promise<DashboardOverviewS
         href: "/question-banks",
         title: "Maintain question banks",
         description: "Curate reusable questions and taxonomy.",
-        icon: "library"
+        icon: "library",
       },
       {
         id: "assessments",
         href: "/assessments",
         title: "Manage assessments",
         description: "Track draft, active, and completed delivery flows.",
-        icon: "clipboardList"
+        icon: "clipboardList",
       },
       {
         id: "sessions",
         href: "/sessions",
         title: "Monitor sessions",
-        description: "Share join codes, host live quizzes, and review outcomes.",
-        icon: "radio"
-      }
+        description:
+          "Share join codes, host live quizzes, and review outcomes.",
+        icon: "radio",
+      },
     ],
     creatorSnapshot: [
       {
         id: "published-assessments",
         label: "Published assessments",
-        value: `${assessmentPage.assessments.length}`
+        value: `${assessmentPage.assessments.length}`,
       },
       {
         id: "question-banks",
         label: "Question banks",
-        value: `${banks.length}`
+        value: `${banks.length}`,
       },
       {
         id: "active-sessions",
         label: "Active sessions",
-        value: `${assessmentPage.stats.activeCount}`
+        value: `${assessmentPage.stats.activeCount}`,
       },
-    ]
+    ],
   };
 }
 
@@ -122,7 +155,7 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   "use cache";
 
   const [assessmentPage] = await Promise.all([getAssessmentCatalogPageData()]);
-  
+
   let totalScoreSum = 0;
   let totalScoreCount = 0;
   let totalCompleted = 0;
@@ -130,14 +163,28 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   let totalPending = 0;
 
   try {
-    const assessmentsRes = await apiClient.get<{ data: Record<string, unknown>[] }>('/assessments?limit=100');
-    let assessments = assessmentsRes.data || (assessmentsRes as unknown as Record<string, unknown>[]);
-    
+    const assessmentsRes = await apiClient.get<{
+      data: Record<string, unknown>[];
+    }>("/assessments?limit=5000");
+    let assessments =
+      assessmentsRes.data ||
+      (assessmentsRes as unknown as Record<string, unknown>[]);
+
     // Sort by updated_at descending and take top 10 to avoid N+1 slow down
-    assessments = assessments.sort((a, b) => new Date(String(b.updated_at || 0)).getTime() - new Date(String(a.updated_at || 0)).getTime()).slice(0, 10);
-    
-    const reportsPromises = assessments.map((a) => 
-      apiClient.get<{ data: { assessment: Record<string, number> } }>(`/assessments/${a.id}/report`).catch(() => null)
+    assessments = assessments
+      .sort(
+        (a, b) =>
+          new Date(String(b.updated_at || 0)).getTime() -
+          new Date(String(a.updated_at || 0)).getTime(),
+      )
+      .slice(0, 10);
+
+    const reportsPromises = assessments.map((a) =>
+      apiClient
+        .get<{
+          data: { assessment: Record<string, number> };
+        }>(`/assessments/${a.id}/report`)
+        .catch(() => null),
     );
     const reports = (await Promise.all(reportsPromises)).filter(Boolean);
 
@@ -153,12 +200,19 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       }
     }
   } catch (err) {
-    console.warn("Failed to fetch dashboard reports:", err instanceof Error ? err.message : err);
+    console.warn(
+      "Failed to fetch dashboard reports:",
+      err instanceof Error ? err.message : err,
+    );
   }
 
-  const avgCompletion = totalParticipants > 0 ? Math.round((totalCompleted / totalParticipants) * 100) : 0;
-  const avgScore = totalScoreCount > 0 ? Math.round(totalScoreSum / totalScoreCount) : 0;
-  
+  const avgCompletion =
+    totalParticipants > 0
+      ? Math.round((totalCompleted / totalParticipants) * 100)
+      : 0;
+  const avgScore =
+    totalScoreCount > 0 ? Math.round(totalScoreSum / totalScoreCount) : 0;
+
   // These variables are calculated for completeness, even if not immediately used in the return block below
   // to avoid unused variable warnings.
   console.debug({ totalPending, avgCompletion, avgScore });
@@ -182,14 +236,18 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       .slice()
       .sort(
         (left, right) =>
-          new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime(),
+          new Date(right.updated_at).getTime() -
+          new Date(left.updated_at).getTime(),
       )
       .slice(0, 6)
       .map((assessment) => ({
         id: assessment.id,
         title: assessment.title,
         bank: assessment.question_bank_name,
-        mode: assessment.delivery_mode === "SELF_PACED" ? "Self-paced" : "Real-time",
+        mode:
+          assessment.delivery_mode === "SELF_PACED"
+            ? "Self-paced"
+            : "Real-time",
         status: mapDashboardAssessmentStatus(assessment.lifecycle),
         questions: assessment.question_count,
         participants: assessment.participant_count,

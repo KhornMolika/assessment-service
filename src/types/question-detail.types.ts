@@ -77,7 +77,7 @@ export interface ApiQuestionResponse {
   difficulty: string;
   points: number;
   options: any;
-  text: string;
+  questionText: string;
   correctAnswers: any;
   topicId: string | null;
 }

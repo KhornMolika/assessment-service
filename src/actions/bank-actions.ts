@@ -16,7 +16,10 @@ export type UpdateBankPayload = {
   visibility?: "PUBLIC" | "PRIVATE";
 };
 
-export async function createQuestionBank(topicId: string, payload: CreateBankPayload): Promise<QuestionBank> {
+export async function createQuestionBank(
+  topicId: string,
+  payload: CreateBankPayload,
+): Promise<QuestionBank> {
   const data = await fetchWithAuth(`/topics/${topicId}/banks`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -24,7 +27,10 @@ export async function createQuestionBank(topicId: string, payload: CreateBankPay
   return data.data || data;
 }
 
-export async function updateQuestionBank(id: string, payload: UpdateBankPayload): Promise<QuestionBank> {
+export async function updateQuestionBank(
+  id: string,
+  payload: UpdateBankPayload,
+): Promise<QuestionBank> {
   const data = await fetchWithAuth(`/banks/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
@@ -38,7 +44,9 @@ export async function deleteQuestionBank(id: string): Promise<void> {
   });
 }
 
-export async function fetchTopicBanks(topicId: string): Promise<QuestionBank[]> {
+export async function fetchTopicBanks(
+  topicId: string,
+): Promise<QuestionBank[]> {
   const data = await fetchWithAuth(`/topics/${topicId}/banks`);
   return Array.isArray(data.data) ? data.data : data;
 }
@@ -49,18 +57,26 @@ export async function fetchGlobalBanks(): Promise<QuestionBank[]> {
 }
 
 export async function fetchBankQuestions(bankId: string): Promise<Question[]> {
-  const data = await fetchWithAuth(`/banks/${bankId}/questions?page=1&limit=100`);
+  const data = await fetchWithAuth(
+    `/banks/${bankId}/questions?page=1&limit=500`,
+  );
   return Array.isArray(data.data) ? data.data : data;
 }
 
-export async function addQuestionsToBank(bankId: string, questionIds: string[]): Promise<void> {
+export async function addQuestionsToBank(
+  bankId: string,
+  questionIds: string[],
+): Promise<void> {
   await fetchWithAuth(`/banks/${bankId}/questions`, {
     method: "POST",
     body: JSON.stringify({ questionIds }),
   });
 }
 
-export async function removeQuestionFromBank(bankId: string, questionId: string): Promise<void> {
+export async function removeQuestionFromBank(
+  bankId: string,
+  questionId: string,
+): Promise<void> {
   await fetchWithAuth(`/banks/${bankId}/questions/${questionId}`, {
     method: "DELETE",
   });

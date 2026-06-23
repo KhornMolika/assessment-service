@@ -8,10 +8,8 @@ import DeleteQuestionModal from "./DeleteQuestionModal";
 
 export default function QuestionDetailHero({
   question,
-  onDuplicate,
 }: {
   question: ApiQuestionResponse;
-  onDuplicate: () => void;
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -31,7 +29,7 @@ export default function QuestionDetailHero({
     <div className="w-full pb-6">
       <PageHeaderCard
           backHref="/questions"
-          title={question.text}
+          title="Question Details"
           actions={
             <div className="relative" ref={menuRef}>
               <Button
@@ -51,15 +49,12 @@ export default function QuestionDetailHero({
                   >
                     <Edit className="h-4 w-4" /> Edit
                   </Link>
-                  <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      onDuplicate();
-                    }}
+                  <Link
+                    href={`/questions/${question.id}/duplicate`}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
                   >
                     <Copy className="h-4 w-4" /> Duplicate
-                  </button>
+                  </Link>
                   <button
                     onClick={() => {
                       setShowMenu(false);
