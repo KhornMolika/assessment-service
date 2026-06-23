@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchTopicBanks, fetchGlobalBanks } from "@/src/actions/bank-actions";
 import BanksCatalogToolbar from "@/src/components/content/bank/catalog/BanksCatalogToolbar";
-import BankGridInteractive from "@/src/components/content/bank/catalog/BankGridInteractive";
+import BankTableInteractive from "@/src/components/content/bank/catalog/BankTableInteractive";
 import BanksHeader from "@/src/components/content/bank/catalog/BanksHeader";
 import type { QuestionBank } from "@/src/types/api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
@@ -64,7 +64,7 @@ function BanksPageContent() {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
-  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 6);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
 
   const activeTopic = useTopicStore((s) => s.activeTopic);
 
@@ -161,7 +161,7 @@ function BanksPageContent() {
                 }
               />
             ) : (
-              <BankGridInteractive banks={paginatedBanks as any} />
+              <BankTableInteractive banks={paginatedBanks as any} />
             )}
           </div>
         </CardContent>
@@ -171,14 +171,14 @@ function BanksPageContent() {
             pathname="/banks"
             searchParams={{
               query: query || null,
-              pageSize: itemsPerPage === 6 ? null : String(itemsPerPage),
+              pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
             }}
             currentPage={activePage}
             totalPages={totalPages}
             pageSize={itemsPerPage}
-            defaultPageSize={6}
+            defaultPageSize={10}
             totalItems={filteredBanks.length}
-            pageSizeOptions={[6, 9, 12, 24]}
+            pageSizeOptions={[5, 10, 20, 50]}
             itemLabel="banks"
           />
         ) : null}

@@ -1,60 +1,65 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { deleteQuestion } from "@/src/actions/question-actions";
 import type { ApiQuestionResponse } from "@/src/types/question-detail.types";
-import { Button } from "@/src/components/ui/ui/button";
-import { Modal } from "@/src/components/ui/ui/modal";
+import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 
 export default function DeleteQuestionModal({
   open,
   question,
   onClose,
+  onDeleted,
 }: {
   open: boolean;
-  question: ApiQuestionResponse;
+  question: { id: string; questionText: string } | null;
   onClose: () => void;
+  onDeleted?: () => void;
 }) {
   const router = useRouter();
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const handleClose = () => {
-    setDeleteConfirmText("");
-    onClose();
+  const handleConfirm = () => {
+    if (!question) return;
+    
+    startTransition(async () => {
+      try {
+        await deleteQuestion(question.id);
+        toast.success("Question deleted successfully");
+        if (onDeleted) {
+          onDeleted();
+        } else {
+          onClose();
+          router.push("/questions");
+        }
+      } catch (error: any) {
+        toast.error("Failed to delete question", {
+          description: error.message || "An unexpected error occurred",
+        });
+        console.error(error);
+      }
+    });
   };
 
-  return (
-    <Modal open={open} onClose={handleClose}>
-      <h3 className="mb-6 text-2xl font-bold text-primary">Delete Question</h3>
-      <div className="space-y-6">
-        <p className="text-sm text-inkd">
-          Are you sure you want to delete this question? This action cannot be undone.
-        </p>
+  // Truncate long question texts for the UI
+  const text = question?.questionText || "";
+  const questionTitle = text.length > 50 
+    ? text.substring(0, 50) + "..." 
+    : text;
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-inkd">
-            Please type <strong>delete</strong> to confirm:
-          </label>
-          <input
-            type="text"
-            value={deleteConfirmText}
-            onChange={(e) => setDeleteConfirmText(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-2 text-sm text-ink outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-            placeholder="Type 'delete'"
-          />
-        </div>
-        <div className="flex items-center justify-end gap-4">
-          <Button onClick={handleClose} variant="secondary">Cancel</Button>
-          <Button 
-            onClick={() => router.push('/questions')} 
-            variant="destructive"
-            disabled={deleteConfirmText.toLowerCase() !== "delete"}
-            className="disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Delete Question
-          </Button>
-        </div>
-      </div>
-    </Modal>
+  if (!question) return null;
+
+  return (
+    <DeleteConfirmModal
+      open={open}
+      onClose={onClose}
+      onConfirm={handleConfirm}
+      title="Delete Question"
+      entityName={questionTitle}
+      description=""
+      isPending={isPending}
+    />
   );
 }

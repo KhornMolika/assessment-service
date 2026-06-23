@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { AlertCircle, Trash2 } from "lucide-react";
-import { deleteBankAction } from "@/src/lib/actions/bank.actions";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { deleteQuestionBank } from "@/src/actions/bank-actions";
 import type { QuestionBank } from "@/src/types/api";
-import { Button } from "@/src/components/ui/ui/button";
-import { Modal } from "@/src/components/ui/ui/modal";
+import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 
 export default function DeleteBankModal({
   bank,
@@ -18,18 +17,36 @@ export default function DeleteBankModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const [isPending, startTransition] = useTransition();
+
+  const handleConfirm = () => {
+    startTransition(async () => {
+      try {
+        await deleteQuestionBank(bank.id);
+        toast.success("Question bank deleted successfully");
+        onConfirm();
+      } catch (error: any) {
+        toast.error("Failed to delete bank", {
+          description: error.message || "An unexpected error occurred",
+        });
+        console.error(error);
+      }
+    });
+  };
+
   return (
-    <Modal open={open} onClose={onClose}>
-      <h3 className="mb-6 text-2xl font-bold text-primary">Delete Bank</h3>
-      <div className="space-y-6">
-        <p className="text-sm text-inkd">
-          Are you sure you want to delete <span className="font-bold text-primary">{bank.name}</span>? This bank currently contains <span className="font-bold text-primary">{bank.questionCount || 0}</span> questions. Deleting it may affect linked authoring workflows. This action cannot be undone.
-        </p>
-        <div className="flex items-center justify-end gap-4">
-          <Button onClick={onClose} variant="secondary">Cancel</Button>
-          <Button onClick={onConfirm} variant="destructive">Delete Bank</Button>
-        </div>
-      </div>
-    </Modal>
+    <DeleteConfirmModal
+      open={open}
+      onClose={onClose}
+      onConfirm={handleConfirm}
+      title="Delete Bank"
+      entityName={bank.name}
+      description={
+        <>
+          This bank currently contains <span className="font-bold text-primary">{bank.questionCount || 0}</span> questions. Deleting it may affect linked authoring workflows.
+        </>
+      }
+      isPending={isPending}
+    />
   );
 }

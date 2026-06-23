@@ -20,6 +20,7 @@ type PaginatedCollectionCardProps = {
   children: ReactNode;
   emptyState?: ReactNode;
   isEmpty?: boolean;
+  headerClassName?: string;
   className?: string;
   contentClassName?: string;
   bodyClassName?: string;
@@ -43,6 +44,7 @@ export function PaginatedCollectionCard({
   children,
   emptyState,
   isEmpty = false,
+  headerClassName,
   className,
   contentClassName,
   bodyClassName,
@@ -53,7 +55,7 @@ export function PaginatedCollectionCard({
   return (
     <Card className={className}>
       {hasHeader ? (
-        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <CardHeader className={joinClasses("flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between", headerClassName)}>
           <div className="space-y-1">
             {title ? <CardTitle>{title}</CardTitle> : null}
             {description ? <CardDescription>{description}</CardDescription> : null}

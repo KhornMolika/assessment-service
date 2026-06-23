@@ -4,20 +4,20 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { EditQuestionBankFormData } from "@/src/types";
-import { type QuestionBank, BankVisibility } from "@/src/types/api";
-import type { Topic } from "@/src/types/topic.types";
+import { type QuestionBank } from "@/src/types/api";
 import { questionBankFormSchema } from "@/src/schemas/question-bank-form.schema";
-import { updateQuestionBank } from "@/src/actions/bank-actions";
+import { createQuestionBank } from "@/src/actions/bank-actions";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
-import BankEditHeader from "./BankEditHeader";
-import BankEditPreviewCard from "./BankEditPreviewCard";
+import { useTopicStore } from "@/src/stores/topic-store";
+import BankDuplicateHeader from "./BankDuplicateHeader";
+import BankEditPreviewCard from "@/src/components/content/bank/edit/BankEditPreviewCard";
 import BankFormDetailsCard from "@/src/components/content/bank-form/BankFormDetailsCard";
 
-const editFormId = "question-bank-edit-form";
+const duplicateFormId = "question-bank-duplicate-form";
 
 function toInitialFormData(bank: QuestionBank): EditQuestionBankFormData {
   return {
-    name: bank.name,
+    name: `${bank.name} (Copy)`,
     description: bank.description || "",
     tags: bank.tags ? bank.tags.join(", ") : "",
     visibility: bank.visibility,
@@ -31,12 +31,14 @@ function normalizeTags(tags: string) {
     .filter(Boolean);
 }
 
-export default function BankEditForm({
+export default function BankDuplicateForm({
   bank,
 }: {
   bank: QuestionBank;
 }) {
   const router = useRouter();
+  const activeTopic = useTopicStore((s) => s.activeTopic);
+
   const [formData, setFormData] = useState<EditQuestionBankFormData>(() =>
     toInitialFormData(bank),
   );
@@ -54,6 +56,8 @@ export default function BankEditForm({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!activeTopic) return;
+
     const validationResult = questionBankFormSchema.safeParse(formData);
 
     if (!validationResult.success) {
@@ -69,30 +73,47 @@ export default function BankEditForm({
 
     startTransition(async () => {
       try {
-        await updateQuestionBank(bank.id, {
+        await createQuestionBank(activeTopic.id, {
           name: formData.name,
           description: formData.description,
           tags: normalizeTags(formData.tags),
           visibility: formData.visibility,
         });
-        toast.success("Question bank updated successfully");
+        toast.success("Question bank duplicated successfully");
         router.push("/banks");
       } catch (err: any) {
-        toast.error("Failed to update bank", {
+        toast.error("Failed to duplicate bank", {
           description: err.message || "An unexpected error occurred",
         });
-        setValidationErrors([err.message || "Failed to update bank"]);
+        setValidationErrors([err.message || "Failed to create bank"]);
       }
     });
   };
 
   return (
     <div className="space-y-6">
-      <BankEditHeader formId={editFormId} />
+      <BankDuplicateHeader formId={duplicateFormId} disabled={!activeTopic} isPending={isPending} />
+
+      {!activeTopic && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <div className="flex">
+            <div className="shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                You must select a global Topic from the topbar before duplicating a question bank.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <div className="flex-1">
-          <form id={editFormId} onSubmit={handleSubmit} className="space-y-6">
+          <form id={duplicateFormId} onSubmit={handleSubmit} className="space-y-6">
             {validationErrors.length > 0 && (
               <StateMessage
                 tone="error"
@@ -107,11 +128,11 @@ export default function BankEditForm({
               />
             )}
 
-            <fieldset disabled={isPending} className="space-y-6">
+            <fieldset disabled={isPending || !activeTopic} className="space-y-6">
               <BankFormDetailsCard
                 formData={formData}
                 onChange={handleChange}
-                description="Update the title, summary, visibility, and tags to keep this bank easy to understand and discover."
+                description="Give the duplicated bank a new name, adjust the summary, and set tags."
               />
             </fieldset>
           </form>

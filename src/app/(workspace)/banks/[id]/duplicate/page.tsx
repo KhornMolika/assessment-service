@@ -3,11 +3,11 @@
 import { Suspense, useEffect, useState } from "react";
 import { notFound, useParams } from "next/navigation";
 import { fetchBankById } from "@/src/actions/bank-actions";
-import BankEditForm from "@/src/components/content/bank/edit/BankEditForm";
+import BankDuplicateForm from "@/src/components/content/bank/duplicate/BankDuplicateForm";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 import type { QuestionBank } from "@/src/types/api";
 
-function EditBankPageContent() {
+function DuplicateBankPageContent() {
   const params = useParams();
   const id = params.id as string;
   const [bank, setBank] = useState<QuestionBank | null>(null);
@@ -39,13 +39,13 @@ function EditBankPageContent() {
     notFound();
   }
 
-  return <BankEditForm bank={bank} />;
+  return <BankDuplicateForm bank={bank} />;
 }
 
-export default function EditBankPage() {
+export default function DuplicateBankPage() {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <EditBankPageContent />
+      <DuplicateBankPageContent />
     </Suspense>
   );
 }

@@ -165,7 +165,7 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
   try {
     const assessmentsRes = await apiClient.get<{
       data: Record<string, unknown>[];
-    }>("/assessments?limit=5000");
+    }>("/assessments?limit=500");
     let assessments =
       assessmentsRes.data ||
       (assessmentsRes as unknown as Record<string, unknown>[]);

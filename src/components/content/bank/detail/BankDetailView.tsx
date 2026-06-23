@@ -8,30 +8,34 @@ import type { QuestionBank } from "@/src/types/api";
 import BankDetailHeader from "./BankDetailHeader";
 import BankRecentQuestions from "./BankRecentQuestions";
 import BankMetadataCard from "./BankMetadataCard";
-import BankTaxonomyCard from "./BankTaxonomyCard";
 
 export default function BankDetailView({
   bank,
   bankQuestions,
+  onRefresh,
 }: {
   bank: QuestionBank;
   bankQuestions: Question[];
+  onRefresh?: () => void;
 }) {
   const router = useRouter();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <>
-      <div className="px-4 py-4 sm:px-6">
-        <div className="mx-auto max-w-6xl space-y-6">
-          <BankDetailHeader bank={bank} onDelete={() => setDeleteOpen(true)} />
+      <div className="w-full space-y-6">
+        <BankDetailHeader bank={bank} onDelete={() => setDeleteOpen(true)} />
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <BankMetadataCard bank={bank} />
-            <BankTaxonomyCard bank={bank} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_350px]">
+          {/* Main Content Area */}
+          <div className="flex flex-col gap-6">
+            <BankRecentQuestions bankId={bank.id} bankName={bank.name} questions={bankQuestions} onRefresh={onRefresh} />
           </div>
 
-          <BankRecentQuestions bankName={bank.name} questions={bankQuestions} />
+          {/* Right Sidebar Area */}
+          <div className="flex flex-col gap-6">
+            <BankMetadataCard bank={bank} />
+          </div>
         </div>
       </div>
 

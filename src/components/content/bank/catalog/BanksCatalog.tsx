@@ -16,7 +16,7 @@ import {
 } from "@/src/hooks/use-url-query-state";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
-import BankCard from "./BankCard";
+import BankTableInteractive from "./BankTableInteractive";
 import BanksHeader from "./BanksHeader";
 import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
@@ -35,7 +35,7 @@ export default function BanksCatalog({
   });
   const [bankItems, setBankItems] = useState(banks);
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
-  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 6);
+  const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const filteredBanks = useMemo(() => {
@@ -140,17 +140,13 @@ export default function BanksCatalog({
           totalPages,
           pageSize: itemsPerPage,
           totalItems: filteredBanks.length,
-          pageSizeOptions: [6, 9, 12, 24],
+          pageSizeOptions: [5, 10, 20, 50],
           itemLabel: "banks",
           onPageChange: (page) => updateUrl({ page: page === 1 ? null : page }),
           onPageSizeChange: handlePageSizeChange,
         }}
       >
-        <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-          {paginatedBanks.map((bank) => (
-            <BankCard key={bank.id} bank={bank} onDelete={handleDeleteBank} />
-          ))}
-        </div>
+        <BankTableInteractive banks={paginatedBanks} onDelete={handleDeleteBank} />
       </PaginatedCollectionCard>
     </div>
   );

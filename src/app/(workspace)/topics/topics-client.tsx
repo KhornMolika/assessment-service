@@ -13,6 +13,7 @@ import { Label } from "@/src/components/ui/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/ui/table";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import Pagination from "@/src/components/ui/navigation/Pagination";
+import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { toast } from "sonner";
 import { Edit2, Trash2, Eye, Copy } from "lucide-react";
 
@@ -339,32 +340,18 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       </Modal>
 
       {/* Delete Modal */}
-      <Modal open={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)}>
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold text-slate-900">Delete Topic</h2>
-          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-            <p className="text-sm text-red-800 font-medium">
-              Warning: If you delete this topic, all child resources (Questions, Question Banks, and Assessments) will be deleted too. This action cannot be undone.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="delete-confirm">Type <strong>delete</strong> to delete {deletingTopic?.name || "this topic"}</Label>
-            <Input 
-              id="delete-confirm" 
-              value={deleteConfirmation} 
-              onChange={(e) => setDeleteConfirmation(e.target.value)} 
-              placeholder="delete" 
-              autoComplete="off"
-            />
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Btn type="button" variant="outline" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Btn>
-            <Btn type="button" variant="destructive" onClick={handleDeleteConfirm} disabled={isSaving || deleteConfirmation.toLowerCase() !== "delete"}>
-              {isSaving ? "Deleting..." : "Delete Topic"}
-            </Btn>
-          </div>
-        </div>
-      </Modal>
+      <DeleteConfirmModal
+        open={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteConfirmation("");
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Topic"
+        entityName={deletingTopic?.name || ""}
+        description="Warning: If you delete this topic, all child resources (Questions, Question Banks, and Assessments) will be deleted too. This action cannot be undone."
+        isPending={isSaving}
+      />
 
       {/* Duplicate Modal */}
       <Modal open={isDuplicateModalOpen} onClose={() => setIsDuplicateModalOpen(false)}>

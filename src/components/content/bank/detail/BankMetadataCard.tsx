@@ -20,35 +20,87 @@ function getVisibilityLabel(visibility: QuestionBank["visibility"]) {
   }
 }
 
+import { FolderOpen, Eye, Clock, Hash, AlignLeft, Tag } from "lucide-react";
+
 export default function BankMetadataCard({ bank }: { bank: QuestionBank }) {
-  const rows = [
-    { label: "Name", value: bank.name },
-    { label: "Description", value: bank.description || "" },
-    { label: "Question count", value: String(bank.questionCount || 0) },
-    { label: "Visibility", value: getVisibilityLabel(bank.visibility) },
-    { label: "Created", value: formatDate(bank.createdAt) },
-  ];
+  const createdDate = new Date(bank.createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
-    <Card>
+    <Card className="shadow-sm border-slate-200">
       <CardHeader>
-        <CardTitle>Bank metadata</CardTitle>
-        <CardDescription>
-          A quick overview before authors jump into question maintenance.
-        </CardDescription>
+        <CardTitle>Bank Details</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
-          {rows.map((row) => (
-            <div
-              key={row.label}
-              className="flex flex-col gap-1 border-b border-gray-100 py-3 last:border-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
-            >
-              <span className="text-sm text-inkd">{row.label}</span>
-              <span className="text-sm font-semibold text-primary sm:max-w-sm sm:text-right">{row.value}</span>
-            </div>
-          ))}
+      <CardContent className="space-y-4">
+        {/* Name */}
+        <div className="flex items-center gap-3">
+          <FolderOpen className="h-5 w-5 text-indigo-500" />
+          <div>
+            <div className="text-xs font-medium text-slate-500">Name</div>
+            <div className="text-sm font-medium text-slate-900">{bank.name}</div>
+          </div>
         </div>
+
+        {/* Description */}
+        <div className="flex items-start gap-3">
+          <AlignLeft className="h-5 w-5 text-emerald-500 mt-0.5" />
+          <div>
+            <div className="text-xs font-medium text-slate-500">Description</div>
+            <div className="text-sm font-medium text-slate-900 line-clamp-3">
+              {bank.description || "No description provided."}
+            </div>
+          </div>
+        </div>
+
+        {/* Question Count */}
+        <div className="flex items-center gap-3">
+          <Hash className="h-5 w-5 text-blue-500" />
+          <div>
+            <div className="text-xs font-medium text-slate-500">Questions</div>
+            <div className="text-sm font-medium text-slate-900">{bank.questionCount || 0}</div>
+          </div>
+        </div>
+
+        {/* Visibility */}
+        <div className="flex items-center gap-3">
+          <Eye className="h-5 w-5 text-purple-500" />
+          <div>
+            <div className="text-xs font-medium text-slate-500">Visibility</div>
+            <div className="text-sm font-medium text-slate-900">{getVisibilityLabel(bank.visibility)}</div>
+          </div>
+        </div>
+
+        {/* Created Date */}
+        <div className="flex items-center gap-3">
+          <Clock className="h-5 w-5 text-amber-500" />
+          <div>
+            <div className="text-xs font-medium text-slate-500">Created At</div>
+            <div className="text-sm font-medium text-slate-900">{createdDate}</div>
+          </div>
+        </div>
+
+        {/* Tags */}
+        {bank.tags && bank.tags.length > 0 && (
+          <div className="flex items-start gap-3">
+            <Tag className="h-5 w-5 text-indigo-500 mt-0.5" />
+            <div className="w-full">
+              <div className="text-xs font-medium text-slate-500 mb-2">Tags</div>
+              <div className="flex flex-wrap gap-2">
+                {bank.tags.map((tag) => (
+                  <span
+                    key={`${bank.id}-${tag}`}
+                    className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-600 border border-indigo-100"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

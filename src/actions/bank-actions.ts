@@ -1,20 +1,26 @@
 "use server";
 
 import { fetchWithAuth } from "./fetch-utils";
-import { Question } from "./question-actions";
-import { QuestionBank } from "@/src/types/api";
+import { QuestionBank, Question } from "@/src/types/api";
 
 export type CreateBankPayload = {
   name: string;
   description?: string;
   tags?: string[];
-  visibility: "PUBLIC" | "PRIVATE";
+  visibility: "PUBLIC" | "PRIVATE" | "SHARED";
 };
 
 export type UpdateBankPayload = {
   name?: string;
-  visibility?: "PUBLIC" | "PRIVATE";
+  description?: string;
+  tags?: string[];
+  visibility?: "PUBLIC" | "PRIVATE" | "SHARED";
 };
+
+export async function fetchBankById(id: string): Promise<QuestionBank> {
+  const data = await fetchWithAuth(`/banks/${id}`);
+  return data.data || data;
+}
 
 export async function createQuestionBank(
   topicId: string,
@@ -63,6 +69,8 @@ export async function fetchBankQuestions(bankId: string): Promise<Question[]> {
   return Array.isArray(data.data) ? data.data : data;
 }
 
+import { revalidatePath } from "next/cache";
+
 export async function addQuestionsToBank(
   bankId: string,
   questionIds: string[],
@@ -71,6 +79,8 @@ export async function addQuestionsToBank(
     method: "POST",
     body: JSON.stringify({ questionIds }),
   });
+  revalidatePath(`/banks/${bankId}`);
+  revalidatePath("/banks");
 }
 
 export async function removeQuestionFromBank(
@@ -80,4 +90,6 @@ export async function removeQuestionFromBank(
   await fetchWithAuth(`/banks/${bankId}/questions/${questionId}`, {
     method: "DELETE",
   });
+  revalidatePath(`/banks/${bankId}`);
+  revalidatePath("/banks");
 }

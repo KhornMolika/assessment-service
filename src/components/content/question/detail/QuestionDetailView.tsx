@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 
 export default function QuestionDetailView({ question }: { question: ApiQuestionResponse }) {
   return (
-    <div>
+    <div className="space-y-6">
       <QuestionDetailHero question={question} />
 
       <div className="w-full">
