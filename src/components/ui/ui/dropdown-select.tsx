@@ -90,7 +90,7 @@ export function DropdownSelect({
             </div>
           )}
           
-          <div className="max-h-[300px] overflow-y-auto py-1">
+          <div className="max-h-75 overflow-y-auto py-1">
             {filteredOptions.length === 0 ? (
               <div className="px-4 py-3 text-center text-sm text-slate-500">
                 No results found

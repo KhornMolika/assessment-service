@@ -18,11 +18,12 @@ export interface AssessmentSelectionRule {
 }
 
 export interface NewAssessmentFormData {
-  title: string;
+  name: string;
+  type: "QUIZ" | "EXAM" | "SURVEY" | "PRACTICE";
   description: string;
   ownerTopicId: string;
   status: AssessmentStatus;
-  participantIdentity: "ANONYMOUS" | "INTERNAL" | "EXTERNAL";
+  participantIdentity: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL";
   sessionMode: AssessmentDeliveryMode;
   questionSelection: AssessmentQuestionSelectionMode;
   selectedBankId: string;
@@ -35,7 +36,6 @@ export interface NewAssessmentFormData {
   endsAt: string;
   passMark: number;
   shuffleQuestions: boolean;
-  allowGoingBack: boolean;
   gradeLabels: AssessmentGradeLabel[];
   showResults: AssessmentResultReleaseMode;
 }

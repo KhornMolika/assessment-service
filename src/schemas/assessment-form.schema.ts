@@ -2,11 +2,12 @@ import { z } from "zod";
 
 export const assessmentFormSchema = z
   .object({
-    title: z.string(),
+    name: z.string(),
+    type: z.enum(["QUIZ", "EXAM", "SURVEY", "PRACTICE"]),
     description: z.string(),
     ownerTopicId: z.string().trim().min(1, "Owner topic is required."),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
-    participantIdentity: z.enum(["ANONYMOUS", "INTERNAL", "EXTERNAL"]),
+    participantIdentity: z.enum(["ANONYMOUS", "AUTHENTICATED", "EXTERNAL"]),
     sessionMode: z.enum(["SELF_PACED", "REAL_TIME"]),
     questionSelection: z.enum(["MANUAL", "DYNAMIC"]),
     selectedBankId: z.string(),
@@ -33,11 +34,11 @@ export const assessmentFormSchema = z
     showResults: z.enum(["IMMEDIATELY", "MANUAL", "NEVER"]),
   })
   .superRefine((data, ctx) => {
-    if (data.title.trim().length === 0) {
+    if (data.name.trim().length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["title"],
-        message: "Assessment title is required.",
+        path: ["name"],
+        message: "Assessment name is required.",
       });
     }
 

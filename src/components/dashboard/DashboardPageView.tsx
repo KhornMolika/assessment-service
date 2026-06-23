@@ -169,7 +169,7 @@ export default function DashboardPageView({
   const hasAnyVisibleContent = filteredAssessments.length > 0;
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Dashboard"
         description={`Focus on the current workspace footprint, pending operational work, and the latest assessment activity for ${selectedTopicLabel.toLowerCase()}.`}

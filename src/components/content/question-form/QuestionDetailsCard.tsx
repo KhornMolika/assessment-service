@@ -58,7 +58,7 @@ export default function QuestionDetailsCard({
             value={formData.questionText}
             onChange={(event) => onChange("questionText", event.target.value)}
             required
-            className="w-full flex-1 min-h-[200px] resize-none rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+            className="w-full flex-1 min-h-50 resize-none rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
           />
         </div>
 

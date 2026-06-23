@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import AssessmentNewWizard from "@/src/components/assessment/assessment-new/AssessmentNewWizard";
+import AssessmentForm from "@/src/components/assessment/assessment-new/AssessmentForm";
 import AssessmentNewLoading from "@/src/components/assessment/assessment-new/AssessmentNewLoading";
 import { getTopics } from "@/src/api/topic.api";
 import { getBanks } from "@/src/lib/services/banks";
@@ -12,7 +12,7 @@ async function NewAssessmentPageContent() {
     getTopics()
   ]);
 
-  return <AssessmentNewWizard banks={banksRes.data} questions={questionsRes.data} topics={topics} />;
+  return <AssessmentForm banks={banksRes.data} questions={questionsRes.data} topics={topics} />;
 }
 
 export default function NewAssessmentPage() {

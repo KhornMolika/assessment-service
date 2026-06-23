@@ -92,7 +92,7 @@ export default function BankNewForm() {
   };
 
   return (
-    <div className="space-y-6 sm:px-6">
+    <div className="space-y-6">
       <BankNewHeader formId={createFormId} disabled={!activeTopic} isPending={isPending} />
 
       {!activeTopic && (

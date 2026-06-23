@@ -15,8 +15,8 @@ function formatParticipantIdentity(value: NewAssessmentFormData["participantIden
   switch (value) {
     case "ANONYMOUS":
       return "Anonymous";
-    case "INTERNAL":
-      return "Internal";
+    case "AUTHENTICATED":
+      return "Authenticated";
     default:
       return "External";
   }
@@ -58,7 +58,7 @@ export default function AssessmentSummaryCard({
           Assessment Summary
         </CardDescription>
         <CardTitle className="text-2xl">
-          {formData.title.trim() || "Untitled assessment"}
+          {formData.name.trim() || "Untitled assessment"}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 space-y-4 overflow-y-auto text-sm">
