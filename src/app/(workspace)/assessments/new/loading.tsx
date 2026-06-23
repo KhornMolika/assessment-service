@@ -1,4 +1,4 @@
-import AssessmentNewLoading from "@/src/domains/assessment/components/assessment-new/AssessmentNewLoading";
+import AssessmentNewLoading from "@/src/components/assessment/assessment-new/AssessmentNewLoading";
 
 export default function Loading() {
   return <AssessmentNewLoading />;

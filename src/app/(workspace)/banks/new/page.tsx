@@ -1,18 +1,13 @@
+"use client";
+
 import { Suspense } from "react";
-import BankNewForm from "@/src/domains/content/components/bank/new/BankNewForm";
-import { getMockTopics } from "@/src/domains/content/api/content.api";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
-
-async function NewBanksPageContent() {
-  const topics = await getMockTopics();
-
-  return <BankNewForm topics={topics} />;
-}
+import BankNewForm from "@/src/components/content/bank/new/BankNewForm";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 export default function NewBanksPage() {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <NewBanksPageContent />
+      <BankNewForm />
     </Suspense>
   );
 }

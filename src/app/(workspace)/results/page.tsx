@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getAssessmentResultsPageData } from "@/src/domains/assessment/api/assessment.api";
-import ResultsExportButton from "@/src/domains/assessment/components/results/ResultsExportButton";
-import ResultsToolbar from "@/src/domains/assessment/components/results/ResultsToolbar";
-import { ResultsTable } from "@/src/domains/assessment/components/results/ResultsTable";
-import { buildRows } from "@/src/domains/assessment/components/results/results.utils";
-import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/domains/content/utils/topic-utils";
-import LinkPagination from "@/src/shared/components/navigation/LinkPagination";
-import { PaginatedCollectionCard } from "@/src/shared/components/data/PaginatedCollectionCard";
-import { PageHeaderCard } from "@/src/shared/components/layout/PageHeaderCard";
-import { ResultsContentSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import { getAssessmentResultsPageData } from "@/src/api/assessment.api";
+import ResultsExportButton from "@/src/components/assessment/results/ResultsExportButton";
+import ResultsToolbar from "@/src/components/assessment/results/ResultsToolbar";
+import { ResultsTable } from "@/src/components/assessment/results/ResultsTable";
+import { buildRows } from "@/src/components/assessment/results/results.utils";
+import { ALL_TOPICS_VALUE, assessmentMatchesTopic } from "@/src/utils/topic-utils";
+import Pagination from "@/src/components/ui/navigation/Pagination";
+import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
+import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
+import { ResultsContentSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 export const metadata: Metadata = {
   title: "Results",
@@ -138,24 +138,25 @@ async function ResultsPageContent({
             <ResultsTable rows={currentItems} />
           </PaginatedCollectionCard>
           {filteredResults.length > 0 ? (
-            <LinkPagination
-              pathname="/results"
-              searchParams={{
-                topic: selectedTopic === ALL_TOPICS_VALUE ? null : selectedTopic,
-                query: searchQuery || null,
-                assessment:
-                  selectedAssessment === "All Assessments" ? null : selectedAssessment,
-                status: selectedStatus === "All Statuses" ? null : selectedStatus,
-                sort: sortBy === "submitted-new" ? null : sortBy,
-              }}
-              currentPage={activePage}
-              totalPages={totalPages}
-              pageSize={itemsPerPage}
-              totalItems={filteredResults.length}
-              pageSizeOptions={[5, 10, 20, 50]}
-              itemLabel="results"
-            />
-          ) : null}
+          <Pagination
+            pathname="/results"
+            searchParams={{
+              topic: selectedTopic === ALL_TOPICS_VALUE ? null : selectedTopic,
+              query: searchQuery || null,
+              assessment: selectedAssessment === "All Assessments" ? null : selectedAssessment,
+              status: selectedStatus === "All Statuses" ? null : selectedStatus,
+              sort: sortBy === "submitted-new" ? null : sortBy,
+              pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
+            }}
+            currentPage={activePage}
+            totalPages={totalPages}
+            pageSize={itemsPerPage}
+            defaultPageSize={10}
+            totalItems={filteredResults.length}
+            pageSizeOptions={[5, 10, 20, 50]}
+            itemLabel="results"
+          />
+        ) : null}
         </div>
     </>
   );

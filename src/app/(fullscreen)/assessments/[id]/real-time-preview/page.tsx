@@ -3,13 +3,13 @@ import { notFound } from "next/navigation";
 import {
   getAssessmentCatalogItemById,
   getAssessmentDetailPageData,
-} from "@/src/domains/assessment/api/assessment.api";
+} from "@/src/api/assessment.api";
 import {
   AssessmentHostScreen,
   AssessmentJoinScreen,
-} from "@/src/domains/assessment/components/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/domains/assessment/components/session/AssessmentSessionLoading";
-import { BackButton } from "@/src/shared/components/navigation/BackButton";
+} from "@/src/components/assessment/session/AssessmentSessionScreens";
+import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
+import { BackButton } from "@/src/components/ui/navigation/BackButton";
 
 async function AssessmentRealTimePreviewPageContent({
   params,

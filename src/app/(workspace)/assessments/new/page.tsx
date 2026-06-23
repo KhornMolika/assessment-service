@@ -1,13 +1,18 @@
 import { Suspense } from "react";
-import { getNewAssessmentPageData } from "@/src/domains/assessment/api/assessment.api";
-import AssessmentNewWizard from "@/src/domains/assessment/components/assessment-new/AssessmentNewWizard";
-import AssessmentNewLoading from "@/src/domains/assessment/components/assessment-new/AssessmentNewLoading";
-import { getMockTopics } from "@/src/domains/content/api/content.api";
+import AssessmentNewWizard from "@/src/components/assessment/assessment-new/AssessmentNewWizard";
+import AssessmentNewLoading from "@/src/components/assessment/assessment-new/AssessmentNewLoading";
+import { getTopics } from "@/src/api/topic.api";
+import { getBanks } from "@/src/lib/services/banks";
+import { getQuestions } from "@/src/lib/services/questions";
 
 async function NewAssessmentPageContent() {
-  const [data, topics] = await Promise.all([getNewAssessmentPageData(), getMockTopics()]);
+  const [banksRes, questionsRes, topics] = await Promise.all([
+    getBanks(1, 100),
+    getQuestions(1, 500),
+    getTopics()
+  ]);
 
-  return <AssessmentNewWizard banks={data.banks} questions={data.questions} topics={topics} />;
+  return <AssessmentNewWizard banks={banksRes.data} questions={questionsRes.data} topics={topics} />;
 }
 
 export default function NewAssessmentPage() {

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import { getMockQuestionEditPageData } from "@/src/domains/content/api/content.api";
-import QuestionEditForm from "@/src/domains/content/components/question/edit/QuestionEditForm";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+import { getQuestionEditPageData } from "@/src/api/question.api";
+import QuestionEditForm from "@/src/components/content/question/edit/QuestionEditForm";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 
 async function EditQuestionPageContent({
   params,
@@ -9,7 +9,7 @@ async function EditQuestionPageContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { banks, topics, formData } = await getMockQuestionEditPageData(id);
+  const { banks, topics, formData } = await getQuestionEditPageData(id);
 
   return (
     <QuestionEditForm

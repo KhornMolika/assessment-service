@@ -1,32 +1,51 @@
-import { Suspense } from "react";
-import { notFound } from "next/navigation";
-import { getMockBankById, getMockTopics } from "@/src/domains/content/api/content.api";
-import BankEditForm from "@/src/domains/content/components/bank/edit/BankEditForm";
-import { WorkspacePageSkeleton } from "@/src/shared/components/layout/PageSkeletons";
+"use client";
 
-async function EditBankPageContent({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const [bank, topics] = await Promise.all([getMockBankById(id), getMockTopics()]);
+import { Suspense, useEffect, useState } from "react";
+import { notFound, useParams } from "next/navigation";
+import { fetchBankById } from "@/src/actions/bank-actions";
+import BankEditForm from "@/src/components/content/bank/edit/BankEditForm";
+import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
+import type { QuestionBank } from "@/src/types/api";
+
+function EditBankPageContent() {
+  const params = useParams();
+  const id = params.id as string;
+  const [bank, setBank] = useState<QuestionBank | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadBank() {
+      try {
+        const fetchedBank = await fetchBankById(id);
+        if (isMounted) setBank(fetchedBank);
+      } catch (err) {
+        if (isMounted) setBank(null);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadBank();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  if (isLoading) {
+    return <WorkspacePageSkeleton />;
+  }
 
   if (!bank) {
     notFound();
   }
 
-  return <BankEditForm bank={bank} topics={topics} />;
+  return <BankEditForm bank={bank} />;
 }
 
-export default function EditBankPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function EditBankPage() {
   return (
     <Suspense fallback={<WorkspacePageSkeleton />}>
-      <EditBankPageContent params={params} />
+      <EditBankPageContent />
     </Suspense>
   );
 }

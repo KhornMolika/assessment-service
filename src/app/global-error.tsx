@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { StateMessage } from "@/src/shared/components/feedback/StateMessage";
+import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import "./globals.css";
+import { Button } from "@/src/components/ui/ui/button";
 
 export default function GlobalError({
   error,
@@ -47,13 +48,13 @@ export default function GlobalError({
             }
             action={
               <>
-                <button
+                <Button
                   type="button"
                   onClick={() => unstable_retry()}
                   className="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-pm"
                 >
                   Try again
-                </button>
+                </Button>
                 <Link
                   href="/"
                   className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
