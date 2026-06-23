@@ -15,12 +15,6 @@ export default function AssessmentsTableInteractive({
     setCatalogAssessments(assessments);
   }, [assessments]);
 
-  const handleDeleteAssessment = (assessmentId: string) => {
-    setCatalogAssessments((currentAssessments) =>
-      currentAssessments.filter((assessment) => assessment.id !== assessmentId),
-    );
-  };
-
   const handleDuplicateAssessment = (assessment: AssessmentCatalogItem) => {
     setCatalogAssessments((currentAssessments) => {
       const duplicate: AssessmentCatalogItem = {
@@ -41,7 +35,6 @@ export default function AssessmentsTableInteractive({
     <AssessmentsTable
       assessments={catalogAssessments}
       onDuplicateAssessment={handleDuplicateAssessment}
-      onDeleteAssessment={handleDeleteAssessment}
     />
   );
 }

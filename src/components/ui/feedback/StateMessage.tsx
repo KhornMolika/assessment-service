@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AlertTriangle, FileSearch, SearchX } from "lucide-react";
 
-type StateTone = "empty" | "not-found" | "error";
+type StateTone = "empty" | "not-found" | "error" | "warning";
 
 const toneConfig: Record<
   StateTone,
@@ -18,13 +18,18 @@ const toneConfig: Record<
   },
   "not-found": {
     icon: <FileSearch className="h-5 w-5" />,
-    iconClassName: "bg-[rgba(39,99,235,0.12)] text-blue-700",
-    panelClassName: "border-blue-200/80 bg-blue-50/60",
+    iconClassName: "bg-slate-100 text-slate-500",
+    panelClassName: "border-slate-200 bg-slate-50",
   },
   error: {
     icon: <AlertTriangle className="h-5 w-5" />,
-    iconClassName: "bg-[rgba(185,28,28,0.12)] text-red-700",
-    panelClassName: "border-red-200/80 bg-red-50/70",
+    iconClassName: "bg-red-50 text-red-600",
+    panelClassName: "border-red-200 bg-red-50/50",
+  },
+  warning: {
+    icon: <AlertTriangle className="h-5 w-5" />,
+    iconClassName: "bg-[#F4A261]/20 text-[#A85A14]",
+    panelClassName: "border-[#F4A261]/40 bg-[#F4A261]/5",
   },
 };
 

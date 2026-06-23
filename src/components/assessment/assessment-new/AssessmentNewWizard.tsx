@@ -14,8 +14,9 @@ import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import AssessmentNewHeader from "./AssessmentNewHeader";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
-import { createAssessmentAction, updateAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import { createAssessmentAction, updateAssessmentAction, publishAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { Button } from "@/src/components/ui/ui/button";
+import { toast } from "sonner";
 
 const defaultFormData: NewAssessmentFormData = {
   title: "",
@@ -245,7 +246,9 @@ export default function AssessmentNewWizard({
       
       if (!res.success) {
         setValidationErrors([res.error || "Failed to save assessment"]);
+        toast.error(res.error || "Failed to save assessment");
       } else {
+        toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
         router.push(destination);
       }
     });
@@ -266,17 +269,33 @@ export default function AssessmentNewWizard({
     setValidationErrors([]);
     
     startTransition(async () => {
-      const finalData = { ...formData, status: "PUBLISHED" as const };
-      let res;
-      if (mode === "edit" && assessmentId) {
-        res = await updateAssessmentAction(assessmentId, finalData);
+      let currentAssessmentId = assessmentId;
+      
+      // If creating new and publishing immediately
+      if (mode !== "edit" || !currentAssessmentId) {
+        const createRes = await createAssessmentAction(formData.ownerTopicId, formData);
+        if (!createRes.success || !createRes.assessment) {
+          setValidationErrors([createRes.error || "Failed to create assessment for publishing"]);
+          return;
+        }
+        currentAssessmentId = (createRes.assessment as any).data?.id || createRes.assessment.id;
       } else {
-        res = await createAssessmentAction(formData.ownerTopicId, finalData);
+        // If editing existing, save draft first
+        const updateRes = await updateAssessmentAction(currentAssessmentId, formData);
+        if (!updateRes.success) {
+          setValidationErrors([updateRes.error || "Failed to save assessment before publishing"]);
+          return;
+        }
       }
       
-      if (!res.success) {
-        setValidationErrors([res.error || "Failed to publish assessment"]);
+      // Now publish
+      if (!currentAssessmentId) return;
+      const publishRes = await publishAssessmentAction(currentAssessmentId);
+      if (!publishRes.success) {
+        setValidationErrors([publishRes.error || "Failed to publish assessment"]);
+        toast.error(publishRes.error || "Failed to publish assessment");
       } else {
+        toast.success("Assessment published successfully!");
         router.push(destination);
       }
     });
@@ -292,7 +311,7 @@ export default function AssessmentNewWizard({
       : "Configure delivery, choose questions, and shape participant experience before launch.";
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="w-full space-y-6">
       <AssessmentNewHeader
         title={headerTitle}
         description={headerDescription}
@@ -311,7 +330,9 @@ export default function AssessmentNewWizard({
                     : "Build Your Assessment"}
                 </h2>
                 <p className="text-sm text-inkd">
-                  Complete the current section before moving forward.
+                  {mode === "edit" && formData.status !== "DRAFT" 
+                    ? "This assessment is no longer a draft and cannot be edited." 
+                    : "Complete the current section before moving forward."}
                 </p>
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -321,8 +342,17 @@ export default function AssessmentNewWizard({
           </div>
 
           <div className="px-3 py-3 sm:px-4 sm:py-4">
+            {mode === "edit" && formData.status !== "DRAFT" && (
+              <div className="mb-6">
+                <StateMessage
+                  tone="warning"
+                  title="Editing Disabled"
+                  description="This assessment has been published or archived. Its configuration and questions are locked to preserve participant records."
+                />
+              </div>
+            )}
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending}>
+              <fieldset disabled={isPending || (mode === "edit" && formData.status !== "DRAFT")}>
               {validationErrors.length > 0 ? (
                 <div className="mb-4">
                   <StateMessage
@@ -422,6 +452,14 @@ export default function AssessmentNewWizard({
                     }`}
                   >
                     Continue
+                  </Button>
+                ) : mode === "edit" && formData.status !== "DRAFT" ? (
+                  <Button
+                    type="button"
+                    disabled
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-muted px-4 py-3 text-sm font-semibold text-inkl transition cursor-not-allowed"
+                  >
+                    Editing Locked
                   </Button>
                 ) : (
                   <Button

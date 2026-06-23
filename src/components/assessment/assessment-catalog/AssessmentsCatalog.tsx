@@ -104,12 +104,6 @@ export default function AssessmentsCatalog({
     });
   };
 
-  const handleDeleteAssessment = (assessmentId: string) => {
-    setCatalogAssessments((currentAssessments) =>
-      currentAssessments.filter((assessment) => assessment.id !== assessmentId),
-    );
-  };
-
   const handleDuplicateAssessment = (assessment: AssessmentCatalogItem) => {
     setCatalogAssessments((currentAssessments) => {
       const duplicate: AssessmentCatalogItem = {
@@ -221,7 +215,6 @@ export default function AssessmentsCatalog({
         <AssessmentsTable
           assessments={paginatedAssessments}
           onDuplicateAssessment={handleDuplicateAssessment}
-          onDeleteAssessment={handleDeleteAssessment}
         />
       </PaginatedCollectionCard>
     </div>
