@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const assessmentFormSchema = z
   .object({
-    name: z.string().max(100, "Name cannot exceed 100 characters."),
+    name: z.string().max(255, "Name cannot exceed 255 characters."),
     type: z.enum(["QUIZ", "EXAM", "SURVEY", "PRACTICE"]),
     description: z.string().max(1000, "Description cannot exceed 1000 characters."),
     ownerTopicId: z.string().trim().min(1, "Owner topic is required."),
