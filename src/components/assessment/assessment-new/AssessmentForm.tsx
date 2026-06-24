@@ -152,7 +152,7 @@ export default function AssessmentForm({
             </div>
           </div>
 
-          <div className="px-3 py-3 sm:px-4 sm:py-4">
+          <div className="px-3 py-3 sm:px-4 sm:py-4 relative z-10">
             {mode !== "edit" && !activeTopic && (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-md">
                 <div className="flex">
@@ -193,6 +193,7 @@ export default function AssessmentForm({
                   formData={formData}
                   topics={topics}
                   onChange={handleChange}
+                  originalStatus={initialFormData?.status}
                 />
               ) : currentStep === 2 ? (
                 <AssessmentSettingsStep
