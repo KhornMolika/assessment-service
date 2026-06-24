@@ -240,7 +240,7 @@ export function useAssessmentForm({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!activeTopic) {
+    if (!activeTopic && !formData.ownerTopicId) {
       toast.error("Owner topic is required.");
       return;
     }
@@ -278,13 +278,14 @@ export function useAssessmentForm({
         toast.error(res.error || "Failed to save assessment");
       } else {
         toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
+        router.refresh();
         router.push(destination);
       }
     });
   };
 
   const handlePublish = () => {
-    if (!activeTopic) {
+    if (!activeTopic && !formData.ownerTopicId) {
       toast.error("Owner topic is required.");
       return;
     }
@@ -337,6 +338,7 @@ export function useAssessmentForm({
         toast.error(publishRes.error || "Failed to publish assessment");
       } else {
         toast.success("Assessment published successfully!");
+        router.refresh();
         router.push(destination);
       }
     });

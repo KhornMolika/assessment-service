@@ -152,7 +152,7 @@ export default function AssessmentForm({
           </div>
 
           <div className="px-3 py-3 sm:px-4 sm:py-4 relative z-10">
-            {!activeTopic && (
+            {!activeTopic && !formData.ownerTopicId && (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-md">
                 <div className="flex">
                   <div className="shrink-0">
@@ -170,7 +170,7 @@ export default function AssessmentForm({
             )}
             
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending || !activeTopic}>
+              <fieldset disabled={isPending || (!activeTopic && !formData.ownerTopicId)}>
 
 
               {currentStep === 1 ? (
