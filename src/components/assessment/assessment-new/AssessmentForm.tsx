@@ -52,14 +52,33 @@ export default function AssessmentForm({
     activeTopic
   } = useAssessmentForm({ mode, assessmentId, initialFormData });
 
-  const [showDefaultSettingsWarning, setShowDefaultSettingsWarning] = useState(false);
+  const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | null>(null);
 
-  const onSaveClick = () => {
-    if (!formData.startsAt && !formData.endsAt && (!formData.enableTimeLimit || !formData.timeLimitMinutes)) {
-      setShowDefaultSettingsWarning(true);
-    } else {
-      handlePublish();
+  const onContinueClick = () => {
+    if (currentStep === 2) {
+      const isMissingDatesAndLimit = !formData.startsAt && !formData.endsAt && (!formData.enableTimeLimit || !formData.timeLimitMinutes);
+      const isPastStartDate = formData.startsAt && new Date(formData.startsAt).getTime() < Date.now();
+      const isMissingStartDateButHasEnd = !formData.startsAt && formData.endsAt;
+
+      if (isPastStartDate) {
+        setWarningType("PAST_START_DATE");
+        return;
+      }
+      if (isMissingStartDateButHasEnd) {
+        setWarningType("MISSING_START_DATE");
+        return;
+      }
+      if (isMissingDatesAndLimit) {
+        setWarningType("DEFAULT_SETTINGS");
+        return;
+      }
     }
+    handleNext();
+  };
+
+  const confirmWarning = () => {
+    setWarningType(null);
+    handleNext();
   };
 
   const formId =
@@ -211,7 +230,7 @@ export default function AssessmentForm({
                 {currentStep < 3 ? (
                   <Button
                     type="button"
-                    onClick={handleNext}
+                    onClick={onContinueClick}
                     disabled={!canContinue}
                     className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
                       canContinue
@@ -232,7 +251,7 @@ export default function AssessmentForm({
                 ) : (
                   <Button
                     type="button"
-                    onClick={onSaveClick}
+                    onClick={handlePublish}
                     disabled={isPending}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
@@ -256,23 +275,26 @@ export default function AssessmentForm({
         </aside>
       </div>
 
-      <Modal open={showDefaultSettingsWarning} onClose={() => setShowDefaultSettingsWarning(false)}>
-        <h2 className="text-xl font-bold text-slate-800 mb-2">Default Settings Warning</h2>
+      <Modal open={warningType !== null} onClose={() => setWarningType(null)}>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">
+          {warningType === "DEFAULT_SETTINGS" && "Default Settings Warning"}
+          {warningType === "PAST_START_DATE" && "Past Start Date"}
+          {warningType === "MISSING_START_DATE" && "Missing Start Date"}
+        </h2>
         <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-          You haven't selected a start date, end date, or time limit. We will proceed using the default settings configuration (no time limit, always available). Are you sure you want to proceed?
+          {warningType === "DEFAULT_SETTINGS" && "You haven't selected a start date, end date, or time limit. We will proceed using the default settings configuration (no time limit, always available). Are you sure you want to proceed?"}
+          {warningType === "PAST_START_DATE" && "You have selected a Start Date that is in the past. This means participants will be able to join the assessment immediately. Are you sure you want to proceed?"}
+          {warningType === "MISSING_START_DATE" && "You have selected an End Date but no Start Date. This means the assessment is effectively active immediately until the End Date. Are you sure you want to proceed?"}
         </p>
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setShowDefaultSettingsWarning(false)} className="rounded-xl border-slate-200">
+          <Button variant="outline" onClick={() => setWarningType(null)} className="rounded-xl border-slate-200">
             Cancel
           </Button>
           <Button 
-            onClick={() => { 
-              setShowDefaultSettingsWarning(false); 
-              handlePublish(); 
-            }}
+            onClick={confirmWarning}
             className="rounded-xl bg-[#C8A246] hover:bg-[#B3903E] text-white"
           >
-            Confirm & Save
+            Confirm & Continue
           </Button>
         </div>
       </Modal>
