@@ -22,7 +22,7 @@ async function DuplicateAssessmentPageContent({
 
   const formData = data ? {
     ...data.initialFormData,
-    name: `${data.initialFormData.name.trim().substring(0, 240)} (Copy)`,
+    name: `${data.initialFormData.name.trim().substring(0, 500)} (Copy)`,
     status: "DRAFT" as const,
   } : undefined;
 
