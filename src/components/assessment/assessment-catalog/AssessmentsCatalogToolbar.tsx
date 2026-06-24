@@ -38,7 +38,7 @@ export default function AssessmentsCatalogToolbar({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap xl:flex-nowrap items-center gap-3">
         <div className="w-40">
           <DropdownSelect
             value={typeFilter || "ALL"}
