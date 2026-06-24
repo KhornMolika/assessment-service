@@ -10,6 +10,7 @@ import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import type { QuestionBank, Question } from "@/src/types/api";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { fetchBankQuestions } from "@/src/actions/bank-actions";
+import { getTopicQuestions } from "@/src/lib/services/questions";
 
 function getQuestionTypeTone(type: string) {
   switch (type) {
@@ -77,10 +78,14 @@ export default function AssessmentQuestionStep({
       fetchBankQuestions(formData.selectedBankId).then((data) => {
         setBankQuestions(Array.isArray(data) ? data : []);
       }).catch(console.error);
+    } else if (formData.ownerTopicId) {
+      getTopicQuestions(formData.ownerTopicId, 1, 500).then((res) => {
+        setBankQuestions(Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+      }).catch(console.error);
     } else {
       setBankQuestions([]);
     }
-  }, [formData.selectedBankId]);
+  }, [formData.selectedBankId, formData.ownerTopicId]);
 
   const topicBanks = useMemo(() => {
     return banks.filter(
@@ -89,7 +94,7 @@ export default function AssessmentQuestionStep({
   }, [banks, formData.ownerTopicId]);
 
   const baseQuestions = useMemo(() => {
-    if (formData.selectedBankId) {
+    if (formData.selectedBankId || formData.ownerTopicId) {
       return bankQuestions;
     }
     return questions.filter(
