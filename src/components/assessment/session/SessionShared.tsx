@@ -115,12 +115,12 @@ export function AssessmentOverviewCard({
   const items = [
     {
       label: "Starts",
-      value: formatStartDate(assessment.starts_at),
+      value: formatStartDate((assessment.settings?.startsAt || assessment.starts_at) as string),
       icon: Clock3,
     },
     {
       label: "Questions",
-      value: `${assessment.question_count} items`,
+      value: `${assessment.settings?.numQuestions ?? assessment.question_count ?? 0} items`,
       icon: Users,
     },
     {

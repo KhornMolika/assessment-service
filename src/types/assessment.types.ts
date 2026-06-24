@@ -4,10 +4,8 @@ export type AssessmentDeliveryMode = "SELF_PACED" | "REAL_TIME";
 
 export type AssessmentLifecycle =
   | "DRAFT"
-  | "ACTIVE"
-  | "COMPLETED"
-  | "PENDING"
-  | "EXAM";
+  | "PUBLISHED"
+  | "ARCHIVED";
 
 export interface Assessment {
   id: string;

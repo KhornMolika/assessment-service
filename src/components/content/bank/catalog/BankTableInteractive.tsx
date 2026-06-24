@@ -70,10 +70,10 @@ export default function BankTableInteractive({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/3 min-w-[200px]">Bank Name</TableHead>
-            <TableHead className="text-center min-w-[100px]">Questions</TableHead>
-            <TableHead className="min-w-[120px]">Visibility</TableHead>
-            <TableHead className="min-w-[120px]">Created</TableHead>
+            <TableHead className="w-1/3 min-w-50">Bank Name</TableHead>
+            <TableHead className="text-center min-w-25">Questions</TableHead>
+            <TableHead className="min-w-30">Visibility</TableHead>
+            <TableHead className="min-w-30">Created</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>

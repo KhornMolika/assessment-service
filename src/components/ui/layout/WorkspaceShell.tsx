@@ -21,7 +21,7 @@ export default function WorkspaceShell({ children }: { children: React.ReactNode
           <Suspense fallback={<TopbarSkeleton />}>
             <Topbar />
           </Suspense>
-          <main className="relative flex-1 overflow-auto p-6">
+          <main className="relative flex-1 p-6 lg:p-8">
             <Suspense fallback={<WorkspacePageSkeleton />}>
               {children}
             </Suspense>

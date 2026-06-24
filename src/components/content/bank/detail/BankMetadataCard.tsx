@@ -1,5 +1,5 @@
 import type { QuestionBank } from "@/src/types/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("en-US", {

@@ -44,14 +44,14 @@ function buildAssessmentRows(
 
   return assessments.map((assessment) => ({
     id: assessment.id,
-    title: assessment.title,
+    title: assessment.name || assessment.title || "Untitled",
     topicLabels: getAssessmentTopicLabels(assessment.id, assessmentTopics, topicMap),
-    participants: assessment.participant_count,
-    questions: assessment.question_count,
-    averageScore: parsePercent(assessment.average_score),
-    passRate: parsePercent(assessment.pass_rate),
-    lifecycle: assessment.lifecycle,
-    deliveryMode: assessment.delivery_mode,
+    participants: assessment.participant_count ?? 0,
+    questions: assessment.settings?.numQuestions ?? assessment.question_count ?? 0,
+    averageScore: parsePercent(assessment.average_score || "0%"),
+    passRate: parsePercent(assessment.pass_rate || "0%"),
+    lifecycle: assessment.status || assessment.lifecycle || "DRAFT",
+    deliveryMode: assessment.settings?.mode || assessment.delivery_mode || "SELF_PACED",
   }));
 }
 

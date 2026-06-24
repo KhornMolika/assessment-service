@@ -77,10 +77,12 @@ export default function AssessmentsCatalog({
       }
 
       const haystacks = [
+        assessment.name,
         assessment.title,
         assessment.question_bank_name,
-        assessment.description ?? "",
-      ];
+        assessment.description,
+      ].filter(Boolean) as string[];
+
       return haystacks.some((value) =>
         value.toLowerCase().includes(normalizedQuery),
       );

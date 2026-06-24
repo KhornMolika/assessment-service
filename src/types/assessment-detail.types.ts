@@ -49,7 +49,5 @@ export interface AssessmentDetailRecord extends AssessmentCatalogItem {
 
 export interface AssessmentDetailPageData {
   assessment: AssessmentDetailRecord;
-  topPerformers: AssessmentDetailTopPerformer[];
-  recentActivity: AssessmentDetailActivityItem[];
   questions: AssessmentDetailQuestionItem[];
 }
