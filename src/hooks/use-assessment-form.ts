@@ -240,6 +240,12 @@ export function useAssessmentForm({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    
+    // Prevent accidental auto-saving when pressing Enter on steps 1 and 2
+    if (currentStep < 3) {
+      return;
+    }
+
     if (!activeTopic && !formData.ownerTopicId) {
       toast.error("Owner topic is required.");
       return;
