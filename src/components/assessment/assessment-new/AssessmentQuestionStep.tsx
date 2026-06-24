@@ -128,6 +128,17 @@ export default function AssessmentQuestionStep({
     return question.questionText.toLowerCase().includes(questionSearch.trim().toLowerCase());
   });
 
+  // Remove any selected ESSAY questions if mode is REAL_TIME
+  useEffect(() => {
+    if (formData.sessionMode === "REAL_TIME" && formData.selectedQuestionIds.length > 0) {
+      const essayQuestionIds = baseQuestions.filter(q => q.type === "ESSAY").map(q => q.id);
+      const filteredSelected = formData.selectedQuestionIds.filter(id => !essayQuestionIds.includes(id));
+      if (filteredSelected.length !== formData.selectedQuestionIds.length) {
+        onChange("selectedQuestionIds", filteredSelected);
+      }
+    }
+  }, [formData.sessionMode, formData.selectedQuestionIds, baseQuestions, onChange]);
+
   return (
     <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
@@ -265,10 +276,14 @@ export default function AssessmentQuestionStep({
                         key={question.id}
                         type="button"
                         onClick={() => onQuestionToggle(question.id)}
+                        disabled={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME"}
+                        title={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" ? "REAL_TIME assessments cannot contain ESSAY questions" : undefined}
                         className={`group relative flex w-full flex-col items-start overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#C8A246]/50 focus-visible:ring-offset-2 ${
-                          selected
-                            ? "border-[#C8A246] bg-[#faf8f3] shadow-md ring-inset ring-1 ring-[#C8A246]"
-                            : "border-slate-200/80 bg-white hover:border-[#C8A246]/40 hover:bg-[#faf8f3]/50 hover:shadow-md shadow-sm"
+                          question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" 
+                            ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
+                            : selected
+                              ? "border-[#C8A246] bg-[#faf8f3] shadow-md ring-inset ring-1 ring-[#C8A246]"
+                              : "border-slate-200/80 bg-white hover:border-[#C8A246]/40 hover:bg-[#faf8f3]/50 hover:shadow-md shadow-sm"
                         }`}
                       >
                         {selected && (
