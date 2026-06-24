@@ -84,7 +84,7 @@ export default function AnalyticsPageView({
   );
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Analytics"
         description="Monitor topic-level performance, compare assessments, and spot where participant demand or question load is concentrated."

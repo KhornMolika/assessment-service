@@ -67,7 +67,7 @@ export default function AssessmentScopedResultsView({
 
   return (
     <div>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+      <div className="w-full space-y-6">
         <AssessmentReportHeader data={data} />
 
         <div className="mt-6 rounded-[28px] border border-border/70 bg-white/95 p-4 shadow-[0_18px_44px_rgba(20,53,43,0.08)] sm:p-6">

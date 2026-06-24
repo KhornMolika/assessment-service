@@ -1,223 +1,228 @@
-import { BarChart3, Clock, FileText, PlayCircle, Settings2 } from "lucide-react";
-import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
-
-function formatDeliveryMode(value: AssessmentDetailRecord["delivery_mode"]) {
-  return value === "SELF_PACED" ? "Self-paced" : "Real-time";
-}
-
-const assessmentRows = [
-  { label: "Status", field: "status" },
-  { label: "Active", field: "is_active" },
-  { label: "Created At", field: "created_at" },
-  { label: "Updated At", field: "updated_at" },
-] as const;
-
-const settingsRows = [
-  { label: "Mode", field: "delivery_mode" },
-  { label: "Question Selection", field: "question_selection" },
-  { label: "Fixed Questions Count", field: "question_count" },
-  { label: "Selection Rules", field: "selection_rules" },
-  { label: "Time Limit", field: "time_limit_minutes" },
-  { label: "Starts At", field: "starts_at" },
-  { label: "Ends At", field: "ends_at" },
-  { label: "Pass Mark", field: "pass_mark" },
-  { label: "Shuffle Questions", field: "shuffle_questions" },
-  { label: "Allow Going Back", field: "allow_going_back" },
-  { label: "Result Release", field: "show_results" },
-  { label: "Max Attempts", field: "max_attempts" },
-  { label: "Grade Labels", field: "grade_scale" },
-  { label: "Allow Share", field: "is_allowed_share" },
-  { label: "Participant Identity", field: "participant_identity" },
-  { label: "Settings Updated At", field: "updated_at" },
-] as const;
-
-type DetailField =
-  | (typeof assessmentRows)[number]["field"]
-  | (typeof settingsRows)[number]["field"];
-
-function formatValue(
-  assessment: AssessmentDetailRecord,
-  field: DetailField,
-) {
-  const value =
-    field === "is_active"
-      ? assessment.status === "PUBLISHED" && assessment.lifecycle !== "COMPLETED"
-      : field === "selection_rules"
-        ? "Easy 8, Medium 10, Hard 5"
-        : field === "ends_at"
-          ? null
-          : field === "max_attempts"
-            ? 1
-            : assessment[field];
-
-  if (
-    (
-      field === "status" ||
-      field === "participant_identity" ||
-      field === "delivery_mode" ||
-      field === "question_selection"
-    ) &&
-    typeof value === "string"
-  ) {
-    return value
-      .split("_")
-      .map((part) => part.charAt(0) + part.slice(1).toLowerCase())
-      .join(" ");
-  }
-
-  if (typeof value === "boolean") {
-    return value ? "Enabled" : "Disabled";
-  }
-
-  if (field === "pass_mark") {
-    return `${value}%`;
-  }
-
-  if ((field === "created_at" || field === "updated_at" || field === "starts_at") && typeof value === "string") {
-    return new Intl.DateTimeFormat("en", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    }).format(new Date(value));
-  }
-
-  if (field === "time_limit_minutes") {
-    return value != null ? `${value} minutes` : "No limit";
-  }
-
-  if (field === "grade_scale") {
-    return assessment.grade_scale
-      .map((grade) => `${grade.grade} >= ${grade.minPercent}%`)
-      .join(", ");
-  }
-
-  if (value == null || value === "") {
-    return "Not set";
-  }
-
-  return `${value}`;
-}
-
-function getParticipantIdentityNote(identity: AssessmentDetailRecord["participant_identity"]) {
-  switch (identity) {
-    case "ANONYMOUS":
-      return "Anonymous participants skip name entry.";
-    case "INTERNAL":
-      return "Internal participants enter email and phone number before starting.";
-    case "EXTERNAL":
-      return "External participants enter a display name before starting.";
-  }
-}
-
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-muted/30 px-4 py-3">
-      <div className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-inkd">{label}</div>
-      <div className="break-words text-sm font-semibold text-primary">{value}</div>
-    </div>
-  );
-}
+import { 
+  Calendar, 
+  Clock, 
+  FileText, 
+  Settings2, 
+  Users, 
+  Hash, 
+  Target,
+  RefreshCw,
+  Eye,
+  CheckCircle2,
+  ListFilter,
+  Type,
+  AlignLeft
+} from "lucide-react";
+import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
 
 export default function AssessmentDetailInformationCard({
   assessment,
 }: {
   assessment: AssessmentDetailRecord;
 }) {
+  const createdDate = assessment.createdAt
+    ? new Date(assessment.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "-";
+
+  const updatedDate = assessment.updatedAt
+    ? new Date(assessment.updatedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "-";
+    
+  const startsAtDate = assessment.settings?.startsAt
+    ? new Date(assessment.settings.startsAt).toLocaleString("en-US")
+    : "Not Set";
+    
+  const endsAtDate = assessment.settings?.endsAt
+    ? new Date(assessment.settings.endsAt).toLocaleString("en-US")
+    : "Not Set";
+
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case "PUBLISHED": return "text-emerald-600";
+      case "DRAFT": return "text-slate-500";
+      case "ARCHIVED": return "text-red-500";
+      default: return "text-slate-600";
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <FileText className="h-5 w-5" />
-          Assessment Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div>
-            <div className="mb-1 text-sm text-inkd">Assessment Mode</div>
-            <div className="flex items-center gap-2 text-primary">
-              <PlayCircle className="h-5 w-5" />
-              <span className="text-lg font-bold">{formatDeliveryMode(assessment.delivery_mode)}</span>
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-1 text-sm text-inkd">Total Questions</div>
-            <div className="flex items-center gap-2 text-primary">
-              <BarChart3 className="h-5 w-5" />
-              <span className="text-lg font-bold">{assessment.question_count}</span>
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-1 text-sm text-inkd">Time Limit</div>
-            <div className="flex items-center gap-2 text-primary">
-              <Clock className="h-5 w-5" />
-              <span className="font-semibold">
-                {assessment.time_limit_minutes != null
-                  ? `${assessment.time_limit_minutes} minutes`
-                  : "No limit"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-border/70 pt-6">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-primary">
-            <FileText className="h-4 w-4" />
-            assessments
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {assessmentRows.map(({ label, field }) => (
-              <DetailRow
-                key={field}
-                label={label}
-                value={formatValue(assessment, field)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="border-t border-border/70 pt-6">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-primary">
-            <Settings2 className="h-4 w-4" />
-            assessment_settings
-          </div>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            {settingsRows.map(({ label, field }) => (
-              <DetailRow
-                key={field}
-                label={label}
-                value={formatValue(assessment, field)}
-              />
-            ))}
-          </div>
-          <div className="mt-3 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm font-medium text-primary">
-            {getParticipantIdentityNote(assessment.participant_identity)}
-          </div>
-        </div>
-
-        <div className="border-t border-border/70 pt-6">
-          <div className="mb-3 text-sm text-inkd">Grade Labels</div>
-          <div className="flex flex-wrap gap-2">
-            {assessment.grade_scale.map((grade) => (
-              <div key={grade.grade} className="rounded-lg border border-border bg-accl/40 px-3 py-2">
-                <span className="font-bold text-primary">{grade.grade}</span>
-                <span className="ml-1 text-xs text-inkd">{">="} {grade.minPercent}%</span>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Assessment Details Card */}
+      <Card className="h-full flex flex-col">
+        <CardHeader>
+          <CardTitle>Assessment Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 flex-1">
+          <div className="flex items-center gap-3">
+            <Type className="h-5 w-5 text-indigo-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Name</div>
+              <div className="text-sm font-medium text-slate-900">
+                {assessment.name || assessment.title || "Untitled"}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          <div className="flex items-start gap-3">
+            <AlignLeft className="h-5 w-5 text-slate-400 mt-0.5" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Description</div>
+              <div className="text-sm font-medium text-slate-900 line-clamp-3">
+                {assessment.description || assessment.subtitle || "No description provided."}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className={`h-5 w-5 ${getStatusColor(assessment.status)}`} />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Status</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.status?.toLowerCase() || "Unknown"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <FileText className="h-5 w-5 text-blue-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Type</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.type?.toLowerCase() || "Quiz"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-slate-400" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Created At</div>
+              <div className="text-sm font-medium text-slate-900">{createdDate}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-slate-400" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Updated At</div>
+              <div className="text-sm font-medium text-slate-900">{updatedDate}</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Settings Card */}
+      <Card className="md:col-span-2 h-full flex flex-col">
+        <CardHeader>
+          <CardTitle>Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 flex-1">
+          <div className="flex items-center gap-3">
+            <Settings2 className="h-5 w-5 text-indigo-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Delivery Mode</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.settings?.mode?.replace("_", " ").toLowerCase() || "Self Paced"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <ListFilter className="h-5 w-5 text-orange-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Question Selection</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.settings?.questionSelection?.toLowerCase() || "Manual"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Users className="h-5 w-5 text-green-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Participant Identity</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.settings?.participantIdentity?.toLowerCase() || "Internal"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Hash className="h-5 w-5 text-purple-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Fixed Questions Count</div>
+              <div className="text-sm font-medium text-slate-900">
+                {assessment.settings?.numQuestions || 0}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-red-400" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Time Limit</div>
+              <div className="text-sm font-medium text-slate-900">
+                {assessment.settings?.timeLimit ? `${assessment.settings.timeLimit} minutes` : "No Limit"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-amber-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Starts At</div>
+              <div className="text-sm font-medium text-slate-900">{startsAtDate}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-rose-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Ends At</div>
+              <div className="text-sm font-medium text-slate-900">{endsAtDate}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Target className="h-5 w-5 text-teal-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Pass Mark</div>
+              <div className="text-sm font-medium text-slate-900">
+                {assessment.settings?.passMark || 0}%
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <RefreshCw className="h-5 w-5 text-cyan-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Shuffle Questions</div>
+              <div className="text-sm font-medium text-slate-900">
+                {assessment.settings?.isShuffle ? "Yes" : "No"}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Eye className="h-5 w-5 text-sky-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Show Results</div>
+              <div className="text-sm font-medium text-slate-900 capitalize">
+                {assessment.settings?.showResults?.toLowerCase() || "Never"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

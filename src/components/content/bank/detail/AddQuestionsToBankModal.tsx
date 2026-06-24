@@ -99,7 +99,7 @@ export default function AddQuestionsToBankModal({
         </div>
       </div>
 
-      <div className="mt-4 flex-1 overflow-y-auto pr-2 min-h-[300px]">
+      <div className="mt-4 flex-1 overflow-y-auto pr-2 min-h-75">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-inkd" />

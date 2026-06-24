@@ -141,7 +141,7 @@ async function SearchPageContent({
     filteredAssessments.length + filteredBanks.length + filteredQuestions.length;
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Search"
         description={

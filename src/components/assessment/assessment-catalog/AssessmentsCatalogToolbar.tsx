@@ -7,21 +7,19 @@ import {
   useUrlQueryUpdater,
 } from "@/src/hooks/use-url-query-state";
 import { Button } from "@/src/components/ui/ui/button";
+import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import { Input } from "@/src/components/ui/ui/input";
-
-const deliveryFilters: Array<{
-  label: string;
-  value: "ALL" | AssessmentDeliveryMode;
-}> = [
-  { label: "All", value: "ALL" },
-  { label: "Self-paced", value: "SELF_PACED" },
-  { label: "Real-time", value: "REAL_TIME" },
-];
 
 export default function AssessmentsCatalogToolbar({
   deliveryFilter,
+  typeFilter,
+  statusFilter,
+  selectionFilter,
 }: {
   deliveryFilter: "ALL" | AssessmentDeliveryMode;
+  typeFilter: string;
+  statusFilter: string;
+  selectionFilter: string;
 }) {
   const updateUrl = useUrlQueryUpdater();
   const { inputValue: searchQuery, setInputValue: setSearchQuery } =
@@ -40,30 +38,59 @@ export default function AssessmentsCatalogToolbar({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {deliveryFilters.map((filter) => {
-          const isActive = filter.value === deliveryFilter;
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-40">
+          <DropdownSelect
+            value={typeFilter || "ALL"}
+            options={[
+              { value: "ALL", label: "All Types" },
+              { value: "QUIZ", label: "Quiz" },
+              { value: "EXAM", label: "Exam" },
+              { value: "PRACTICE", label: "Practice" },
+              { value: "SURVEY", label: "Survey" },
+            ]}
+            onChange={(val) => updateUrl({ type: val === "ALL" ? null : val, page: null })}
+          />
+        </div>
 
-          return (
-            <Button
-              key={filter.value}
-              type="button"
-              onClick={() => {
-                updateUrl({
-                  delivery: filter.value === "ALL" ? null : filter.value,
-                  page: null,
-                });
-              }}
-              className={`inline-flex items-center rounded-lg border px-4 py-2 text-sm font-medium transition ${
-                isActive
-                  ? "border-primary bg-primary text-white"
-                  : "border-border bg-card text-primary hover:bg-muted"
-              }`}
-            >
-              {filter.label}
-            </Button>
-          );
-        })}
+        <div className="w-40">
+          <DropdownSelect
+            value={deliveryFilter || "ALL"}
+            options={[
+              { value: "ALL", label: "All Modes" },
+              { value: "SELF_PACED", label: "Self-Paced" },
+              { value: "REAL_TIME", label: "Real-Time" },
+            ]}
+            onChange={(val) => updateUrl({ delivery: val === "ALL" ? null : val, page: null })}
+          />
+        </div>
+
+        <div className="w-48">
+          <DropdownSelect
+            value={selectionFilter || "ALL"}
+            options={[
+              { value: "ALL", label: "All Selection" },
+              { value: "MANUAL", label: "Manual" },
+              { value: "DYNAMIC", label: "Dynamic" },
+            ]}
+            onChange={(val) => updateUrl({ selection: val === "ALL" ? null : val, page: null })}
+          />
+        </div>
+
+        <div className="w-40">
+          <DropdownSelect
+            value={statusFilter || "ALL"}
+            options={[
+              { value: "ALL", label: "All Statuses" },
+              { value: "DRAFT", label: "Draft" },
+              { value: "PUBLISHED", label: "Published" },
+              { value: "ARCHIVED", label: "Archived" },
+            ]}
+            onChange={(val) => updateUrl({ status: val === "ALL" ? null : val, page: null })}
+          />
+        </div>
+
+        
       </div>
     </div>
   );

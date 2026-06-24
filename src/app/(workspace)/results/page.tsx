@@ -250,7 +250,7 @@ export default function ResultsPage({
 }) {
   return (
     <div>
-      <div className="space-y-6 p-4">
+      <div className="space-y-6">
         <ResultsHeader searchParams={searchParams} />
         <div className="mt-6">
           <Suspense fallback={<ResultsContentSkeleton />}>

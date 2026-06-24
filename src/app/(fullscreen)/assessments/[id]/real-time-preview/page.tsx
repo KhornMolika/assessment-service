@@ -28,7 +28,7 @@ async function AssessmentRealTimePreviewPageContent({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-4 py-6 sm:px-6 sm:py-8">
-      <div className="mx-auto max-w-[1800px] space-y-6">
+      <div className="mx-auto max-w-450 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary/65">

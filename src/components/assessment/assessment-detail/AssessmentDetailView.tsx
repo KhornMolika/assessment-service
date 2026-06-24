@@ -1,8 +1,8 @@
 import type { AssessmentDetailPageData } from "@/src/types/assessment-detail.types";
-import AssessmentDetailHero from "./AssessmentDetailHero";
+
 import AssessmentDetailInformationCard from "./AssessmentDetailInformationCard";
 import AssessmentQuestionsCard from "./AssessmentQuestionsCard";
-import AssessmentSidebar from "./AssessmentSidebar";
+import AssessmentDetailHeader from "./AssessmentDetailHeader";
 
 export default function AssessmentDetailView({
   data,
@@ -12,21 +12,20 @@ export default function AssessmentDetailView({
   const { assessment, questions } = data;
 
   return (
-    <div>
-      <AssessmentDetailHero assessment={assessment} />
+    <div className="space-y-6">
+      <AssessmentDetailHeader assessment={assessment} />
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-6">
-            <AssessmentDetailInformationCard assessment={assessment} />
-            <AssessmentQuestionsCard
-              questions={questions}
-              totalQuestions={assessment.question_count}
-            />
-          </div>
-
-          <AssessmentSidebar assessment={assessment} />
-        </div>
+      <div className="w-full space-y-6">
+        <AssessmentDetailInformationCard assessment={assessment} />
+        
+        <AssessmentQuestionsCard
+          questions={questions}
+          totalQuestions={
+            assessment.settings?.numQuestions ??
+            assessment.question_count ??
+            0
+          }
+        />
       </div>
     </div>
   );

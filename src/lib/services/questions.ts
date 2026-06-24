@@ -7,6 +7,7 @@ function mapQuestion(q: any): Question {
     ...q,
     questionText: q.questionText || q.text,
     correctAnswer: q.correctAnswer || q.correctAnswers,
+    topicId: q.bankId || q.topicId,
   };
 }
 

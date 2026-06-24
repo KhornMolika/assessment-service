@@ -49,7 +49,7 @@ export default function AssessmentSettingsStep({
               }`}
             >
               <TimerReset className={`h-6 w-6 shrink-0 ${formData.sessionMode === "SELF_PACED" ? "text-indigo-700" : "text-slate-500"}`} />
-              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "SELF_PACED" ? "text-slate-900" : "text-slate-800"}`}>Self-paced</h3>
+              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "SELF_PACED" ? "text-slate-900" : "text-slate-800"}`}>Self Paced</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Participants can enter on their own schedule and complete independently.
               </p>
@@ -65,7 +65,7 @@ export default function AssessmentSettingsStep({
               }`}
             >
               <Sparkles className={`h-6 w-6 shrink-0 ${formData.sessionMode === "REAL_TIME" ? "text-indigo-700" : "text-slate-500"}`} />
-              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "REAL_TIME" ? "text-slate-900" : "text-slate-800"}`}>Real-time</h3>
+              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "REAL_TIME" ? "text-slate-900" : "text-slate-800"}`}>Real Time</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Host-led delivery with fixed launch windows and shared timing expectations.
               </p>
@@ -83,7 +83,7 @@ export default function AssessmentSettingsStep({
               }`}
             >
               <Clock3 className={`h-6 w-6 shrink-0 ${formData.questionSelection === "MANUAL" ? "text-indigo-700" : "text-slate-500"}`} />
-              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.questionSelection === "MANUAL" ? "text-slate-900" : "text-slate-800"}`}>Manual selection</h3>
+              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.questionSelection === "MANUAL" ? "text-slate-900" : "text-slate-800"}`}>Manual Selection</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Hand-pick the exact questions that will appear in this assessment.
               </p>
@@ -91,17 +91,39 @@ export default function AssessmentSettingsStep({
 
             <button
               type="button"
+              disabled={formData.sessionMode === "REAL_TIME"}
               onClick={() => onChange("questionSelection", "DYNAMIC")}
               className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
                 formData.questionSelection === "DYNAMIC"
                   ? "bg-indigo-50 border-indigo-500 shadow-sm ring-1 ring-indigo-500"
+                  : formData.sessionMode === "REAL_TIME"
+                  ? "border-slate-100 bg-slate-50/50 opacity-50 cursor-not-allowed"
                   : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm"
               }`}
             >
-              <Sparkles className={`h-6 w-6 shrink-0 ${formData.questionSelection === "DYNAMIC" ? "text-indigo-700" : "text-slate-500"}`} />
-              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.questionSelection === "DYNAMIC" ? "text-slate-900" : "text-slate-800"}`}>Dynamic selection</h3>
-              <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
-                Pull questions from a bank using total counts and difficulty distribution rules.
+              <Sparkles className={`h-6 w-6 shrink-0 ${
+                formData.questionSelection === "DYNAMIC" 
+                  ? "text-indigo-700" 
+                  : formData.sessionMode === "REAL_TIME"
+                  ? "text-slate-300"
+                  : "text-slate-500"
+              }`} />
+              <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${
+                formData.questionSelection === "DYNAMIC" 
+                  ? "text-slate-900" 
+                  : formData.sessionMode === "REAL_TIME"
+                  ? "text-slate-400"
+                  : "text-slate-800"
+              }`}>Dynamic Selection</h3>
+              <p className={`mt-2 text-sm whitespace-normal leading-relaxed ${
+                formData.sessionMode === "REAL_TIME" ? "text-slate-400" : "text-slate-600"
+              }`}>
+                Randomizes a unique set of questions for each participant at runtime, based on your chosen difficulty distribution.
+                {formData.sessionMode === "REAL_TIME" && (
+                  <span className="block mt-2 font-medium text-amber-600">
+                    Not available because Real Time sessions require all participants to answer the exact same questions synchronously.
+                  </span>
+                )}
               </p>
             </button>
           </div>
@@ -237,7 +259,7 @@ export default function AssessmentSettingsStep({
               <div>
                 <h3 className="font-bold text-slate-800">Grade scale</h3>
                 <p className="mt-1 text-sm text-slate-500 whitespace-normal leading-relaxed">
-                  Define label thresholds like A, B, C, and pass/fail cutoffs.
+                  Set grade labels (like A, B, C or Pass/Fail) and specify the minimum percentage score required to achieve each.
                 </p>
               </div>
               <Button

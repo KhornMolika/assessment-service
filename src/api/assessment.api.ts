@@ -85,7 +85,7 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
         (assessment) => assessment.lifecycle === "DRAFT",
       ).length,
       activeCount: assessments.filter(
-        (assessment) => assessment.lifecycle === "ACTIVE",
+        (assessment) => assessment.lifecycle === "PUBLISHED",
       ).length,
       selfPacedCount: assessments.filter(
         (assessment) => assessment.delivery_mode === "SELF_PACED",
@@ -125,83 +125,89 @@ export async function getAssessmentDetailPageData(
   try {
     const [assessmentRes, reportRes, questionsRes] = await Promise.all([
       apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
-      apiClient.get<{
-        data: {
-          assessment: Record<string, number>;
-          participants: any[];
-          questionBreakdown: any[];
-        };
-      }>(`/assessments/${id}/report?limit=5000`),
-      apiClient.get<{ data: Record<string, unknown>[] }>(
-        `/assessments/${id}/questions`,
-      ),
+      apiClient
+        .get<{
+          data: {
+            assessment: Record<string, number>;
+            participants: any[];
+            questionBreakdown: any[];
+          };
+        }>(`/assessments/${id}/report?limit=5000`)
+        .catch(() => null),
+      apiClient
+        .get<{ data: Record<string, unknown>[] }>(`/assessments/${id}/questions`)
+        .catch(() => null),
     ]);
 
     const assessment = (assessmentRes as any).data || (assessmentRes as any);
-    const report = reportRes.data;
+    const report = reportRes?.data || {
+      assessment: { completed: 0, pending: 0, passRate: 0, averageScore: 0 },
+      participants: [],
+      questionBreakdown: [],
+    };
 
     // Build assessment detail record using report stats
-    const completedCount = report.assessment.completed || 0;
-    const inProgressCount = report.assessment.pending || 0;
+    const completedCount = report?.assessment?.completed || 0;
+    const inProgressCount = report?.assessment?.pending || 0;
 
     const record: AssessmentDetailRecord = {
-      id: assessment.id,
+      id: assessment?.id,
       owner_id: "admin",
-      title: assessment.name,
-      description: assessment.description,
-      status: assessment.status,
+      title: assessment?.name,
+      description: assessment?.description,
+      status: assessment?.status,
       participant_identity:
-        assessment.settings?.participantIdentity || "EXTERNAL",
-      created_at: assessment.createdAt,
-      updated_at: assessment.updatedAt,
+        assessment?.settings?.participantIdentity || "EXTERNAL",
+      created_at: assessment?.createdAt,
+      updated_at: assessment?.updatedAt,
       question_bank_name: "General Bank",
-      delivery_mode: assessment.settings?.mode || "SELF_PACED",
-      lifecycle: assessment.status,
-      question_count: assessment.settings?.numQuestions || 0,
+      delivery_mode: assessment?.settings?.mode || "SELF_PACED",
+      lifecycle: assessment?.status,
+      question_count: assessment?.settings?.numQuestions || 0,
       participant_count: completedCount + inProgressCount,
-      pass_rate: `${report.assessment.passRate ?? 0}%`,
-      average_score: `${report.assessment.averageScore ?? 0}`,
-      starts_at: assessment.settings?.startsAt || assessment.createdAt,
+      pass_rate: `${report?.assessment?.passRate ?? 0}%`,
+      average_score: `${report?.assessment?.averageScore ?? 0}`,
+      starts_at: assessment?.settings?.startsAt || assessment?.createdAt,
 
       subtitle:
-        assessment.description ??
-        `${assessment.name} delivery details and performance overview.`,
+        assessment?.description ??
+        `${assessment?.name || "Assessment"} delivery details and performance overview.`,
       source_bank: "Custom Questions",
       completed_count: completedCount,
       in_progress_count: inProgressCount,
-      average_score_percent: report.assessment.averageScore ?? 0,
-      pass_rate_percent: report.assessment.passRate ?? 0,
-      live_sessions: assessment.settings?.mode === "REAL_TIME" ? 1 : 0,
+      average_score_percent: report?.assessment?.averageScore ?? 0,
+      pass_rate_percent: report?.assessment?.passRate ?? 0,
+      live_sessions: assessment?.settings?.mode === "REAL_TIME" ? 1 : 0,
       active_sessions:
-        assessment.settings?.mode === "REAL_TIME"
+        assessment?.settings?.mode === "REAL_TIME"
           ? Math.max(1, inProgressCount)
           : 0,
       total_points:
-        report.questionBreakdown?.reduce(
+        report?.questionBreakdown?.reduce(
           (sum: number, q: any) => sum + (q.maxScore || 0),
           0,
         ) || 0,
-      time_limit_minutes: assessment.settings?.timeLimit
+      time_limit_minutes: assessment?.settings?.timeLimit
         ? Math.round(assessment.settings.timeLimit / 60)
-        : assessment.settings?.mode === "REAL_TIME"
+        : assessment?.settings?.mode === "REAL_TIME"
           ? 60
           : 45,
       created_by: "Admin User",
       question_selection:
-        assessment.settings?.questionSelection === "DYNAMIC"
+        assessment?.settings?.questionSelection === "DYNAMIC"
           ? "Dynamic"
           : "Manual",
-      shuffle_questions: assessment.settings?.isShuffle ?? true,
+      shuffle_questions: assessment?.settings?.isShuffle ?? true,
       allow_going_back:
-        assessment.settings?.allowReview ??
-        assessment.settings?.mode === "SELF_PACED",
-      pass_mark: assessment.settings?.passMark ?? 70,
+        assessment?.settings?.allowReview ??
+        assessment?.settings?.mode === "SELF_PACED",
+      pass_mark: assessment?.settings?.passMark ?? 70,
       show_results:
-        assessment.settings?.showResults === "NEVER"
+        assessment?.settings?.showResults === "NEVER"
           ? "Never"
           : "Immediately after submit",
       is_allowed_share: false,
-      is_showed_answers: assessment.settings?.showResults === "IMMEDIATELY",
+      is_showed_answers: assessment?.settings?.showResults === "IMMEDIATELY",
       grade_scale: [
         { grade: "A", minPercent: 90 },
         { grade: "B", minPercent: 80 },
@@ -211,38 +217,8 @@ export async function getAssessmentDetailPageData(
         { grade: "F", minPercent: 0 },
       ],
     };
-
-    // Calculate Top Performers
-    const sortedParticipants = [...(report.participants || [])].sort(
-      (a: any, b: any) => (b.score || 0) - (a.score || 0),
-    );
-    const topPerformers = sortedParticipants.slice(0, 5).map((p: any) => ({
-      name: p.name || "Anonymous",
-      score: p.score,
-      time: p.duration ? `${Math.round(p.duration / 60)} min` : "-",
-    }));
-
-    // Calculate Recent Activity
-    const recentActivity = [...(report.participants || [])]
-      .sort(
-        (a: any, b: any) =>
-          new Date(b.submittedAt || Date.now()).getTime() -
-          new Date(a.submittedAt || Date.now()).getTime(),
-      )
-      .slice(0, 5)
-      .map((p: any) => ({
-        name: p.name || "Anonymous",
-        action: (p.submittedAt ? "completed" : "started") as
-          | "completed"
-          | "started",
-        time: p.submittedAt
-          ? new Date(p.submittedAt).toLocaleDateString()
-          : "Just now",
-        score: p.score,
-      }));
-
     // Map Questions
-    const questions = (questionsRes.data || questionsRes || []).map(
+    const questions = ((questionsRes as any)?.data || questionsRes || []).map(
       (q: any) => ({
         id: q.id,
         question: q.questionText,
@@ -253,8 +229,6 @@ export async function getAssessmentDetailPageData(
 
     return {
       assessment: record,
-      topPerformers,
-      recentActivity,
       questions,
     };
   } catch (err) {
@@ -545,18 +519,20 @@ export async function getAssessmentScopedResultsPageData(
       apiClient.get<{ data: Record<string, unknown> }>(
         `/assessments/${assessmentId}`,
       ),
-      apiClient.get<{
-        data: { assessment: Record<string, number>; participants: any[] };
-      }>(`/assessments/${assessmentId}/report`),
-      apiClient.get<{ data: Record<string, unknown>[] }>(
-        `/assessments/${assessmentId}/questions`,
-      ),
+      apiClient
+        .get<{
+          data: { assessment: Record<string, number>; participants: any[] };
+        }>(`/assessments/${assessmentId}/report`)
+        .catch(() => null),
+      apiClient
+        .get<{ data: Record<string, unknown>[] }>(`/assessments/${assessmentId}/questions`)
+        .catch(() => null),
     ]);
 
     const assessment = assessmentRes;
-    const report = reportRes.data;
+    const report = reportRes?.data || { assessment: {}, participants: [] };
 
-    const participants = report.participants.map(
+    const participants = (report.participants || []).map(
       (p: any) =>
         ({
           id: p.participantId,
@@ -566,7 +542,7 @@ export async function getAssessmentScopedResultsPageData(
         }) as Participant,
     );
 
-    const answer_sheets = report.participants.map(
+    const answer_sheets = (report.participants || []).map(
       (p: any) =>
         ({
           id: p.sessionId,
@@ -586,7 +562,7 @@ export async function getAssessmentScopedResultsPageData(
         }) as AnswerSheet,
     );
 
-    const questions = (questionsRes.data || questionsRes || []).map(
+    const questions = ((questionsRes as any)?.data || questionsRes || []).map(
       (q: any) =>
         ({
           id: q.id,

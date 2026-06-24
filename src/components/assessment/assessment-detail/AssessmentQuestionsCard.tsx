@@ -5,6 +5,25 @@ import { FileText } from "lucide-react";
 import type { AssessmentDetailQuestionItem } from "@/src/types/assessment-detail.types";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { Badge } from "@/src/components/ui/ui/badge";
+
+function getTypeVariant(type: string) {
+  switch (type) {
+    case "SINGLE_CHOICE":
+    case "MULTIPLE_CHOICE":
+      return "info" as const;
+    case "TRUE_FALSE":
+      return "success" as const;
+    case "SHORT_ANSWER":
+      return "secondary" as const;
+    case "ESSAY":
+      return "pending" as const;
+    case "RATING":
+      return "warning" as const;
+    default:
+      return "default" as const;
+  }
+}
 
 export default function AssessmentQuestionsCard({
   questions,
@@ -14,7 +33,8 @@ export default function AssessmentQuestionsCard({
   totalQuestions: number;
 }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  
   const totalPages = Math.max(1, Math.ceil(questions.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const paginatedQuestions = questions.slice(
@@ -29,13 +49,16 @@ export default function AssessmentQuestionsCard({
 
   return (
     <PaginatedCollectionCard
+      className="flex-1 shadow-sm border-slate-200"
       title={
-        <span className="flex items-center gap-2 text-xl">
-          <FileText className="h-5 w-5" />
+        <span className="flex items-center gap-2 text-lg text-slate-800">
+          <FileText className="h-5 w-5 text-blue-500" />
           Questions ({totalQuestions})
         </span>
       }
-      contentClassName="px-0 pb-0 sm:px-0 sm:pb-0"
+      description="A preview of questions assigned to this assessment."
+      headerClassName="bg-slate-50 border-b border-slate-100 rounded-t-xl pb-4"
+      contentClassName="pt-6 px-0 pb-0 sm:px-0 sm:pb-0"
       bodyClassName={questions.length === 0 ? "mx-6" : "space-y-4"}
       isEmpty={questions.length === 0}
       emptyState={
@@ -49,6 +72,7 @@ export default function AssessmentQuestionsCard({
         totalPages,
         pageSize: itemsPerPage,
         totalItems: questions.length,
+        pageSizeOptions: [5, 10, 20, 50],
         itemLabel: "questions",
         onPageChange: setCurrentPage,
         onPageSizeChange: handlePageSizeChange,
@@ -57,18 +81,20 @@ export default function AssessmentQuestionsCard({
       {paginatedQuestions.map((question, index) => (
         <div
           key={question.id}
-          className="mx-6 flex items-center justify-between rounded-lg border border-border/70 p-4 transition hover:bg-muted/30"
+          className="mx-6 rounded-lg border border-border/70 p-4 transition hover:bg-slate-50 flex items-start justify-between gap-4"
         >
-          <div className="flex flex-1 items-start gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accp text-sm font-bold text-primary">
               {(activePage - 1) * itemsPerPage + index + 1}
             </div>
-            <div className="flex-1">
-              <div className="font-semibold text-primary">{question.question}</div>
-              <div className="text-sm text-inkd">{question.type}</div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-primary">{question.question}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant={getTypeVariant(question.type)}>{question.type.replace(/_/g, " ")}</Badge>
+                <span className="text-xs font-medium text-inkd">{question.points} pts</span>
+              </div>
             </div>
           </div>
-          <div className="ml-4 text-right text-sm font-bold text-primary">{question.points} pts</div>
         </div>
       ))}
     </PaginatedCollectionCard>

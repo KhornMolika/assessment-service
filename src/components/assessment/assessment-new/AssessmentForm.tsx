@@ -1,79 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import type { QuestionBank, Question } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
-import { assessmentFormSchema } from "@/src/schemas/assessment-form.schema";
-import type {
-  AssessmentGradeLabel,
-  NewAssessmentFormData,
-} from "@/src/types/assessment-form.types";
+import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import AssessmentSettingsStep from "./AssessmentSettingsStep";
 import AssessmentQuestionStep from "./AssessmentQuestionStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
-import { createAssessmentAction, updateAssessmentAction, publishAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { Button } from "@/src/components/ui/ui/button";
-import { toast } from "sonner";
-
-import { useTopicStore } from "@/src/stores/topic-store";
-
-const defaultFormData: NewAssessmentFormData = {
-  name: "",
-  type: "QUIZ",
-  description: "",
-  ownerTopicId: "",
-  status: "DRAFT",
-  participantIdentity: "EXTERNAL",
-  sessionMode: "SELF_PACED",
-  questionSelection: "MANUAL",
-  selectedBankId: "",
-  selectedQuestionIds: [],
-  totalQuestions: 10,
-  selectionRules: [
-    { difficulty: "Easy", count: 3 },
-    { difficulty: "Medium", count: 5 },
-    { difficulty: "Hard", count: 2 },
-  ],
-  enableTimeLimit: false,
-  timeLimitMinutes: 0,
-  startsAt: "",
-  endsAt: "",
-  passMark: 50,
-  shuffleQuestions: true,
-  gradeLabels: [
-    { grade: "A", minPercent: 90 },
-    { grade: "B", minPercent: 80 },
-    { grade: "C", minPercent: 70 },
-    { grade: "D", minPercent: 60 },
-    { grade: "F", minPercent: 0 },
-  ],
-  showResults: "IMMEDIATELY",
-};
-
-const stepValidationFields: Record<1 | 2 | 3, string[]> = {
-  1: ["name"],
-  2: [
-    "sessionMode",
-    "questionSelection",
-    "participantIdentity",
-    "timeLimitMinutes",
-    "startsAt",
-    "endsAt",
-    "passMark",
-    "gradeLabels",
-    "showResults",
-  ],
-  3: [
-    "selectedBankId",
-    "selectedQuestionIds",
-    "totalQuestions",
-    "selectionRules",
-  ],
-};
+import Link from "next/link";
+import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
 
 export default function AssessmentForm({
   banks,
@@ -90,243 +28,34 @@ export default function AssessmentForm({
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
 }) {
-  const router = useRouter();
-  const activeTopic = useTopicStore((s) => s.activeTopic);
-  
+  const {
+    currentStep,
+    questionSearch,
+    setQuestionSearch,
+    formData,
+    validationErrors,
+    isPending,
+    canContinue,
+    handleChange,
+    handleNext,
+    handlePrevious,
+    handleQuestionToggle,
+    handleSelectionRuleChange,
+    handleGradeLabelChange,
+    handleAddGradeLabel,
+    handleRemoveGradeLabel,
+    handleSubmit,
+    handlePublish,
+    destination,
+    activeTopic
+  } = useAssessmentForm({ mode, assessmentId, initialFormData });
+
   const formId =
     mode === "edit" && assessmentId
       ? `assessment-edit-form-${assessmentId}`
       : mode === "duplicate"
         ? "assessment-duplicate-form"
         : "assessment-new-form";
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [questionSearch, setQuestionSearch] = useState("");
-  const [formData, setFormData] = useState<NewAssessmentFormData>(
-    initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || "" },
-  );
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [isPending, startTransition] = useTransition();
-
-  const getStepValidationMessages = (step: 1 | 2 | 3) => {
-    const dataToValidate = {
-      ...formData,
-      ownerTopicId: activeTopic?.id || formData.ownerTopicId || "TEMP_TOPIC" // satisfy schema for missing topic since we handle it externally
-    };
-    const validationResult = assessmentFormSchema.safeParse(dataToValidate);
-
-    if (validationResult.success) {
-      return [];
-    }
-
-    const allowedFields = stepValidationFields[step];
-
-    return Array.from(
-      new Set(
-        validationResult.error.issues
-          .filter((issue) =>
-            allowedFields.includes(String(issue.path[0] ?? "")),
-          )
-          .map((issue) => issue.message),
-      ),
-    );
-  };
-
-  const isStepComplete = (step: number) => {
-    if (![1, 2, 3].includes(step)) {
-      return false;
-    }
-
-    return getStepValidationMessages(step as 1 | 2 | 3).length === 0;
-  };
-
-  const canContinue = isStepComplete(currentStep);
-
-  const handleChange = <K extends keyof NewAssessmentFormData>(
-    field: K,
-    value: NewAssessmentFormData[K],
-  ) => {
-    setFormData((current) => ({
-      ...current,
-      [field]: value,
-    }));
-    setValidationErrors([]);
-  };
-
-  const handleNext = () => {
-    if (currentStep >= 4) {
-      return;
-    }
-
-    if (!canContinue) {
-      setValidationErrors(getStepValidationMessages(currentStep));
-      return;
-    }
-
-    setValidationErrors([]);
-    setCurrentStep((currentStep + 1) as 1 | 2 | 3);
-  };
-
-  const handlePrevious = () => {
-    if (currentStep <= 1) {
-      return;
-    }
-
-    setValidationErrors([]);
-    setCurrentStep((currentStep - 1) as 1 | 2 | 3);
-  };
-
-  const handleQuestionToggle = (questionId: string) => {
-    setFormData((current) => {
-      const alreadySelected = current.selectedQuestionIds.includes(questionId);
-
-      return {
-        ...current,
-        selectedQuestionIds: alreadySelected
-          ? current.selectedQuestionIds.filter((id) => id !== questionId)
-          : [...current.selectedQuestionIds, questionId],
-      };
-    });
-  };
-
-  const handleSelectionRuleChange = (
-    difficulty: "Easy" | "Medium" | "Hard",
-    count: number,
-  ) => {
-    setFormData((current) => ({
-      ...current,
-      selectionRules: current.selectionRules.map((rule) =>
-        rule.difficulty === difficulty ? { ...rule, count } : rule,
-      ),
-    }));
-  };
-
-  const handleGradeLabelChange = (
-    index: number,
-    field: keyof AssessmentGradeLabel,
-    value: string | number,
-  ) => {
-    setFormData((current) => ({
-      ...current,
-      gradeLabels: current.gradeLabels.map((label, currentIndex) =>
-        currentIndex === index ? { ...label, [field]: value } : label,
-      ),
-    }));
-  };
-
-  const handleAddGradeLabel = () => {
-    setFormData((current) => ({
-      ...current,
-      gradeLabels: [...current.gradeLabels, { grade: "", minPercent: 0 }],
-    }));
-  };
-
-  const handleRemoveGradeLabel = (index: number) => {
-    setFormData((current) => ({
-      ...current,
-      gradeLabels: current.gradeLabels.filter(
-        (_, currentIndex) => currentIndex !== index,
-      ),
-    }));
-  };
-
-  const destination =
-    mode === "edit" && assessmentId
-      ? `/assessments/${assessmentId}`
-      : "/assessments";
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (mode !== "edit" && !activeTopic) return;
-    
-    const submitData = {
-      ...formData,
-      ownerTopicId: activeTopic?.id || formData.ownerTopicId
-    };
-    
-    const validationResult = assessmentFormSchema.safeParse(submitData);
-
-    if (!validationResult.success) {
-      setValidationErrors(
-        Array.from(
-          new Set(validationResult.error.issues.map((issue) => issue.message)),
-        ),
-      );
-      return;
-    }
-
-    setValidationErrors([]);
-    
-    startTransition(async () => {
-      let res;
-      if (mode === "edit" && assessmentId) {
-        res = await updateAssessmentAction(assessmentId, submitData);
-      } else {
-        res = await createAssessmentAction(submitData.ownerTopicId, submitData);
-      }
-      
-      if (!res.success) {
-        setValidationErrors([res.error || "Failed to save assessment"]);
-        toast.error(res.error || "Failed to save assessment");
-      } else {
-        toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
-        router.push(destination);
-      }
-    });
-  };
-
-  const handlePublish = () => {
-    if (mode !== "edit" && !activeTopic) return;
-    
-    const submitData = {
-      ...formData,
-      ownerTopicId: activeTopic?.id || formData.ownerTopicId
-    };
-    
-    const validationResult = assessmentFormSchema.safeParse(submitData);
-
-    if (!validationResult.success) {
-      setValidationErrors(
-        Array.from(
-          new Set(validationResult.error.issues.map((issue) => issue.message)),
-        ),
-      );
-      return;
-    }
-
-    setValidationErrors([]);
-    
-    startTransition(async () => {
-      let currentAssessmentId = assessmentId;
-      
-      // If creating new or duplicating and publishing immediately
-      if (mode !== "edit" || !currentAssessmentId) {
-        const createRes = await createAssessmentAction(submitData.ownerTopicId, submitData);
-        if (!createRes.success || !createRes.assessment) {
-          setValidationErrors([createRes.error || "Failed to create assessment for publishing"]);
-          return;
-        }
-        currentAssessmentId = (createRes.assessment as any).data?.id || createRes.assessment.id;
-      } else {
-        // If editing existing, save draft first
-        const updateRes = await updateAssessmentAction(currentAssessmentId, submitData);
-        if (!updateRes.success) {
-          setValidationErrors([updateRes.error || "Failed to save assessment before publishing"]);
-          return;
-        }
-      }
-      
-      // Now publish
-      if (!currentAssessmentId) return;
-      const publishRes = await publishAssessmentAction(currentAssessmentId);
-      if (!publishRes.success) {
-        setValidationErrors([publishRes.error || "Failed to publish assessment"]);
-        toast.error(publishRes.error || "Failed to publish assessment");
-      } else {
-        toast.success("Assessment published successfully!");
-        router.push(destination);
-      }
-    });
-  };
 
   const headerTitle =
     mode === "edit"
@@ -345,10 +74,17 @@ export default function AssessmentForm({
         title={headerTitle}
         description={headerDescription}
         backHref={destination}
-        backLabel={mode === "edit" ? "Back" : "Cancel"}
+        actions={
+          <Link
+            href={destination}
+            className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted bg-white"
+          >
+            Cancel
+          </Link>
+        }
       />
 
-      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
           <div className="border-b border-border/70 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -454,7 +190,7 @@ export default function AssessmentForm({
                 className={`inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition sm:w-auto ${
                   currentStep === 1
                     ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
-                    : "border-[#e6e2d6] bg-[#fdfbf7] text-[#4a473e] hover:bg-[#f2efe6]"
+                    : "border-[#C8A246]/40 bg-white text-[#C8A246] hover:bg-[#C8A246]/10"
                 }`}
               >
                 Previous
@@ -467,7 +203,7 @@ export default function AssessmentForm({
                     disabled={!canContinue}
                     className={`inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition ${
                       canContinue
-                        ? "bg-[#14352b] text-[#fdfbf7] hover:bg-[#1a4436] shadow-sm"
+                        ? "bg-[#C8A246] text-white hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20"
                         : "cursor-not-allowed bg-slate-100 text-slate-400"
                     }`}
                   >
@@ -486,7 +222,7 @@ export default function AssessmentForm({
                     type="button"
                     onClick={handlePublish}
                     disabled={isPending}
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#d95d50] px-4 py-3 text-sm font-semibold text-[#fdfbf7] transition hover:bg-[#c95347] shadow-sm disabled:opacity-70" variant="ghost"
+                    className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
                     {isPending ? "Saving..." : (mode === "edit" ? "Save Changes" : "Save Assessment")}
                   </Button>
@@ -496,7 +232,7 @@ export default function AssessmentForm({
           </div>
         </section>
 
-        <aside className="space-y-4 2xl:sticky 2xl:top-6 2xl:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
             <AssessmentSummaryCard
               formData={formData}

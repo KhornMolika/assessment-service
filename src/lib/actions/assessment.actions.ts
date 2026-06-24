@@ -20,7 +20,9 @@ export async function createAssessmentAction(topicId: string, data: any) {
       mode: data.sessionMode,
       questionSelection: data.questionSelection,
       participantIdentity: data.participantIdentity,
-      numQuestions: data.totalQuestions,
+      numQuestions: data.questionSelection === "MANUAL" 
+        ? Math.max(1, data.selectedQuestionIds?.length || 1) 
+        : Math.max(1, data.totalQuestions || 1),
       timeLimit: data.enableTimeLimit ? data.timeLimitMinutes : null,
       startsAt: data.startsAt || null,
       endsAt: data.endsAt || null,
@@ -73,7 +75,9 @@ export async function updateAssessmentAction(id: string, data: any) {
       mode: data.sessionMode,
       questionSelection: data.questionSelection,
       participantIdentity: data.participantIdentity,
-      numQuestions: data.totalQuestions,
+      numQuestions: data.questionSelection === "MANUAL" 
+        ? Math.max(1, data.selectedQuestionIds?.length || 1) 
+        : Math.max(1, data.totalQuestions || 1),
       timeLimit: data.enableTimeLimit ? data.timeLimitMinutes : null,
       startsAt: data.startsAt || null,
       endsAt: data.endsAt || null,
