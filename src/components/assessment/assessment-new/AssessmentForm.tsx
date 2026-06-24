@@ -267,8 +267,8 @@ export default function AssessmentForm({
                   </Button>
                 ) : (
                   <Button
-                    type="button"
-                    onClick={handlePublish}
+                    type="submit"
+                    form={formId}
                     disabled={isPending}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
