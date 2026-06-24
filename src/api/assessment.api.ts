@@ -219,12 +219,15 @@ export async function getAssessmentDetailPageData(
     };
     // Map Questions
     const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
-      (q: any) => ({
-        id: q.id,
-        question: q.questionText || q.text || q.question || "Untitled Question",
-        type: q.type || q.questionType || "UNKNOWN",
-        points: q.points || 5,
-      }),
+      (q: any) => {
+        const questionData = q.question && typeof q.question === "object" ? q.question : q;
+        return {
+          id: questionData.id || q.id,
+          question: questionData.questionText || questionData.text || (typeof q.question === "string" ? q.question : "Untitled Question"),
+          type: questionData.type || questionData.questionType || "UNKNOWN",
+          points: questionData.points || q.points || 5,
+        };
+      }
     );
 
     return {
