@@ -20,10 +20,9 @@ async function DuplicateAssessmentPageContent({
     getQuestions(1, 500).catch(e => { fetchError = e.message; return { data: [] }; })
   ]);
 
-  // Adjust formData for duplication
   const formData = data ? {
     ...data.initialFormData,
-    name: `${data.initialFormData.name} (Copy)`,
+    name: `${data.initialFormData.name.trim().substring(0, 90)} (Copy)`,
     status: "DRAFT" as const,
   } : undefined;
 

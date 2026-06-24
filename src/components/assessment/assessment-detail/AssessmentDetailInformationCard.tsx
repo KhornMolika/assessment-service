@@ -180,6 +180,14 @@ export default function AssessmentDetailInformationCard({
           </div>
 
           <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-amber-500" />
+            <div>
+              <div className="text-xs font-medium text-slate-500">Starts At</div>
+              <div className="text-sm font-medium text-slate-900">{startsAtDate}</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-red-400" />
             <div>
               <div className="text-xs font-medium text-slate-500">Time Limit</div>
@@ -189,13 +197,13 @@ export default function AssessmentDetailInformationCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <Calendar className="h-5 w-5 text-amber-500" />
             <div>
               <div className="text-xs font-medium text-slate-500">Starts At</div>
               <div className="text-sm font-medium text-slate-900">{startsAtDate}</div>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-3">
             <Calendar className="h-5 w-5 text-rose-500" />
