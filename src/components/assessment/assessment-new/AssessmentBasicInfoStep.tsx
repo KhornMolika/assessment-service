@@ -16,6 +16,7 @@ export default function AssessmentBasicInfoStep({
   formData,
   topics,
   onChange,
+  originalStatus,
 }: {
   formData: NewAssessmentFormData;
   topics: Topic[];
