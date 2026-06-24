@@ -93,6 +93,18 @@ export function useAssessmentForm({
     }
   }, [pathname, mode]); // run when navigating back to the form page
 
+  // Keep ownerTopicId in sync with activeTopic if it hydrates after mount or changes
+  useEffect(() => {
+    if (mode === "create" && activeTopic?.id) {
+      setFormData((prev) => {
+        if (prev.ownerTopicId !== activeTopic.id) {
+          return { ...prev, ownerTopicId: activeTopic.id };
+        }
+        return prev;
+      });
+    }
+  }, [mode, activeTopic?.id]);
+
   const getStepValidationMessages = (step: 1 | 2 | 3) => {
     const dataToValidate = {
       ...formData,
