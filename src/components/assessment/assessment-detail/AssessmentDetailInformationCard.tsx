@@ -37,12 +37,25 @@ export default function AssessmentDetailInformationCard({
       })
     : "-";
     
-  const startsAtDate = assessment.settings?.startsAt
-    ? new Date(assessment.settings.startsAt).toLocaleString("en-US")
+  const actualStartsAt = assessment.settings?.startsAt || assessment.starts_at;
+  const startsAtDate = actualStartsAt
+    ? new Date(actualStartsAt).toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      })
     : "Not Set";
     
   const endsAtDate = assessment.settings?.endsAt
-    ? new Date(assessment.settings.endsAt).toLocaleString("en-US")
+    ? new Date(assessment.settings.endsAt).toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      })
     : "Not Set";
 
   const getStatusColor = (status?: string) => {

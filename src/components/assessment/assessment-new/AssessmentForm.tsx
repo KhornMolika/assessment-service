@@ -14,6 +14,7 @@ import { Button } from "@/src/components/ui/ui/button";
 import { Modal } from "@/src/components/ui/ui/modal";
 import Link from "next/link";
 import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
+import { toast } from "sonner";
 
 export default function AssessmentForm({
   banks,
@@ -22,6 +23,7 @@ export default function AssessmentForm({
   mode = "create",
   assessmentId,
   initialFormData,
+  fetchError,
 }: {
   banks: QuestionBank[];
   questions: Question[];
@@ -29,6 +31,7 @@ export default function AssessmentForm({
   mode?: "create" | "edit" | "duplicate";
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
+  fetchError?: string;
 }) {
   const {
     currentStep,
@@ -52,6 +55,12 @@ export default function AssessmentForm({
   } = useAssessmentForm({ mode, assessmentId, initialFormData });
 
   const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | "CONTAINS_INVALID_QUESTIONS" | null>(null);
+
+  React.useEffect(() => {
+    if (fetchError) {
+      toast.error(fetchError);
+    }
+  }, [fetchError]);
 
   const invalidQuestions = formData.sessionMode === "REAL_TIME" 
     ? questions.filter(q => formData.selectedQuestionIds.includes(q.id) && (q.type === "ESSAY" || q.type === "SHORT_ANSWER"))

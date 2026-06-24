@@ -123,8 +123,11 @@ export async function getAssessmentDetailPageData(
   id: string,
 ): Promise<AssessmentDetailPageData | null> {
   try {
-    const [assessmentRes, reportRes, questionsRes] = await Promise.all([
+    const [assessmentRes, settingsRes, reportRes, questionsRes] = await Promise.all([
       apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
+      apiClient
+        .get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`)
+        .catch(() => null),
       apiClient
         .get<{
           data: {
@@ -139,7 +142,9 @@ export async function getAssessmentDetailPageData(
         .catch(() => null),
     ]);
 
-    const assessment = (assessmentRes as any).data || (assessmentRes as any);
+    const assessmentBase = (assessmentRes as any).data || (assessmentRes as any);
+    const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
+    const assessment = { ...assessmentBase, settings: { ...assessmentBase.settings, ...settings } };
     const report = reportRes?.data || {
       assessment: { completed: 0, pending: 0, passRate: 0, averageScore: 0 },
       participants: [],
@@ -156,6 +161,11 @@ export async function getAssessmentDetailPageData(
       title: assessment?.name,
       description: assessment?.description,
       status: assessment?.status,
+      type: assessment?.type || "QUIZ",
+      name: assessment?.name,
+      createdAt: assessment?.createdAt,
+      updatedAt: assessment?.updatedAt,
+      settings: assessment?.settings,
       participant_identity:
         assessment?.settings?.participantIdentity || "EXTERNAL",
       created_at: assessment?.createdAt,
