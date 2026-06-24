@@ -39,7 +39,7 @@ export default function AssessmentDetailHeader({
         const res = await deleteAssessmentAction(assessment.id);
         if (res.success) {
           toast.success("Assessment deleted successfully");
-          router.push("/assessments");
+          router.refresh();          router.push("/assessments");
         } else {
           toast.error(res.error || "Failed to delete assessment");
         }

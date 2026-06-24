@@ -80,7 +80,7 @@ export default function BankDuplicateForm({
           visibility: formData.visibility,
         });
         toast.success("Question bank duplicated successfully");
-        router.push("/banks");
+        router.refresh();        router.push("/banks");
       } catch (err: any) {
         toast.error("Failed to duplicate bank", {
           description: err.message || "An unexpected error occurred",

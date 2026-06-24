@@ -76,7 +76,7 @@ export default function BankEditForm({
           visibility: formData.visibility,
         });
         toast.success("Question bank updated successfully");
-        router.push("/banks");
+        router.refresh();        router.push("/banks");
       } catch (err: any) {
         toast.error("Failed to update bank", {
           description: err.message || "An unexpected error occurred",

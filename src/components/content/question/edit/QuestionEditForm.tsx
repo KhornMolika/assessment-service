@@ -66,7 +66,7 @@ export default function QuestionEditForm({
           toast.error("Failed to update question", { description: res.error });
         } else {
           toast.success("Question updated successfully");
-          router.push(`/questions/${questionId}`);
+          router.refresh();          router.push(`/questions/${questionId}`);
         }
       } catch (err: any) {
         toast.error("Validation failed", { description: err.message || "Failed to update question" });
