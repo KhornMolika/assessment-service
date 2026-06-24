@@ -10,7 +10,17 @@ import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import type { QuestionBank, Question } from "@/src/types/api";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { fetchBankQuestions } from "@/src/actions/bank-actions";
-import { getTopicQuestions } from "@/src/lib/services/questions";
+import { fetchTopicQuestions } from "@/src/actions/question-actions";
+
+function mapServerQuestion(q: any): Question {
+  if (!q) return q;
+  return {
+    ...q,
+    questionText: q.questionText || q.text,
+    correctAnswer: q.correctAnswer || q.correctAnswers,
+    topicId: q.bankId || q.topicId,
+  } as Question;
+}
 
 function getQuestionTypeTone(type: string) {
   switch (type) {
@@ -79,8 +89,9 @@ export default function AssessmentQuestionStep({
         setBankQuestions(Array.isArray(data) ? data : []);
       }).catch(console.error);
     } else if (formData.ownerTopicId) {
-      getTopicQuestions(formData.ownerTopicId, 1, 500).then((res) => {
-        setBankQuestions(Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+      fetchTopicQuestions(formData.ownerTopicId).then((res) => {
+        const data = Array.isArray(res) ? res : ((res as any)?.data || []);
+        setBankQuestions(Array.isArray(data) ? data.map(mapServerQuestion) : []);
       }).catch(console.error);
     } else {
       setBankQuestions([]);
