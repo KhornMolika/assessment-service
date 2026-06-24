@@ -35,7 +35,6 @@ export default function AssessmentForm({
     questionSearch,
     setQuestionSearch,
     formData,
-    validationErrors,
     isPending,
     canContinue,
     handleChange,
@@ -153,7 +152,7 @@ export default function AssessmentForm({
           </div>
 
           <div className="px-3 py-3 sm:px-4 sm:py-4 relative z-10">
-            {mode !== "edit" && !activeTopic && (
+            {!activeTopic && (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-md">
                 <div className="flex">
                   <div className="shrink-0">
@@ -163,7 +162,7 @@ export default function AssessmentForm({
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      You must select a global Topic from the topbar before creating a new assessment.
+                      Owner topic is required. You must select a global Topic from the topbar before managing assessments.
                     </p>
                   </div>
                 </div>
@@ -171,22 +170,8 @@ export default function AssessmentForm({
             )}
             
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending || (mode !== "edit" && !activeTopic)}>
-              {validationErrors.length > 0 ? (
-                <div className="mb-4">
-                  <StateMessage
-                    tone="error"
-                    title="Please fix the assessment form"
-                    description={
-                      <div className="space-y-1">
-                        {validationErrors.map((message) => (
-                          <div key={message}>{message}</div>
-                        ))}
-                      </div>
-                    }
-                  />
-                </div>
-              ) : null}
+              <fieldset disabled={isPending || !activeTopic}>
+
 
               {currentStep === 1 ? (
                 <AssessmentBasicInfoStep
