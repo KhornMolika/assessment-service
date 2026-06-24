@@ -25,33 +25,36 @@ import { toast } from "sonner";
 import { deleteAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
-  return deliveryMode === "SELF_PACED" ? "Self-paced" : "Real-time";
+  return deliveryMode === "SELF_PACED" ? "Self Paced" : "Real Time";
 }
 
 function formatStartDate(date: string) {
+  if (!date) return "-";
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return "-";
+  
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(parsed);
 }
 
 function getLifecycleBadgeVariant(lifecycle: AssessmentLifecycle) {
   switch (lifecycle) {
-    case "ACTIVE":
+    case "PUBLISHED":
       return "success" as const;
-    case "EXAM":
+    case "DRAFT":
       return "info" as const;
-    case "PENDING":
+    case "ARCHIVED":
       return "warning" as const;
-    case "COMPLETED":
-      return "secondary" as const;
     default:
       return "default" as const;
   }
 }
 
-function formatLifecycle(lifecycle: AssessmentLifecycle) {
+function formatLifecycle(lifecycle?: AssessmentLifecycle) {
+  if (!lifecycle) return "Unknown";
   return lifecycle.charAt(0) + lifecycle.slice(1).toLowerCase();
 }
 
@@ -89,88 +92,93 @@ export default function AssessmentsTable({
         <TableHeader>
           <TableRow className="bg-muted/40">
             <TableHead>Assessment</TableHead>
-            <TableHead>Delivery</TableHead>
-            <TableHead>Lifecycle</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Mode</TableHead>
+            <TableHead>Selection</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead className="text-center">Questions</TableHead>
-            <TableHead className="text-center">Participants</TableHead>
-            <TableHead className="text-center">Pass rate</TableHead>
-            <TableHead className="text-center">Average</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {assessments.map((assessment) => (
-            <TableRow key={assessment.id} className="hover:bg-muted/30">
-              <TableCell>
-                <div className="max-w-md">
-                  <Link
-                    href={`/assessments/${assessment.id}`}
-                    className="font-semibold text-primary hover:underline"
-                  >
-                    {assessment.title}
-                  </Link>
-                  <p className="mt-1 text-xs text-inkd">
-                    {assessment.question_bank_name} · Starts{" "}
-                    {formatStartDate(assessment.starts_at)}
-                  </p>
-                </div>
-              </TableCell>
-              <TableCell className="text-inkd">
-                {formatDeliveryMode(assessment.delivery_mode)}
-              </TableCell>
-              <TableCell>
-                <Badge variant={getLifecycleBadgeVariant(assessment.lifecycle)}>
-                  {formatLifecycle(assessment.lifecycle)}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-center font-medium text-primary">
-                {assessment.question_count}
-              </TableCell>
-              <TableCell className="text-center text-inkd">
-                {assessment.participant_count}
-              </TableCell>
-              <TableCell className="text-center font-medium text-primary">
-                {assessment.pass_rate}
-              </TableCell>
-              <TableCell className="text-center font-medium text-primary">
-                {assessment.average_score}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <Link
-                    href={`/assessments/${assessment.id}`}
-                    title="View assessment"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
-                  >
-                    <Eye className="h-5 w-5" />
-                  </Link>
-                  <Link
-                    href={`/assessments/${assessment.id}/edit`}
-                    title="Edit assessment"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
-                  >
-                    <Edit className="h-5 w-5" />
-                  </Link>
-                  <Link
-                    href={`/assessments/${assessment.id}/duplicate`}
-                    title="Duplicate assessment"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
-                  >
-                    <Copy className="h-5 w-5" />
-                  </Link>
-                  <Button
-                    type="button"
-                    title="Delete assessment"
-                    size="icon"
-                    onClick={() => setAssessmentToDelete(assessment)}
-                    className="h-8 w-8 rounded-md text-red-500 transition hover:bg-red-50 hover:text-red-600" variant="ghost"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+          {assessments.map((assessment) => {
+            const actualTitle = assessment.name || assessment.title;
+            const actualMode = assessment.settings?.mode || assessment.delivery_mode;
+            const actualStatus = assessment.status || assessment.lifecycle;
+            const actualStartsAt = assessment.settings?.startsAt || assessment.starts_at;
+            const actualNumQuestions = assessment.settings?.numQuestions ?? assessment.question_count ?? 0;
+            const actualType = assessment.type || "QUIZ";
+            const actualSelection = assessment.settings?.questionSelection || "MANUAL";
+            
+            return (
+              <TableRow key={assessment.id} className="hover:bg-muted/30">
+                <TableCell>
+                  <div className="max-w-md">
+                    <Link
+                      href={`/assessments/${assessment.id}`}
+                      className="font-semibold text-primary hover:underline"
+                    >
+                      {actualTitle}
+                    </Link>
+                    <p className="mt-1 text-xs text-inkd">
+                      Starts {formatStartDate(actualStartsAt as string)}
+                    </p>
+                  </div>
+                </TableCell>
+                <TableCell className="text-inkd capitalize">
+                  {actualType.toLowerCase()}
+                </TableCell>
+                <TableCell className="text-inkd">
+                  {formatDeliveryMode(actualMode as AssessmentDeliveryMode)}
+                </TableCell>
+                <TableCell className="text-inkd capitalize">
+                  {actualSelection.toLowerCase()}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
+                    {formatLifecycle(actualStatus as AssessmentLifecycle)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center font-medium text-primary">
+                  {actualNumQuestions}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    <Link
+                      href={`/assessments/${assessment.id}`}
+                      title="View assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/assessments/${assessment.id}/edit`}
+                      title="Edit assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/assessments/${assessment.id}/duplicate`}
+                      title="Duplicate assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                    >
+                      <Copy className="h-5 w-5" />
+                    </Link>
+                    <Button
+                      type="button"
+                      title="Delete assessment"
+                      size="icon"
+                      onClick={() => setAssessmentToDelete(assessment)}
+                      className="h-8 w-8 rounded-md text-red-500 transition hover:bg-red-50 hover:text-red-600" variant="ghost"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 
@@ -179,7 +187,7 @@ export default function AssessmentsTable({
         onClose={() => setAssessmentToDelete(null)}
         onConfirm={handleDeleteConfirm}
         title="Delete Assessment"
-        entityName={assessmentToDelete?.title || ""}
+        entityName={assessmentToDelete?.name || assessmentToDelete?.title || ""}
         description="Are you sure you want to delete this assessment? This action removes it from the catalog and cannot be undone."
         isPending={isPending}
       />

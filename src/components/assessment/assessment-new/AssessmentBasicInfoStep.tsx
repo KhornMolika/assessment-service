@@ -16,6 +16,7 @@ export default function AssessmentBasicInfoStep({
   formData,
   topics,
   onChange,
+  originalStatus,
 }: {
   formData: NewAssessmentFormData;
   topics: Topic[];
@@ -23,7 +24,19 @@ export default function AssessmentBasicInfoStep({
     field: K,
     value: NewAssessmentFormData[K],
   ) => void;
+  originalStatus?: string;
 }) {
+  const statusOptions = [
+    { value: "DRAFT", label: "Draft" },
+    { value: "PUBLISHED", label: "Published" },
+    { value: "ARCHIVED", label: "Archived" },
+  ].filter((opt) => {
+    if (originalStatus && originalStatus !== "DRAFT" && opt.value === "DRAFT") {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
@@ -96,11 +109,7 @@ export default function AssessmentBasicInfoStep({
                   onChange={(val) =>
                     onChange("status", val as NewAssessmentFormData["status"])
                   }
-                  options={[
-                    { value: "DRAFT", label: "Draft" },
-                    { value: "PUBLISHED", label: "Published" },
-                    { value: "ARCHIVED", label: "Archived" },
-                  ]}
+                  options={statusOptions}
                   className="w-full"
                 />
               </div>

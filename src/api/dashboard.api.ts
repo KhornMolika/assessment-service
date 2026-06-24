@@ -242,17 +242,17 @@ export async function getDashboardAnalytics(): Promise<DashboardAnalytics> {
       .slice(0, 6)
       .map((assessment) => ({
         id: assessment.id,
-        title: assessment.title,
-        bank: assessment.question_bank_name,
+        title: assessment.name || assessment.title || "Untitled",
+        bank: assessment.question_bank_name || "Unknown Bank",
         mode:
-          assessment.delivery_mode === "SELF_PACED"
+          (assessment.settings?.mode || assessment.delivery_mode) === "SELF_PACED"
             ? "Self-paced"
             : "Real-time",
-        status: mapDashboardAssessmentStatus(assessment.lifecycle),
-        questions: assessment.question_count,
-        participants: assessment.participant_count,
-        passRate: assessment.pass_rate,
-        lastModified: formatRelativeTime(assessment.updated_at),
+        status: mapDashboardAssessmentStatus(assessment.status || assessment.lifecycle),
+        questions: assessment.settings?.numQuestions ?? assessment.question_count ?? 0,
+        participants: assessment.participant_count ?? 0,
+        passRate: assessment.pass_rate || "0%",
+        lastModified: formatRelativeTime(assessment.updatedAt || assessment.updated_at),
       })),
   };
 }

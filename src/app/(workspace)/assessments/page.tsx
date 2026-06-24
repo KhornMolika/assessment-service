@@ -49,10 +49,16 @@ function parseDeliveryFilter(
 function filterAssessments({
   assessments,
   deliveryFilter,
+  typeFilter,
+  statusFilter,
+  selectionFilter,
   query,
 }: {
   assessments: any[];
   deliveryFilter: "ALL" | AssessmentDeliveryMode;
+  typeFilter: string;
+  statusFilter: string;
+  selectionFilter: string;
   query: string;
 }) {
   const normalizedQuery = query.trim().toLowerCase();
@@ -60,8 +66,21 @@ function filterAssessments({
   return assessments.filter((assessment) => {
     if (
       deliveryFilter !== "ALL" &&
-      assessment.delivery_mode !== deliveryFilter
+      assessment.settings?.mode !== deliveryFilter && 
+      assessment.delivery_mode !== deliveryFilter // fallback for old data
     ) {
+      return false;
+    }
+
+    if (typeFilter !== "ALL" && assessment.type !== typeFilter) {
+      return false;
+    }
+
+    if (statusFilter !== "ALL" && assessment.status !== statusFilter) {
+      return false;
+    }
+
+    if (selectionFilter !== "ALL" && assessment.settings?.questionSelection !== selectionFilter) {
       return false;
     }
 
@@ -86,6 +105,9 @@ function AssessmentsPageContent() {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const deliveryFilter = parseDeliveryFilter(searchParams.get("delivery"));
+  const typeFilter = getSingleSearchParam(searchParams.get("type"), "ALL");
+  const statusFilter = getSingleSearchParam(searchParams.get("status"), "ALL");
+  const selectionFilter = getSingleSearchParam(searchParams.get("selection"), "ALL");
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
 
@@ -128,6 +150,9 @@ function AssessmentsPageContent() {
   const filteredAssessments = filterAssessments({
     assessments,
     deliveryFilter,
+    typeFilter,
+    statusFilter,
+    selectionFilter,
     query,
   });
 
@@ -141,7 +166,12 @@ function AssessmentsPageContent() {
     activePage * itemsPerPage,
   );
 
-  const hasActiveFilters = query.trim().length > 0 || deliveryFilter !== "ALL";
+  const hasActiveFilters = 
+    query.trim().length > 0 || 
+    deliveryFilter !== "ALL" ||
+    typeFilter !== "ALL" ||
+    statusFilter !== "ALL" ||
+    selectionFilter !== "ALL";
 
   return (
     <div className="space-y-6">
@@ -161,7 +191,12 @@ function AssessmentsPageContent() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          <AssessmentsCatalogToolbar deliveryFilter={deliveryFilter} />
+          <AssessmentsCatalogToolbar 
+            deliveryFilter={deliveryFilter} 
+            typeFilter={typeFilter}
+            statusFilter={statusFilter}
+            selectionFilter={selectionFilter}
+          />
           <div>
             {filteredAssessments.length === 0 ? (
               <StateMessage
@@ -200,6 +235,9 @@ function AssessmentsPageContent() {
             searchParams={{
               query: query || null,
               delivery: deliveryFilter === "ALL" ? null : deliveryFilter,
+              type: typeFilter === "ALL" ? null : typeFilter,
+              status: statusFilter === "ALL" ? null : statusFilter,
+              selection: selectionFilter === "ALL" ? null : selectionFilter,
               pageSize: itemsPerPage === 10 ? null : String(itemsPerPage),
             }}
             currentPage={activePage}

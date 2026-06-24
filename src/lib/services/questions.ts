@@ -7,6 +7,7 @@ function mapQuestion(q: any): Question {
     ...q,
     questionText: q.questionText || q.text,
     correctAnswer: q.correctAnswer || q.correctAnswers,
+    topicId: q.bankId || q.topicId,
   };
 }
 
@@ -39,9 +40,13 @@ export async function getTopicQuestions(topicId: string, page = 1, limit = 10) {
     limit: limit.toString(),
   });
 
-  const response = await apiClient.get<any>(`/topics/${topicId}/questions?${queryParams}`);
-  if (response && Array.isArray(response.data)) {
-    response.data = response.data.map(mapQuestion);
+  let response = await apiClient.get<any>(`/topics/${topicId}/questions?${queryParams}`);
+  if (response) {
+    if (Array.isArray(response.data)) {
+      response.data = response.data.map(mapQuestion);
+    } else if (Array.isArray(response)) {
+      response = response.map(mapQuestion);
+    }
   }
   return response as PaginatedResponse<Question>;
 }

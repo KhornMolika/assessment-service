@@ -4,7 +4,7 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 
 export default function NotFound() {
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6">
       <PageHeaderCard
         title="Page not found"
         description="The page may have been moved, the identifier may be invalid, or the URL does not exist in this workspace."

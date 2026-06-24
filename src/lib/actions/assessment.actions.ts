@@ -12,15 +12,22 @@ export async function createAssessmentAction(topicId: string, data: any) {
       type: data.type || "QUIZ",
       description: data.description,
     };
-    const newAssessment = await apiClient.post<AssessmentCatalogItem>(`/topics/${topicId}/assessments`, basePayload);
-    const assessmentId = newAssessment.id;
+    const newAssessmentRaw = await apiClient.post<AssessmentCatalogItem | { data: AssessmentCatalogItem }>(`/topics/${topicId}/assessments`, basePayload);
+    const newAssessment = (newAssessmentRaw as any).data || newAssessmentRaw;
+    const assessmentId = newAssessment?.id;
+
+    if (!assessmentId) {
+      throw new Error("Failed to extract Assessment ID from the creation response.");
+    }
 
     // 2. Update settings
     const settingsPayload = {
       mode: data.sessionMode,
       questionSelection: data.questionSelection,
       participantIdentity: data.participantIdentity,
-      numQuestions: data.totalQuestions,
+      numQuestions: data.questionSelection === "MANUAL" 
+        ? Math.max(1, data.selectedQuestionIds?.length || 1) 
+        : Math.max(1, data.totalQuestions || 1),
       timeLimit: data.enableTimeLimit ? data.timeLimitMinutes : null,
       startsAt: data.startsAt || null,
       endsAt: data.endsAt || null,
@@ -73,7 +80,9 @@ export async function updateAssessmentAction(id: string, data: any) {
       mode: data.sessionMode,
       questionSelection: data.questionSelection,
       participantIdentity: data.participantIdentity,
-      numQuestions: data.totalQuestions,
+      numQuestions: data.questionSelection === "MANUAL" 
+        ? Math.max(1, data.selectedQuestionIds?.length || 1) 
+        : Math.max(1, data.totalQuestions || 1),
       timeLimit: data.enableTimeLimit ? data.timeLimitMinutes : null,
       startsAt: data.startsAt || null,
       endsAt: data.endsAt || null,
@@ -99,6 +108,19 @@ export async function updateAssessmentAction(id: string, data: any) {
       await apiClient.put(`/assessments/${id}/questions`, {
         questionIds: data.selectedQuestionIds,
       });
+    }
+
+    // 4. Handle status transitions if changed
+    if (data.status) {
+      const currentAssessmentRaw = await apiClient.get<AssessmentDetailPageData>(`/assessments/${id}`);
+      const currentAssessment = (currentAssessmentRaw as any).data || currentAssessmentRaw;
+      const originalStatus = currentAssessment.status;
+
+      if (originalStatus === "DRAFT" && data.status === "PUBLISHED") {
+        await apiClient.post(`/assessments/${id}/publish`, {});
+      } else if (originalStatus === "PUBLISHED" && data.status === "ARCHIVED") {
+        await apiClient.post(`/assessments/${id}/archive`, {});
+      }
     }
 
     revalidatePath(`/assessments/${id}`);
@@ -135,5 +157,18 @@ export async function publishAssessmentAction(id: string) {
   } catch (error: any) {
     console.error("Failed to publish assessment:", error);
     return { success: false, error: error.message || "Failed to publish assessment" };
+  }
+}
+
+export async function archiveAssessmentAction(id: string) {
+  try {
+    const res = await apiClient.post<{ success: boolean }>(`/assessments/${id}/archive`, {});
+    revalidatePath(`/assessments/${id}`);
+    revalidatePath("/assessments");
+    revalidatePath("/");
+    return { success: true, data: res };
+  } catch (error: any) {
+    console.error("Failed to archive assessment:", error);
+    return { success: false, error: error.message || "Failed to archive assessment" };
   }
 }

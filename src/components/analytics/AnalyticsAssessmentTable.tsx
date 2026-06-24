@@ -70,9 +70,9 @@ export default function AnalyticsAssessmentTable({
             <TableCell>
               <Badge
                 variant={
-                  row.lifecycle === "ACTIVE"
+                  row.lifecycle === "PUBLISHED"
                     ? "success"
-                    : row.lifecycle === "DRAFT" || row.lifecycle === "PENDING"
+                    : row.lifecycle === "DRAFT"
                       ? "warning"
                       : "info"
                 }
