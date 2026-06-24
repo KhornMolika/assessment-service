@@ -110,6 +110,19 @@ export async function updateAssessmentAction(id: string, data: any) {
       });
     }
 
+    // 4. Handle status transitions if changed
+    if (data.status) {
+      const currentAssessmentRaw = await apiClient.get<AssessmentDetailPageData>(`/assessments/${id}`);
+      const currentAssessment = (currentAssessmentRaw as any).data || currentAssessmentRaw;
+      const originalStatus = currentAssessment.status;
+
+      if (originalStatus === "DRAFT" && data.status === "PUBLISHED") {
+        await apiClient.post(`/assessments/${id}/publish`, {});
+      } else if (originalStatus === "PUBLISHED" && data.status === "ARCHIVED") {
+        await apiClient.post(`/assessments/${id}/archive`, {});
+      }
+    }
+
     revalidatePath(`/assessments/${id}`);
     revalidatePath("/assessments");
     revalidatePath("/search");
@@ -144,5 +157,18 @@ export async function publishAssessmentAction(id: string) {
   } catch (error: any) {
     console.error("Failed to publish assessment:", error);
     return { success: false, error: error.message || "Failed to publish assessment" };
+  }
+}
+
+export async function archiveAssessmentAction(id: string) {
+  try {
+    const res = await apiClient.post<{ success: boolean }>(`/assessments/${id}/archive`, {});
+    revalidatePath(`/assessments/${id}`);
+    revalidatePath("/assessments");
+    revalidatePath("/");
+    return { success: true, data: res };
+  } catch (error: any) {
+    console.error("Failed to archive assessment:", error);
+    return { success: false, error: error.message || "Failed to archive assessment" };
   }
 }
