@@ -85,13 +85,16 @@ export function useAssessmentForm({
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
+    setCurrentStep(1);
+    setValidationErrors([]);
     if (mode === "create" && pathname === "/assessments/new") {
-      setCurrentStep(1);
       setFormData({ ...defaultFormData, ownerTopicId: activeTopic?.id || "" });
       setQuestionSearch("");
-      setValidationErrors([]);
+    } else if (initialFormData) {
+      setFormData(initialFormData);
     }
-  }, [pathname, mode]); // run when navigating back to the form page
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, mode, assessmentId]);
 
   // Keep ownerTopicId in sync with activeTopic if it hydrates after mount or changes
   useEffect(() => {
@@ -239,10 +242,7 @@ export function useAssessmentForm({
     }));
   };
 
-  const destination =
-    mode === "edit" && assessmentId
-      ? `/assessments/${assessmentId}`
-      : "/assessments";
+  const destination = "/assessments";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

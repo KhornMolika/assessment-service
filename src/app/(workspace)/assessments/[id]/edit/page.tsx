@@ -21,6 +21,7 @@ async function EditAssessmentPageContent({
 
   return (
     <AssessmentForm
+      key={data.assessmentId}
       mode="edit"
       assessmentId={data.assessmentId}
       banks={banksRes.data}
