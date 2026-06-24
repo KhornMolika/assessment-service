@@ -143,9 +143,7 @@ export default function AssessmentForm({
                     : "Build Your Assessment"}
                 </h2>
                 <p className="text-sm text-inkd">
-                  {mode === "edit" && formData.status !== "DRAFT" 
-                    ? "This assessment is no longer a draft and cannot be edited." 
-                    : "Complete the current section before moving forward."}
+                  Complete the current section before moving forward.
                 </p>
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -172,17 +170,8 @@ export default function AssessmentForm({
               </div>
             )}
             
-            {mode === "edit" && formData.status !== "DRAFT" && (
-              <div className="mb-6">
-                <StateMessage
-                  tone="warning"
-                  title="Editing Disabled"
-                  description="This assessment has been published or archived. Its configuration and questions are locked to preserve participant records."
-                />
-              </div>
-            )}
             <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending || (mode === "edit" && formData.status !== "DRAFT") || (mode !== "edit" && !activeTopic)}>
+              <fieldset disabled={isPending || (mode !== "edit" && !activeTopic)}>
               {validationErrors.length > 0 ? (
                 <div className="mb-4">
                   <StateMessage
@@ -256,14 +245,6 @@ export default function AssessmentForm({
                     }`}
                   >
                     Continue
-                  </Button>
-                ) : mode === "edit" && formData.status !== "DRAFT" ? (
-                  <Button
-                    type="button"
-                    disabled
-                    className="inline-flex w-full items-center justify-center rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-400 transition cursor-not-allowed"
-                  >
-                    Editing Locked
                   </Button>
                 ) : (
                   <Button
