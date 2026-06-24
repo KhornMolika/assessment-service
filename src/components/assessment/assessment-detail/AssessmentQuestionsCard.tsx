@@ -90,7 +90,7 @@ export default function AssessmentQuestionsCard({
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-primary">{question.question}</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Badge variant={getTypeVariant(question.type)}>{question.type.replace(/_/g, " ")}</Badge>
+                <Badge variant={getTypeVariant(question.type || "UNKNOWN")}>{(question.type || "UNKNOWN").replace(/_/g, " ")}</Badge>
                 <span className="text-xs font-medium text-inkd">{question.points} pts</span>
               </div>
             </div>

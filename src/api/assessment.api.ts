@@ -218,11 +218,11 @@ export async function getAssessmentDetailPageData(
       ],
     };
     // Map Questions
-    const questions = ((questionsRes as any)?.data || questionsRes || []).map(
+    const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
       (q: any) => ({
         id: q.id,
-        question: q.questionText,
-        type: q.type,
+        question: q.questionText || q.text || q.question || "Untitled Question",
+        type: q.type || q.questionType || "UNKNOWN",
         points: q.points || 5,
       }),
     );
