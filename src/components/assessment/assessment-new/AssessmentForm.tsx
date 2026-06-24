@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import type { QuestionBank, Question } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
@@ -10,6 +11,7 @@ import AssessmentSettingsStep from "./AssessmentSettingsStep";
 import AssessmentQuestionStep from "./AssessmentQuestionStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
 import { Button } from "@/src/components/ui/ui/button";
+import { Modal } from "@/src/components/ui/ui/modal";
 import Link from "next/link";
 import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
 
@@ -49,6 +51,16 @@ export default function AssessmentForm({
     destination,
     activeTopic
   } = useAssessmentForm({ mode, assessmentId, initialFormData });
+
+  const [showDefaultSettingsWarning, setShowDefaultSettingsWarning] = useState(false);
+
+  const onSaveClick = () => {
+    if (!formData.startsAt && !formData.endsAt && (!formData.enableTimeLimit || !formData.timeLimitMinutes)) {
+      setShowDefaultSettingsWarning(true);
+    } else {
+      handlePublish();
+    }
+  };
 
   const formId =
     mode === "edit" && assessmentId
@@ -220,7 +232,7 @@ export default function AssessmentForm({
                 ) : (
                   <Button
                     type="button"
-                    onClick={handlePublish}
+                    onClick={onSaveClick}
                     disabled={isPending}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
@@ -243,6 +255,27 @@ export default function AssessmentForm({
           </div>
         </aside>
       </div>
+
+      <Modal open={showDefaultSettingsWarning} onClose={() => setShowDefaultSettingsWarning(false)}>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">Default Settings Warning</h2>
+        <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+          You haven't selected a start date, end date, or time limit. We will proceed using the default settings configuration (no time limit, always available). Are you sure you want to proceed?
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={() => setShowDefaultSettingsWarning(false)} className="rounded-xl border-slate-200">
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => { 
+              setShowDefaultSettingsWarning(false); 
+              handlePublish(); 
+            }}
+            className="rounded-xl bg-[#C8A246] hover:bg-[#B3903E] text-white"
+          >
+            Confirm & Save
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
