@@ -169,7 +169,11 @@ export default function AssessmentForm({
               </div>
             )}
             
-            <form id={formId} onSubmit={handleSubmit} className="min-w-0">
+            <form id={formId} onSubmit={handleSubmit} className="min-w-0" onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') {
+                e.preventDefault();
+              }
+            }}>
               <fieldset disabled={isPending || (!activeTopic && !formData.ownerTopicId)}>
 
 
