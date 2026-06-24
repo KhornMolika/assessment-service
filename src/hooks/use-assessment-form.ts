@@ -327,7 +327,7 @@ export function useAssessmentForm({
           setValidationErrors([createRes.error || "Failed to create assessment for publishing"]);
           return;
         }
-        currentAssessmentId = (createRes.assessment as any).data?.id || createRes.assessment.id;
+        currentAssessmentId = (createRes.assessment as any).id;
       } else {
         // If editing existing, save draft first
         const updateRes = await updateAssessmentAction(currentAssessmentId, submitData);

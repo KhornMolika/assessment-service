@@ -12,8 +12,13 @@ export async function createAssessmentAction(topicId: string, data: any) {
       type: data.type || "QUIZ",
       description: data.description,
     };
-    const newAssessment = await apiClient.post<AssessmentCatalogItem>(`/topics/${topicId}/assessments`, basePayload);
-    const assessmentId = newAssessment.id;
+    const newAssessmentRaw = await apiClient.post<AssessmentCatalogItem | { data: AssessmentCatalogItem }>(`/topics/${topicId}/assessments`, basePayload);
+    const newAssessment = (newAssessmentRaw as any).data || newAssessmentRaw;
+    const assessmentId = newAssessment?.id;
+
+    if (!assessmentId) {
+      throw new Error("Failed to extract Assessment ID from the creation response.");
+    }
 
     // 2. Update settings
     const settingsPayload = {
