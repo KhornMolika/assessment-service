@@ -52,16 +52,16 @@ export default function AssessmentForm({
     activeTopic
   } = useAssessmentForm({ mode, assessmentId, initialFormData });
 
-  const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | "CONTAINS_ESSAY_QUESTIONS" | null>(null);
+  const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | "CONTAINS_INVALID_QUESTIONS" | null>(null);
 
-  const invalidEssayQuestions = formData.sessionMode === "REAL_TIME" 
-    ? questions.filter(q => formData.selectedQuestionIds.includes(q.id) && q.type === "ESSAY")
+  const invalidQuestions = formData.sessionMode === "REAL_TIME" 
+    ? questions.filter(q => formData.selectedQuestionIds.includes(q.id) && (q.type === "ESSAY" || q.type === "SHORT_ANSWER"))
     : [];
 
   const onContinueClick = () => {
     if (currentStep === 2) {
-      if (invalidEssayQuestions.length > 0) {
-        setWarningType("CONTAINS_ESSAY_QUESTIONS");
+      if (invalidQuestions.length > 0) {
+        setWarningType("CONTAINS_INVALID_QUESTIONS");
         return;
       }
 
@@ -89,8 +89,8 @@ export default function AssessmentForm({
     const currentWarning = warningType;
     setWarningType(null);
     
-    if (currentWarning === "CONTAINS_ESSAY_QUESTIONS") {
-      const invalidIds = invalidEssayQuestions.map(q => q.id);
+    if (currentWarning === "CONTAINS_INVALID_QUESTIONS") {
+      const invalidIds = invalidQuestions.map(q => q.id);
       const filteredSelected = formData.selectedQuestionIds.filter(id => !invalidIds.includes(id));
       handleChange("selectedQuestionIds", filteredSelected);
     }
@@ -297,19 +297,19 @@ export default function AssessmentForm({
           {warningType === "DEFAULT_SETTINGS" && "Default Settings Warning"}
           {warningType === "PAST_START_DATE" && "Past Start Date"}
           {warningType === "MISSING_START_DATE" && "Missing Start Date"}
-          {warningType === "CONTAINS_ESSAY_QUESTIONS" && "Invalid Questions For Real-Time"}
+          {warningType === "CONTAINS_INVALID_QUESTIONS" && "Invalid Questions For Real-Time"}
         </h2>
         <div className="text-sm text-slate-600 mb-6 leading-relaxed">
           {warningType === "DEFAULT_SETTINGS" && <p>You haven't selected a start date, end date, or time limit. We will proceed using the default settings configuration (no time limit, always available). Are you sure you want to proceed?</p>}
           {warningType === "PAST_START_DATE" && <p>You have selected a Start Date that is in the past. This means participants will be able to join the assessment immediately. Are you sure you want to proceed?</p>}
           {warningType === "MISSING_START_DATE" && <p>You have selected an End Date but no Start Date. This means the assessment is effectively active immediately until the End Date. Are you sure you want to proceed?</p>}
-          {warningType === "CONTAINS_ESSAY_QUESTIONS" && (
+          {warningType === "CONTAINS_INVALID_QUESTIONS" && (
             <>
               <p className="mb-3">
-                <strong>REAL_TIME</strong> assessments do not support <strong>ESSAY</strong> questions. The following questions will be automatically removed from your assessment if you proceed:
+                <strong>REAL_TIME</strong> assessments do not support <strong>ESSAY</strong> or <strong>SHORT_ANSWER</strong> questions. The following questions will be automatically removed from your assessment if you proceed:
               </p>
               <ul className="list-disc pl-5 space-y-2 max-h-40 overflow-y-auto rounded-lg bg-slate-50 p-3 border border-slate-200">
-                {invalidEssayQuestions.map(q => (
+                {invalidQuestions.map(q => (
                   <li key={q.id} className="text-slate-700 font-medium">{q.questionText || "Untitled Question"}</li>
                 ))}
               </ul>
