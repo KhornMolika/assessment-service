@@ -24,14 +24,6 @@ async function DuplicateAssessmentPageContent({
     ...data.initialFormData,
     name: `${data.initialFormData.name} (Copy)`,
     status: "DRAFT" as const,
-    selectedQuestionIds: [],
-    selectedBankId: "",
-    totalQuestions: 0,
-    selectionRules: [
-      { difficulty: "Easy", count: 0 },
-      { difficulty: "Medium", count: 0 },
-      { difficulty: "Hard", count: 0 },
-    ] as any,
   };
 
   return (
