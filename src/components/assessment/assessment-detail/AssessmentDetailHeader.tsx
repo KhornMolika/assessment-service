@@ -80,6 +80,7 @@ export default function AssessmentDetailHeader({
   };
 
   const actualTitle = assessment.name || assessment.title || "Untitled";
+  const mode = assessment.settings?.mode || assessment.delivery_mode;
 
   return (
     <section>
@@ -89,7 +90,7 @@ export default function AssessmentDetailHeader({
           title="Assessment Details"
           actions={
             <div className="flex items-center gap-3">
-              {assessment.delivery_mode === "SELF_PACED" ? (
+              {mode === "SELF_PACED" ? (
                 <Link
                   href={`/assessments/${assessment.id}/take`}
                   className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
