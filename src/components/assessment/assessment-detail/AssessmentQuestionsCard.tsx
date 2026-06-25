@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { FileText } from "lucide-react";
-import type { AssessmentDetailQuestionItem } from "@/src/types/assessment-detail.types";
+import { useState, useTransition } from "react";
+import { FileText, Plus, Trash2, Loader2 } from "lucide-react";
+import type { AssessmentDetailQuestionItem, AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Badge } from "@/src/components/ui/ui/badge";
+import { Button } from "@/src/components/ui/ui/button";
+import AddAssessmentQuestionsModal from "@/src/components/ui/modals/AddAssessmentQuestionsModal";
+import { removeQuestionFromAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import { toast } from "sonner";
 
 function getTypeVariant(type: string) {
   switch (type) {
@@ -26,14 +30,19 @@ function getTypeVariant(type: string) {
 }
 
 export default function AssessmentQuestionsCard({
+  assessment,
   questions,
   totalQuestions,
 }: {
+  assessment: AssessmentDetailRecord;
   questions: AssessmentDetailQuestionItem[];
   totalQuestions: number;
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [removingId, setRemovingId] = useState<string | null>(null);
   
   const totalPages = Math.max(1, Math.ceil(questions.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
@@ -47,7 +56,24 @@ export default function AssessmentQuestionsCard({
     setCurrentPage(1);
   };
 
+  const isDraft = assessment.status === "DRAFT";
+
+  const handleRemove = (assessmentQuestionId: string) => {
+    if (!assessment.id) return;
+    setRemovingId(assessmentQuestionId);
+    startTransition(async () => {
+      const res = await removeQuestionFromAssessmentAction(assessment.id, assessmentQuestionId);
+      if (res?.success) {
+        toast.success("Question removed");
+      } else {
+        toast.error(res?.message || "Failed to remove question");
+      }
+      setRemovingId(null);
+    });
+  };
+
   return (
+    <>
     <PaginatedCollectionCard
       className="flex-1 shadow-sm border-slate-200"
       title={
@@ -57,6 +83,19 @@ export default function AssessmentQuestionsCard({
         </span>
       }
       description="A preview of questions assigned to this assessment."
+      actions={
+        isDraft ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 bg-white"
+            onClick={() => setModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Add Questions
+          </Button>
+        ) : undefined
+      }
       headerClassName="bg-slate-50 border-b border-slate-100 rounded-t-xl pb-4"
       contentClassName="pt-6 px-0 pb-0 sm:px-0 sm:pb-0"
       bodyClassName={questions.length === 0 ? "mx-6" : "space-y-4"}
@@ -95,8 +134,34 @@ export default function AssessmentQuestionsCard({
               </div>
             </div>
           </div>
+          {isDraft && (
+            <div className="flex-shrink-0 pt-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-slate-400 hover:text-red-600 hover:bg-red-50"
+                onClick={() => handleRemove(question.id)}
+                disabled={isPending && removingId === question.id}
+              >
+                {isPending && removingId === question.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       ))}
     </PaginatedCollectionCard>
+
+    <AddAssessmentQuestionsModal
+      open={modalOpen}
+      onClose={() => setModalOpen(false)}
+      assessmentId={assessment.id}
+      topicId={assessment.ownerTopicId || assessment.topic?.id}
+      existingQuestionIds={questions.map(q => q.question_id || q.id)} // Wait, q.id is assessmentQuestionId. Where is question_id?
+    />
+    </>
   );
 }

@@ -103,21 +103,10 @@ export async function updateAssessmentAction(id: string, data: any) {
     await apiClient.patch(`/assessments/${id}/settings`, settingsPayload);
 
     // 3. Update questions (if manual and has questions)
-    if (data.questionSelection === "MANUAL") {
-      const initialIds = data.initialQuestionIds || [];
-      const currentIds = data.selectedQuestionIds || [];
-      
-      const addedIds = currentIds.filter((id: string) => !initialIds.includes(id));
-      const removedIds = initialIds.filter((id: string) => !currentIds.includes(id));
-
-      if (addedIds.length > 0) {
-        const payload = addedIds.map((id: string) => ({ questionId: id }));
-        await apiClient.post(`/assessments/${id}/questions`, payload);
-      }
-
-      for (const removedId of removedIds) {
-        await apiClient.delete(`/assessments/${id}/questions/${removedId}`);
-      }
+    if (data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
+      await apiClient.put(`/assessments/${id}/questions`, {
+        questionIds: data.selectedQuestionIds,
+      });
     }
 
     // 4. Handle status transitions if changed
@@ -154,6 +143,33 @@ export async function deleteAssessmentAction(id: string) {
   } catch (error: any) {
     console.error("Failed to delete assessment:", error);
     return { success: false, error: error.message || "Failed to delete assessment" };
+  }
+}
+
+export async function addQuestionsToAssessmentAction(assessmentId: string, questionIds: string[]) {
+  try {
+    const payload = questionIds.map((id) => ({ questionId: id }));
+    await apiClient.post(`/assessments/${assessmentId}/questions`, payload);
+    revalidatePath(`/assessments/${assessmentId}`);
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to add questions to assessment",
+    };
+  }
+}
+
+export async function removeQuestionFromAssessmentAction(assessmentId: string, assessmentQuestionId: string) {
+  try {
+    await apiClient.delete(`/assessments/${assessmentId}/questions/${assessmentQuestionId}`);
+    revalidatePath(`/assessments/${assessmentId}`);
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to remove question from assessment",
+    };
   }
 }
 
