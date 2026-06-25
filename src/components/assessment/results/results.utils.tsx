@@ -18,39 +18,39 @@ export function getOutcomeBadge(status: "PASSED" | "FAILED" | "PENDING_REVIEW") 
 }
 
 export function buildRows(data: AssessmentResultsPageData): ResultsRow[] {
-  return data.answer_sheets.map((sheet) => {
-    const participant = data.participants.find((item) => item.id === sheet.participant_id);
-    const assessment = data.assessments.find((item) => item.id === sheet.assessment_id);
-    const entries = data.answer_entries.filter((entry) => entry.sheet_id === sheet.id);
-    const hasPendingEntry = entries.some((entry) => entry.grading_status === "PENDING");
+  return data.answerSheets.map((sheet) => {
+    const participant = data.participants.find((item) => item.id === sheet.participantId);
+    const assessment = data.assessments.find((item) => item.id === sheet.assessmentId);
+    const entries = data.answerEntries.filter((entry) => entry.sheetId === sheet.id);
+    const hasPendingEntry = entries.some((entry) => entry.gradingStatus === "PENDING");
     const percentage =
-      sheet.total_score != null && sheet.max_score > 0
-        ? Math.round((sheet.total_score / sheet.max_score) * 100)
+      sheet.totalScore != null && sheet.maxScore > 0
+        ? Math.round((sheet.totalScore / sheet.maxScore) * 100)
         : null;
     const evaluationStatus =
       sheet.status === "REVIEW_PENDING" || hasPendingEntry ? "PENDING_REVIEW" : "FINAL";
 
     return {
-      sheet_id: sheet.id,
-      assessment_id: sheet.assessment_id,
-      participant_id: sheet.participant_id,
-      participant_display_name: participant?.display_name ?? "Unknown participant",
-      assessment_title: assessment?.title ?? "Unknown assessment",
-      answer_sheet_status: sheet.status,
-      total_score: sheet.total_score,
-      max_score: sheet.max_score,
+      sheetId: sheet.id,
+      assessmentId: sheet.assessmentId,
+      participantId: sheet.participantId,
+      participantDisplayName: participant?.display_name ?? "Unknown participant",
+      assessmentTitle: assessment?.name ?? "Unknown assessment",
+      answerSheetStatus: sheet.status,
+      totalScore: sheet.totalScore,
+      maxScore: sheet.maxScore,
       percentage,
       grade: sheet.grade,
       outcomeStatus:
         evaluationStatus === "PENDING_REVIEW"
           ? "PENDING_REVIEW"
-          : sheet.is_passed
+          : sheet.isPassed
             ? "PASSED"
             : "FAILED",
       evaluationStatus,
-      timeSpent: sheet.submitted_at != null ? formatDuration(sheet.started_at, sheet.submitted_at) : "-",
+      timeSpent: sheet.submittedAt != null ? formatDuration(sheet.startedAt, sheet.submittedAt) : "-",
       submittedAt:
-        sheet.submitted_at != null
+        sheet.submittedAt != null
           ? new Intl.DateTimeFormat("en-US", {
               year: "numeric",
               month: "2-digit",
@@ -58,7 +58,7 @@ export function buildRows(data: AssessmentResultsPageData): ResultsRow[] {
               hour: "2-digit",
               minute: "2-digit",
               hour12: false,
-            }).format(new Date(sheet.submitted_at))
+            }).format(new Date(sheet.submittedAt))
           : "-",
       sessionInfo:
         assessment?.id === "assessment-3" || assessment?.id === "assessment-8"

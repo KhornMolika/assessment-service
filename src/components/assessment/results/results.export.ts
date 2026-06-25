@@ -49,12 +49,12 @@ function buildCsv(rows: ResultsRow[]) {
   ];
 
   const records = rows.map((row) => [
-    row.participant_display_name,
-    row.assessment_title,
+    row.participantDisplayName,
+    row.assessmentTitle,
     row.sessionInfo,
-    row.sheet_id,
-    row.total_score,
-    row.max_score,
+    row.sheetId,
+    row.totalScore,
+    row.maxScore,
     row.percentage == null ? "Pending review" : `${row.percentage}%`,
     row.grade ?? "Pending",
     row.outcomeStatus,
@@ -80,7 +80,7 @@ function parseResponseValue(entry: AnswerEntry) {
 
 function getOptionText(entry: AnswerEntry, optionId: unknown) {
   const id = String(optionId ?? "");
-  return entry.question_snapshot.options?.find((option) => option.id === id)?.text ?? id;
+  return entry.questionSnapshot.options?.find((option) => option.id === id)?.text ?? id;
 }
 
 function formatResponse(entry: AnswerEntry) {
@@ -119,7 +119,7 @@ function formatResponse(entry: AnswerEntry) {
 }
 
 function formatCorrectAnswer(entry: AnswerEntry) {
-  const value = entry.question_snapshot.correct_answer;
+  const value = entry.questionSnapshot.correctAnswers;
   if (value == null) return "Not applicable";
   if (Array.isArray(value)) return value.map((item) => getOptionText(entry, item)).join(", ");
   if (typeof value === "boolean") return value ? "True" : "False";
@@ -129,25 +129,25 @@ function formatCorrectAnswer(entry: AnswerEntry) {
 }
 
 function buildParticipantResultCsv(data: AssessmentResultsPageData, row: ResultsRow) {
-  const participant = data.participants.find((item) => item.id === row.participant_id);
-  const assessment = data.assessments.find((item) => item.id === row.assessment_id);
-  const sheet = data.answer_sheets.find((item) => item.id === row.sheet_id);
-  const entries = data.answer_entries.filter((entry) => entry.sheet_id === row.sheet_id);
+  const participant = data.participants.find((item) => item.id === row.participantId);
+  const assessment = data.assessments.find((item) => item.id === row.assessmentId);
+  const sheet = data.answerSheets.find((item) => item.id === row.sheetId);
+  const entries = data.answerEntries.filter((entry) => entry.sheetId === row.sheetId);
 
   const summaryRows = [
-    ["Participant", participant?.display_name ?? row.participant_display_name],
-    ["Assessment", assessment?.title ?? row.assessment_title],
-    ["Answer Sheet", row.sheet_id],
-    ["Status", row.answer_sheet_status],
+    ["Participant", participant?.display_name ?? row.participantDisplayName],
+    ["Assessment", assessment?.name ?? row.assessmentTitle],
+    ["Answer Sheet", row.sheetId],
+    ["Status", row.answerSheetStatus],
     ["Evaluation", row.evaluationStatus],
     ["Outcome", row.outcomeStatus],
-    ["Score", row.total_score == null ? "Pending review" : `${row.total_score}/${row.max_score}`],
+    ["Score", row.totalScore == null ? "Pending review" : `${row.totalScore}/${row.maxScore}`],
     ["Grade", row.grade ?? "Pending"],
     ["Submitted At", row.submittedAt],
     ["Time Spent", row.timeSpent],
     ["Joined At", participant?.joined_at ?? "-"],
-    ["Started At", sheet?.started_at ?? "-"],
-    ["Share Token", sheet?.share_token ?? "-"],
+    ["Started At", sheet?.startedAt ?? "-"],
+    ["Share Token", sheet?.shareToken ?? "-"],
     [],
     [
       "No.",
@@ -163,15 +163,15 @@ function buildParticipantResultCsv(data: AssessmentResultsPageData, row: Results
     ],
     ...entries.map((entry, index) => [
       index + 1,
-      entry.question_snapshot.question_text,
-      entry.question_snapshot.type_id,
+      entry.questionSnapshot.questionText,
+      entry.questionSnapshot.typeId,
       formatResponse(entry),
       formatCorrectAnswer(entry),
-      entry.score_awarded,
-      entry.question_snapshot.points,
-      entry.is_correct == null ? "Not set" : entry.is_correct ? "Yes" : "No",
-      entry.grading_status,
-      entry.updated_at,
+      entry.scoreAwarded,
+      entry.questionSnapshot.points,
+      entry.isCorrect == null ? "Not set" : entry.isCorrect ? "Yes" : "No",
+      entry.gradingStatus,
+      entry.updatedAt,
     ]),
   ];
 
@@ -181,15 +181,15 @@ function buildParticipantResultCsv(data: AssessmentResultsPageData, row: Results
 function buildResultSheetCsv(data: AssessmentResultSheetPageData) {
   const summaryRows = [
     ["Participant", data.participant.display_name],
-    ["Assessment", data.assessment.title],
-    ["Answer Sheet", data.answer_sheet.id],
-    ["Status", data.answer_sheet.status],
-    ["Score", data.answer_sheet.total_score == null ? "Pending review" : `${data.answer_sheet.total_score}/${data.answer_sheet.max_score}`],
-    ["Grade", data.answer_sheet.grade ?? "Pending"],
-    ["Submitted At", data.answer_sheet.submitted_at ?? "-"],
+    ["Assessment", data.assessment.name || "Untitled"],
+    ["Answer Sheet", data.answerSheet.id],
+    ["Status", data.answerSheet.status],
+    ["Score", data.answerSheet.totalScore == null ? "Pending review" : `${data.answerSheet.totalScore}/${data.answerSheet.maxScore}`],
+    ["Grade", data.answerSheet.grade ?? "Pending"],
+    ["Submitted At", data.answerSheet.submittedAt ?? "-"],
     ["Joined At", data.participant.joined_at],
-    ["Started At", data.answer_sheet.started_at],
-    ["Share Token", data.answer_sheet.share_token],
+    ["Started At", data.answerSheet.startedAt],
+    ["Share Token", data.answerSheet.shareToken],
     [],
     [
       "No.",
@@ -203,17 +203,17 @@ function buildResultSheetCsv(data: AssessmentResultSheetPageData) {
       "Grading Status",
       "Updated At",
     ],
-    ...data.answer_entries.map((entry, index) => [
+    ...data.answerEntries.map((entry, index) => [
       index + 1,
-      entry.question_snapshot.question_text,
-      entry.question_snapshot.type_id,
+      entry.questionSnapshot.questionText,
+      entry.questionSnapshot.typeId,
       formatResponse(entry),
       formatCorrectAnswer(entry),
-      entry.score_awarded,
-      entry.question_snapshot.points,
-      entry.is_correct == null ? "Not set" : entry.is_correct ? "Yes" : "No",
-      entry.grading_status,
-      entry.updated_at,
+      entry.scoreAwarded,
+      entry.questionSnapshot.points,
+      entry.isCorrect == null ? "Not set" : entry.isCorrect ? "Yes" : "No",
+      entry.gradingStatus,
+      entry.updatedAt,
     ]),
   ];
 
@@ -227,12 +227,12 @@ export function exportResultsCsv(rows: ResultsRow[]) {
 
 export function exportSingleResultCsv(data: AssessmentResultsPageData, row: ResultsRow) {
   const csv = buildParticipantResultCsv(data, row);
-  const filename = `result-${sanitizeFilePart(row.participant_display_name)}-${sanitizeFilePart(row.sheet_id)}.csv`;
+  const filename = `result-${sanitizeFilePart(row.participantDisplayName)}-${sanitizeFilePart(row.sheetId)}.csv`;
   downloadBlob(filename, new Blob([csv], { type: "text/csv;charset=utf-8;" }));
 }
 
 export function exportResultSheetCsv(data: AssessmentResultSheetPageData) {
   const csv = buildResultSheetCsv(data);
-  const filename = `result-${sanitizeFilePart(data.participant.display_name)}-${sanitizeFilePart(data.answer_sheet.id)}.csv`;
+  const filename = `result-${sanitizeFilePart(data.participant.display_name)}-${sanitizeFilePart(data.answerSheet.id)}.csv`;
   downloadBlob(filename, new Blob([csv], { type: "text/csv;charset=utf-8;" }));
 }

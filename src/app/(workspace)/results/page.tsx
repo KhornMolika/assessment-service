@@ -61,17 +61,17 @@ async function ResultsPageContent({
   const allRows = buildRows(data);
   const assessmentOptions = [
     "All Assessments",
-    ...new Set(allRows.map((result) => result.assessment_title)),
+    ...new Set(allRows.map((result) => result.assessmentTitle)),
   ];
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredResults = allRows
     .filter((result) => {
       const matchesAssessment =
         selectedAssessment === "All Assessments" ||
-        result.assessment_title === selectedAssessment;
+        result.assessmentTitle === selectedAssessment;
       const matchesTopic =
         selectedTopic === ALL_TOPICS_VALUE ||
-        assessmentMatchesTopic(result.assessment_id, selectedTopic, data.assessment_topics);
+        assessmentMatchesTopic(result.assessmentId, selectedTopic, data.assessmentTopics);
       const matchesStatus =
         selectedStatus === "All Statuses" ||
         (selectedStatus === "Pending Review" &&
@@ -80,7 +80,7 @@ async function ResultsPageContent({
         (selectedStatus === "Failed" && result.outcomeStatus === "FAILED");
       const matchesSearch =
         normalizedQuery.length === 0 ||
-        result.participant_display_name.toLowerCase().includes(normalizedQuery);
+        result.participantDisplayName.toLowerCase().includes(normalizedQuery);
 
       return matchesAssessment && matchesTopic && matchesStatus && matchesSearch;
     })
@@ -182,10 +182,10 @@ async function ResultsHeaderAction({
     .filter((result) => {
       const matchesAssessment =
         selectedAssessment === "All Assessments" ||
-        result.assessment_title === selectedAssessment;
+        result.assessmentTitle === selectedAssessment;
       const matchesTopic =
         selectedTopic === ALL_TOPICS_VALUE ||
-        assessmentMatchesTopic(result.assessment_id, selectedTopic, data.assessment_topics);
+        assessmentMatchesTopic(result.assessmentId, selectedTopic, data.assessmentTopics);
       const matchesStatus =
         selectedStatus === "All Statuses" ||
         (selectedStatus === "Pending Review" &&
@@ -194,7 +194,7 @@ async function ResultsHeaderAction({
         (selectedStatus === "Failed" && result.outcomeStatus === "FAILED");
       const matchesSearch =
         normalizedQuery.length === 0 ||
-        result.participant_display_name.toLowerCase().includes(normalizedQuery);
+        result.participantDisplayName.toLowerCase().includes(normalizedQuery);
 
       return matchesAssessment && matchesTopic && matchesStatus && matchesSearch;
     })

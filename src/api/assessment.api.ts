@@ -54,19 +54,18 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
 
     assessments = rawData.map((a: any) => ({
       id: a.id,
-      owner_id: "admin",
-      title: a.name,
+      ownerId: a.ownerId || "admin",
+      name: a.name,
       description: a.description,
       status: a.status,
-      participant_identity: a.settings?.participantIdentity || "EXTERNAL",
-      created_at: a.createdAt,
-      updated_at: a.updatedAt,
-      delivery_mode: a.settings?.mode || "SELF_PACED",
-      lifecycle: a.status === "PUBLISHED" ? "ACTIVE" : a.status,
-      question_count: a.settings?.numQuestions || 0,
-      pass_rate: "0%",
-      average_score: "0",
-      starts_at: a.settings?.startsAt || a.createdAt,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+      settings: a.settings || {},
+      stats: {
+        participantCount: a.settings?.participantCount || 0,
+        passRate: a.settings?.passRate || 0,
+        averageScore: a.settings?.averageScore || 0,
+      }
     }));
   } catch (e) {
     console.warn(
@@ -80,20 +79,21 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
     stats: {
       totalAssessments: assessments.length,
       draftCount: assessments.filter(
-        (assessment) => assessment.lifecycle === "DRAFT",
+        (assessment) => assessment.status === "DRAFT",
       ).length,
       activeCount: assessments.filter(
-        (assessment) => assessment.lifecycle === "PUBLISHED",
+        (assessment) => assessment.status === "PUBLISHED",
       ).length,
       selfPacedCount: assessments.filter(
-        (assessment) => assessment.delivery_mode === "SELF_PACED",
+        (assessment) => assessment.settings?.mode === "SELF_PACED",
       ).length,
       realTimeCount: assessments.filter(
-        (assessment) => assessment.delivery_mode === "REAL_TIME",
+        (assessment) => assessment.settings?.mode === "REAL_TIME",
       ).length,
       startingThisWeekCount: assessments.filter((assessment) => {
-        if (!assessment.starts_at) return false;
-        const startsAt = new Date(assessment.starts_at);
+        const startsAtDate = assessment.settings?.startsAt || assessment.createdAt;
+        if (!startsAtDate) return false;
+        const startsAt = new Date(startsAtDate);
         return startsAt >= startOfWeek && startsAt < endOfWeek;
       }).length,
     },
@@ -157,75 +157,30 @@ export async function getAssessmentDetailPageData(
       id: assessment?.id,
       topicId: assessment?.topic?.id || assessment?.topicId,
       topic: assessment?.topic,
-      owner_id: "admin",
-      title: assessment?.name,
+      ownerId: "admin",
+      name: assessment?.name || "Assessment",
       description: assessment?.description,
       status: assessment?.status,
       type: assessment?.type || "QUIZ",
-      name: assessment?.name,
       createdAt: assessment?.createdAt,
       updatedAt: assessment?.updatedAt,
-      settings: assessment?.settings,
-      participant_identity:
-        assessment?.settings?.participantIdentity || "EXTERNAL",
-      created_at: assessment?.createdAt,
-      updated_at: assessment?.updatedAt,
-      question_bank_name: "General Bank",
-      delivery_mode: assessment?.settings?.mode || "SELF_PACED",
-      lifecycle: assessment?.status,
-      question_count: assessment?.settings?.numQuestions || 0,
-      participant_count: completedCount + inProgressCount,
-      pass_rate: `${report?.assessment?.passRate ?? 0}%`,
-      average_score: `${report?.assessment?.averageScore ?? 0}`,
-      starts_at: assessment?.settings?.startsAt || assessment?.createdAt,
-
-      subtitle:
-        assessment?.description ??
-        `${assessment?.name || "Assessment"} delivery details and performance overview.`,
-      source_bank: "Custom Questions",
-      completed_count: completedCount,
-      in_progress_count: inProgressCount,
-      average_score_percent: report?.assessment?.averageScore ?? 0,
-      pass_rate_percent: report?.assessment?.passRate ?? 0,
-      live_sessions: assessment?.settings?.mode === "REAL_TIME" ? 1 : 0,
-      active_sessions:
-        assessment?.settings?.mode === "REAL_TIME"
-          ? Math.max(1, inProgressCount)
-          : 0,
-      total_points:
-        report?.questionBreakdown?.reduce(
-          (sum: number, q: any) => sum + (q.maxScore || 0),
-          0,
-        ) || 0,
-      time_limit_minutes: assessment?.settings?.timeLimit
-        ? Math.round(assessment.settings.timeLimit / 60)
-        : assessment?.settings?.mode === "REAL_TIME"
-          ? 60
-          : 45,
-      created_by: "Admin User",
-      question_selection:
-        assessment?.settings?.questionSelection === "DYNAMIC"
-          ? "Dynamic"
-          : "Manual",
-      shuffle_questions: assessment?.settings?.isShuffle ?? true,
-      allow_going_back:
-        assessment?.settings?.allowReview ??
-        assessment?.settings?.mode === "SELF_PACED",
-      pass_mark: assessment?.settings?.passMark ?? 70,
-      show_results:
-        assessment?.settings?.showResults === "NEVER"
-          ? "Never"
-          : "Immediately after submit",
-      is_allowed_share: false,
-      is_showed_answers: assessment?.settings?.showResults === "IMMEDIATELY",
-      grade_scale: [
-        { grade: "A", minPercent: 90 },
-        { grade: "B", minPercent: 80 },
-        { grade: "C", minPercent: 70 },
-        { grade: "D", minPercent: 60 },
-        { grade: "E", minPercent: 50 },
-        { grade: "F", minPercent: 0 },
-      ],
+      settings: assessment?.settings || {},
+      detailStats: {
+        completedCount: completedCount,
+        inProgressCount: inProgressCount,
+        averageScorePercent: report?.assessment?.averageScore ?? 0,
+        passRatePercent: report?.assessment?.passRate ?? 0,
+        liveSessions: assessment?.settings?.mode === "REAL_TIME" ? 1 : 0,
+        activeSessions:
+          assessment?.settings?.mode === "REAL_TIME"
+            ? Math.max(1, inProgressCount)
+            : 0,
+        totalPoints:
+          report?.questionBreakdown?.reduce(
+            (sum: number, q: any) => sum + (q.maxScore || 0),
+            0,
+          ) || 0,
+      }
     };
     // Map Questions
     const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
@@ -236,7 +191,9 @@ export async function getAssessmentDetailPageData(
           question_id: q.questionId || questionData.id,
           question: questionData.questionText || questionData.text || (typeof q.question === "string" ? q.question : "Untitled Question"),
           type: questionData.type || questionData.questionType || "UNKNOWN",
-          points: questionData.points || q.points || 5,
+          points: Number(questionData.points || q.points) || 5,
+          options: questionData.options || q.options,
+          correctAnswers: questionData.correctAnswers || q.correctAnswers || q.correctAnswer || questionData.correctAnswer,
         };
       }
     );
@@ -306,8 +263,8 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
       for (const q of questionBreakdown || []) {
         allQuestions.push({
           id: q.assessmentQuestionId,
-          question_text: q.questionText,
-          type_id: q.type,
+          questionText: q.questionText,
+          typeId: q.type,
           points: q.maxScore,
         } as ResultQuestionEntity);
       }
@@ -324,19 +281,19 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
 
         allAnswerSheets.push({
           id: p.sessionId,
-          assessment_id: String(assessment.id),
-          participant_id: p.participantId,
+          assessmentId: String(assessment.id),
+          participantId: p.participantId,
           status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-          started_at: new Date(
+          startedAt: new Date(
             new Date(p.submittedAt || Date.now()).getTime() -
               (p.duration || 0) * 1000,
           ).toISOString(),
-          submitted_at: p.submittedAt || null,
-          total_score: p.score,
-          max_score: 100, // simplified max score based on percentage or similar
-          is_passed: p.isPassed,
+          submittedAt: p.submittedAt || null,
+          totalScore: p.score,
+          maxScore: 100, // simplified max score based on percentage or similar
+          isPassed: p.isPassed,
           grade: p.isPassed ? "Pass" : "Fail",
-          share_token: p.sessionId, // mock token
+          shareToken: p.sessionId, // mock token
         } as AnswerSheet);
 
         if (p.score != null) {
@@ -349,7 +306,7 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
     }
 
     const topics: Topic[] = await getTopics();
-    const assessment_topics = await getAssessmentTopics();
+    const assessmentTopics = await getAssessmentTopics();
 
     return {
       stats: {
@@ -366,11 +323,11 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
       },
       assessments: assessments as any as AssessmentCatalogItem[],
       participants: allParticipants as any as Participant[],
-      answer_sheets: allAnswerSheets as any as AnswerSheet[],
-      answer_entries: allAnswerEntries as any as AnswerEntry[],
+      answerSheets: allAnswerSheets as any as AnswerSheet[],
+      answerEntries: allAnswerEntries as any as AnswerEntry[],
       questions: allQuestions as any as ResultQuestionEntity[],
       topics,
-      assessment_topics,
+      assessmentTopics,
     };
   } catch (err) {
     console.warn(
@@ -386,11 +343,11 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
       },
       assessments: [],
       participants: [],
-      answer_sheets: [],
-      answer_entries: [],
+      answerSheets: [],
+      answerEntries: [],
       questions: [],
       topics: [],
-      assessment_topics: [],
+      assessmentTopics: [],
     };
   }
 }
@@ -459,48 +416,48 @@ export async function getAssessmentResultSheetPageData(
       joined_at: targetReport.submittedAt || new Date().toISOString(),
     } as Participant;
 
-    const answer_sheet = {
+    const answerSheet = {
       id: sheetId,
-      assessment_id: String(targetAssessmentId),
-      participant_id: targetReport.participantId,
+      assessmentId: String(targetAssessmentId),
+      participantId: targetReport.participantId,
       status: targetReport.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-      started_at: new Date(
+      startedAt: new Date(
         new Date(targetReport.submittedAt || Date.now()).getTime() -
           (targetReport.duration || 0) * 1000,
       ).toISOString(),
-      submitted_at: targetReport.submittedAt || null,
-      total_score: targetReport.score,
-      max_score: 100,
-      is_passed: targetReport.isPassed,
+      submittedAt: targetReport.submittedAt || null,
+      totalScore: targetReport.score,
+      maxScore: 100,
+      isPassed: targetReport.isPassed,
       grade: targetReport.isPassed ? "Pass" : "Fail",
-      share_token: sheetId,
+      shareToken: sheetId,
     } as AnswerSheet;
 
     const questions = targetReport.questions.map(
       (q: any) =>
         ({
           id: q.assessmentQuestionId,
-          question_text: q.questionText,
-          type_id: q.type,
+          questionText: q.questionText,
+          typeId: q.type,
           points: q.maxScore || 5,
         }) as ResultQuestionEntity,
     );
 
-    const answer_entries = targetReport.questions.map((q: any) => ({
+    const answerEntries = targetReport.questions.map((q: any) => ({
       id: q.entryId || `${sheetId}-${q.assessmentQuestionId}`,
-      sheet_id: sheetId,
-      question_id: q.assessmentQuestionId,
+      sheetId: sheetId,
+      questionId: q.assessmentQuestionId,
       response: q.response,
-      question_snapshot: {
-        question_text: q.questionText,
-        type_id: q.type,
+      questionSnapshot: {
+        questionText: q.questionText,
+        typeId: q.type,
         points: q.maxScore,
         options: q.options,
-        correct_answer: q.correctAnswer,
+        correctAnswers: q.correctAnswer,
       },
-      is_correct: q.isCorrect,
-      score_awarded: q.scoreAwarded,
-      grading_status: q.gradingStatus || "AUTOMATIC",
+      isCorrect: q.isCorrect,
+      scoreAwarded: q.scoreAwarded,
+      gradingStatus: q.gradingStatus || "AUTOMATIC",
       ai_grading: q.aiGrading
         ? {
             suggestedScore: q.aiGrading.suggestedScore,
@@ -516,9 +473,9 @@ export async function getAssessmentResultSheetPageData(
     return {
       assessment: assessment as any,
       participant,
-      answer_sheet,
+      answerSheet,
       questions,
-      answer_entries: answer_entries as any,
+      answerEntries: answerEntries as any,
     };
   } catch {
     return null;
@@ -556,23 +513,23 @@ export async function getAssessmentScopedResultsPageData(
         }) as Participant,
     );
 
-    const answer_sheets = (report.participants || []).map(
+    const answerSheets = (report.participants || []).map(
       (p: any) =>
         ({
           id: p.sessionId,
-          assessment_id: String(assessmentId),
-          participant_id: p.participantId,
+          assessmentId: String(assessmentId),
+          participantId: p.participantId,
           status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-          started_at: new Date(
+          startedAt: new Date(
             new Date(p.submittedAt || Date.now()).getTime() -
               (p.duration || 0) * 1000,
           ).toISOString(),
-          submitted_at: p.submittedAt || null,
-          total_score: p.score,
-          max_score: 100,
-          is_passed: p.isPassed,
+          submittedAt: p.submittedAt || null,
+          totalScore: p.score,
+          maxScore: 100,
+          isPassed: p.isPassed,
           grade: p.isPassed ? "Pass" : "Fail",
-          share_token: p.sessionId,
+          shareToken: p.sessionId,
         }) as AnswerSheet,
     );
 
@@ -580,8 +537,8 @@ export async function getAssessmentScopedResultsPageData(
       (q: any) =>
         ({
           id: q.id,
-          question_text: q.questionText || q.question_text,
-          type_id: q.type || q.type_id,
+          questionText: q.questionText || q.questionText,
+          typeId: q.type || q.typeId,
           points: q.points || 5,
         }) as ResultQuestionEntity,
     );
@@ -596,8 +553,8 @@ export async function getAssessmentScopedResultsPageData(
         pendingReviewCount: report.assessment.pending || 0,
       },
       participants,
-      answer_sheets,
-      answer_entries: [], // Empty for scoped overview
+      answerSheets,
+      answerEntries: [], // Empty for scoped overview
       questions,
     };
   } catch (err) {
@@ -646,8 +603,8 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         description: assessment.description || "",
         ownerTopicId: assessment.topic?.id || assessment.topicId || "",
         status: ["DRAFT", "PUBLISHED", "ARCHIVED"].includes(assessment.status?.toUpperCase() || "") ? assessment.status.toUpperCase() : "DRAFT",
-        participantIdentity: (["ANONYMOUS", "AUTHENTICATED", "EXTERNAL"].includes(settings.participantIdentity?.toUpperCase() || "") ? settings.participantIdentity?.toUpperCase() : "EXTERNAL") as "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
-        sessionMode: (settings.mode || assessment.delivery_mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
+        participantIdentity: settings.participantIdentity || "EXTERNAL",
+        sessionMode: (settings.mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
         questionSelection: settings.questionSelection?.toUpperCase() === "DYNAMIC" ? "DYNAMIC" : "MANUAL",
         selectedBankId,
         selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),

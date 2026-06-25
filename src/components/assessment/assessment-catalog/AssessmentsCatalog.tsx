@@ -60,7 +60,7 @@ export default function AssessmentsCatalog({
     return catalogAssessments.filter((assessment) => {
       if (
         deliveryFilter !== "ALL" &&
-        assessment.delivery_mode !== deliveryFilter
+        assessment.settings?.mode !== deliveryFilter
       ) {
         return false;
       }
@@ -78,8 +78,6 @@ export default function AssessmentsCatalog({
 
       const haystacks = [
         assessment.name,
-        assessment.title,
-        assessment.question_bank_name,
         assessment.description,
       ].filter(Boolean) as string[];
 

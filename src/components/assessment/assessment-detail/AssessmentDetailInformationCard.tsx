@@ -37,7 +37,7 @@ export default function AssessmentDetailInformationCard({
       })
     : "-";
     
-  const actualStartsAt = assessment.settings?.startsAt || assessment.starts_at;
+  const actualStartsAt = assessment.settings?.startsAt;
   const startsAtDate = actualStartsAt
     ? new Date(actualStartsAt).toLocaleString("en-US", {
         year: "numeric",
@@ -80,7 +80,7 @@ export default function AssessmentDetailInformationCard({
             <div>
               <div className="text-xs font-medium text-slate-500">Name</div>
               <div className="text-sm font-medium text-slate-900">
-                {assessment.name || assessment.title || "Untitled"}
+                {assessment.name || "Untitled"}
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function AssessmentDetailInformationCard({
             <div>
               <div className="text-xs font-medium text-slate-500">Description</div>
               <div className="text-sm font-medium text-slate-900 line-clamp-3">
-                {assessment.description || assessment.subtitle || "No description provided."}
+                {assessment.description || "No description provided."}
               </div>
             </div>
           </div>

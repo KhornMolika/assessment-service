@@ -5,6 +5,7 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/ui/table";
 import type { ResultsRow } from "./results.types";
 import { getGradeTone, getOutcomeBadge } from "./results.utils";
+import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 
 export function ResultsTable({
   rows,
@@ -36,13 +37,13 @@ export function ResultsTable({
       </TableHeader>
       <TableBody>
         {rows.map((result) => (
-          <TableRow key={result.sheet_id} className="hover:bg-muted/30">
+          <TableRow key={result.sheetId} className="hover:bg-muted/30">
             <TableCell>
-              <div className="font-semibold text-primary">{result.participant_display_name}</div>
+              <div className="font-semibold text-primary">{result.participantDisplayName}</div>
             </TableCell>
             <TableCell>
               <div>
-                <div className="font-medium text-primary">{result.assessment_title}</div>
+                <div className="font-medium text-primary">{result.assessmentTitle}</div>
                 <div className="text-sm text-inkd">{result.sessionInfo}</div>
               </div>
             </TableCell>
@@ -67,7 +68,7 @@ export function ResultsTable({
                         style={{ width: `${result.percentage}%` }}
                       />
                     </div>
-                    <span className="text-sm font-semibold text-primary">{result.total_score}</span>
+                    <span className="text-sm font-semibold text-primary">{result.totalScore}</span>
                   </div>
                   <div className="text-xs text-inkd">{result.percentage}%</div>
                 </div>
@@ -97,14 +98,15 @@ export function ResultsTable({
               <span className="text-sm text-inkd">{result.submittedAt}</span>
             </TableCell>
             <TableCell>
-              <div className="flex items-center justify-center">
-                <Link
-                  href={`/results/${result.sheet_id}`}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
-                  title="View details"
-                >
-                  <Eye className="h-5 w-5" />
-                </Link>
+              <div className="flex justify-center">
+                <ActionMenu>
+                  <Link
+                    href={`/results/${result.sheetId}`}
+                    className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                  >
+                    <Eye className="h-4 w-4" /> View Details
+                  </Link>
+                </ActionMenu>
               </div>
             </TableCell>
           </TableRow>

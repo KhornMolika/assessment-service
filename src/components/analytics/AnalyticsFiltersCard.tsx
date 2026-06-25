@@ -44,7 +44,7 @@ export default function AnalyticsFiltersCard({
               <option value="all-assessments">All assessments</option>
               {assessments.map((assessment) => (
                 <option key={assessment.id} value={assessment.id}>
-                  {assessment.title}
+                  {assessment.name || "Untitled"}
                 </option>
               ))}
             </Select>

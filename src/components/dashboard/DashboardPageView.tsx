@@ -73,20 +73,20 @@ function buildOperationalHighlights(
   return [
     {
       id: "active-assessments",
-      title: `${filteredAssessments.filter((assessment) => (assessment.status || assessment.lifecycle) === "PUBLISHED").length} active assessments`,
+      title: `${filteredAssessments.filter((assessment) => assessment.status === "PUBLISHED").length} active assessments`,
       description: "Assessments currently open and receiving participant activity.",
       icon: "activity",
     },
     {
       id: "real-time-assessments",
-      title: `${filteredAssessments.filter((assessment) => (assessment.settings?.mode || assessment.delivery_mode) === "REAL_TIME").length} real-time assessments`,
+      title: `${filteredAssessments.filter((assessment) => assessment.settings?.mode === "REAL_TIME").length} real-time assessments`,
       description: "Live sessions that need host controls, join links, and monitoring.",
       icon: "clock",
     },
     {
       id: "starting-this-week",
       title: `${filteredAssessments.filter((assessment) => {
-        const startsString = assessment.settings?.startsAt || assessment.starts_at;
+        const startsString = assessment.settings?.startsAt;
         if (!startsString) return false;
         const startsAt = new Date(startsString);
         return startsAt >= startOfWeek && startsAt < endOfWeek;
@@ -102,19 +102,19 @@ function buildRecentAssessments(filteredAssessments: AssessmentCatalogItem[]): R
     .slice()
     .sort(
       (left, right) =>
-        new Date(right.updatedAt || right.updated_at).getTime() - new Date(left.updatedAt || left.updated_at).getTime(),
+        new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
     )
     .slice(0, 6)
     .map((assessment) => ({
       id: assessment.id,
-      title: assessment.name || assessment.title || "Untitled",
-      bank: assessment.question_bank_name || "Unknown Bank",
-      mode: (assessment.settings?.mode || assessment.delivery_mode) === "SELF_PACED" ? "Self-paced" : "Real-time",
-      status: mapDashboardAssessmentStatus(assessment.status || assessment.lifecycle),
-      questions: assessment.settings?.numQuestions ?? assessment.question_count ?? 0,
-      participants: assessment.participant_count ?? 0,
-      passRate: assessment.pass_rate || "0%",
-      lastModified: formatRelativeTime(assessment.updatedAt || assessment.updated_at, DASHBOARD_REFERENCE_DATE),
+      title: assessment.name || "Untitled",
+      bank: "Unknown Bank",
+      mode: assessment.settings?.mode === "SELF_PACED" ? "Self-paced" : "Real-time",
+      status: mapDashboardAssessmentStatus(assessment.status),
+      questions: assessment.settings?.numQuestions ?? 0,
+      participants: assessment.stats?.participantCount ?? 0,
+      passRate: assessment.stats?.passRate ? `${assessment.stats.passRate}%` : "0%",
+      lastModified: formatRelativeTime(assessment.updatedAt, DASHBOARD_REFERENCE_DATE),
     }));
 }
 

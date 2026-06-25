@@ -115,17 +115,17 @@ export function AssessmentOverviewCard({
   const items = [
     {
       label: "Starts",
-      value: formatStartDate((assessment.settings?.startsAt || assessment.starts_at) as string),
+      value: formatStartDate((assessment.settings?.startsAt) as string),
       icon: Clock3,
     },
     {
       label: "Questions",
-      value: `${assessment.settings?.numQuestions ?? assessment.question_count ?? 0} items`,
+      value: `${assessment.settings?.numQuestions ?? 0} items`,
       icon: Users,
     },
     {
       label: "Identity",
-      value: getParticipantIdentityLabel(assessment.participant_identity),
+      value: getParticipantIdentityLabel(assessment.settings?.participantIdentity || "EXTERNAL"),
       icon: UserRound,
     },
   ];
@@ -267,16 +267,22 @@ export function QuestionOptionButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition ${
+      className={`group flex w-full items-center gap-4 rounded-2xl border-2 px-5 py-5 text-left transition-all duration-200 ${
         selected
-          ? "border-primary bg-[#D8F3DC] text-primary shadow-sm"
-          : "border-border bg-white text-primary hover:border-primary/40"
+          ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(var(--color-primary),0.12)]"
+          : "border-border bg-white hover:border-primary/30 hover:bg-primary/[0.02] hover:shadow-sm"
       } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
     >
-      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+      <span
+        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors ${
+          selected
+            ? "bg-primary text-white"
+            : "bg-muted text-primary group-hover:bg-primary/10"
+        }`}
+      >
         {option.label}
       </span>
-      <span className="text-sm font-medium leading-6">{option.text}</span>
+      <span className="text-sm font-semibold leading-6 text-primary">{option.text}</span>
     </Button>
   );
 }

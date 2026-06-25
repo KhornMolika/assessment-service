@@ -13,8 +13,8 @@ export async function getBanks(): Promise<QuestionBank[]> {
       description: String(b.description || ""),
       tags: Array.isArray(b.tags) ? b.tags : [],
       visibility: b.visibility || "PRIVATE",
-      question_count: 0,
-      created_at: String(b.createdAt || new Date().toISOString()),
+      questionCount: 0,
+      createdAt: String(b.createdAt || new Date().toISOString()),
     })) as unknown as QuestionBank[];
   } catch (err) {
     console.warn(

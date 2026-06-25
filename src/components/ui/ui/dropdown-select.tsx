@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 
@@ -27,11 +28,47 @@ export function DropdownSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const selectRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = () => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener("resize", updatePosition);
+      window.addEventListener("scroll", updatePosition, true);
+      return () => {
+        window.removeEventListener("resize", updatePosition);
+        window.removeEventListener("scroll", updatePosition, true);
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+      if (
+        selectRef.current && 
+        !selectRef.current.contains(event.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -57,12 +94,20 @@ export function DropdownSelect({
     return options.filter((opt) => opt.label.toLowerCase().includes(query));
   }, [options, searchable, searchQuery]);
 
+  const toggleDropdown = () => {
+    if (!isOpen) {
+      updatePosition();
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <div className={cn("relative w-full", className)} ref={selectRef}>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-[#C8A246] focus:outline-none focus:ring-2 focus:ring-[#C8A246]/50"
+        onClick={toggleDropdown}
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
       >
         <span className="truncate">{selectedOption?.label}</span>
         <ChevronDown
@@ -72,8 +117,16 @@ export function DropdownSelect({
         />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-2 flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150">
+      {mounted && isOpen && createPortal(
+        <div 
+          ref={dropdownRef}
+          style={{ 
+            top: position.top, 
+            left: position.left, 
+            width: position.width 
+          }}
+          className="absolute z-[9999] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150"
+        >
           {searchable && (
             <div className="border-b border-slate-100 p-2">
               <div className="relative">
@@ -104,8 +157,8 @@ export function DropdownSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
-                    value === opt.value ? "bg-slate-50 font-bold text-primary" : "text-slate-600 font-medium"
+                  className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-indigo-600 ${
+                    value === opt.value ? "bg-slate-50 font-bold text-indigo-600" : "text-slate-600 font-medium"
                   }`}
                 >
                   {opt.label}
@@ -113,7 +166,8 @@ export function DropdownSelect({
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

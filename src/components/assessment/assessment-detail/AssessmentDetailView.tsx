@@ -22,9 +22,7 @@ export default function AssessmentDetailView({
           assessment={assessment}
           questions={questions}
           totalQuestions={
-            assessment.settings?.numQuestions ??
-            assessment.question_count ??
-            0
+            assessment.settings?.numQuestions ?? 0
           }
         />
       </div>

@@ -6,25 +6,25 @@ export interface QuestionTopic {
 export interface QuestionTypeMeta {
   id: string;
   name: string;
-  grading_strategy: string;
-  has_options: boolean;
-  supports_ai: boolean;
-  is_manual_only: boolean;
-  default_max_score: number;
+  gradingStrategy: string;
+  hasOptions: boolean;
+  supportsAi: boolean;
+  isManualOnly: boolean;
+  defaultMaxScore: number;
   description: string;
 }
 
 export interface QuestionAnswerOptionDetail {
   id: string;
-  question_id: string;
-  option_text: string;
-  is_correct: boolean;
-  option_order: number;
+  questionId: string;
+  optionText: string;
+  isCorrect: boolean;
+  optionOrder: number;
 }
 
 export interface QuestionAiGradingConfig {
   mode: string;
-  max_score: number;
+  maxScore: number;
   instruction: string;
 }
 
@@ -38,25 +38,25 @@ export interface QuestionPerformanceStats {
 
 export interface QuestionDetailData {
   id: string;
-  bank_id: string | null;
-  type_id: string;
-  question_text: string;
+  bankId: string | null;
+  typeId: string;
+  questionText: string;
   language: "EN" | "KH";
   difficulty: "Easy" | "Medium" | "Hard";
   points: number;
   tags: string[];
   settings: Record<string, boolean | number | string>;
-  correct_answer: Record<string, unknown>;
-  created_at: string;
+  correctAnswers: Record<string, unknown>;
+  createdAt: string;
   bank: {
     id: string;
     name: string;
-    owner_id: string;
+    ownerId: string;
   } | null;
   type: QuestionTypeMeta;
   topics: QuestionTopic[];
-  answer_options: QuestionAnswerOptionDetail[];
-  ai_grading_config: QuestionAiGradingConfig | null;
+  answerOptions: QuestionAnswerOptionDetail[];
+  aiGradingConfig: QuestionAiGradingConfig | null;
   stats: QuestionPerformanceStats;
 }
 

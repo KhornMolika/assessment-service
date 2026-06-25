@@ -26,7 +26,7 @@ export function normalizeQuestionRendererType(type: string) {
     return "multiple";
   }
 
-  if (normalized.includes("true/false") || normalized.includes("boolean")) {
+  if (normalized.includes("true/false") || normalized.includes("true_false") || normalized.includes("boolean")) {
     return "boolean";
   }
 
@@ -72,21 +72,21 @@ export function formatStartDate(date: string) {
 }
 
 export function getParticipantIdentityLabel(
-  identity: AssessmentCatalogItem["participant_identity"],
+  identity: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
 ) {
   if (identity === "ANONYMOUS") {
     return "Anonymous access";
   }
 
-  if (identity === "INTERNAL") {
-    return "Internal participant";
+  if (identity === "AUTHENTICATED") {
+    return "Authenticated participant";
   }
 
   return "External display name";
 }
 
 export function requiresParticipantDisplayName(
-  identity: AssessmentCatalogItem["participant_identity"],
+  identity: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
 ) {
   return identity === "EXTERNAL";
 }
@@ -105,12 +105,94 @@ export function getResultReleaseMode(showResults: string): ResultReleaseMode {
   return "hidden";
 }
 
+function resolveCorrectOptionId(correctAnswers: any, options: { id: string }[]): string {
+  if (!correctAnswers) return options[0]?.id ?? "";
+  
+  // Handle {optionId: "opt_2"} format (SINGLE_CHOICE)
+  if (typeof correctAnswers === "object" && !Array.isArray(correctAnswers) && correctAnswers.optionId) {
+    return correctAnswers.optionId;
+  }
+  
+  // Handle {optionIds: ["opt_1", ...]} format (MULTIPLE_CHOICE)
+  if (typeof correctAnswers === "object" && !Array.isArray(correctAnswers) && Array.isArray(correctAnswers.optionIds)) {
+    return correctAnswers.optionIds[0] ?? options[0]?.id ?? "";
+  }
+
+  // Handle {sequence: [...]} format (ORDERING)
+  if (typeof correctAnswers === "object" && !Array.isArray(correctAnswers) && Array.isArray(correctAnswers.sequence)) {
+    return correctAnswers.sequence[0] ?? options[0]?.id ?? "";
+  }
+  
+  // Handle array format ["opt_1", "opt_2"]
+  if (Array.isArray(correctAnswers) && correctAnswers.length > 0) {
+    return typeof correctAnswers[0] === "string" ? correctAnswers[0] : correctAnswers[0]?.optionId ?? options[0]?.id ?? "";
+  }
+  
+  // Handle direct string format "opt_2"
+  if (typeof correctAnswers === "string") {
+    return correctAnswers;
+  }
+  
+  return options[0]?.id ?? "";
+}
+
 export function buildQuestionRounds(
   questions: AssessmentDetailQuestionItem[],
 ): QuestionRound[] {
   return questions.map((question, index) => {
-    const optionLetters = ["A", "B", "C", "D"];
-    const options = optionLetters.map((letter, optionIndex) => ({
+    const optionLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const rawOptions = question.options;
+
+    // 1. SINGLE_CHOICE, MULTIPLE_CHOICE, ORDERING — options is an array [{id, text}]
+    if (Array.isArray(rawOptions) && rawOptions.length > 0) {
+      const options = rawOptions.map((opt: any, optIndex: number) => ({
+        id: opt.id || opt.optionId || String(optIndex),
+        label: optionLetters[optIndex] || String(optIndex + 1),
+        text: opt.text || opt.optionText || String(opt.value || opt.label || ""),
+      }));
+
+      return {
+        ...question,
+        options,
+        rawOptions,
+        correctOptionId: resolveCorrectOptionId(question.correctAnswers, options),
+      };
+    }
+
+    // 2. MATCHING — options is {leftSide: [{id, text}], rightSide: [{id, text}]}
+    if (rawOptions && typeof rawOptions === "object" && !Array.isArray(rawOptions) && rawOptions.leftSide) {
+      const leftSide = rawOptions.leftSide || [];
+      const rightSide = rawOptions.rightSide || [];
+      const allOptions = [...leftSide, ...rightSide].map((opt: any, optIndex: number) => ({
+        id: opt.id || String(optIndex),
+        label: optionLetters[optIndex] || String(optIndex + 1),
+        text: opt.text || "",
+      }));
+
+      return {
+        ...question,
+        options: allOptions,
+        rawOptions,
+        correctOptionId: "",
+      };
+    }
+
+    // 3. FILL_IN_THE_BLANK — options is {template: "..."}
+    // 4. RATING — options is {min, max, lowLabel, highLabel}
+    // 5. TRUE_FALSE — options is {trueLabel, falseLabel}
+    // 6. SHORT_ANSWER / ESSAY — options is {maxWords, minWords}
+    // These renderers don't use question.options array, so we provide an empty array
+    if (rawOptions && typeof rawOptions === "object" && !Array.isArray(rawOptions)) {
+      return {
+        ...question,
+        options: [],
+        rawOptions,
+        correctOptionId: "",
+      };
+    }
+
+    // Fallback: no options from API — generate mock options
+    const fallbackOptions = optionLetters.slice(0, 4).map((letter, optionIndex) => ({
       id: `${question.id}-option-${letter.toLowerCase()}`,
       label: letter,
       text: `${letter}. Candidate answer ${optionIndex + 1} for question ${index + 1}`,
@@ -118,8 +200,9 @@ export function buildQuestionRounds(
 
     return {
       ...question,
-      options,
-      correctOptionId: options[index % options.length]?.id ?? options[0].id,
+      options: fallbackOptions,
+      rawOptions: null,
+      correctOptionId: fallbackOptions[index % fallbackOptions.length]?.id ?? fallbackOptions[0].id,
     };
   });
 }
@@ -233,8 +316,16 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
   const rendererType = normalizeQuestionRendererType(question.type);
 
   if (rendererType === "ordering") {
+    if (!Array.isArray(value)) return false;
+
+    // Use correctAnswers.sequence from API if available
+    const sequence = question.correctAnswers?.sequence;
+    if (Array.isArray(sequence)) {
+      return value.length === sequence.length && value.every((id, index) => id === sequence[index]);
+    }
+
+    // Fallback: compare against options array order
     return (
-      Array.isArray(value) &&
       value.length === question.options.length &&
       value.every((optionId, index) => optionId === question.options[index]?.id)
     );
@@ -245,13 +336,23 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
       return false;
     }
 
-    const midpoint = Math.ceil(question.options.length / 2);
-    const leftOptions = question.options.slice(0, midpoint);
-    const rightOptions = question.options.slice(midpoint);
+    // Use correctAnswers.pairs from API if available
+    const pairs = question.correctAnswers?.pairs;
+    if (Array.isArray(pairs)) {
+      return pairs.every(
+        (pair: any) => value[pair.leftId] === pair.rightId,
+      );
+    }
 
-    return leftOptions.every(
-      (leftOption, index) => value[leftOption.id] === rightOptions[index]?.id,
-    );
+    // Fallback: use rawOptions leftSide/rightSide
+    const raw = question.rawOptions;
+    if (raw?.leftSide && raw?.rightSide) {
+      return raw.leftSide.every(
+        (left: any, index: number) => value[left.id] === raw.rightSide[index]?.id,
+      );
+    }
+
+    return false;
   }
 
   return typeof value === "string" && value === question.correctOptionId;
@@ -259,13 +360,13 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
 
 export function getAnswerResponseText(question: QuestionRound, value: QuestionRendererValue) {
   if (typeof value === "string") {
-    const selectedOption = question.options.find((option) => option.id === value);
+    const selectedOption = question.options.find((option: any) => option.id === value);
     return selectedOption ? `${selectedOption.label} ${selectedOption.text}` : value;
   }
 
   if (Array.isArray(value)) {
     return value
-      .map((id) => question.options.find((option) => option.id === id)?.text ?? id)
+      .map((id) => question.options.find((option: any) => option.id === id)?.text ?? id)
       .join(", ");
   }
 
@@ -281,14 +382,15 @@ export function getAnswerResponseText(question: QuestionRound, value: QuestionRe
     const rendererType = normalizeQuestionRendererType(question.type);
 
     if (rendererType === "matching") {
-      const midpoint = Math.ceil(question.options.length / 2);
-      const leftOptions = question.options.slice(0, midpoint);
+      const raw = question.rawOptions;
+      const leftOptions = raw?.leftSide || [];
+      const rightOptions = raw?.rightSide || [];
 
       return leftOptions
-        .map((leftOption) => {
+        .map((leftOption: any) => {
           const rightId = value[leftOption.id];
-          const rightOption = question.options.find((option) => option.id === rightId);
-          return `${leftOption.text} -> ${rightOption?.text ?? "No match"}`;
+          const rightOption = rightOptions.find((opt: any) => opt.id === rightId);
+          return `${leftOption.text} → ${rightOption?.text ?? "No match"}`;
         })
         .join(", ");
     }
@@ -304,7 +406,7 @@ export function buildPreviewAnswerValue(question: QuestionRound, index: number):
 
   switch (rendererType) {
     case "multiple":
-      return question.options.slice(0, 2).map((option) => option.id);
+      return question.options.slice(0, 2).map((option: any) => option.id);
     case "boolean":
       return index % 2 === 0;
     case "short":

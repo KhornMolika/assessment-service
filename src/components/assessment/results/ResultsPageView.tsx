@@ -36,7 +36,7 @@ export default function ResultsPageView({
   const allRows = useMemo(() => buildRows(data), [data]);
 
   const assessmentOptions = useMemo(
-    () => ["All Assessments", ...new Set(allRows.map((result) => result.assessment_title))],
+    () => ["All Assessments", ...new Set(allRows.map((result) => result.assessmentTitle))],
     [allRows],
   );
   const filteredResults = useMemo(() => {
@@ -44,10 +44,10 @@ export default function ResultsPageView({
     const working = allRows.filter((result) => {
       const matchesAssessment =
         selectedAssessment === "All Assessments" ||
-        result.assessment_title === selectedAssessment;
+        result.assessmentTitle === selectedAssessment;
       const matchesTopic =
         selectedTopic === ALL_TOPICS_VALUE ||
-        assessmentMatchesTopic(result.assessment_id, selectedTopic, data.assessment_topics);
+        assessmentMatchesTopic(result.assessmentId, selectedTopic, data.assessmentTopics);
       const matchesStatus =
         selectedStatus === "All Statuses" ||
         (selectedStatus === "Pending Review" && result.evaluationStatus === "PENDING_REVIEW") ||
@@ -55,7 +55,7 @@ export default function ResultsPageView({
         (selectedStatus === "Failed" && result.outcomeStatus === "FAILED");
       const matchesSearch =
         normalizedQuery.length === 0 ||
-        result.participant_display_name.toLowerCase().includes(normalizedQuery);
+        result.participantDisplayName.toLowerCase().includes(normalizedQuery);
 
       return matchesAssessment && matchesTopic && matchesStatus && matchesSearch;
     });
@@ -77,7 +77,7 @@ export default function ResultsPageView({
     });
 
     return working;
-  }, [allRows, data.assessment_topics, searchQuery, selectedAssessment, selectedStatus, selectedTopic, sortBy]);
+  }, [allRows, data.assessmentTopics, searchQuery, selectedAssessment, selectedStatus, selectedTopic, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(filteredResults.length / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);

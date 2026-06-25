@@ -39,14 +39,14 @@ export function AssessmentPreviewScreen({
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
   const isSelfPacedPreview = previewMode === "SELF_PACED";
-  const resultMode = getResultReleaseMode(assessment.show_results);
-  const showCorrectAnswers = assessment.is_showed_answers;
-  const allowShareAnswerSheet = assessment.is_allowed_share;
-  const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
-  const totalTimerSeconds = Math.max(0, assessment.time_limit_minutes * 60);
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
+  const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
+  const showCorrectAnswers = assessment.settings?.allowReview ?? false;
+  const allowShareAnswerSheet = false;
+  const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
+  const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
+  const [displayName, setDisplayName] = useState(isSelfPacedPreview ? "Creator Preview" : "");
+  const [email, setEmail] = useState(isSelfPacedPreview ? "preview@example.com" : "");
   const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
     requiresEntry ? "entry" : "quiz",
   );
@@ -67,17 +67,17 @@ export function AssessmentPreviewScreen({
     }, 0);
     const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
     const grade =
-      assessment.grade_scale.find((band) => percent >= band.minPercent)?.grade ??
-      assessment.grade_scale.at(-1)?.grade ??
+      assessment.settings?.gradeLabels?.find((band) => percent >= band.minPercent)?.grade ??
+      assessment.settings?.gradeLabels?.at(-1)?.grade ??
       "N/A";
 
     return {
       earnedPoints,
       totalPoints,
       grade,
-      passed: percent >= assessment.pass_mark,
+      passed: percent >= (assessment.settings?.passMark ?? 0),
     };
-  }, [answers, assessment.grade_scale, assessment.pass_mark, rounds]);
+  }, [answers, assessment.settings?.gradeLabels, assessment.settings?.passMark, rounds]);
 
   useEffect(() => {
     if (step !== "processing") {
@@ -113,7 +113,7 @@ export function AssessmentPreviewScreen({
   return (
     <ScreenShell
       eyebrow={isSelfPacedPreview ? "Self-paced Preview" : "Real-time Preview"}
-      title={assessment.title}
+      title={assessment.name || "Untitled"}
       description={
         isSelfPacedPreview
           ? "Creators can complete the self-paced participant experience as a dry run. Answers are evaluated in the UI, but nothing is saved in preview."
@@ -187,7 +187,7 @@ export function AssessmentPreviewScreen({
                 </p>
                 <p className="mt-2 text-lg font-semibold text-primary">{question.question}</p>
                 <div className="mt-5 grid gap-3">
-                  {question.options.map((option) => (
+                  {question.options.map((option: any) => (
                     <QuestionOptionButton
                       key={option.id}
                       option={option}
@@ -213,7 +213,7 @@ export function AssessmentPreviewScreen({
             <SelfPacedEntry
               heading="Before you begin"
               description="This preview mirrors the participant entry experience. You can answer the full flow, but nothing is saved."
-              timeLimitMinutes={assessment.time_limit_minutes}
+              timeLimitMinutes={assessment.settings?.timeLimit ?? 0}
               requiresDisplayName={requiresDisplayName}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
@@ -221,7 +221,7 @@ export function AssessmentPreviewScreen({
               onEmailChange={setEmail}
               helperTitle="Participant identity"
               helperDescription={
-                assessment.participant_identity === "ANONYMOUS"
+                assessment.settings?.participantIdentity === "ANONYMOUS"
                   ? "Anonymous participants skip the display name form."
                   : "Internal participants can continue without entering a display name."
               }
@@ -259,7 +259,7 @@ export function AssessmentPreviewScreen({
           {step === "confirm" ? (
             <SelfPacedConfirm
               items={confirmationItems}
-              allowGoingBack={assessment.allow_going_back}
+              allowGoingBack={assessment.settings?.allowReview ?? true}
               onBack={() => setStep("quiz")}
               onSubmit={() => setStep("processing")}
               submitLabel="Next preview step"

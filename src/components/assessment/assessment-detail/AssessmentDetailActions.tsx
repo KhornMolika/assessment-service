@@ -80,7 +80,7 @@ export default function AssessmentDetailActions({
         onClose={() => setShowDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Delete Assessment"
-        entityName={assessment.title}
+        entityName={assessment.name || ""}
         description="Are you sure you want to delete this assessment? This will also affect related sessions, reports, and participant access. This action cannot be undone."
         isPending={isPending}
       />

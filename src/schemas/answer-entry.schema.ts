@@ -3,8 +3,8 @@ import { correctAnswerSchema } from "./question-correct-answer.schema";
 
 export const questionSnapshotSchema = z.object({
   id: z.string(),
-  question_text: z.string(),
-  type_id: z.string(),
+  questionText: z.string(),
+  typeId: z.string(),
   points: z.number(),
   options: z
     .array(
@@ -19,15 +19,15 @@ export const questionSnapshotSchema = z.object({
 
 export const answerEntrySchema = z.object ({
   id: z.string(),
-  sheet_id: z.string(),
-  question_id: z.string(),
+  sheetId: z.string(),
+  questionId: z.string(),
 
   response: z.union([z.string(), z.record(z.any(), z.any())]),
-  question_snapshot: questionSnapshotSchema,
+  questionSnapshot: questionSnapshotSchema,
 
-  is_correct: z.boolean().nullable(),
-  score_awarded: z.number().nonnegative(),
-  grading_status: z.enum(["AUTOMATIC", "PENDING", "AI_EVALUATED", "MANUAL_REVISED"]),
-  graded_at: z.string().nullable(),
-  updated_at: z.string(),
+  isCorrect: z.boolean().nullable(),
+  scoreAwarded: z.number().nonnegative(),
+  gradingStatus: z.enum(["AUTOMATIC", "PENDING", "AI_EVALUATED", "MANUAL_REVISED"]),
+  gradedAt: z.string().nullable(),
+  updatedAt: z.string(),
 });

@@ -27,8 +27,8 @@ export interface AnalyticsAssessmentRow {
   questions: number;
   averageScore: number | null;
   passRate: number | null;
-  lifecycle: AssessmentCatalogItem["lifecycle"];
-  deliveryMode: AssessmentCatalogItem["delivery_mode"];
+  lifecycle: AssessmentCatalogItem["status"];
+  deliveryMode: "SELF_PACED" | "REAL_TIME";
 }
 
 export interface AnalyticsSnapshot {

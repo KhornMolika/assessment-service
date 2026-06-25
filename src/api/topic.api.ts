@@ -8,7 +8,7 @@ export async function getTopics(): Promise<Topic[]> {
       id: String(t.id),
       name: String(t.name),
       description: String(t.description || ""),
-      created_at: String(t.createdAt || new Date().toISOString()),
+      createdAt: String(t.createdAt || new Date().toISOString()),
     }));
   } catch (_err) {
     return [];

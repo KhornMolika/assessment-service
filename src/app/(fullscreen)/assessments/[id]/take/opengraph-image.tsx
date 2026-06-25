@@ -64,13 +64,13 @@ export default async function OpenGraphImage({
   const { id } = await params;
   const detail = await getAssessmentDetailPageData(id);
 
-  const title = detail?.assessment.title ?? "Assessment Service";
+  const title = detail?.assessment.name ?? "Assessment Service";
   const subtitle =
-    detail?.assessment.subtitle ?? "Self-paced assessment invitation";
+    detail?.assessment.description ?? "Self-paced assessment invitation";
   const questionCount = detail?.questions.length ?? 0;
-  const timeLimit = detail?.assessment.time_limit_minutes ?? 0;
-  const passMark = detail?.assessment.pass_mark ?? 0;
-  const sourceBank = detail?.assessment.source_bank ?? "General bank";
+  const timeLimit = detail?.assessment.settings?.timeLimit ?? 0;
+  const passMark = detail?.assessment.settings?.passMark ?? 0;
+  const sourceBank = "General bank";
 
   return new ImageResponse(
     (

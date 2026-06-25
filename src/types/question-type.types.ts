@@ -11,6 +11,6 @@ export interface QuestionType {
   has_options: boolean;
   supports_ai: boolean;
   is_manual_only: boolean;
-  default_max_score: number;
+  default_maxScore: number;
   description: string;
 }

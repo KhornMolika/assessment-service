@@ -27,7 +27,7 @@ function AssessmentReportHeader({
               Assessment Results
             </div>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              {data.assessment.title}
+              {data.assessment.name || "Untitled"}
             </h1>
             {data.assessment.description ? (
               <p className="mt-3 max-w-3xl text-sm leading-7 text-inkd sm:text-base">
@@ -38,7 +38,7 @@ function AssessmentReportHeader({
         </div>
 
         <Badge variant="secondary">
-          {data.assessment.delivery_mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
+          {data.assessment.settings?.mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
         </Badge>
       </div>
     </div>
@@ -56,11 +56,11 @@ export default function AssessmentScopedResultsView({
         stats: data.stats,
         assessments: [data.assessment],
         participants: data.participants,
-        answer_sheets: data.answer_sheets,
-        answer_entries: data.answer_entries,
+        answerSheets: data.answerSheets,
+        answerEntries: data.answerEntries,
         questions: data.questions,
         topics: [],
-        assessment_topics: [],
+        assessmentTopics: [],
       }),
     [data],
   );

@@ -47,8 +47,8 @@ export function AssessmentJoinScreen({
       ]),
     [assessment.id],
   );
-  const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
+  const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
   
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -126,7 +126,7 @@ export function AssessmentJoinScreen({
   return (
     <ScreenShell
       eyebrow={isLobbyPhase ? "Real-time Participant Flow" : ""}
-      title={isLobbyPhase ? assessment.title : ""}
+      title={isLobbyPhase ? assessment.name || "Untitled" : ""}
       description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
       aside={null}

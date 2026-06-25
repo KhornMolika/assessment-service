@@ -154,16 +154,16 @@ export default function Pagination({
         <Button
           onClick={() => handlePageChange(1)}
           disabled={currentPage === 1 || isSinglePage}
-          className="hidden h-9 min-w-9 items-center justify-center rounded-xl border border-border transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:h-10 sm:min-w-10 sm:px-0"
-          aria-label="First page" variant="secondary"
+          className="hidden h-9 min-w-9 items-center justify-center rounded-xl border-border text-ink transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:h-10 sm:min-w-10 sm:px-0"
+          aria-label="First page" variant="outline"
         >
           <ChevronsLeft className="h-5 w-5" />
         </Button>
         <Button
           onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1 || isSinglePage}
-          className="flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-2 transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
-          aria-label="Previous page" variant="secondary"
+          className="flex h-9 min-w-9 items-center justify-center rounded-xl border-border px-2 text-ink transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
+          aria-label="Previous page" variant="outline"
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
@@ -172,11 +172,12 @@ export default function Pagination({
           {mobileVisiblePages.map((pageNumber) => (
             <Button
               key={`mobile-${pageNumber}`}
+              variant={currentPage === pageNumber ? "default" : "outline"}
               onClick={() => handlePageChange(pageNumber)}
-              className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-3 text-sm font-semibold transition ${
+              className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-3 text-sm font-semibold transition-all duration-200 ${
                 currentPage === pageNumber
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "border border-border hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm"
+                  ? "bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg"
+                  : "border-border text-ink hover:bg-primary/5 hover:text-primary hover:border-primary/40 hover:shadow-sm"
               }`}
             >
               {pageNumber}
@@ -188,11 +189,12 @@ export default function Pagination({
           {visiblePages.map((pageNumber) => (
             <Button
               key={pageNumber}
+              variant={currentPage === pageNumber ? "default" : "outline"}
               onClick={() => handlePageChange(pageNumber)}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl font-semibold transition ${
+              className={`flex h-10 w-10 items-center justify-center rounded-xl font-semibold transition-all duration-200 ${
                 currentPage === pageNumber
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "border border-border hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm"
+                  ? "bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg"
+                  : "border-border text-ink hover:bg-primary/5 hover:text-primary hover:border-primary/40 hover:shadow-sm"
               }`}
             >
               {pageNumber}
@@ -203,16 +205,16 @@ export default function Pagination({
         <Button
           onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages || isSinglePage}
-          className="flex h-9 min-w-9 items-center justify-center rounded-xl border border-border px-2 transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
-          aria-label="Next page" variant="secondary"
+          className="flex h-9 min-w-9 items-center justify-center rounded-xl border-border px-2 text-ink transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-10 sm:min-w-10 sm:px-0"
+          aria-label="Next page" variant="outline"
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
         <Button
           onClick={() => handlePageChange(totalPages)}
           disabled={currentPage === totalPages || isSinglePage}
-          className="hidden h-9 min-w-9 items-center justify-center rounded-xl border border-border transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:h-10 sm:min-w-10 sm:px-0"
-          aria-label="Last page" variant="secondary"
+          className="hidden h-9 min-w-9 items-center justify-center rounded-xl border-border text-ink transition-all duration-200 hover:border-primary/40 hover:bg-primary/5 hover:text-primary hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:flex sm:h-10 sm:min-w-10 sm:px-0"
+          aria-label="Last page" variant="outline"
         >
           <ChevronsRight className="h-5 w-5" />
         </Button>

@@ -29,8 +29,8 @@ function getAssessmentTopicLabels(
   topicMap: Map<string, Topic>,
 ) {
   return assessmentTopics
-    .filter((mapping) => mapping.assessment_id === assessmentId)
-    .map((mapping) => topicMap.get(mapping.topic_id)?.name)
+    .filter((mapping) => mapping.assessmentId === assessmentId)
+    .map((mapping) => topicMap.get(mapping.topicId)?.name)
     .filter((name): name is string => Boolean(name))
     .sort((left, right) => left.localeCompare(right));
 }
@@ -44,14 +44,14 @@ function buildAssessmentRows(
 
   return assessments.map((assessment) => ({
     id: assessment.id,
-    title: assessment.name || assessment.title || "Untitled",
+    title: assessment.name || "Untitled",
     topicLabels: getAssessmentTopicLabels(assessment.id, assessmentTopics, topicMap),
-    participants: assessment.participant_count ?? 0,
-    questions: assessment.settings?.numQuestions ?? assessment.question_count ?? 0,
-    averageScore: parsePercent(assessment.average_score || "0%"),
-    passRate: parsePercent(assessment.pass_rate || "0%"),
-    lifecycle: assessment.status || assessment.lifecycle || "DRAFT",
-    deliveryMode: assessment.settings?.mode || assessment.delivery_mode || "SELF_PACED",
+    participants: assessment.stats?.participantCount ?? 0,
+    questions: assessment.settings?.numQuestions ?? 0,
+    averageScore: parsePercent((assessment.stats?.averageScore ?? 0) + "%"),
+    passRate: parsePercent((assessment.stats?.passRate ?? 0) + "%"),
+    lifecycle: assessment.status || "DRAFT",
+    deliveryMode: assessment.settings?.mode || "SELF_PACED",
   }));
 }
 
@@ -145,7 +145,7 @@ function buildAnalyticsDerivedData({
     answerSheets
       .filter(
         (sheet) =>
-          sheet.submitted_at != null && assessmentMap.has(sheet.assessment_id),
+          sheet.submittedAt != null && assessmentMap.has(sheet.assessmentId),
       )
       .map((sheet) => sheet.id),
   );
@@ -159,22 +159,22 @@ function buildAnalyticsDerivedData({
   const seenQuestionIds = new Set<string>();
 
   answerEntries.forEach((entry) => {
-    if (!submittedSheetIds.has(entry.sheet_id)) {
+    if (!submittedSheetIds.has(entry.sheetId)) {
       return;
     }
 
-    const assessmentId = entry.question_id.split("-question-")[0];
+    const assessmentId = entry.questionId.split("-question-")[0];
     const assessment = assessmentMap.get(assessmentId);
-    const options = entry.question_snapshot.options;
+    const options = entry.questionSnapshot.options;
 
     if (!assessment) {
       return;
     }
 
-    if (!seenQuestionIds.has(entry.question_id)) {
-      seenQuestionIds.add(entry.question_id);
-      const typeLabel = entry.question_snapshot.type_id.replaceAll("_", " ");
-      const difficultyLabel = getDifficultyLabel(entry.question_snapshot.points);
+    if (!seenQuestionIds.has(entry.questionId)) {
+      seenQuestionIds.add(entry.questionId);
+      const typeLabel = entry.questionSnapshot.typeId.replaceAll("_", " ");
+      const difficultyLabel = getDifficultyLabel(entry.questionSnapshot.points);
 
       typeCounts.set(typeLabel, (typeCounts.get(typeLabel) ?? 0) + 1);
       difficultyCounts.set(difficultyLabel, (difficultyCounts.get(difficultyLabel) ?? 0) + 1);
@@ -184,15 +184,15 @@ function buildAnalyticsDerivedData({
       return;
     }
 
-    if (!grouped.has(entry.question_id)) {
-      const correctIds = getCorrectOptionIds(entry.question_snapshot.correct_answer);
+    if (!grouped.has(entry.questionId)) {
+      const correctIds = getCorrectOptionIds(entry.questionSnapshot.correctAnswers);
 
-      grouped.set(entry.question_id, {
-        id: entry.question_id,
+      grouped.set(entry.questionId, {
+        id: entry.questionId,
         assessmentId: assessment.id,
-        assessmentTitle: assessment.title,
-        questionText: entry.question_snapshot.question_text,
-        questionType: entry.question_snapshot.type_id,
+        assessmentTitle: assessment.name || "Untitled",
+        questionText: entry.questionSnapshot.questionText,
+        questionType: entry.questionSnapshot.typeId,
         responseCount: 0,
         correctResponseCount: 0,
         optionStats: options.map((option) => ({
@@ -204,7 +204,7 @@ function buildAnalyticsDerivedData({
       });
     }
 
-    const question = grouped.get(entry.question_id);
+    const question = grouped.get(entry.questionId);
 
     if (!question) {
       return;
@@ -216,7 +216,7 @@ function buildAnalyticsDerivedData({
     }
 
     question.responseCount += 1;
-    if (entry.is_correct === true) {
+    if (entry.isCorrect === true) {
       question.correctResponseCount += 1;
     }
 

@@ -66,8 +66,7 @@ function filterAssessments({
   return assessments.filter((assessment) => {
     if (
       deliveryFilter !== "ALL" &&
-      assessment.settings?.mode !== deliveryFilter && 
-      assessment.delivery_mode !== deliveryFilter // fallback for old data
+      assessment.settings?.mode !== deliveryFilter
     ) {
       return false;
     }
@@ -89,10 +88,8 @@ function filterAssessments({
     }
 
     const haystacks = [
-      assessment.title,
-      assessment.question_bank_name,
-      assessment.description ?? "",
       assessment.name ?? "",
+      assessment.description ?? "",
     ];
 
     return haystacks.some((value) =>

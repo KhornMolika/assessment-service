@@ -27,7 +27,7 @@ export function bankMatchesTopic(
 ) {
   return bankTopics.some(
     (mapping) =>
-      mapping.question_bank_id === bankId && mapping.topic_id === topicId,
+      mapping.questionBankId === bankId && mapping.topicId === topicId,
   );
 }
 
@@ -37,7 +37,7 @@ export function questionMatchesTopic(
   questionTopics: QuestionTopicMap[],
 ) {
   return questionTopics.some(
-    (mapping) => mapping.question_id === questionId && mapping.topic_id === topicId,
+    (mapping) => mapping.questionId === questionId && mapping.topicId === topicId,
   );
 }
 
@@ -48,6 +48,6 @@ export function assessmentMatchesTopic(
 ) {
   return assessmentTopics.some(
     (mapping) =>
-      mapping.assessment_id === assessmentId && mapping.topic_id === topicId,
+      mapping.assessmentId === assessmentId && mapping.topicId === topicId,
   );
 }

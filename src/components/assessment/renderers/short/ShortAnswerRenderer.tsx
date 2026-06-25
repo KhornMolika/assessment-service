@@ -1,14 +1,30 @@
 import type { QuestionRendererProps } from "../types";
 import { Textarea } from "@/src/components/ui/ui/textarea";
 
-export function ShortAnswerRenderer({ value, disabled, onChange }: QuestionRendererProps) {
+export function ShortAnswerRenderer({ question, value, disabled, onChange }: QuestionRendererProps) {
+  const raw = question.rawOptions;
+  const minWords = raw?.minWords;
+  const maxWords = raw?.maxWords;
+  const currentText = typeof value === "string" ? value : "";
+  const wordCount = currentText.trim() ? currentText.trim().split(/\s+/).length : 0;
+
   return (
-    <Textarea
-      value={typeof value === "string" ? value : ""}
-      disabled={disabled}
-      onChange={(event) => onChange(event.target.value)}
-      placeholder="Write a short response"
-      className="min-h-32 w-full rounded-[28px] border border-border bg-white px-4 py-4 text-sm text-primary outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
-    />
+    <div className="space-y-2">
+      <Textarea
+        value={currentText}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Write a short response…"
+        className="min-h-32 w-full rounded-2xl border-2 border-border bg-white px-5 py-4 text-sm leading-7 text-primary outline-none transition focus:border-primary disabled:cursor-not-allowed disabled:opacity-60"
+      />
+      {(minWords || maxWords) ? (
+        <div className="flex items-center justify-between px-1 text-xs text-inkd">
+          <span>{wordCount} word{wordCount !== 1 ? "s" : ""}</span>
+          <span>
+            {minWords && maxWords ? `${minWords}–${maxWords} words` : maxWords ? `Max ${maxWords} words` : `Min ${minWords} words`}
+          </span>
+        </div>
+      ) : null}
+    </div>
   );
 }

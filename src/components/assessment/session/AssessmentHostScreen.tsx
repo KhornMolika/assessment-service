@@ -202,7 +202,7 @@ export function AssessmentHostScreen({
   return (
     <ScreenShell
       eyebrow={isLobbyPhase ? "Real-time Host Flow" : ""}
-      title={isLobbyPhase ? assessment.title : ""}
+      title={isLobbyPhase ? assessment.name || "Untitled" : ""}
       description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
       aside={null}
@@ -229,7 +229,7 @@ export function AssessmentHostScreen({
               <div className="mt-5 rt-floating flex items-center justify-center rounded-[28px] bg-white p-4">
                 <QRCodeSVG
                   value={participantUrl}
-                  title={`Join ${assessment.title}`}
+                  title={`Join ${assessment.name}`}
                   size={180}
                   bgColor="#FFFFFF"
                   fgColor="#16352A"
@@ -459,7 +459,7 @@ export function AssessmentHostScreen({
 
             <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
               <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
-                  {currentRound.options.map((option, index) => {
+                  {currentRound.options.map((option: any, index: number) => {
                     const distribution =
                       responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
                     const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);

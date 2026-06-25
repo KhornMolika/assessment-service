@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Copy, Edit, Eye, Trash2, X, Globe, Archive } from "lucide-react";
+import { Copy, Edit, Eye, Trash2, X, Globe, Archive, Play } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import type {
   AssessmentDeliveryMode,
@@ -20,15 +20,17 @@ import {
 import { Button } from "@/src/components/ui/ui/button";
 
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
+import ActionConfirmModal from "@/src/components/ui/modals/ActionConfirmModal";
 import { useTransition } from "react";
 import { toast } from "sonner";
+import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self Paced" : "Real Time";
 }
 
-function formatStartDate(date: string) {
+function formatDate(date: string | null | undefined) {
   if (!date) return "-";
   const parsed = new Date(date);
   if (isNaN(parsed.getTime())) return "-";
@@ -67,6 +69,8 @@ export default function AssessmentsTable({
 }) {
   const [assessmentToDelete, setAssessmentToDelete] =
     useState<AssessmentCatalogItem | null>(null);
+  const [assessmentToPublish, setAssessmentToPublish] = useState<AssessmentCatalogItem | null>(null);
+  const [assessmentToArchive, setAssessmentToArchive] = useState<AssessmentCatalogItem | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleDeleteConfirm = () => {
@@ -92,6 +96,7 @@ export default function AssessmentsTable({
         const res = await publishAssessmentAction(id);
         if (res.success) {
           toast.success("Assessment published successfully");
+          setAssessmentToPublish(null);
         } else {
           toast.error(res.error || "Failed to publish assessment");
         }
@@ -107,6 +112,7 @@ export default function AssessmentsTable({
         const res = await archiveAssessmentAction(id);
         if (res.success) {
           toast.success("Assessment archived successfully");
+          setAssessmentToArchive(null);
         } else {
           toast.error(res.error || "Failed to archive assessment");
         }
@@ -124,6 +130,8 @@ export default function AssessmentsTable({
             <TableHead>Assessment</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Mode</TableHead>
+            <TableHead>Time Limit</TableHead>
+            <TableHead>Identity</TableHead>
             <TableHead>Selection</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-center">Questions</TableHead>
@@ -132,13 +140,16 @@ export default function AssessmentsTable({
         </TableHeader>
         <TableBody>
           {assessments.map((assessment) => {
-            const actualTitle = assessment.name || assessment.title;
-            const actualMode = assessment.settings?.mode || assessment.delivery_mode;
-            const actualStatus = assessment.status || assessment.lifecycle;
-            const actualStartsAt = assessment.settings?.startsAt || assessment.starts_at;
-            const actualNumQuestions = assessment.settings?.numQuestions ?? assessment.question_count ?? 0;
+            const actualTitle = assessment.name;
+            const actualMode = assessment.settings?.mode;
+            const actualStatus = assessment.status;
+            const actualStartsAt = assessment.settings?.startsAt || assessment.createdAt;
+            const actualEndsAt = assessment.settings?.endsAt;
+            const actualNumQuestions = assessment.settings?.numQuestions ?? 0;
             const actualType = assessment.type || "QUIZ";
             const actualSelection = assessment.settings?.questionSelection || "MANUAL";
+            const actualTimeLimit = assessment.settings?.timeLimit;
+            const actualIdentity = assessment.settings?.participantIdentity || "ANONYMOUS";
             
             return (
               <TableRow key={assessment.id} className="hover:bg-muted/30">
@@ -151,7 +162,8 @@ export default function AssessmentsTable({
                       {actualTitle}
                     </Link>
                     <p className="mt-1 text-xs text-inkd">
-                      Starts {formatStartDate(actualStartsAt as string)}
+                      Starts {formatDate(actualStartsAt as string)}
+                      {actualEndsAt ? ` - Ends ${formatDate(actualEndsAt as string)}` : ""}
                     </p>
                   </div>
                 </TableCell>
@@ -160,6 +172,12 @@ export default function AssessmentsTable({
                 </TableCell>
                 <TableCell className="text-inkd">
                   {formatDeliveryMode(actualMode as AssessmentDeliveryMode)}
+                </TableCell>
+                <TableCell className="text-inkd">
+                  {actualTimeLimit ? `${actualTimeLimit} min` : "-"}
+                </TableCell>
+                <TableCell className="text-inkd capitalize">
+                  {actualIdentity.toLowerCase()}
                 </TableCell>
                 <TableCell className="text-inkd capitalize">
                   {actualSelection.toLowerCase()}
@@ -173,60 +191,69 @@ export default function AssessmentsTable({
                   {actualNumQuestions}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  <ActionMenu>
                     {actualStatus === "DRAFT" && (
                       <button
                         type="button"
-                        title="Publish assessment"
-                        onClick={() => handlePublish(assessment.id)}
+                        onClick={() => setAssessmentToPublish(assessment)}
                         disabled={isPending}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-violet-500 transition hover:bg-violet-50 hover:text-violet-600 disabled:opacity-50"
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-violet-600 transition hover:bg-violet-50 disabled:opacity-50"
                       >
-                        <Globe className="h-5 w-5" />
+                        <Globe className="h-4 w-4" /> Publish
                       </button>
                     )}
                     {actualStatus === "PUBLISHED" && (
                       <button
                         type="button"
-                        title="Archive assessment"
-                        onClick={() => handleArchive(assessment.id)}
+                        onClick={() => setAssessmentToArchive(assessment)}
                         disabled={isPending}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-amber-500 transition hover:bg-amber-50 hover:text-amber-600 disabled:opacity-50"
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-amber-600 transition hover:bg-amber-50 disabled:opacity-50"
                       >
-                        <Archive className="h-5 w-5" />
+                        <Archive className="h-4 w-4" /> Archive
                       </button>
+                    )}
+                    {actualStatus === "PUBLISHED" && actualMode === "SELF_PACED" && (
+                      <Link
+                        href={`/assessments/${assessment.id}/self-paced-preview`}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                      >
+                        <Play className="h-4 w-4" /> Preview
+                      </Link>
+                    )}
+                    {actualStatus === "PUBLISHED" && actualMode === "REAL_TIME" && (
+                      <Link
+                        href={`/assessments/${assessment.id}/real-time-preview`}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                      >
+                        <Play className="h-4 w-4" /> Preview
+                      </Link>
                     )}
                     <Link
                       href={`/assessments/${assessment.id}`}
-                      title="View assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                     >
-                      <Eye className="h-5 w-5" />
+                      <Eye className="h-4 w-4" /> View
                     </Link>
                     <Link
                       href={`/assessments/${assessment.id}/edit`}
-                      title="Edit assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
                     >
-                      <Edit className="h-5 w-5" />
+                      <Edit className="h-4 w-4" /> Edit
                     </Link>
                     <Link
                       href={`/assessments/${assessment.id}/duplicate`}
-                      title="Duplicate assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
                     >
-                      <Copy className="h-5 w-5" />
+                      <Copy className="h-4 w-4" /> Duplicate
                     </Link>
-                    <Button
+                    <button
                       type="button"
-                      title="Delete assessment"
-                      size="icon"
                       onClick={() => setAssessmentToDelete(assessment)}
-                      className="h-8 w-8 rounded-md text-red-500 transition hover:bg-red-50 hover:text-red-600" variant="ghost"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
                     >
-                      <Trash2 className="h-5 w-5" />
-                    </Button>
-                  </div>
+                      <Trash2 className="h-4 w-4" /> Delete
+                    </button>
+                  </ActionMenu>
                 </TableCell>
               </TableRow>
             );
@@ -239,9 +266,31 @@ export default function AssessmentsTable({
         onClose={() => setAssessmentToDelete(null)}
         onConfirm={handleDeleteConfirm}
         title="Delete Assessment"
-        entityName={assessmentToDelete?.name || assessmentToDelete?.title || ""}
+        entityName={assessmentToDelete?.name || ""}
         description="Are you sure you want to delete this assessment? This action removes it from the catalog and cannot be undone."
         isPending={isPending}
+      />
+      
+      <ActionConfirmModal
+        open={!!assessmentToPublish}
+        onClose={() => setAssessmentToPublish(null)}
+        onConfirm={() => assessmentToPublish && handlePublish(assessmentToPublish.id)}
+        title="Publish Assessment"
+        description={<>Are you sure you want to publish <strong>{assessmentToPublish?.name}</strong>? This will make it available to participants.</>}
+        confirmText="Publish"
+        isPending={isPending}
+        variant="default"
+      />
+
+      <ActionConfirmModal
+        open={!!assessmentToArchive}
+        onClose={() => setAssessmentToArchive(null)}
+        onConfirm={() => assessmentToArchive && handleArchive(assessmentToArchive.id)}
+        title="Archive Assessment"
+        description={<>Are you sure you want to archive <strong>{assessmentToArchive?.name}</strong>? It will no longer be active.</>}
+        confirmText="Archive"
+        isPending={isPending}
+        variant="destructive"
       />
     </>
   );

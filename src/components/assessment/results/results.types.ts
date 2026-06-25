@@ -1,12 +1,12 @@
 export type ResultsRow = {
-  sheet_id: string;
-  assessment_id: string;
-  participant_id: string;
-  participant_display_name: string;
-  assessment_title: string;
-  answer_sheet_status: "IN_PROGRESS" | "SUBMITTED" | "REVIEW_PENDING" | "REVIEWED";
-  total_score: number | null;
-  max_score: number;
+  sheetId: string;
+  assessmentId: string;
+  participantId: string;
+  participantDisplayName: string;
+  assessmentTitle: string;
+  answerSheetStatus: "IN_PROGRESS" | "SUBMITTED" | "REVIEW_PENDING" | "REVIEWED";
+  totalScore: number | null;
+  maxScore: number;
   percentage: number | null;
   grade: string | null;
   outcomeStatus: "PASSED" | "FAILED" | "PENDING_REVIEW";
