@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { toast } from "sonner";
-import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive } from "lucide-react";
+import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive, Play, MonitorPlay, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
@@ -88,7 +88,34 @@ export default function AssessmentDetailHeader({
           backHref="/assessments"
           title="Assessment Details"
           actions={
-            <div className="relative" ref={menuRef}>
+            <div className="flex items-center gap-3">
+              {assessment.delivery_mode === "SELF_PACED" ? (
+                <Link
+                  href={`/assessments/${assessment.id}/take`}
+                  className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
+                >
+                  <Play className="h-4 w-4" />
+                  Take Assessment
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href={`/assessments/${assessment.id}/host`}
+                    className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
+                  >
+                    <MonitorPlay className="h-4 w-4" />
+                    Host Session
+                  </Link>
+                  <Link
+                    href={`/assessments/${assessment.id}/join`}
+                    className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
+                  >
+                    <Users className="h-4 w-4" />
+                    Join Session
+                  </Link>
+                </>
+              )}
+              <div className="relative" ref={menuRef}>
               <Button
                 onClick={() => setShowMenu(!showMenu)}
                 variant="ghost"
@@ -145,6 +172,7 @@ export default function AssessmentDetailHeader({
                   </button>
                 </div>
               )}
+            </div>
             </div>
           }
         />
