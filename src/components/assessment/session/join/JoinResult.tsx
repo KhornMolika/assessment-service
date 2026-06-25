@@ -12,7 +12,6 @@ export function JoinResult({
   totalScore,
   speedBonus,
   isLastQuestion,
-  onAdvance,
 }: {
   currentRound: QuestionRound;
   answerValue: QuestionRendererValue;
@@ -21,7 +20,6 @@ export function JoinResult({
   totalScore: number;
   speedBonus: number;
   isLastQuestion: boolean;
-  onAdvance: () => void;
 }) {
   return (
     <div className="mx-auto flex h-full w-full max-w-4xl flex-1 items-start py-2 sm:py-4 lg:items-center">
@@ -70,14 +68,6 @@ export function JoinResult({
               The next question appears only after the host moves the session forward.
             </p>
           </div>
-          <Button
-            type="button"
-            onClick={onAdvance}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#277DA1_0%,#4CC9F0_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]" variant="ghost"
-          >
-            {isLastQuestion ? "See final standing" : "Preview host advance"}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
         </div>
       </div>
     </div>

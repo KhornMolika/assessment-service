@@ -21,6 +21,13 @@ import {
   isCorrectAnswerResponse,
   requiresParticipantDisplayName,
 } from "./session.utils";
+import {
+  startSelfPacedSession,
+  saveAnswerIncremental,
+  submitSelfPacedSession,
+  getSessionResult,
+} from "@/src/lib/actions/runtime.actions";
+import { toast } from "sonner";
 
 export function AssessmentTakeScreen({
   assessment,
@@ -37,12 +44,16 @@ export function AssessmentTakeScreen({
   const allowShareAnswerSheet = assessment.is_allowed_share;
   const totalTimerSeconds = Math.max(0, assessment.time_limit_minutes * 60);
   const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
   const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
     requiresEntry ? "entry" : "quiz",
   );
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, QuestionRendererValue>>({});
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverResult, setServerResult] = useState<any>(null);
 
   const currentQuestion = rounds[questionIndex];
   const confirmationItems = rounds.map((question) => {
@@ -73,17 +84,7 @@ export function AssessmentTakeScreen({
     };
   }, [answers, assessment.grade_scale, assessment.pass_mark, rounds]);
 
-  useEffect(() => {
-    if (step !== "processing") {
-      return;
-    }
 
-    const timeoutId = window.setTimeout(() => {
-      setStep("end");
-    }, 1600);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [step]);
 
   useEffect(() => {
     if (step !== "quiz" || totalTimerSeconds <= 0 || remainingSeconds <= 0) {
@@ -104,13 +105,68 @@ export function AssessmentTakeScreen({
     }));
   }
 
-  function handleAdvanceFromQuiz() {
+  async function handleAdvanceFromQuiz() {
+    // Save answer incrementally
+    if (sessionId && answers[currentQuestion.id] !== undefined) {
+      await saveAnswerIncremental(sessionId, currentQuestion.id, answers[currentQuestion.id]);
+    }
+
     if (questionIndex === rounds.length - 1) {
       setStep("confirm");
       return;
     }
 
     setQuestionIndex((currentIndex) => currentIndex + 1);
+  }
+
+  async function handleStartQuiz() {
+    setIsSubmitting(true);
+    let participantData = undefined;
+    if (requiresDisplayName && displayName.trim()) {
+      participantData = { name: displayName, email: email || "" };
+    }
+    
+    const res = await startSelfPacedSession(assessment.id, participantData);
+    setIsSubmitting(false);
+
+    if (res.success && res.data?.sessionId) {
+      setSessionId(res.data.sessionId);
+      setStep("quiz");
+    } else {
+      toast.error(res.message || "Failed to start session");
+    }
+  }
+
+  async function handleSubmitSession() {
+    if (!sessionId) return;
+    
+    // Save the last answer if changed and not saved yet (just to be safe)
+    if (answers[currentQuestion.id] !== undefined) {
+      await saveAnswerIncremental(sessionId, currentQuestion.id, answers[currentQuestion.id]);
+    }
+
+    setStep("processing");
+    const startTime = Date.now();
+    const submitRes = await submitSelfPacedSession(sessionId, assessment.id);
+    if (!submitRes.success) {
+      toast.error(submitRes.message || "Failed to submit session");
+      setStep("confirm");
+      return;
+    }
+
+    // Get the final result
+    const resultRes = await getSessionResult(sessionId);
+    if (resultRes.success) {
+      setServerResult(resultRes.data);
+    }
+
+    // Ensure a minimum of 1.5s delay for the processing animation UX
+    const elapsed = Date.now() - startTime;
+    if (elapsed < 1500) {
+      await new Promise(resolve => setTimeout(resolve, 1500 - elapsed));
+    }
+
+    setStep("end");
   }
 
   return (
@@ -132,10 +188,12 @@ export function AssessmentTakeScreen({
             requiresDisplayName={requiresDisplayName}
             displayName={displayName}
             onDisplayNameChange={setDisplayName}
+            email={email}
+            onEmailChange={setEmail}
             helperTitle="Participant identity"
             helperDescription="Internal participants can continue without entering a display name."
-            ctaLabel="Start quiz"
-            onContinue={() => setStep("quiz")}
+            ctaLabel={isSubmitting ? "Starting..." : "Start quiz"}
+            onContinue={handleStartQuiz}
           />
         ) : null}
 
@@ -161,7 +219,7 @@ export function AssessmentTakeScreen({
             items={confirmationItems}
             allowGoingBack={assessment.allow_going_back}
             onBack={() => setStep("quiz")}
-            onSubmit={() => setStep("processing")}
+            onSubmit={handleSubmitSession}
             submitLabel="Submit answers"
           />
         ) : null}

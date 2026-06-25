@@ -46,6 +46,7 @@ export function AssessmentPreviewScreen({
   const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
   const totalTimerSeconds = Math.max(0, assessment.time_limit_minutes * 60);
   const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
   const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
     requiresEntry ? "entry" : "quiz",
   );
@@ -216,6 +217,8 @@ export function AssessmentPreviewScreen({
               requiresDisplayName={requiresDisplayName}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
+              email={email}
+              onEmailChange={setEmail}
               helperTitle="Participant identity"
               helperDescription={
                 assessment.participant_identity === "ANONYMOUS"

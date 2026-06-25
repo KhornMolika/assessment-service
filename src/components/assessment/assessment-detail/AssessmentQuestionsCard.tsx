@@ -170,6 +170,23 @@ export default function AssessmentQuestionsCard({
       topicId={(assessment as any).topic?.id || (assessment as any).topicId || ""}
       existingQuestionIds={questions.map(q => q.question_id || q.id)}
     />
+
+    <DeleteConfirmModal
+      open={deleteModalOpen}
+      onClose={() => {
+        setDeleteModalOpen(false);
+        setQuestionToDelete(null);
+      }}
+      onConfirm={() => {
+        if (questionToDelete) {
+          handleRemove(questionToDelete.id);
+        }
+      }}
+      title="Remove question"
+      description={`from this assessment?`}
+      entityName={questionToDelete?.name || ""}
+      isPending={isPending}
+    />
     </>
   );
 }
