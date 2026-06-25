@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Copy, Edit, Eye, Trash2, X } from "lucide-react";
+import { Copy, Edit, Eye, Trash2, X, Globe, Archive } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import type {
   AssessmentDeliveryMode,
@@ -173,8 +173,9 @@ export default function AssessmentsTable({
                       <button 
                         onClick={() => handlePublish(assessment.id)}
                         disabled={isPending}
-                        className="text-[10px] uppercase font-semibold tracking-wider text-indigo-600 hover:text-indigo-800 hover:underline disabled:opacity-50 transition-colors"
+                        className="mt-0.5 flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-50"
                       >
+                        <Globe className="h-3 w-3" />
                         Publish
                       </button>
                     )}
@@ -182,8 +183,9 @@ export default function AssessmentsTable({
                       <button 
                         onClick={() => handleArchive(assessment.id)}
                         disabled={isPending}
-                        className="text-[10px] uppercase font-semibold tracking-wider text-amber-600 hover:text-amber-800 hover:underline disabled:opacity-50 transition-colors"
+                        className="mt-0.5 flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-600 transition-colors hover:bg-amber-100 disabled:opacity-50"
                       >
+                        <Archive className="h-3 w-3" />
                         Archive
                       </button>
                     )}
