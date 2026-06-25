@@ -643,7 +643,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         name: assessment.name || "",
         type: ["QUIZ", "EXAM", "SURVEY", "PRACTICE"].includes(assessment.type?.toUpperCase() || "") ? assessment.type.toUpperCase() : "QUIZ",
         description: assessment.description || "",
-        ownerTopicId: assessment.topicId || "",
+        ownerTopicId: assessment.topic?.id || assessment.topicId || "",
         status: ["DRAFT", "PUBLISHED", "ARCHIVED"].includes(assessment.status?.toUpperCase() || "") ? assessment.status.toUpperCase() : "DRAFT",
         participantIdentity: (["ANONYMOUS", "AUTHENTICATED", "EXTERNAL"].includes(settings.participantIdentity?.toUpperCase() || "") ? settings.participantIdentity?.toUpperCase() : "EXTERNAL") as "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
         sessionMode: (settings.mode || assessment.delivery_mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
