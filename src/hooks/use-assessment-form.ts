@@ -253,7 +253,7 @@ export function useAssessmentForm({
     
     const submitData = {
       ...formData,
-      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : formData.ownerTopicId
+      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : (formData.ownerTopicId || activeTopic?.id)
     };
 
     if (submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
@@ -298,7 +298,7 @@ export function useAssessmentForm({
     
     const submitData = {
       ...formData,
-      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : formData.ownerTopicId
+      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : (formData.ownerTopicId || activeTopic?.id)
     };
 
     if (submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
