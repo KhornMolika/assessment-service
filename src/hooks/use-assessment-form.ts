@@ -277,7 +277,7 @@ export function useAssessmentForm({
       if (mode === "edit" && assessmentId) {
         res = await updateAssessmentAction(assessmentId, submitData);
       } else {
-        res = await createAssessmentAction(submitData.ownerTopicId, submitData);
+        res = await createAssessmentAction(submitData.ownerTopicId || "", submitData);
       }
       
       if (!res.success) {
@@ -322,7 +322,7 @@ export function useAssessmentForm({
       
       // If creating new or duplicating and publishing immediately
       if (mode !== "edit" || !currentAssessmentId) {
-        const createRes = await createAssessmentAction(submitData.ownerTopicId, submitData);
+        const createRes = await createAssessmentAction(submitData.ownerTopicId || "", submitData);
         if (!createRes.success || !createRes.assessment) {
           toast.error(createRes.error || "Failed to create assessment for publishing");
           return;

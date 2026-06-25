@@ -54,18 +54,16 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
 
     assessments = rawData.map((a: any) => ({
       id: a.id,
-      owner_id: "admin", // Backend doesn't return owner_id currently
+      owner_id: "admin",
       title: a.name,
       description: a.description,
       status: a.status,
       participant_identity: a.settings?.participantIdentity || "EXTERNAL",
       created_at: a.createdAt,
       updated_at: a.updatedAt,
-      question_bank_name: "General Bank", // We don't have this in assessment root
       delivery_mode: a.settings?.mode || "SELF_PACED",
       lifecycle: a.status === "PUBLISHED" ? "ACTIVE" : a.status,
       question_count: a.settings?.numQuestions || 0,
-      participant_count: 0, // Could fetch from report, but catalog doesn't include it yet
       pass_rate: "0%",
       average_score: "0",
       starts_at: a.settings?.startsAt || a.createdAt,
@@ -157,6 +155,8 @@ export async function getAssessmentDetailPageData(
 
     const record: AssessmentDetailRecord = {
       id: assessment?.id,
+      topicId: assessment?.topic?.id || assessment?.topicId,
+      topic: assessment?.topic,
       owner_id: "admin",
       title: assessment?.name,
       description: assessment?.description,
@@ -232,7 +232,8 @@ export async function getAssessmentDetailPageData(
       (q: any) => {
         const questionData = q.question && typeof q.question === "object" ? q.question : q;
         return {
-          id: questionData.id || q.id,
+          id: q.id,
+          question_id: q.questionId || questionData.id,
           question: questionData.questionText || questionData.text || (typeof q.question === "string" ? q.question : "Untitled Question"),
           type: questionData.type || questionData.questionType || "UNKNOWN",
           points: questionData.points || q.points || 5,
