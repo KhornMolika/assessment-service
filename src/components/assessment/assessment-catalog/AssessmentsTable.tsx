@@ -165,31 +165,9 @@ export default function AssessmentsTable({
                   {actualSelection.toLowerCase()}
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-col items-start gap-1">
-                    <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
-                      {formatLifecycle(actualStatus as AssessmentLifecycle)}
-                    </Badge>
-                    {actualStatus === "DRAFT" && (
-                      <button 
-                        onClick={() => handlePublish(assessment.id)}
-                        disabled={isPending}
-                        className="mt-0.5 flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-indigo-600 transition-colors hover:bg-indigo-100 disabled:opacity-50"
-                      >
-                        <Globe className="h-3 w-3" />
-                        Publish
-                      </button>
-                    )}
-                    {actualStatus === "PUBLISHED" && (
-                      <button 
-                        onClick={() => handleArchive(assessment.id)}
-                        disabled={isPending}
-                        className="mt-0.5 flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-amber-600 transition-colors hover:bg-amber-100 disabled:opacity-50"
-                      >
-                        <Archive className="h-3 w-3" />
-                        Archive
-                      </button>
-                    )}
-                  </div>
+                  <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
+                    {formatLifecycle(actualStatus as AssessmentLifecycle)}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-center font-medium text-primary">
                   {actualNumQuestions}
@@ -217,6 +195,28 @@ export default function AssessmentsTable({
                     >
                       <Copy className="h-5 w-5" />
                     </Link>
+                    {actualStatus === "DRAFT" && (
+                      <button
+                        type="button"
+                        title="Publish assessment"
+                        onClick={() => handlePublish(assessment.id)}
+                        disabled={isPending}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-violet-500 transition hover:bg-violet-50 hover:text-violet-600 disabled:opacity-50"
+                      >
+                        <Globe className="h-5 w-5" />
+                      </button>
+                    )}
+                    {actualStatus === "PUBLISHED" && (
+                      <button
+                        type="button"
+                        title="Archive assessment"
+                        onClick={() => handleArchive(assessment.id)}
+                        disabled={isPending}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-amber-500 transition hover:bg-amber-50 hover:text-amber-600 disabled:opacity-50"
+                      >
+                        <Archive className="h-5 w-5" />
+                      </button>
+                    )}
                     <Button
                       type="button"
                       title="Delete assessment"
