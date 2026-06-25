@@ -8,6 +8,7 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { Button } from "@/src/components/ui/ui/button";
 import AddAssessmentQuestionsModal from "@/src/components/ui/modals/AddAssessmentQuestionsModal";
+import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { removeQuestionFromAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { toast } from "sonner";
 
@@ -41,6 +42,8 @@ export default function AssessmentQuestionsCard({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<{ id: string, name: string } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
   
@@ -65,6 +68,8 @@ export default function AssessmentQuestionsCard({
       const res = await removeQuestionFromAssessmentAction(assessment.id, assessmentQuestionId);
       if (res?.success) {
         toast.success("Question removed");
+        setDeleteModalOpen(false);
+        setQuestionToDelete(null);
       } else {
         toast.error(res?.message || "Failed to remove question");
       }
@@ -140,7 +145,10 @@ export default function AssessmentQuestionsCard({
                 variant="ghost"
                 size="icon"
                 className="text-slate-400 hover:text-red-600 hover:bg-red-50"
-                onClick={() => handleRemove(question.id)}
+                onClick={() => {
+                  setQuestionToDelete({ id: question.id, name: "this question" });
+                  setDeleteModalOpen(true);
+                }}
                 disabled={isPending && removingId === question.id}
               >
                 {isPending && removingId === question.id ? (
