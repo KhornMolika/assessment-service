@@ -123,8 +123,11 @@ export async function getAssessmentDetailPageData(
   id: string,
 ): Promise<AssessmentDetailPageData | null> {
   try {
-    const [assessmentRes, reportRes, questionsRes] = await Promise.all([
+    const [assessmentRes, settingsRes, reportRes, questionsRes] = await Promise.all([
       apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
+      apiClient
+        .get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`)
+        .catch(() => null),
       apiClient
         .get<{
           data: {
@@ -139,7 +142,9 @@ export async function getAssessmentDetailPageData(
         .catch(() => null),
     ]);
 
-    const assessment = (assessmentRes as any).data || (assessmentRes as any);
+    const assessmentBase = (assessmentRes as any).data || (assessmentRes as any);
+    const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
+    const assessment = { ...assessmentBase, settings: { ...assessmentBase.settings, ...settings } };
     const report = reportRes?.data || {
       assessment: { completed: 0, pending: 0, passRate: 0, averageScore: 0 },
       participants: [],
@@ -156,6 +161,11 @@ export async function getAssessmentDetailPageData(
       title: assessment?.name,
       description: assessment?.description,
       status: assessment?.status,
+      type: assessment?.type || "QUIZ",
+      name: assessment?.name,
+      createdAt: assessment?.createdAt,
+      updatedAt: assessment?.updatedAt,
+      settings: assessment?.settings,
       participant_identity:
         assessment?.settings?.participantIdentity || "EXTERNAL",
       created_at: assessment?.createdAt,
@@ -631,13 +641,13 @@ export async function getEditAssessmentPageData(id: string): Promise<{
       assessmentId: id,
       initialFormData: {
         name: assessment.name || "",
-        type: assessment.type || "QUIZ",
+        type: ["QUIZ", "EXAM", "SURVEY", "PRACTICE"].includes(assessment.type?.toUpperCase() || "") ? assessment.type.toUpperCase() : "QUIZ",
         description: assessment.description || "",
-        ownerTopicId: assessment.topicId || "",
-        status: assessment.status || "DRAFT",
-        participantIdentity: settings.participantIdentity || "EXTERNAL",
-        sessionMode: settings.mode || "SELF_PACED",
-        questionSelection: settings.questionSelection || "MANUAL",
+        ownerTopicId: assessment.topic?.id || assessment.topicId || "",
+        status: ["DRAFT", "PUBLISHED", "ARCHIVED"].includes(assessment.status?.toUpperCase() || "") ? assessment.status.toUpperCase() : "DRAFT",
+        participantIdentity: (["ANONYMOUS", "AUTHENTICATED", "EXTERNAL"].includes(settings.participantIdentity?.toUpperCase() || "") ? settings.participantIdentity?.toUpperCase() : "EXTERNAL") as "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
+        sessionMode: (settings.mode || assessment.delivery_mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
+        questionSelection: settings.questionSelection?.toUpperCase() === "DYNAMIC" ? "DYNAMIC" : "MANUAL",
         selectedBankId,
         selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
         totalQuestions: settings.numQuestions || assignedQs.length || 0,
@@ -649,17 +659,17 @@ export async function getEditAssessmentPageData(id: string): Promise<{
               }),
             )
           : [],
-        enableTimeLimit: !!settings.timeLimit,
-        timeLimitMinutes: settings.timeLimit
-          ? Math.round(settings.timeLimit / 60)
+        enableTimeLimit: !!settings.timeLimit && !isNaN(Number(settings.timeLimit)) && Number(settings.timeLimit) > 0,
+        timeLimitMinutes: settings.timeLimit && !isNaN(Number(settings.timeLimit)) && Number(settings.timeLimit) > 0
+          ? Math.min(Math.max(Math.round(Number(settings.timeLimit) / 60), 1), 1440)
           : 60,
-        startsAt: settings.startsAt
+        startsAt: settings.startsAt && !isNaN(new Date(settings.startsAt).getTime())
           ? new Date(settings.startsAt).toISOString().slice(0, 16)
           : "",
-        endsAt: settings.endsAt
+        endsAt: settings.endsAt && !isNaN(new Date(settings.endsAt).getTime()) && (!settings.startsAt || new Date(settings.endsAt).getTime() >= new Date(settings.startsAt).getTime())
           ? new Date(settings.endsAt).toISOString().slice(0, 16)
           : "",
-        passMark: settings.passMark || 70,
+        passMark: Number(settings.passMark) || 70,
         shuffleQuestions: !!settings.isShuffle,
         gradeLabels: [
           { grade: "A", minPercent: 90 },
@@ -669,7 +679,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           { grade: "E", minPercent: 50 },
           { grade: "F", minPercent: 0 },
         ],
-        showResults: settings.showResults || "IMMEDIATELY",
+        showResults: (["IMMEDIATELY", "MANUAL", "NEVER"].includes(settings.showResults?.toUpperCase() || "") ? settings.showResults?.toUpperCase() : "IMMEDIATELY") as "IMMEDIATELY" | "MANUAL" | "NEVER",
       },
     };
   } catch (err) {

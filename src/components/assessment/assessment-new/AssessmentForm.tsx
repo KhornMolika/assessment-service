@@ -14,6 +14,7 @@ import { Button } from "@/src/components/ui/ui/button";
 import { Modal } from "@/src/components/ui/ui/modal";
 import Link from "next/link";
 import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
+import { toast } from "sonner";
 
 export default function AssessmentForm({
   banks,
@@ -22,6 +23,7 @@ export default function AssessmentForm({
   mode = "create",
   assessmentId,
   initialFormData,
+  fetchError,
 }: {
   banks: QuestionBank[];
   questions: Question[];
@@ -29,13 +31,13 @@ export default function AssessmentForm({
   mode?: "create" | "edit" | "duplicate";
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
+  fetchError?: string;
 }) {
   const {
     currentStep,
     questionSearch,
     setQuestionSearch,
     formData,
-    validationErrors,
     isPending,
     canContinue,
     handleChange,
@@ -53,6 +55,12 @@ export default function AssessmentForm({
   } = useAssessmentForm({ mode, assessmentId, initialFormData });
 
   const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | "CONTAINS_INVALID_QUESTIONS" | null>(null);
+
+  React.useEffect(() => {
+    if (fetchError) {
+      toast.error(fetchError);
+    }
+  }, [fetchError]);
 
   const invalidQuestions = formData.sessionMode === "REAL_TIME" 
     ? questions.filter(q => formData.selectedQuestionIds.includes(q.id) && (q.type === "ESSAY" || q.type === "SHORT_ANSWER"))
@@ -153,7 +161,7 @@ export default function AssessmentForm({
           </div>
 
           <div className="px-3 py-3 sm:px-4 sm:py-4 relative z-10">
-            {mode !== "edit" && !activeTopic && (
+            {!activeTopic && !formData.ownerTopicId && (
               <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 rounded-r-md">
                 <div className="flex">
                   <div className="shrink-0">
@@ -163,30 +171,20 @@ export default function AssessmentForm({
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-yellow-700">
-                      You must select a global Topic from the topbar before creating a new assessment.
+                      Owner topic is required. You must select a global Topic from the topbar before managing assessments.
                     </p>
                   </div>
                 </div>
               </div>
             )}
             
-            <form id={formId} onSubmit={handleSubmit} className="min-w-0">
-              <fieldset disabled={isPending || (mode !== "edit" && !activeTopic)}>
-              {validationErrors.length > 0 ? (
-                <div className="mb-4">
-                  <StateMessage
-                    tone="error"
-                    title="Please fix the assessment form"
-                    description={
-                      <div className="space-y-1">
-                        {validationErrors.map((message) => (
-                          <div key={message}>{message}</div>
-                        ))}
-                      </div>
-                    }
-                  />
-                </div>
-              ) : null}
+            <form id={formId} onSubmit={handleSubmit} className="min-w-0" onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') {
+                e.preventDefault();
+              }
+            }}>
+              <fieldset disabled={isPending || (!activeTopic && !formData.ownerTopicId)}>
+
 
               {currentStep === 1 ? (
                 <AssessmentBasicInfoStep
@@ -249,9 +247,9 @@ export default function AssessmentForm({
                   </Button>
                 ) : (
                   <Button
-                    type="submit"
-                    form={formId}
-                    disabled={isPending}
+                    type="button"
+                    onClick={(e) => handleSubmit(e as any)}
+                    disabled={isPending || !canContinue}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
                     {isPending ? "Saving..." : (mode === "edit" ? "Save Changes" : "Save Assessment")}

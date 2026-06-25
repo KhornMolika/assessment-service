@@ -129,7 +129,7 @@ export default function AssessmentSettingsStep({
           </div>
 
           <div className="space-y-2 pt-4 border-t border-slate-100">
-            <Label htmlFor="participantIdentity" className="text-sm font-bold text-slate-800">
+            <Label className="text-sm font-bold text-slate-800">
               Participant Identity
             </Label>
             <DropdownSelect
@@ -239,7 +239,7 @@ export default function AssessmentSettingsStep({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="showResults" className="text-sm font-bold text-slate-800">Show results</Label>
+              <Label className="text-sm font-bold text-slate-800">Show results</Label>
               <DropdownSelect
                 value={formData.showResults}
                 options={[

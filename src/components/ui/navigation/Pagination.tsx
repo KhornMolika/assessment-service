@@ -108,7 +108,7 @@ export default function Pagination({
       if (pathname && searchParams) {
         const href = buildHref({ pathname, searchParams, updates, defaultPageSize });
         startTransition(() => {
-          router.push(href, { scroll: false });
+          router.refresh();          router.push(href, { scroll: false });
         });
       }
     },

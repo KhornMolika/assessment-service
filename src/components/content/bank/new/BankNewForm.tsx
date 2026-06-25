@@ -73,7 +73,7 @@ export default function BankNewForm() {
           visibility: formData.visibility,
         });
         toast.success("Question bank created successfully");
-        router.push("/banks");
+        router.refresh();        router.push("/banks");
       } catch (err: any) {
         toast.error("Failed to create bank", {
           description: err.message || "An unexpected error occurred",

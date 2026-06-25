@@ -63,7 +63,7 @@ export default function QuestionNewForm() {
         const payload = mapToApiPayload(formData);
         await createQuestion(activeTopic.id, payload as any);
         toast.success("Question created successfully");
-        router.push("/questions");
+        router.refresh();        router.push("/questions");
       } catch (err: any) {
         const errorMsg = err.message || "Failed to create question";
         toast.error("Validation failed", {

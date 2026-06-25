@@ -62,7 +62,7 @@ export default function AssessmentDetailActions({
         if (res.success) {
           toast.success("Assessment deleted successfully");
           setShowDeleteModal(false);
-          router.push("/assessments");
+          router.refresh();          router.push("/assessments");
         } else {
           toast.error(res.error || "Failed to delete assessment");
         }

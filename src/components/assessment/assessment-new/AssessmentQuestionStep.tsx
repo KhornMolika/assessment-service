@@ -151,11 +151,11 @@ export default function AssessmentQuestionStep({
         {formData.questionSelection === "MANUAL" ? (
           <div className="grid gap-4 lg:grid-cols-4">
             <div className="space-y-2 lg:col-span-1">
-              <Label htmlFor="selectedBankId" className="text-sm font-bold text-slate-800">Question bank</Label>
+              <Label className="text-sm font-bold text-slate-800">Question bank</Label>
               <DropdownSelect
                 value={formData.selectedBankId || ""}
                 options={[
-                  { value: "", label: "All banks" },
+                  { value: "", label: "Topic Questions" },
                   ...topicBanks.map((bank) => ({
                     value: bank.id,
                     label: `${bank.name} (${bank.questionCount || 0} questions)`,
@@ -214,11 +214,11 @@ export default function AssessmentQuestionStep({
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="selectedBankId" className="text-sm font-bold text-slate-800">Question bank</Label>
+              <Label className="text-sm font-bold text-slate-800">Question bank</Label>
               <DropdownSelect
                 value={formData.selectedBankId || ""}
                 options={[
-                  { value: "", label: "All banks" },
+                  { value: "", label: "Topic Questions" },
                   ...topicBanks.map((bank) => ({
                     value: bank.id,
                     label: `${bank.name} (${bank.questionCount || 0} questions)`,

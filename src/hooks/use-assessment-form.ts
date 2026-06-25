@@ -81,12 +81,10 @@ export function useAssessmentForm({
   const [formData, setFormData] = useState<NewAssessmentFormData>(
     initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || "" },
   );
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setCurrentStep(1);
-    setValidationErrors([]);
     if (mode === "create" && pathname === "/assessments/new") {
       setFormData({ ...defaultFormData, ownerTopicId: activeTopic?.id || "" });
       setQuestionSearch("");
@@ -160,7 +158,6 @@ export function useAssessmentForm({
         questionSelection: field === "questionSelection" ? (value as any) : nextQuestionSelection,
       };
     });
-    setValidationErrors([]);
   };
 
   const handleNext = () => {
@@ -170,12 +167,10 @@ export function useAssessmentForm({
 
     if (!canContinue) {
       const messages = getStepValidationMessages(currentStep);
-      setValidationErrors(messages);
       messages.forEach((msg) => toast.error(msg));
       return;
     }
 
-    setValidationErrors([]);
     setCurrentStep((currentStep + 1) as 1 | 2 | 3);
   };
 
@@ -184,7 +179,6 @@ export function useAssessmentForm({
       return;
     }
 
-    setValidationErrors([]);
     setCurrentStep((currentStep - 1) as 1 | 2 | 3);
   };
 
@@ -246,16 +240,24 @@ export function useAssessmentForm({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (mode !== "edit" && !activeTopic) return;
+    
+    // Prevent accidental auto-saving when pressing Enter on steps 1 and 2
+    if (currentStep < 3) {
+      return;
+    }
+
+    if (!activeTopic && !formData.ownerTopicId) {
+      toast.error("Owner topic is required.");
+      return;
+    }
     
     const submitData = {
       ...formData,
-      ownerTopicId: activeTopic?.id || formData.ownerTopicId
+      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : (formData.ownerTopicId || activeTopic?.id)
     };
 
     if (submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
       toast.error("Select at least one question for manual question selection.");
-      setValidationErrors(["Select at least one question for manual question selection."]);
       return;
     }
     
@@ -265,12 +267,10 @@ export function useAssessmentForm({
       const errorMessages = Array.from(
         new Set(validationResult.error.issues.map((issue) => issue.message)),
       );
-      setValidationErrors(errorMessages);
       errorMessages.forEach((msg) => toast.error(msg));
       return;
     }
 
-    setValidationErrors([]);
     
     startTransition(async () => {
       let res;
@@ -281,26 +281,28 @@ export function useAssessmentForm({
       }
       
       if (!res.success) {
-        setValidationErrors([res.error || "Failed to save assessment"]);
         toast.error(res.error || "Failed to save assessment");
       } else {
         toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
+        router.refresh();
         router.push(destination);
       }
     });
   };
 
   const handlePublish = () => {
-    if (mode !== "edit" && !activeTopic) return;
+    if (!activeTopic && !formData.ownerTopicId) {
+      toast.error("Owner topic is required.");
+      return;
+    }
     
     const submitData = {
       ...formData,
-      ownerTopicId: activeTopic?.id || formData.ownerTopicId
+      ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : (formData.ownerTopicId || activeTopic?.id)
     };
 
     if (submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
       toast.error("Select at least one question for manual question selection.");
-      setValidationErrors(["Select at least one question for manual question selection."]);
       return;
     }
     
@@ -310,12 +312,10 @@ export function useAssessmentForm({
       const errorMessages = Array.from(
         new Set(validationResult.error.issues.map((issue) => issue.message)),
       );
-      setValidationErrors(errorMessages);
       errorMessages.forEach((msg) => toast.error(msg));
       return;
     }
 
-    setValidationErrors([]);
     
     startTransition(async () => {
       let currentAssessmentId = assessmentId;
@@ -324,7 +324,7 @@ export function useAssessmentForm({
       if (mode !== "edit" || !currentAssessmentId) {
         const createRes = await createAssessmentAction(submitData.ownerTopicId, submitData);
         if (!createRes.success || !createRes.assessment) {
-          setValidationErrors([createRes.error || "Failed to create assessment for publishing"]);
+          toast.error(createRes.error || "Failed to create assessment for publishing");
           return;
         }
         currentAssessmentId = (createRes.assessment as any).id;
@@ -332,7 +332,7 @@ export function useAssessmentForm({
         // If editing existing, save draft first
         const updateRes = await updateAssessmentAction(currentAssessmentId, submitData);
         if (!updateRes.success) {
-          setValidationErrors([updateRes.error || "Failed to save assessment before publishing"]);
+          toast.error(updateRes.error || "Failed to save assessment before publishing");
           return;
         }
       }
@@ -341,10 +341,10 @@ export function useAssessmentForm({
       if (!currentAssessmentId) return;
       const publishRes = await publishAssessmentAction(currentAssessmentId);
       if (!publishRes.success) {
-        setValidationErrors([publishRes.error || "Failed to publish assessment"]);
         toast.error(publishRes.error || "Failed to publish assessment");
       } else {
         toast.success("Assessment published successfully!");
+        router.refresh();
         router.push(destination);
       }
     });
@@ -355,7 +355,6 @@ export function useAssessmentForm({
     questionSearch,
     setQuestionSearch,
     formData,
-    validationErrors,
     isPending,
     canContinue,
     handleChange,
