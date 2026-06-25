@@ -3,13 +3,11 @@
 import { useState, useEffect, useMemo, useTransition } from "react";
 import { Modal } from "@/src/components/ui/ui/modal";
 import { Button } from "@/src/components/ui/ui/button";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Check } from "lucide-react";
 import { fetchTopicQuestions } from "@/src/actions/question-actions";
 import { addQuestionsToAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { toast } from "sonner";
-import { Label } from "@/src/components/ui/ui/label";
 import { Input } from "@/src/components/ui/ui/input";
-import { Badge } from "@/src/components/ui/ui/badge";
 import type { Question } from "@/src/types/api";
 
 function getTypeVariant(type: string) {
@@ -106,88 +104,84 @@ export default function AddAssessmentQuestionsModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      <div className="flex flex-col h-[70vh]">
-        <div className="mb-4 flex-shrink-0">
-          <h3 className="text-2xl font-bold font-serif text-primary mb-2">Add Questions</h3>
-          <p className="text-sm text-inkd mb-4">
-            Select questions from the assessment's topic to append to this assessment.
-          </p>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search questions..."
-              className="pl-9 bg-slate-50 border-slate-200"
-            />
-          </div>
+    <Modal open={open} onClose={onClose} className="max-w-4xl flex flex-col max-h-[85vh]">
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <div>
+          <h2 className="text-xl font-bold text-primary">Add Questions</h2>
+          <p className="text-sm text-inkd mt-1">Select questions from the assessment's topic to append to this assessment.</p>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto border rounded-xl border-slate-200 p-2 space-y-2 bg-slate-50/50">
-          {loading ? (
-            <div className="flex items-center justify-center h-full text-slate-400">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Loading questions...
-            </div>
-          ) : filteredQuestions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-6">
-              <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
-                <Search className="h-6 w-6 text-slate-400" />
-              </div>
-              <p className="text-sm font-medium text-slate-900">No questions available</p>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                All questions from this topic have been added or none match your search.
-              </p>
-            </div>
-          ) : (
-            filteredQuestions.map((q) => (
-              <div
-                key={q.id}
-                className="flex items-start gap-4 p-4 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => handleToggle(q.id)}
-              >
-                <div className="pt-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    id={`q-${q.id}`}
-                    checked={selectedIds.has(q.id)}
-                    onChange={() => handleToggle(q.id)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <Label
-                    htmlFor={`q-${q.id}`}
-                    className="text-sm font-medium text-slate-900 leading-snug cursor-pointer block mb-2"
+      <div className="mt-4 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-inkd" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search questions by text..."
+            className="pl-9 w-full rounded-lg border-border focus:ring-pm"
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 flex-1 overflow-y-auto pr-2 min-h-75">
+        {loading ? (
+          <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-inkd" />
+          </div>
+        ) : filteredQuestions.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center text-center text-inkd pt-12">
+            <p>No questions found.</p>
+            {questions.length === 0 && <p className="text-sm mt-1">All available topic questions are already added.</p>}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredQuestions.map((q) => {
+              const isSelected = selectedIds.has(q.id);
+              return (
+                <div
+                  key={q.id}
+                  onClick={() => handleToggle(q.id)}
+                  className={`flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition ${
+                    isSelected
+                      ? "border-emerald-500 bg-emerald-50"
+                      : "border-border hover:bg-slate-50"
+                  }`}
+                >
+                  <div
+                    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                      isSelected
+                        ? "border-emerald-500 bg-emerald-500 text-white"
+                        : "border-slate-300 bg-white"
+                    }`}
                   >
-                    {q.questionText || (q as any).text || "Untitled Question"}
-                  </Label>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={getTypeVariant(q.type || "UNKNOWN")}>
-                      {(q.type || "UNKNOWN").replace(/_/g, " ")}
-                    </Badge>
-                    <span className="text-xs font-medium text-slate-500">{q.difficulty || "MEDIUM"}</span>
-                    <span className="text-xs font-medium text-slate-500">{q.points || 1} pts</span>
+                    {isSelected && <Check className="h-3 w-3" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-primary line-clamp-2 leading-snug">
+                      {q.questionText || (q as any).text || "Untitled Question"}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-slate-500">
+                      <span className="rounded bg-white border px-2 py-0.5">{(q.type || "UNKNOWN").replace(/_/g, " ")}</span>
+                      <span className="rounded bg-white border px-2 py-0.5 capitalize">{q.difficulty || "MEDIUM"}</span>
+                      <span className="rounded bg-white border px-2 py-0.5">{q.points || 1} pts</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
-        <div className="mt-6 flex justify-end gap-3 flex-shrink-0">
-          <Button variant="outline" onClick={onClose} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAdd}
-            disabled={selectedIds.size === 0 || isPending}
-            className="min-w-[120px]"
-          >
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : `Add ${selectedIds.size} Questions`}
-          </Button>
-        </div>
+      <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+        <Button variant="ghost" onClick={onClose} disabled={isPending}>
+          Cancel
+        </Button>
+        <Button onClick={handleAdd} disabled={selectedIds.size === 0 || isPending} className="bg-pm hover:bg-pm/90 text-white min-w-[120px]">
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Add {selectedIds.size} Question{selectedIds.size !== 1 && "s"}
+        </Button>
       </div>
     </Modal>
   );

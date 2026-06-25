@@ -232,7 +232,8 @@ export async function getAssessmentDetailPageData(
       (q: any) => {
         const questionData = q.question && typeof q.question === "object" ? q.question : q;
         return {
-          id: questionData.id || q.id,
+          id: q.id,
+          question_id: q.questionId || questionData.id,
           question: questionData.questionText || questionData.text || (typeof q.question === "string" ? q.question : "Untitled Question"),
           type: questionData.type || questionData.questionType || "UNKNOWN",
           points: questionData.points || q.points || 5,
