@@ -7,7 +7,6 @@ import { Search, Loader2 } from "lucide-react";
 import { fetchTopicQuestions } from "@/src/actions/question-actions";
 import { addQuestionsToAssessmentAction } from "@/src/lib/actions/assessment.actions";
 import { toast } from "sonner";
-import { Checkbox } from "@/src/components/ui/ui/checkbox";
 import { Label } from "@/src/components/ui/ui/label";
 import { Input } from "@/src/components/ui/ui/input";
 import { Badge } from "@/src/components/ui/ui/badge";
@@ -77,7 +76,7 @@ export default function AddAssessmentQuestionsModal({
   const filteredQuestions = useMemo(() => {
     if (!search.trim()) return availableQuestions;
     return availableQuestions.filter((q) => {
-      const qText = q.questionText || q.text || "";
+      const qText = q.questionText || (q as any).text || "";
       return qText.toLowerCase().includes(search.trim().toLowerCase());
     });
   }, [availableQuestions, search]);
@@ -107,7 +106,7 @@ export default function AddAssessmentQuestionsModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} size="4xl">
+    <Modal open={open} onClose={onClose}>
       <div className="flex flex-col h-[70vh]">
         <div className="mb-4 flex-shrink-0">
           <h3 className="text-2xl font-bold font-serif text-primary mb-2">Add Questions</h3>
@@ -149,10 +148,12 @@ export default function AddAssessmentQuestionsModal({
                 onClick={() => handleToggle(q.id)}
               >
                 <div className="pt-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
+                  <input
+                    type="checkbox"
                     id={`q-${q.id}`}
                     checked={selectedIds.has(q.id)}
-                    onCheckedChange={() => handleToggle(q.id)}
+                    onChange={() => handleToggle(q.id)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -160,7 +161,7 @@ export default function AddAssessmentQuestionsModal({
                     htmlFor={`q-${q.id}`}
                     className="text-sm font-medium text-slate-900 leading-snug cursor-pointer block mb-2"
                   >
-                    {q.questionText || q.text || "Untitled Question"}
+                    {q.questionText || (q as any).text || "Untitled Question"}
                   </Label>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={getTypeVariant(q.type || "UNKNOWN")}>

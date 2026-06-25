@@ -83,7 +83,7 @@ export default function AssessmentQuestionsCard({
         </span>
       }
       description="A preview of questions assigned to this assessment."
-      actions={
+      headerAction={
         isDraft ? (
           <Button
             variant="outline"
@@ -159,8 +159,8 @@ export default function AssessmentQuestionsCard({
       open={modalOpen}
       onClose={() => setModalOpen(false)}
       assessmentId={assessment.id}
-      topicId={assessment.ownerTopicId || assessment.topic?.id}
-      existingQuestionIds={questions.map(q => q.question_id || q.id)} // Wait, q.id is assessmentQuestionId. Where is question_id?
+      topicId={(assessment as any).topic?.id || (assessment as any).topicId || ""}
+      existingQuestionIds={questions.map(q => q.question_id || q.id)}
     />
     </>
   );
