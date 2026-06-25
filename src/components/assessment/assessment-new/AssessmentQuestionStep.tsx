@@ -155,7 +155,7 @@ export default function AssessmentQuestionStep({
               <DropdownSelect
                 value={formData.selectedBankId || ""}
                 options={[
-                  { value: "", label: "All banks" },
+                  { value: "", label: "Topic Questions" },
                   ...topicBanks.map((bank) => ({
                     value: bank.id,
                     label: `${bank.name} (${bank.questionCount || 0} questions)`,
@@ -218,7 +218,7 @@ export default function AssessmentQuestionStep({
               <DropdownSelect
                 value={formData.selectedBankId || ""}
                 options={[
-                  { value: "", label: "All banks" },
+                  { value: "", label: "Topic Questions" },
                   ...topicBanks.map((bank) => ({
                     value: bank.id,
                     label: `${bank.name} (${bank.questionCount || 0} questions)`,
