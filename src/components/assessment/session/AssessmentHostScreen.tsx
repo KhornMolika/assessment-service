@@ -36,6 +36,10 @@ import {
   resolveLeaderboardRound,
 } from "./session.utils";
 import { Button } from "@/src/components/ui/ui/button";
+import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
+import { RoomRole } from "@/src/types/runtime.types";
+import { startRealtimeSessionHost } from "@/src/lib/actions/runtime.actions";
+import { toast } from "sonner";
 
 export function AssessmentHostScreen({
   assessment,
@@ -47,25 +51,52 @@ export function AssessmentHostScreen({
   embedded?: boolean;
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
-  const participants = useMemo(() => buildParticipantRoster(), []);
-  const initialLeaderboard = useMemo(() => buildLeaderboard(), []);
   const [copied, setCopied] = useState(false);
   const [phase, setPhase] = useState<HostPhase>("lobby");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(15);
-  const [responseCount, setResponseCount] = useState(0);
   const [origin, setOrigin] = useState("");
-  const [leaderboard, setLeaderboard] = useState(initialLeaderboard);
   const previousTimerRef = useRef(timerSeconds);
   const previousPhaseRef = useRef<HostPhase>(phase);
   const { soundEnabled, setSoundEnabled, prime, playTone } = useRealtimeAudio();
+
+  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers } = useRealtimeSession();
+
+  const participants = useMemo(() => buildParticipantRoster(), []);
+  const initialLeaderboard = useMemo(() => buildLeaderboard(), []);
+
+  const activeParticipants = roomState.participants.length > 0 ? roomState.participants : participants; // Fallback to mock if empty
+  const [mockResponseCount, setMockResponseCount] = useState(0);
+  const responseCount = roomState.questionResults ? activeParticipants.length : mockResponseCount;
+  
+  const leaderboard = roomState.leaderboard || initialLeaderboard;
+
+  useEffect(() => {
+    // Start session as host on mount
+    async function initHost() {
+      const res = await startRealtimeSessionHost(assessment.id);
+      if (res.success) {
+        joinRoom(assessment.id, RoomRole.HOST);
+      } else {
+        toast.error("Failed to initialize host session on backend");
+      }
+    }
+    initHost();
+  }, [assessment.id, joinRoom]);
 
   const currentRound = rounds[questionIndex];
   const participantPath = `/assessments/${assessment.id}/join`;
   const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
   const responseDistribution = useMemo(
-    () => buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId),
-    [currentRound, responseCount],
+    () => {
+      // If we have actual results from backend, map them
+      if (roomState.questionResults) {
+        // Map backend results to distribution, for now fallback to mock
+        return buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId);
+      }
+      return buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId);
+    },
+    [currentRound, responseCount, roomState.questionResults],
   );
   const isLobbyPhase = phase === "lobby";
 
@@ -88,17 +119,18 @@ export function AssessmentHostScreen({
 
     const timeoutId = window.setTimeout(() => {
       if (timerSeconds <= 1) {
-        setResponseCount(participants.length);
+        setMockResponseCount(activeParticipants.length);
         setPhase("correct");
+        emitRevealAnswers();
         return;
       }
 
       setTimerSeconds((seconds) => seconds - 1);
-      setResponseCount((count) => Math.min(participants.length, count + 1));
+      setMockResponseCount((count) => Math.min(activeParticipants.length, count + 1));
     }, 1000);
 
     return () => window.clearTimeout(timeoutId);
-  }, [participants.length, phase, timerSeconds]);
+  }, [activeParticipants.length, phase, timerSeconds, emitRevealAnswers]);
 
   useEffect(() => {
     if (previousPhaseRef.current !== phase) {
@@ -129,21 +161,21 @@ export function AssessmentHostScreen({
 
   function startSession() {
     prime();
-    setLeaderboard(initialLeaderboard);
     setQuestionIndex(0);
     setTimerSeconds(15);
-    setResponseCount(0);
+    setMockResponseCount(0);
     setPhase("reveal");
+    emitStartQuestion(rounds[0].id);
   }
 
   function skipToCorrectAnswer() {
     setTimerSeconds(0);
-    setResponseCount(participants.length);
+    setMockResponseCount(activeParticipants.length);
     setPhase("correct");
+    emitRevealAnswers();
   }
 
   function showLeaderboard() {
-    setLeaderboard((currentLeaderboard) => resolveLeaderboardRound(currentLeaderboard, questionIndex));
     setPhase("leaderboard");
   }
 
@@ -153,10 +185,12 @@ export function AssessmentHostScreen({
       return;
     }
 
-    setQuestionIndex((index) => index + 1);
+    const nextIndex = questionIndex + 1;
+    setQuestionIndex(nextIndex);
     setTimerSeconds(15);
-    setResponseCount(0);
+    setMockResponseCount(0);
     setPhase("reveal");
+    emitStartQuestion(rounds[nextIndex].id);
   }
 
   async function handleCopyLink() {
@@ -504,7 +538,7 @@ export function AssessmentHostScreen({
                 </div>
 
                 <div className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr">
-                  {leaderboard.slice(0, 5).map((entry, index) => {
+                  {leaderboard.slice(0, 5).map((entry: any, index: number) => {
                         const gapToLead = Math.max(0, leaderboard[0]?.score - entry.score);
                         const rankDelta = entry.previousRank - entry.rank;
 
@@ -577,7 +611,7 @@ export function AssessmentHostScreen({
             <div className="mt-8 grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_18rem]">
               <div className="rounded-[32px] border border-white/10 bg-white/6 p-5 backdrop-blur-sm lg:flex lg:min-h-0 lg:flex-col lg:justify-end">
                 <div className="grid items-end gap-4 md:grid-cols-3">
-                  {leaderboard.slice(0, 3).map((entry, index) => {
+                  {leaderboard.slice(0, 3).map((entry: any, index: number) => {
                     const place = index + 1;
                     const orderClassName =
                       place === 1 ? "md:order-2" : place === 2 ? "md:order-1" : "md:order-3";
