@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Copy, Edit, Eye, Trash2, X } from "lucide-react";
+import { Copy, Edit, Eye, Trash2, X, Globe, Archive } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import type {
   AssessmentDeliveryMode,
@@ -22,7 +22,7 @@ import { Button } from "@/src/components/ui/ui/button";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { deleteAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self Paced" : "Real Time";
@@ -79,6 +79,36 @@ export default function AssessmentsTable({
           setAssessmentToDelete(null);
         } else {
           toast.error(res.error || "Failed to delete assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
+  const handlePublish = (id: string) => {
+    startTransition(async () => {
+      try {
+        const res = await publishAssessmentAction(id);
+        if (res.success) {
+          toast.success("Assessment published successfully");
+        } else {
+          toast.error(res.error || "Failed to publish assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
+  const handleArchive = (id: string) => {
+    startTransition(async () => {
+      try {
+        const res = await archiveAssessmentAction(id);
+        if (res.success) {
+          toast.success("Assessment archived successfully");
+        } else {
+          toast.error(res.error || "Failed to archive assessment");
         }
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
@@ -144,6 +174,28 @@ export default function AssessmentsTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
+                    {actualStatus === "DRAFT" && (
+                      <button
+                        type="button"
+                        title="Publish assessment"
+                        onClick={() => handlePublish(assessment.id)}
+                        disabled={isPending}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-violet-500 transition hover:bg-violet-50 hover:text-violet-600 disabled:opacity-50"
+                      >
+                        <Globe className="h-5 w-5" />
+                      </button>
+                    )}
+                    {actualStatus === "PUBLISHED" && (
+                      <button
+                        type="button"
+                        title="Archive assessment"
+                        onClick={() => handleArchive(assessment.id)}
+                        disabled={isPending}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-amber-500 transition hover:bg-amber-50 hover:text-amber-600 disabled:opacity-50"
+                      >
+                        <Archive className="h-5 w-5" />
+                      </button>
+                    )}
                     <Link
                       href={`/assessments/${assessment.id}`}
                       title="View assessment"

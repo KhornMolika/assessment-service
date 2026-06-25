@@ -65,7 +65,7 @@ export default function QuestionDuplicateForm({
         const res = await createQuestionAction(topicToUse, payload as any);
         if (res.success) {
           toast.success("Question duplicated successfully");
-          router.push("/questions");
+          router.refresh();          router.push("/questions");
         } else {
           toast.error("Failed to duplicate question", { description: res.error });
         }

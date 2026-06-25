@@ -12,22 +12,24 @@ async function EditAssessmentPageContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  let fetchError: string | undefined;
   const [data, topics, banksRes, questionsRes] = await Promise.all([
-    getEditAssessmentPageData(id), 
-    getTopics(),
-    getBanks(1, 100),
-    getQuestions(1, 500)
+    getEditAssessmentPageData(id).catch(e => { fetchError = e.message; return null; }), 
+    getTopics().catch(e => { fetchError = e.message; return []; }),
+    getBanks(1, 100).catch(e => { fetchError = e.message; return { data: [] }; }),
+    getQuestions(1, 500).catch(e => { fetchError = e.message; return { data: [] }; })
   ]);
 
   return (
     <AssessmentForm
-      key={data.assessmentId}
+      key={data?.assessmentId || "error"}
       mode="edit"
-      assessmentId={data.assessmentId}
-      banks={banksRes.data}
-      questions={questionsRes.data}
-      topics={topics}
-      initialFormData={data.initialFormData}
+      assessmentId={data?.assessmentId}
+      banks={banksRes?.data || []}
+      questions={questionsRes?.data || []}
+      topics={topics || []}
+      initialFormData={data?.initialFormData}
+      fetchError={fetchError}
     />
   );
 }

@@ -45,7 +45,7 @@ export default function BankDetailView({
         onClose={() => setDeleteOpen(false)}
         onConfirm={() => {
           setDeleteOpen(false);
-          router.push("/banks");
+          router.refresh();          router.push("/banks");
         }}
       />
     </>

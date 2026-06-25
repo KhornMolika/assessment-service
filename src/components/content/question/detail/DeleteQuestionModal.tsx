@@ -32,7 +32,7 @@ export default function DeleteQuestionModal({
           onDeleted();
         } else {
           onClose();
-          router.push("/questions");
+          router.refresh();          router.push("/questions");
         }
       } catch (error: any) {
         toast.error("Failed to delete question", {

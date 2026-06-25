@@ -79,7 +79,7 @@ export function TopbarSearch() {
       role="search"
       onSubmit={(event) => {
         event.preventDefault();
-        router.push(searchHref, { scroll: false });
+        router.refresh();        router.push(searchHref, { scroll: false });
       }}
     >
       <Label className="relative block">
