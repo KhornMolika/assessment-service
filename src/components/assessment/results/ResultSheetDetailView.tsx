@@ -15,7 +15,7 @@ import { Select } from "@/src/components/ui/ui/select";
 import { Input } from "@/src/components/ui/ui/input";
 
 type EditableEntry = AnswerEntry & {
-  review_mode: "read" | "edit";
+  reviewMode: "read" | "edit";
 };
 
 function formatSubmittedAt(value: string | null) {
@@ -43,7 +43,7 @@ function parseResponseValue(entry: AnswerEntry) {
 
 function getOptionText(entry: AnswerEntry, optionId: unknown) {
   const id = String(optionId ?? "");
-  return entry.question_snapshot.options?.find((option) => option.id === id)?.text ?? id;
+  return entry.questionSnapshot.options?.find((option) => option.id === id)?.text ?? id;
 }
 
 function formatResponse(entry: AnswerEntry) {
@@ -81,7 +81,7 @@ function formatResponse(entry: AnswerEntry) {
 }
 
 function formatCorrectAnswer(entry: AnswerEntry) {
-  const value = entry.question_snapshot.correct_answer;
+  const value = entry.questionSnapshot.correctAnswers;
   if (value == null) return null;
   if (Array.isArray(value)) return value.map((item) => getOptionText(entry, item)).join(", ");
   if (typeof value === "boolean") return value ? "True" : "False";
@@ -103,9 +103,9 @@ export default function ResultSheetDetailView({
   data: AssessmentResultSheetPageData;
 }) {
   const [entries, setEntries] = useState<EditableEntry[]>(
-    data.answer_entries.map((entry) => ({
+    data.answerEntries.map((entry) => ({
       ...entry,
-      review_mode: "read",
+      reviewMode: "read",
     })),
   );
   const [retryingIds, setRetryingIds] = useState<Record<string, boolean>>({});
@@ -113,7 +113,7 @@ export default function ResultSheetDetailView({
   async function handleRetry(entryId: string) {
     setRetryingIds((prev) => ({ ...prev, [entryId]: true }));
     try {
-      const success = await retryAIGrading(data.assessment.id, data.answer_sheet.id, entryId);
+      const success = await retryAIGrading(data.assessment.id, data.answerSheet.id, entryId);
       if (success) {
         alert("AI Grading retry queued. Please refresh shortly.");
       } else {
@@ -125,13 +125,13 @@ export default function ResultSheetDetailView({
   }
 
   const totalScore = useMemo(
-    () => entries.reduce((sum, entry) => sum + (entry.score_awarded ?? 0), 0),
+    () => entries.reduce((sum, entry) => sum + (entry.scoreAwarded ?? 0), 0),
     [entries],
   );
 
   function updateEntry(
     entryId: string,
-    patch: Partial<Pick<EditableEntry, "score_awarded" | "is_correct" | "grading_status" | "review_mode">>,
+    patch: Partial<Pick<EditableEntry, "scoreAwarded" | "isCorrect" | "gradingStatus" | "reviewMode">>,
   ) {
     setEntries((current) =>
       current.map((entry) => (entry.id === entryId ? { ...entry, ...patch } : entry)),
@@ -144,12 +144,12 @@ export default function ResultSheetDetailView({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={data.answer_sheet.status === "REVIEW_PENDING" ? "pending" : "success"}>
-                {data.answer_sheet.status === "REVIEW_PENDING" ? "Pending manual review" : "Reviewed"}
+              <Badge variant={data.answerSheet.status === "REVIEW_PENDING" ? "pending" : "success"}>
+                {data.answerSheet.status === "REVIEW_PENDING" ? "Pending manual review" : "Reviewed"}
               </Badge>
             </div>
             <h1 className="mt-4 text-3xl font-bold text-primary">{data.participant.display_name}</h1>
-            <p className="mt-2 text-sm text-inkd">{data.assessment.title}</p>
+            <p className="mt-2 text-sm text-inkd">{data.assessment.name || "Untitled"}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
@@ -172,28 +172,28 @@ export default function ResultSheetDetailView({
           <Card>
             <CardContent className="p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Answer sheet</p>
-              <p className="mt-3 text-lg font-bold text-primary">{data.answer_sheet.id}</p>
+              <p className="mt-3 text-lg font-bold text-primary">{data.answerSheet.id}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Total score</p>
               <p className="mt-3 text-lg font-bold text-primary">
-                {totalScore}/{data.answer_sheet.max_score}
+                {totalScore}/{data.answerSheet.maxScore}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Grade</p>
-              <p className="mt-3 text-lg font-bold text-primary">{data.answer_sheet.grade ?? "Pending"}</p>
+              <p className="mt-3 text-lg font-bold text-primary">{data.answerSheet.grade ?? "Pending"}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Submitted</p>
               <p className="mt-3 text-sm font-semibold text-primary">
-                {formatSubmittedAt(data.answer_sheet.submitted_at)}
+                {formatSubmittedAt(data.answerSheet.submittedAt)}
               </p>
             </CardContent>
           </Card>
@@ -208,7 +208,7 @@ export default function ResultSheetDetailView({
         <div className="mt-6 space-y-4">
           {entries.map((entry, index) => {
             const correctAnswer = formatCorrectAnswer(entry);
-            const isEditable = entry.grading_status === "PENDING" || entry.grading_status === "MANUAL_REVISED";
+            const isEditable = entry.gradingStatus === "PENDING" || entry.gradingStatus === "MANUAL_REVISED";
 
             return (
               <Card key={entry.id} className="overflow-hidden">
@@ -219,15 +219,15 @@ export default function ResultSheetDetailView({
                         <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                           {index + 1}
                         </span>
-                        <span>{entry.question_snapshot.question_text}</span>
+                        <span>{entry.questionSnapshot.questionText}</span>
                       </CardTitle>
                       <CardDescription className="mt-2">
-                        {entry.question_snapshot.type_id} · {entry.question_snapshot.points} pts
+                        {entry.questionSnapshot.typeId} · {entry.questionSnapshot.points} pts
                       </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
-                      {getGradingBadge(entry.grading_status)}
-                      {entry.ai_grading && entry.review_mode === "read" ? (
+                      {getGradingBadge(entry.gradingStatus)}
+                      {entry.aiGrading && entry.reviewMode === "read" ? (
                         <Button
                           type="button"
                           onClick={() => handleRetry(entry.id)}
@@ -238,10 +238,10 @@ export default function ResultSheetDetailView({
                           {retryingIds[entry.id] ? "Retrying..." : "Retry AI"}
                         </Button>
                       ) : null}
-                      {isEditable && entry.review_mode === "read" ? (
+                      {isEditable && entry.reviewMode === "read" ? (
                         <Button
                           type="button"
-                          onClick={() => updateEntry(entry.id, { review_mode: "edit" })}
+                          onClick={() => updateEntry(entry.id, { reviewMode: "edit" })}
                           className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
                         >
                           <Edit3 className="h-4 w-4" />
@@ -263,12 +263,12 @@ export default function ResultSheetDetailView({
                     </div>
                   </div>
 
-                  {entry.ai_grading && (
+                  {entry.aiGrading && (
                     <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-5 shadow-sm">
                       <div className="flex items-center gap-2 text-purple-700">
                         <Sparkles className="h-5 w-5" />
                         <h4 className="font-bold">AI Evaluation Insights</h4>
-                        {entry.ai_grading.flagForReview && (
+                        {entry.aiGrading.flagForReview && (
                           <Badge variant="pending" className="ml-2">Flagged for manual review</Badge>
                         )}
                       </div>
@@ -276,25 +276,25 @@ export default function ResultSheetDetailView({
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Reasoning</p>
                           <p className="mt-2 text-sm leading-relaxed text-purple-900/90 whitespace-pre-wrap">
-                            {entry.ai_grading.reasoning ?? "No reasoning provided."}
+                            {entry.aiGrading.reasoning ?? "No reasoning provided."}
                           </p>
                         </div>
                         <div className="space-y-4 rounded-xl bg-purple-100/50 p-4">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Suggested Score</p>
                             <p className="mt-1 text-2xl font-bold text-purple-700">
-                              {entry.ai_grading.suggestedScore ?? 0} <span className="text-base font-normal text-purple-900/60">/ {entry.question_snapshot.points} pts</span>
+                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-purple-900/60">/ {entry.questionSnapshot.points} pts</span>
                             </p>
                           </div>
-                          {(entry.ai_grading.keyPointsAddressed?.length > 0 || entry.ai_grading.keyPointsMissed?.length > 0) && (
+                          {(entry.aiGrading.keyPointsAddressed?.length > 0 || entry.aiGrading.keyPointsMissed?.length > 0) && (
                             <div className="space-y-3 pt-2 border-t border-purple-200">
-                              {entry.ai_grading.keyPointsAddressed?.map((point, idx) => (
+                              {entry.aiGrading.keyPointsAddressed?.map((point, idx) => (
                                 <div key={`hit-${idx}`} className="flex items-start gap-2">
                                   <CheckCircle className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
                                   <span className="text-xs font-medium text-purple-900/80">{point}</span>
                                 </div>
                               ))}
-                              {entry.ai_grading.keyPointsMissed?.map((point, idx) => (
+                              {entry.aiGrading.keyPointsMissed?.map((point, idx) => (
                                 <div key={`miss-${idx}`} className="flex items-start gap-2">
                                   <XCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
                                   <span className="text-xs font-medium text-purple-900/80">{point}</span>
@@ -307,18 +307,18 @@ export default function ResultSheetDetailView({
                     </div>
                   )}
 
-                  {entry.review_mode === "edit" && isEditable ? (
+                  {entry.reviewMode === "edit" && isEditable ? (
                     <div className="grid gap-4 rounded-2xl border border-orange-200 bg-orange-50 p-4 lg:grid-cols-3">
                       <Label className="block">
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Score awarded</span>
                         <Input
                           type="number"
                           min={0}
-                          max={entry.question_snapshot.points}
-                          value={entry.score_awarded}
+                          max={entry.questionSnapshot.points}
+                          value={entry.scoreAwarded}
                           onChange={(event) =>
                             updateEntry(entry.id, {
-                              score_awarded: Number(event.target.value),
+                              scoreAwarded: Number(event.target.value),
                             })
                           }
                           className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-primary outline-none transition focus:border-primary"
@@ -327,10 +327,10 @@ export default function ResultSheetDetailView({
                       <Label className="block">
                         <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Correctness</span>
                         <Select
-                          value={entry.is_correct === null ? "null" : entry.is_correct ? "true" : "false"}
+                          value={entry.isCorrect === null ? "null" : entry.isCorrect ? "true" : "false"}
                           onChange={(event) =>
                             updateEntry(entry.id, {
-                              is_correct:
+                              isCorrect:
                                 event.target.value === "null" ? null : event.target.value === "true",
                             })
                           }
@@ -346,8 +346,8 @@ export default function ResultSheetDetailView({
                           type="button"
                           onClick={() =>
                             updateEntry(entry.id, {
-                              grading_status: "MANUAL_REVISED",
-                              review_mode: "read",
+                              gradingStatus: "MANUAL_REVISED",
+                              reviewMode: "read",
                             })
                           }
                           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pl"
@@ -361,18 +361,18 @@ export default function ResultSheetDetailView({
                     <div className="grid gap-4 lg:grid-cols-3">
                       <div className="rounded-xl border border-border bg-white p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Score awarded</p>
-                        <p className="mt-2 text-lg font-bold text-primary">{entry.score_awarded}</p>
+                        <p className="mt-2 text-lg font-bold text-primary">{entry.scoreAwarded}</p>
                       </div>
                       <div className="rounded-xl border border-border bg-white p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Is correct</p>
                         <p className="mt-2 text-lg font-bold text-primary">
-                          {entry.is_correct == null ? "Not set" : entry.is_correct ? "Yes" : "No"}
+                          {entry.isCorrect == null ? "Not set" : entry.isCorrect ? "Yes" : "No"}
                         </p>
                       </div>
                       <div className="rounded-xl border border-border bg-white p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Review status</p>
                         <div className="mt-2">
-                          {entry.grading_status === "PENDING" ? (
+                          {entry.gradingStatus === "PENDING" ? (
                             <div className="inline-flex items-center gap-2 text-orange-700">
                               <ShieldAlert className="h-4 w-4" />
                               <span className="font-semibold">Awaiting manual review</span>
@@ -380,7 +380,7 @@ export default function ResultSheetDetailView({
                           ) : (
                             <div className="inline-flex items-center gap-2 text-green-700">
                               <CheckCircle2 className="h-4 w-4" />
-                              <span className="font-semibold">{entry.grading_status}</span>
+                              <span className="font-semibold">{entry.gradingStatus}</span>
                             </div>
                           )}
                         </div>

@@ -9,6 +9,7 @@ import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { Button } from "@/src/components/ui/ui/button";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
+import ActionConfirmModal from "@/src/components/ui/modals/ActionConfirmModal";
 import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 export default function AssessmentDetailHeader({
@@ -19,6 +20,8 @@ export default function AssessmentDetailHeader({
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [isPending, startTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +58,7 @@ export default function AssessmentDetailHeader({
         const res = await publishAssessmentAction(assessment.id);
         if (res.success) {
           toast.success("Assessment published successfully");
+          setShowPublishModal(false);
         } else {
           toast.error(res.error || "Failed to publish assessment");
         }
@@ -70,6 +74,7 @@ export default function AssessmentDetailHeader({
         const res = await archiveAssessmentAction(assessment.id);
         if (res.success) {
           toast.success("Assessment archived successfully");
+          setShowArchiveModal(false);
         } else {
           toast.error(res.error || "Failed to archive assessment");
         }
@@ -79,8 +84,8 @@ export default function AssessmentDetailHeader({
     });
   };
 
-  const actualTitle = assessment.name || assessment.title || "Untitled";
-  const mode = assessment.settings?.mode || assessment.delivery_mode;
+  const actualTitle = assessment.name || "Untitled";
+  const mode = assessment.settings?.mode;
 
   return (
     <section>
@@ -140,27 +145,43 @@ export default function AssessmentDetailHeader({
                   >
                     <Copy className="h-4 w-4" /> Duplicate
                   </Link>
-                  {assessment.lifecycle === "DRAFT" && (
+                  {assessment.status === "DRAFT" && (
                     <button
                       onClick={() => {
                         setShowMenu(false);
-                        handlePublish();
+                        setShowPublishModal(true);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                     >
                       <Globe className="h-4 w-4" /> Publish
                     </button>
                   )}
-                  {assessment.lifecycle === "PUBLISHED" && (
+                  {assessment.status === "PUBLISHED" && (
                     <button
                       onClick={() => {
                         setShowMenu(false);
-                        handleArchive();
+                        setShowArchiveModal(true);
                       }}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-amber-600 transition hover:bg-amber-50"
                     >
                       <Archive className="h-4 w-4" /> Archive
                     </button>
+                  )}
+                  {assessment.status === "PUBLISHED" && mode === "SELF_PACED" && (
+                    <Link
+                      href={`/assessments/${assessment.id}/self-paced-preview`}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                    >
+                      <Play className="h-4 w-4" /> Preview
+                    </Link>
+                  )}
+                  {assessment.status === "PUBLISHED" && mode === "REAL_TIME" && (
+                    <Link
+                      href={`/assessments/${assessment.id}/real-time-preview`}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                    >
+                      <Play className="h-4 w-4" /> Preview
+                    </Link>
                   )}
                   <button
                     onClick={() => {
@@ -187,6 +208,28 @@ export default function AssessmentDetailHeader({
         entityName={actualTitle}
         description="Are you sure you want to delete this assessment? This action removes it from the catalog and cannot be undone."
         isPending={isPending}
+      />
+
+      <ActionConfirmModal
+        open={showPublishModal}
+        onClose={() => setShowPublishModal(false)}
+        onConfirm={handlePublish}
+        title="Publish Assessment"
+        description={<>Are you sure you want to publish <strong>{actualTitle}</strong>? This will make it available to participants.</>}
+        confirmText="Publish"
+        isPending={isPending}
+        variant="default"
+      />
+
+      <ActionConfirmModal
+        open={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        onConfirm={handleArchive}
+        title="Archive Assessment"
+        description={<>Are you sure you want to archive <strong>{actualTitle}</strong>? It will no longer be active.</>}
+        confirmText="Archive"
+        isPending={isPending}
+        variant="destructive"
       />
     </section>
   );

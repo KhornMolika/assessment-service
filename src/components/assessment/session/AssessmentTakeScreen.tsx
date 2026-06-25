@@ -37,12 +37,12 @@ export function AssessmentTakeScreen({
   questions: AssessmentDetailQuestionItem[];
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
-  const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
-  const resultMode = getResultReleaseMode(assessment.show_results);
-  const showCorrectAnswers = assessment.is_showed_answers;
-  const allowShareAnswerSheet = assessment.is_allowed_share;
-  const totalTimerSeconds = Math.max(0, assessment.time_limit_minutes * 60);
+  const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
+  const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
+  const showCorrectAnswers = assessment.settings?.allowReview ?? false;
+  const allowShareAnswerSheet = false;
+  const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
@@ -72,17 +72,17 @@ export function AssessmentTakeScreen({
     }, 0);
     const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
     const grade =
-      assessment.grade_scale.find((band) => percent >= band.minPercent)?.grade ??
-      assessment.grade_scale.at(-1)?.grade ??
+      assessment.settings?.gradeLabels?.find((band) => percent >= band.minPercent)?.grade ??
+      assessment.settings?.gradeLabels?.at(-1)?.grade ??
       "N/A";
 
     return {
       earnedPoints,
       totalPoints,
       grade,
-      passed: percent >= assessment.pass_mark,
+      passed: percent >= (assessment.settings?.passMark ?? 0),
     };
-  }, [answers, assessment.grade_scale, assessment.pass_mark, rounds]);
+  }, [answers, assessment.settings?.gradeLabels, assessment.settings?.passMark, rounds]);
 
 
 
@@ -172,7 +172,7 @@ export function AssessmentTakeScreen({
   return (
     <ScreenShell
       eyebrow={step === "entry" ? "Self-paced Participant Flow" : ""}
-      title={step === "entry" ? assessment.title : ""}
+      title={step === "entry" ? assessment.name || "Untitled" : ""}
       description={step === "entry" ? assessment.description! : ""}
       aside={null}
     >
@@ -184,7 +184,7 @@ export function AssessmentTakeScreen({
         {step === "entry" ? (
           <SelfPacedEntry
             heading="Before you begin"
-            timeLimitMinutes={assessment.time_limit_minutes}
+            timeLimitMinutes={assessment.settings?.timeLimit ?? 0}
             requiresDisplayName={requiresDisplayName}
             displayName={displayName}
             onDisplayNameChange={setDisplayName}
@@ -217,7 +217,7 @@ export function AssessmentTakeScreen({
         {step === "confirm" ? (
           <SelfPacedConfirm
             items={confirmationItems}
-            allowGoingBack={assessment.allow_going_back}
+            allowGoingBack={assessment.settings?.allowReview ?? true}
             onBack={() => setStep("quiz")}
             onSubmit={handleSubmitSession}
             submitLabel="Submit answers"

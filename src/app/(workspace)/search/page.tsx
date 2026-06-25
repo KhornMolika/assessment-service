@@ -95,11 +95,10 @@ async function SearchPageContent({
         }
 
         return (
-          includesQuery(assessment.title, normalizedQuery) ||
+          includesQuery(assessment.name, normalizedQuery) ||
           includesQuery(assessment.description, normalizedQuery) ||
-          includesQuery(assessment.question_bank_name, normalizedQuery) ||
-          includesQuery(assessment.delivery_mode, normalizedQuery) ||
-          includesQuery(assessment.lifecycle, normalizedQuery)
+          includesQuery(assessment.settings?.mode, normalizedQuery) ||
+          includesQuery(assessment.status, normalizedQuery)
         );
       })
     : [];
@@ -187,16 +186,16 @@ async function SearchPageContent({
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="info">
-                        {assessment.delivery_mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
+                        {assessment.settings?.mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
                       </Badge>
-                      <Badge variant="secondary">{assessment.lifecycle}</Badge>
+                      <Badge variant="secondary">{assessment.status}</Badge>
                     </div>
-                    <div className="mt-3 font-semibold text-primary">{assessment.title}</div>
+                    <div className="mt-3 font-semibold text-primary">{assessment.name}</div>
                     <p className="mt-2 text-sm text-inkd">
                       {assessment.description || "No description provided."}
                     </p>
                     <div className="mt-3 text-xs text-inkd">
-                      Bank: {assessment.question_bank_name} | {assessment.question_count} questions
+                      {assessment.settings?.numQuestions || 0} questions
                     </div>
                   </Link>
                 ))

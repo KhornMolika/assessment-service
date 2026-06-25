@@ -129,7 +129,7 @@ export function SelfPacedResult({
                         Correct answer
                       </p>
                       <p className="mt-1 text-sm leading-6 text-inkd">
-                        {question.options.find((option) => option.id === question.correctOptionId)?.text}
+                        {question.options.find((option: any) => option.id === question.correctOptionId)?.text}
                       </p>
                     </>
                   ) : null}

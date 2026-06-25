@@ -14,7 +14,7 @@ export function OrderingRenderer({
       : [...question.options].reverse().map((option) => option.id);
 
   const orderedOptions = orderedIds
-    .map((optionId) => question.options.find((option) => option.id === optionId))
+    .map((optionId) => question.options.find((option: any) => option.id === optionId))
     .filter((option): option is NonNullable<typeof option> => Boolean(option));
 
   function moveOption(fromIndex: number, toIndex: number) {

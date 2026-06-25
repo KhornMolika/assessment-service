@@ -14,6 +14,7 @@ export type QuestionOption = {
 export type QuestionRound = AssessmentDetailQuestionItem & {
   options: QuestionOption[];
   correctOptionId: string;
+  rawOptions?: any;
 };
 
 export type LeaderboardEntry = {

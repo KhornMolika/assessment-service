@@ -11,11 +11,26 @@ export interface Assessment {
   id: string;
   topicId?: string;
   topic?: any;
-  owner_id: string;
-  title: string;
+  ownerId?: string;
+  name: string;
   description?: string;
   status: AssessmentStatus;
-  participant_identity: "ANONYMOUS" | "INTERNAL" | "EXTERNAL";
-  created_at: string;
-  updated_at: string;
+  type?: "QUIZ" | "EXAM" | "PRACTICE" | "SURVEY";
+  createdAt: string;
+  updatedAt: string;
+  settings?: {
+    mode: "SELF_PACED" | "REAL_TIME";
+    questionSelection: "MANUAL" | "DYNAMIC";
+    numQuestions: number;
+    timeLimit: number | null;
+    startsAt: string | null;
+    endsAt: string | null;
+    passMark: number;
+    isShuffle: boolean;
+    participantIdentity?: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL";
+    showResults?: string;
+    gradeLabels?: Array<{ grade: string; minPercent: number }>;
+    selectionRules?: any;
+    allowReview?: boolean;
+  };
 }

@@ -118,11 +118,11 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "single-choice",
         name: typeName === "SINGLE_CHOICE" ? "SINGLE_CHOICE" : "MCQ",
-        grading_strategy: "BINARY",
-        has_options: true,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 1,
+        gradingStrategy: "BINARY",
+        hasOptions: true,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 1,
         description: "Single correct answer from multiple options",
       };
     case "MULTIPLE_CHOICE":
@@ -133,11 +133,11 @@ function getQuestionTypeMeta(typeName: string) {
           typeName === "MULTIPLE_CHOICE"
             ? "MULTIPLE_CHOICE"
             : "Multiple Choice",
-        grading_strategy: "DEDUCTIVE",
-        has_options: true,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 1,
+        gradingStrategy: "DEDUCTIVE",
+        hasOptions: true,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 1,
         description: "Multiple correct answers can be selected.",
       };
     case "TRUE_FALSE":
@@ -145,22 +145,22 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "boolean",
         name: typeName === "TRUE_FALSE" ? "TRUE_FALSE" : "True/False",
-        grading_strategy: "BINARY",
-        has_options: true,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 1,
+        gradingStrategy: "BINARY",
+        hasOptions: true,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 1,
         description: "Binary statement validation with a single correct state.",
       };
     case "Short Answer":
       return {
         id: "short-answer",
         name: "Short Answer",
-        grading_strategy: "MANUAL_AI",
-        has_options: false,
-        supports_ai: true,
-        is_manual_only: false,
-        default_max_score: 5,
+        gradingStrategy: "MANUAL_AI",
+        hasOptions: false,
+        supportsAi: true,
+        isManualOnly: false,
+        defaultMaxScore: 5,
         description: "Brief text response graded by rubric or keywords.",
       };
     case "ESSAY":
@@ -168,11 +168,11 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "essay",
         name: typeName === "ESSAY" ? "ESSAY" : "Long Essay",
-        grading_strategy: "MANUAL_AI",
-        has_options: false,
-        supports_ai: true,
-        is_manual_only: false,
-        default_max_score: 10,
+        gradingStrategy: "MANUAL_AI",
+        hasOptions: false,
+        supportsAi: true,
+        isManualOnly: false,
+        defaultMaxScore: 10,
         description:
           "Open-ended written response for manual or AI-assisted grading.",
       };
@@ -180,11 +180,11 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "rating",
         name: "Rating",
-        grading_strategy: "SCALED",
-        has_options: false,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 5,
+        gradingStrategy: "SCALED",
+        hasOptions: false,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 5,
         description: "Rating response on a predefined scale.",
       };
     case "ORDERING":
@@ -192,11 +192,11 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "ordering",
         name: typeName === "ORDERING" ? "ORDERING" : "Ranking",
-        grading_strategy: "BINARY",
-        has_options: false,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 4,
+        gradingStrategy: "BINARY",
+        hasOptions: false,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 4,
         description: "Items arranged in the correct sequence.",
       };
     case "FILL_IN_THE_BLANK":
@@ -207,11 +207,11 @@ function getQuestionTypeMeta(typeName: string) {
           typeName === "FILL_IN_THE_BLANK"
             ? "FILL_IN_THE_BLANK"
             : "Fill-in-blank",
-        grading_strategy: "DEDUCTIVE",
-        has_options: false,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 3,
+        gradingStrategy: "DEDUCTIVE",
+        hasOptions: false,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 3,
         description:
           "Learner fills one or more blanks in a sentence or template.",
       };
@@ -219,22 +219,22 @@ function getQuestionTypeMeta(typeName: string) {
       return {
         id: "matching",
         name: "Matching",
-        grading_strategy: "DEDUCTIVE",
-        has_options: false,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 4,
+        gradingStrategy: "DEDUCTIVE",
+        hasOptions: false,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 4,
         description: "Pairs items across two related columns.",
       };
     default:
       return {
         id: "generic",
         name: typeName,
-        grading_strategy: "BINARY",
-        has_options: false,
-        supports_ai: false,
-        is_manual_only: false,
-        default_max_score: 1,
+        gradingStrategy: "BINARY",
+        hasOptions: false,
+        supportsAi: false,
+        isManualOnly: false,
+        defaultMaxScore: 1,
         description: "Question type metadata is not fully configured yet.",
       };
   }
@@ -271,12 +271,12 @@ export async function getQuestionDetail(
           const optId = String(opt.id || String(idx));
           return {
             id: optId,
-            question_id: id,
-            option_text: String(opt.text || opt.option_text || ""),
-            is_correct: Boolean(
+            questionId: id,
+            optionText: String(opt.text || opt.optionText || ""),
+            isCorrect: Boolean(
               opt.isCorrect || correctOptionIds.includes(optId),
             ),
-            option_order: idx + 1,
+            optionOrder: idx + 1,
           };
         })
       : [];
@@ -362,23 +362,23 @@ export async function getQuestionDetail(
 
     return {
       id: String(q.id),
-      bank_id: bankId,
-      type_id: type.id,
-      question_text: String(q.questionText || q.text || ""),
+      bankId: bankId,
+      typeId: type.id,
+      questionText: String(q.questionText || q.text || ""),
       language: "EN",
       difficulty: String(q.difficulty || "Medium") as any,
       points: Number(q.points || 5),
       tags: Array.isArray(q.tags) ? q.tags : [],
       settings: (q.settings as any) || {},
-      correct_answer: correctAnswerConfig,
-      created_at: String(q.createdAt || new Date().toISOString()),
+      correctAnswers: correctAnswerConfig,
+      createdAt: String(q.createdAt || new Date().toISOString()),
       bank: assignedBank
-        ? { id: assignedBank.id, name: assignedBank.name, owner_id: "" }
+        ? { id: assignedBank.id, name: assignedBank.name, ownerId: "" }
         : null,
       type,
       topics: assignedTopics,
-      answer_options: options,
-      ai_grading_config: null,
+      answerOptions: options,
+      aiGradingConfig: null,
       stats: {
         createdBy: "Admin User",
         usedInAssessments: 0,
@@ -443,7 +443,7 @@ function mapApiToFormData(
   if (Array.isArray(options)) {
     options = options.map((opt: any, index: number) => ({
       id: opt.id || `opt_${index}`,
-      text: opt.text || opt.option_text || opt.optionText || "",
+      text: opt.text || opt.optionText || opt.optionText || "",
     }));
   }
 
@@ -464,7 +464,7 @@ function mapApiToFormData(
     // Legacy support: extract correct answers from options if correctAnswers is empty
     if (Object.keys(correctAnswers).length === 0) {
       const correctOpts = question.options.filter(
-        (opt: any) => opt.isCorrect || opt.is_correct,
+        (opt: any) => opt.isCorrect || opt.isCorrect,
       );
       if (questionType === "Single Choice" && correctOpts.length > 0) {
         correctAnswers = { optionId: correctOpts[0].id || "opt_0" };

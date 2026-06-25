@@ -13,8 +13,8 @@ export interface AssessmentResultsStats {
 
 export interface ResultQuestionEntity {
   id: string;
-  question_text: string;
-  type_id: string;
+  questionText: string;
+  typeId: string;
   points: number;
 }
 
@@ -22,19 +22,19 @@ export interface AssessmentResultsPageData {
   stats: AssessmentResultsStats;
   assessments: AssessmentCatalogItem[];
   participants: Participant[];
-  answer_sheets: AnswerSheet[];
-  answer_entries: AnswerEntry[];
+  answerSheets: AnswerSheet[];
+  answerEntries: AnswerEntry[];
   questions: ResultQuestionEntity[];
   topics: Topic[];
-  assessment_topics: AssessmentTopicMap[];
+  assessmentTopics: AssessmentTopicMap[];
 }
 
 export interface AssessmentResultSheetPageData {
   assessment: AssessmentCatalogItem;
   participant: Participant;
-  answer_sheet: AnswerSheet;
+  answerSheet: AnswerSheet;
   questions: ResultQuestionEntity[];
-  answer_entries: AnswerEntry[];
+  answerEntries: AnswerEntry[];
 }
 
 export interface AssessmentScopedResultsPageData {
@@ -43,7 +43,7 @@ export interface AssessmentScopedResultsPageData {
     pendingReviewCount: number;
   };
   participants: Participant[];
-  answer_sheets: AnswerSheet[];
-  answer_entries: AnswerEntry[];
+  answerSheets: AnswerSheet[];
+  answerEntries: AnswerEntry[];
   questions: ResultQuestionEntity[];
 }

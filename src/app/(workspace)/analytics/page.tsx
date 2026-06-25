@@ -47,7 +47,7 @@ async function getAnalyticsPageSnapshot({
   const filteredAssessments = data.assessments.filter((assessment) =>
     selectedTopic === ALL_TOPICS_VALUE
       ? true
-      : assessmentMatchesTopic(assessment.id, selectedTopic, data.assessment_topics),
+      : assessmentMatchesTopic(assessment.id, selectedTopic, data.assessmentTopics),
   );
   const effectiveSelectedAssessmentId = filteredAssessments.some(
     (assessment) => assessment.id === selectedAssessmentId,
@@ -56,10 +56,10 @@ async function getAnalyticsPageSnapshot({
     : "all-assessments";
   const snapshot = buildAnalyticsSnapshot({
     assessments: data.assessments,
-    assessmentTopics: data.assessment_topics,
+    assessmentTopics: data.assessmentTopics,
     topics: data.topics,
-    answerEntries: data.answer_entries,
-    answerSheets: data.answer_sheets,
+    answerEntries: data.answerEntries,
+    answerSheets: data.answerSheets,
     selectedAssessmentId: effectiveSelectedAssessmentId,
     selectedTopic,
   });

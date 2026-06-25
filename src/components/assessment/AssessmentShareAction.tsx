@@ -63,11 +63,11 @@ export default function AssessmentShareAction({
   const [copied, setCopied] = useState(false);
 
   const participantPath =
-    assessment.delivery_mode === "SELF_PACED"
+    assessment.settings?.mode === "SELF_PACED"
       ? `/assessments/${assessment.id}/take`
       : `/assessments/${assessment.id}/join`;
   const previewPath =
-    assessment.delivery_mode === "SELF_PACED"
+    assessment.settings?.mode === "SELF_PACED"
       ? `/assessments/${assessment.id}/self-paced-preview`
       : `/assessments/${assessment.id}/real-time-preview`;
   const hostPath = `/assessments/${assessment.id}/host`;
@@ -101,7 +101,7 @@ export default function AssessmentShareAction({
                 Share Assessment
               </p>
               <h3 className="mt-2 text-xl font-bold leading-tight text-primary sm:text-2xl">
-                {assessment.title}
+                {assessment.name}
               </h3>
             </div>
             <Button
@@ -114,7 +114,7 @@ export default function AssessmentShareAction({
             </Button>
           </div>
 
-          {assessment.delivery_mode === "SELF_PACED" ? (
+          {assessment.settings?.mode === "SELF_PACED" ? (
             <div className="mt-6 space-y-6">
               <div className="rounded-3xl border border-border bg-muted/40 p-5">
                 <div className="flex flex-col items-center gap-5 text-center">
@@ -122,9 +122,9 @@ export default function AssessmentShareAction({
                     <QrCode className="h-4 w-4 text-primary" />
                     Self-paced access
                   </div>
-                  <ShareQr value={shareUrl} title={assessment.title} />
+                  <ShareQr value={shareUrl} title={assessment.name || ""} />
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-primary">{assessment.title}</p>
+                    <p className="text-sm font-semibold text-primary">{assessment.name}</p>
                     <p className="text-xs uppercase tracking-[0.2em] text-inkd">Join link</p>
                     <div className="max-w-full break-all rounded-xl bg-white px-3 py-2 text-sm text-primary shadow-sm ring-1 ring-border">
                       {shareUrl}
