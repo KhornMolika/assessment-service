@@ -131,7 +131,7 @@ export async function fetchTopicQuestions(
   topicId: string,
 ): Promise<Question[]> {
   const data = await fetchWithAuth(
-    `/topics/${topicId}/questions?page=1&limit=500`,
+    `/questions?topicId=${topicId}&page=1&limit=500`,
   );
   return Array.isArray(data.data) ? data.data : data;
 }

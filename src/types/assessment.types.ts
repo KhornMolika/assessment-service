@@ -9,6 +9,8 @@ export type AssessmentLifecycle =
 
 export interface Assessment {
   id: string;
+  topicId?: string;
+  topic?: any;
   owner_id: string;
   title: string;
   description?: string;
