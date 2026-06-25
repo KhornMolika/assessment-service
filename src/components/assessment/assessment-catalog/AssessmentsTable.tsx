@@ -22,7 +22,7 @@ import { Button } from "@/src/components/ui/ui/button";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { deleteAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self Paced" : "Real Time";
@@ -86,6 +86,36 @@ export default function AssessmentsTable({
     });
   };
 
+  const handlePublish = (id: string) => {
+    startTransition(async () => {
+      try {
+        const res = await publishAssessmentAction(id);
+        if (res.success) {
+          toast.success("Assessment published successfully");
+        } else {
+          toast.error(res.error || "Failed to publish assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
+  const handleArchive = (id: string) => {
+    startTransition(async () => {
+      try {
+        const res = await archiveAssessmentAction(id);
+        if (res.success) {
+          toast.success("Assessment archived successfully");
+        } else {
+          toast.error(res.error || "Failed to archive assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
   return (
     <>
       <Table className="min-w-280">
@@ -135,9 +165,29 @@ export default function AssessmentsTable({
                   {actualSelection.toLowerCase()}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
-                    {formatLifecycle(actualStatus as AssessmentLifecycle)}
-                  </Badge>
+                  <div className="flex flex-col items-start gap-1">
+                    <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
+                      {formatLifecycle(actualStatus as AssessmentLifecycle)}
+                    </Badge>
+                    {actualStatus === "DRAFT" && (
+                      <button 
+                        onClick={() => handlePublish(assessment.id)}
+                        disabled={isPending}
+                        className="text-[10px] uppercase font-semibold tracking-wider text-indigo-600 hover:text-indigo-800 hover:underline disabled:opacity-50 transition-colors"
+                      >
+                        Publish
+                      </button>
+                    )}
+                    {actualStatus === "PUBLISHED" && (
+                      <button 
+                        onClick={() => handleArchive(assessment.id)}
+                        disabled={isPending}
+                        className="text-[10px] uppercase font-semibold tracking-wider text-amber-600 hover:text-amber-800 hover:underline disabled:opacity-50 transition-colors"
+                      >
+                        Archive
+                      </button>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center font-medium text-primary">
                   {actualNumQuestions}

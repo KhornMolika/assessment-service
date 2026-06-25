@@ -2,14 +2,14 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { toast } from "sonner";
-import { Copy, Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { Button } from "@/src/components/ui/ui/button";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
-import { deleteAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
 
 export default function AssessmentDetailHeader({
   assessment,
@@ -42,6 +42,36 @@ export default function AssessmentDetailHeader({
           router.refresh();          router.push("/assessments");
         } else {
           toast.error(res.error || "Failed to delete assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
+  const handlePublish = () => {
+    startTransition(async () => {
+      try {
+        const res = await publishAssessmentAction(assessment.id);
+        if (res.success) {
+          toast.success("Assessment published successfully");
+        } else {
+          toast.error(res.error || "Failed to publish assessment");
+        }
+      } catch (e: any) {
+        toast.error(e.message || "An unexpected error occurred");
+      }
+    });
+  };
+
+  const handleArchive = () => {
+    startTransition(async () => {
+      try {
+        const res = await archiveAssessmentAction(assessment.id);
+        if (res.success) {
+          toast.success("Assessment archived successfully");
+        } else {
+          toast.error(res.error || "Failed to archive assessment");
         }
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
@@ -82,6 +112,28 @@ export default function AssessmentDetailHeader({
                   >
                     <Copy className="h-4 w-4" /> Duplicate
                   </Link>
+                  {assessment.lifecycle === "DRAFT" && (
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        handlePublish();
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:bg-blue-50"
+                    >
+                      <Globe className="h-4 w-4" /> Publish
+                    </button>
+                  )}
+                  {assessment.lifecycle === "PUBLISHED" && (
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        handleArchive();
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-amber-600 transition hover:bg-amber-50"
+                    >
+                      <Archive className="h-4 w-4" /> Archive
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setShowMenu(false);
