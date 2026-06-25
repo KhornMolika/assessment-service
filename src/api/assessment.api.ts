@@ -661,12 +661,12 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           : [],
         enableTimeLimit: !!settings.timeLimit && !isNaN(Number(settings.timeLimit)) && Number(settings.timeLimit) > 0,
         timeLimitMinutes: settings.timeLimit && !isNaN(Number(settings.timeLimit)) && Number(settings.timeLimit) > 0
-          ? Math.min(Math.max(Math.round(Number(settings.timeLimit) / 60), 0), 1440)
+          ? Math.min(Math.max(Math.round(Number(settings.timeLimit) / 60), 1), 1440)
           : 60,
         startsAt: settings.startsAt && !isNaN(new Date(settings.startsAt).getTime())
           ? new Date(settings.startsAt).toISOString().slice(0, 16)
           : "",
-        endsAt: settings.endsAt && !isNaN(new Date(settings.endsAt).getTime())
+        endsAt: settings.endsAt && !isNaN(new Date(settings.endsAt).getTime()) && (!settings.startsAt || new Date(settings.endsAt).getTime() >= new Date(settings.startsAt).getTime())
           ? new Date(settings.endsAt).toISOString().slice(0, 16)
           : "",
         passMark: Number(settings.passMark) || 70,
