@@ -174,27 +174,6 @@ export default function AssessmentsTable({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Link
-                      href={`/assessments/${assessment.id}`}
-                      title="View assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
-                    >
-                      <Eye className="h-5 w-5" />
-                    </Link>
-                    <Link
-                      href={`/assessments/${assessment.id}/edit`}
-                      title="Edit assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
-                    >
-                      <Edit className="h-5 w-5" />
-                    </Link>
-                    <Link
-                      href={`/assessments/${assessment.id}/duplicate`}
-                      title="Duplicate assessment"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
-                    >
-                      <Copy className="h-5 w-5" />
-                    </Link>
                     {actualStatus === "DRAFT" && (
                       <button
                         type="button"
@@ -217,6 +196,27 @@ export default function AssessmentsTable({
                         <Archive className="h-5 w-5" />
                       </button>
                     )}
+                    <Link
+                      href={`/assessments/${assessment.id}`}
+                      title="View assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-blue-500 transition hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/assessments/${assessment.id}/edit`}
+                      title="Edit assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-emerald-500 transition hover:bg-emerald-50 hover:text-emerald-600"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Link>
+                    <Link
+                      href={`/assessments/${assessment.id}/duplicate`}
+                      title="Duplicate assessment"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-indigo-500 transition hover:bg-indigo-50 hover:text-indigo-600"
+                    >
+                      <Copy className="h-5 w-5" />
+                    </Link>
                     <Button
                       type="button"
                       title="Delete assessment"
