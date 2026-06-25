@@ -28,6 +28,7 @@ export interface NewAssessmentFormData {
   questionSelection: AssessmentQuestionSelectionMode;
   selectedBankId: string;
   selectedQuestionIds: string[];
+  initialQuestionIds: string[];
   totalQuestions: number;
   selectionRules: AssessmentSelectionRule[];
   enableTimeLimit: boolean;

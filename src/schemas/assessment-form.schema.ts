@@ -12,6 +12,7 @@ export const assessmentFormSchema = z
     questionSelection: z.enum(["MANUAL", "DYNAMIC"]),
     selectedBankId: z.string(),
     selectedQuestionIds: z.array(z.string()),
+    initialQuestionIds: z.array(z.string()).default([]),
     totalQuestions: z.number().int(),
     selectionRules: z.array(
       z.object({

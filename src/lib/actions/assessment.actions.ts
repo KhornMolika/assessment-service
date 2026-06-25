@@ -50,9 +50,8 @@ export async function createAssessmentAction(topicId: string, data: any) {
 
     // 3. Update questions (if manual and has questions)
     if (data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
-      await apiClient.put(`/assessments/${assessmentId}/questions`, {
-        questionIds: data.selectedQuestionIds,
-      });
+      const payload = data.selectedQuestionIds.map((id: string) => ({ questionId: id }));
+      await apiClient.post(`/assessments/${assessmentId}/questions`, payload);
     }
 
     revalidatePath("/assessments");
@@ -104,10 +103,21 @@ export async function updateAssessmentAction(id: string, data: any) {
     await apiClient.patch(`/assessments/${id}/settings`, settingsPayload);
 
     // 3. Update questions (if manual and has questions)
-    if (data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
-      await apiClient.put(`/assessments/${id}/questions`, {
-        questionIds: data.selectedQuestionIds,
-      });
+    if (data.questionSelection === "MANUAL") {
+      const initialIds = data.initialQuestionIds || [];
+      const currentIds = data.selectedQuestionIds || [];
+      
+      const addedIds = currentIds.filter((id: string) => !initialIds.includes(id));
+      const removedIds = initialIds.filter((id: string) => !currentIds.includes(id));
+
+      if (addedIds.length > 0) {
+        const payload = addedIds.map((id: string) => ({ questionId: id }));
+        await apiClient.post(`/assessments/${id}/questions`, payload);
+      }
+
+      for (const removedId of removedIds) {
+        await apiClient.delete(`/assessments/${id}/questions/${removedId}`);
+      }
     }
 
     // 4. Handle status transitions if changed

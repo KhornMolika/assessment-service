@@ -650,6 +650,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         questionSelection: settings.questionSelection?.toUpperCase() === "DYNAMIC" ? "DYNAMIC" : "MANUAL",
         selectedBankId,
         selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
+        initialQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
         totalQuestions: settings.numQuestions || assignedQs.length || 0,
         selectionRules: settings.selectionRules?.distribution
           ? Object.entries(settings.selectionRules.distribution).map(
