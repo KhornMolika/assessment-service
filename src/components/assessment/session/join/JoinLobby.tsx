@@ -4,13 +4,19 @@ import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
 
 export function JoinLobby({
+  requiresDisplayName,
   displayName,
   onDisplayNameChange,
+  email,
+  onEmailChange,
   onJoin,
   eventName,
 }: {
+  requiresDisplayName: boolean;
   displayName: string;
   onDisplayNameChange: (value: string) => void;
+  email: string;
+  onEmailChange: (value: string) => void;
   onJoin: () => void;
   eventName?: string;
 }) {
@@ -41,16 +47,35 @@ export function JoinLobby({
       </div>
 
       <div className="rt-card-pop w-full rounded-[30px] border border-border bg-white/85 p-5 shadow-sm sm:p-6 lg:max-w-none lg:self-stretch lg:flex lg:flex-col lg:justify-center xl:min-h-[24rem]">
-        <Label className="block space-y-2">
-          <span className="text-sm font-semibold text-primary">Display name</span>
-          <Input
-            type="text"
-            value={displayName}
-            onChange={(event) => onDisplayNameChange(event.target.value)}
-            placeholder="Enter your display name"
-            className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
-          />
-        </Label>
+        {requiresDisplayName ? (
+          <div className="space-y-4">
+            <Label className="block space-y-2">
+              <span className="text-sm font-semibold text-primary">Display name</span>
+              <Input
+                type="text"
+                value={displayName}
+                onChange={(event) => onDisplayNameChange(event.target.value)}
+                placeholder="Enter your display name"
+                className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
+              />
+            </Label>
+            <Label className="block space-y-2">
+              <span className="text-sm font-semibold text-primary">Email address</span>
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => onEmailChange(event.target.value)}
+                placeholder="Enter your email address"
+                className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
+              />
+            </Label>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-border bg-muted/20 p-4 mb-4">
+            <p className="text-sm font-semibold text-primary">Participant identity</p>
+            <p className="mt-2 text-sm leading-6 text-inkd">Internal participants can continue without entering a display name.</p>
+          </div>
+        )}
         <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
             Next step
@@ -60,7 +85,7 @@ export function JoinLobby({
         <Button
           type="button"
           data-flow-event={eventName}
-          disabled={displayName.trim().length === 0}
+          disabled={requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)}
           onClick={onJoin}
           className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
         >

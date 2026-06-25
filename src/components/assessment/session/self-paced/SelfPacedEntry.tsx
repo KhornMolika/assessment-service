@@ -12,6 +12,8 @@ export function SelfPacedEntry({
   requiresDisplayName,
   displayName,
   onDisplayNameChange,
+  email,
+  onEmailChange,
   helperTitle,
   helperDescription,
   ctaLabel,
@@ -26,6 +28,8 @@ export function SelfPacedEntry({
   requiresDisplayName: boolean;
   displayName: string;
   onDisplayNameChange: (value: string) => void;
+  email: string;
+  onEmailChange: (value: string) => void;
   helperTitle: string;
   helperDescription: string;
   ctaLabel: string;
@@ -93,16 +97,28 @@ export function SelfPacedEntry({
 
           <div className="mt-6 grid gap-4">
             {requiresDisplayName ? (
-              <Label className="block space-y-2">
-                <span className="text-sm font-semibold text-primary">Display name</span>
-                <Input
-                  type="text"
-                  value={displayName}
-                  onChange={(event) => onDisplayNameChange(event.target.value)}
-                  placeholder="Enter your display name"
-                  className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
-                />
-              </Label>
+              <div className="space-y-4">
+                <Label className="block space-y-2">
+                  <span className="text-sm font-semibold text-primary">Display name</span>
+                  <Input
+                    type="text"
+                    value={displayName}
+                    onChange={(event) => onDisplayNameChange(event.target.value)}
+                    placeholder="Enter your display name"
+                    className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  />
+                </Label>
+                <Label className="block space-y-2">
+                  <span className="text-sm font-semibold text-primary">Email address</span>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(event) => onEmailChange(event.target.value)}
+                    placeholder="Enter your email address"
+                    className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                  />
+                </Label>
+              </div>
             ) : (
               <div className="rounded-2xl border border-border bg-muted/20 p-4">
                 <p className="text-sm font-semibold text-primary">{helperTitle}</p>
@@ -132,7 +148,7 @@ export function SelfPacedEntry({
             ) : null}
             <Button
               type="button"
-              disabled={requiresDisplayName && displayName.trim().length === 0}
+              disabled={requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)}
               onClick={onContinue}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
             >

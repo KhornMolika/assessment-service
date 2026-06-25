@@ -15,7 +15,12 @@ import {
   buildQuestionRounds,
   hasAnswerResponse,
   isCorrectAnswerResponse,
+  requiresParticipantDisplayName,
 } from "./session.utils";
+import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
+import { RoomRole } from "@/src/types/runtime.types";
+import { apiClient } from "@/src/lib/api-client";
+import { toast } from "sonner";
 
 export function AssessmentJoinScreen({
   assessment,
@@ -42,60 +47,63 @@ export function AssessmentJoinScreen({
       ]),
     [assessment.id],
   );
+  const requiresEntry = assessment.participant_identity !== "ANONYMOUS";
+  const requiresDisplayName = requiresParticipantDisplayName(assessment.participant_identity);
+  
   const [displayName, setDisplayName] = useState("");
-  const [phase, setPhase] = useState<JoinPhase>("lobby");
+  const [email, setEmail] = useState("");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(12);
   const [answerValue, setAnswerValue] = useState<QuestionRendererValue>(null);
   const [totalScore, setTotalScore] = useState(0);
   const [streakCount, setStreakCount] = useState(0);
+  const [participantId, setParticipantId] = useState<string | null>(null);
 
-  const currentRound = rounds[questionIndex];
+  const { isConnected, roomState, joinRoom, emitSubmitAnswer } = useRealtimeSession();
+
+  const currentRound = roomState.currentQuestion || rounds[0];
   const isCorrect = isCorrectAnswerResponse(currentRound, answerValue);
   const speedBonus = hasAnswerResponse(answerValue) && timerSeconds >= 8 ? 50 : 0;
   const lastPoints = hasAnswerResponse(answerValue) ? (isCorrect ? currentRound.points + speedBonus : 0) : 0;
+  const phase = roomState.phase;
   const isLobbyPhase = phase === "lobby";
 
+  // Reset local state when a new question starts
   useEffect(() => {
-    if (phase !== "waiting") {
-      return;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setPhase("pick_option");
+    if (phase === "active") {
       setTimerSeconds(12);
-    }, 1500);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [phase]);
+      setAnswerValue(null);
+    }
+  }, [phase, currentRound?.id]);
 
   useEffect(() => {
-    if (phase !== "pick_option") {
-      return;
-    }
-
-    if (timerSeconds <= 0) {
-      return;
-    }
+    if (phase !== "active") return;
+    if (timerSeconds <= 0) return;
 
     const timeoutId = window.setTimeout(() => {
-      if (timerSeconds <= 1) {
-        setPhase("result");
-        return;
-      }
-
       setTimerSeconds((seconds) => seconds - 1);
     }, 1000);
 
     return () => window.clearTimeout(timeoutId);
   }, [phase, timerSeconds]);
 
-  function joinLobby() {
-    if (displayName.trim().length === 0) {
+  async function joinLobby() {
+    if (requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)) {
       return;
     }
+    
+    let createdParticipantId: string | undefined = undefined;
+    if (displayName.trim().length > 0) {
+      try {
+        const pRes = await apiClient.post<any>("/participants", { name: displayName, email });
+        createdParticipantId = pRes.id || pRes.data?.id;
+        setParticipantId(createdParticipantId || null);
+      } catch (err) {
+        toast.error("Failed to register participant details");
+      }
+    }
 
-    setPhase("waiting");
+    joinRoom(assessment.id, RoomRole.PARTICIPANT, createdParticipantId, displayName);
   }
 
   function submitAnswer(value: QuestionRendererValue) {
@@ -108,19 +116,11 @@ export function AssessmentJoinScreen({
     } else {
       setStreakCount(0);
     }
-    setPhase("result");
-  }
-
-  function goToNextRound() {
-    if (questionIndex === rounds.length - 1) {
-      setPhase("final");
-      return;
+    
+    if (participantId) {
+      const timeSpentMs = (12 - timerSeconds) * 1000;
+      emitSubmitAnswer(currentRound.id, participantId, value, timeSpentMs);
     }
-
-    setQuestionIndex((index) => index + 1);
-    setAnswerValue(null);
-    setTimerSeconds(12);
-    setPhase("pick_option");
   }
 
   return (
@@ -135,8 +135,11 @@ export function AssessmentJoinScreen({
         {phase === "lobby" ? (
           <div className="flex flex-1 items-start py-2 lg:items-center">
             <JoinLobby
+              requiresDisplayName={requiresDisplayName}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
+              email={email}
+              onEmailChange={setEmail}
               onJoin={joinLobby}
               eventName={realtimeEvents.joinRoom}
             />
@@ -150,7 +153,7 @@ export function AssessmentJoinScreen({
           />
         ) : null}
 
-        {phase === "pick_option" ? (
+        {phase === "active" ? (
           <div className="mx-auto flex w-full max-w-4xl flex-1 items-start py-2 sm:py-4 lg:items-center">
             <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
               <QuestionRenderer
@@ -162,20 +165,19 @@ export function AssessmentJoinScreen({
           </div>
         ) : null}
 
-        {phase === "result" ? (
+        {roomState.questionResults ? (
           <JoinResult
             currentRound={currentRound}
             answerValue={answerValue}
-            isCorrect={isCorrect}
-            lastPoints={lastPoints}
+            isCorrect={roomState.questionResults?.correct}
+            lastPoints={roomState.questionResults?.points || 0}
             totalScore={totalScore}
             speedBonus={speedBonus}
             isLastQuestion={questionIndex === rounds.length - 1}
-            onAdvance={goToNextRound}
           />
         ) : null}
 
-        {phase === "final" ? (
+        {phase === "results" ? (
           <JoinFinal
             displayName={displayName}
             totalScore={totalScore}
