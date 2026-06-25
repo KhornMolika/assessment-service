@@ -9,7 +9,6 @@ export async function getBanks(): Promise<QuestionBank[]> {
     const response = await apiClient.get<{ data: any[] }>("/banks?limit=500");
     return (response.data || []).map((b) => ({
       id: String(b.id),
-      owner_id: "admin",
       name: String(b.name),
       description: String(b.description || ""),
       tags: Array.isArray(b.tags) ? b.tags : [],

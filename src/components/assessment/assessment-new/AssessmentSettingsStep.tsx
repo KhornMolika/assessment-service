@@ -133,6 +133,7 @@ export default function AssessmentSettingsStep({
               Participant Identity
             </Label>
             <DropdownSelect
+            className="z-80"
               value={formData.participantIdentity}
               options={[
                 { value: "ANONYMOUS", label: "Anonymous participant" },

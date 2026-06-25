@@ -50,9 +50,8 @@ export async function createAssessmentAction(topicId: string, data: any) {
 
     // 3. Update questions (if manual and has questions)
     if (data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
-      await apiClient.put(`/assessments/${assessmentId}/questions`, {
-        questionIds: data.selectedQuestionIds,
-      });
+      const payload = data.selectedQuestionIds.map((id: string) => ({ questionId: id }));
+      await apiClient.post(`/assessments/${assessmentId}/questions`, payload);
     }
 
     revalidatePath("/assessments");
@@ -144,6 +143,33 @@ export async function deleteAssessmentAction(id: string) {
   } catch (error: any) {
     console.error("Failed to delete assessment:", error);
     return { success: false, error: error.message || "Failed to delete assessment" };
+  }
+}
+
+export async function addQuestionsToAssessmentAction(assessmentId: string, questionIds: string[]) {
+  try {
+    const payload = questionIds.map((id) => ({ questionId: id }));
+    await apiClient.post(`/assessments/${assessmentId}/questions`, payload);
+    revalidatePath(`/assessments/${assessmentId}`);
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to add questions to assessment",
+    };
+  }
+}
+
+export async function removeQuestionFromAssessmentAction(assessmentId: string, assessmentQuestionId: string) {
+  try {
+    await apiClient.delete(`/assessments/${assessmentId}/questions/${assessmentQuestionId}`);
+    revalidatePath(`/assessments/${assessmentId}`);
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to remove question from assessment",
+    };
   }
 }
 

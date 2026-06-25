@@ -19,7 +19,8 @@ export interface AssessmentDetailActivityItem {
 }
 
 export interface AssessmentDetailQuestionItem {
-  id: string;
+  id: string; // assessmentQuestionId
+  question_id?: string; // source questionId
   question: string;
   type: string;
   points: number;
