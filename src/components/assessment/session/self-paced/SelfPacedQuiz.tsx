@@ -1,8 +1,8 @@
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock3 } from "lucide-react";
 import type { QuestionRendererValue } from "../../renderers/types";
 import { QuestionRenderer } from "../../renderers/QuestionRenderer";
-import type { QuestionRound } from "../session.types";
-import { hasAnswerResponse } from "../session.utils";
+import type { QuestionRound } from '@/src/types/session.types';
+import { hasAnswerResponse } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
 
 export function SelfPacedQuiz({
@@ -33,78 +33,90 @@ export function SelfPacedQuiz({
   disablePrevious: boolean;
 }) {
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-4 lg:h-full lg:min-h-0">
-      <div className="sticky top-0 z-10 rounded-[24px] border border-border bg-white px-4 py-3 text-primary shadow-sm backdrop-blur">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-muted px-3 py-1 text-inkd">
-            Question {questionIndex + 1}/{totalQuestions}
-          </span>
-          {showTimer ? (
-            <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-inkd">
-              <Clock3 className="h-3.5 w-3.5" />
-              {timeLabel}
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-3 grid gap-1.5 sm:grid-cols-2">
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-            <div
-              className="h-full rounded-full bg-primary transition"
-              style={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}
-            />
+    <div className="mx-auto flex h-full w-full max-w-4xl flex-col gap-6 lg:min-h-0">
+      
+      {/* Floating Header */}
+      <div className="shrink-0 rounded-[28px] border border-border/50 bg-white/60 p-4 shadow-xl shadow-primary/5 backdrop-blur-xl sm:px-6 sm:py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-md shadow-primary/20">
+              Q{questionIndex + 1}
+              <span className="mx-1.5 text-primary/40">/</span>
+              <span className="text-white/80">{totalQuestions}</span>
+            </div>
+            
+            {hasAnswerResponse(answerValue) ? (
+              <div className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-200/60 bg-emerald-50/80 px-4 text-sm font-bold text-emerald-700 shadow-sm backdrop-blur-sm transition-all duration-300 animate-in fade-in zoom-in-95">
+                <CheckCircle2 className="h-4 w-4" />
+                Saved
+              </div>
+            ) : null}
           </div>
-          {showTimer ? (
-            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+
+          <div className="flex items-center gap-4 flex-1 sm:justify-end">
+            <div className="hidden h-2 flex-1 max-w-50 overflow-hidden rounded-full bg-muted/60 shadow-inner sm:block">
               <div
-                className="h-full rounded-full bg-[#F94144] transition"
-                style={{ width: `${timerProgressPercent}%` }}
+                className="h-full rounded-full bg-[linear-gradient(90deg,#4CC9F0_0%,#277DA1_100%)] transition-all duration-500 ease-out"
+                style={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}
               />
             </div>
-          ) : null}
+
+            {showTimer ? (
+              <div className="flex h-10 items-center gap-2.5 rounded-xl border border-rose-200/60 bg-rose-50/80 px-4 shadow-sm backdrop-blur-sm">
+                <Clock3 className="h-4 w-4 text-rose-600 animate-pulse" />
+                <span className="w-12 text-sm font-bold tabular-nums text-rose-700">{timeLabel}</span>
+                <div className="ml-1 h-1.5 w-16 overflow-hidden rounded-full bg-rose-200/50">
+                  <div
+                    className="h-full rounded-full bg-rose-500 transition-all duration-1000 ease-linear"
+                    style={{ width: `${timerProgressPercent}%` }}
+                  />
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 rounded-[24px] border border-border bg-white p-4 shadow-sm sm:p-5 lg:flex lg:min-h-0 lg:flex-col lg:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-              Question form
-            </p>
-            <h2 className="mt-2 text-xl font-bold leading-tight text-primary sm:text-2xl">
-              {currentQuestion.question}
-            </h2>
+      {/* Main Card */}
+      <div className="flex min-h-[50vh] flex-1 flex-col overflow-hidden rounded-4xl border border-border/60 bg-white/80 shadow-2xl shadow-primary/5 backdrop-blur-xl lg:min-h-0">
+        
+        {/* Question Text Area */}
+        <div className="shrink-0 border-b border-border/50 bg-linear-to-b from-primary/2 to-transparent p-4">
+          <h2 className="text-xl font-bold leading-relaxed text-primary sm:text-2xl">
+            {currentQuestion.question}
+          </h2>
+        </div>
+
+        {/* Renderer Area */}
+        <div className="flex flex-1 flex-col overflow-y-auto p-6 sm:p-10">
+          <div className="flex w-full flex-1 flex-col">
+            <QuestionRenderer question={currentQuestion} value={answerValue} onChange={onChange} />
           </div>
-          {hasAnswerResponse(answerValue) ? (
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-[#D8F3DC] px-3 py-1 text-xs font-semibold text-primary">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Saved
-            </div>
-          ) : null}
         </div>
 
-        <div className="mt-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-          <QuestionRenderer question={currentQuestion} value={answerValue} onChange={onChange} />
-        </div>
-
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <Button
-            type="button"
-            disabled={disablePrevious}
-            onClick={onPrevious}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            type="button"
-            disabled={!hasAnswerResponse(answerValue)}
-            onClick={onNext}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-pm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {nextLabel}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+        {/* Footer Navigation */}
+        <div className="shrink-0 border-t border-border/50 bg-white/50 p-4 backdrop-blur-md sm:px-10 sm:py-4">
+          <div className="mx-auto flex max-w-3xl flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              type="button"
+              disabled={disablePrevious}
+              onClick={onPrevious}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border-2 border-border/60 bg-white px-6 text-sm font-bold text-primary shadow-sm transition hover:-translate-y-0.5 hover:border-border hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:w-auto"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            
+            <Button
+              type="button"
+              disabled={!hasAnswerResponse(answerValue)}
+              onClick={onNext}
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-8 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-xl hover:shadow-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
+            >
+              {nextLabel}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -13,33 +13,37 @@ export function BooleanRenderer({ question, value, disabled, onChange }: Questio
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid w-full gap-3 sm:grid-cols-2">
       {booleanOptions.map((option) => {
         const Icon = option.icon;
         const isSelected = value === option.value;
         return (
-          <Button
+          <button
             key={option.id}
             type="button"
             disabled={disabled}
             onClick={() => onChange(option.value)}
-            className={`group flex items-center gap-4 rounded-2xl border-2 px-5 py-5 text-left transition-all duration-200 ${
+            className={`group relative flex items-center gap-5 rounded-2xl border-2 px-6 py-5 text-left transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${
               isSelected
-                ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(var(--color-primary),0.12)]"
-                : "border-border bg-white hover:border-primary/30 hover:bg-primary/[0.02]"
-            } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                ? "border-primary bg-primary/3 shadow-md shadow-primary/10"
+                : "border-border/60 bg-white hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-lg hover:shadow-primary/5"
+            } ${disabled ? "cursor-not-allowed opacity-60 hover:-translate-y-0 hover:shadow-none" : ""}`}
           >
             <span
-              className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+              className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all duration-300 ${
                 isSelected
-                  ? "bg-primary text-white"
-                  : "bg-muted text-primary group-hover:bg-primary/10"
+                  ? option.value ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/30 scale-110" : "bg-rose-500 text-white shadow-md shadow-rose-500/30 scale-110"
+                  : "bg-muted text-primary group-hover:bg-primary/10 group-hover:text-primary"
               }`}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-6 w-6" />
             </span>
-            <span className="text-sm font-semibold text-primary">{option.label}</span>
-          </Button>
+            <span className={`text-base font-medium leading-relaxed transition-colors duration-300 ${
+              isSelected ? "text-primary" : "text-inkd group-hover:text-primary"
+            }`}>
+              {option.label}
+            </span>
+          </button>
         );
       })}
     </div>

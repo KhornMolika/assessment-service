@@ -1,6 +1,6 @@
 import Avatar from "boring-avatars";
 import { Trophy } from "lucide-react";
-import { getAvatarColors, getAvatarVariant } from "../avatar.utils";
+import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 
 export function JoinFinal({
   displayName,

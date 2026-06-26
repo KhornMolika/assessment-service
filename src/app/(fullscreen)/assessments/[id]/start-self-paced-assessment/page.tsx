@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getAssessmentCatalogItemById, getAssessmentDetailPageData } from "@/src/api/assessment.api";
-import { AssessmentTakeScreen } from "@/src/components/assessment/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
+import { StartSelfPacedScreen } from "@/src/components/assessment/session/SessionScreens";
+import { SessionLoading } from "@/src/components/assessment/session/SessionLoading";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -12,7 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-async function AssessmentTakePageContent({
+async function AssessmentStartSelfPacedPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -27,17 +27,17 @@ async function AssessmentTakePageContent({
     notFound();
   }
 
-  return <AssessmentTakeScreen assessment={detail.assessment} questions={detail.questions} />;
+  return <StartSelfPacedScreen assessment={detail.assessment} questions={detail.questions} />;
 }
 
-export default function AssessmentTakePage({
+export default function AssessmentStartSelfPacedPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<AssessmentSessionLoading />}>
-      <AssessmentTakePageContent params={params} />
+    <Suspense fallback={<SessionLoading />}>
+      <AssessmentStartSelfPacedPageContent params={params} />
     </Suspense>
   );
 }

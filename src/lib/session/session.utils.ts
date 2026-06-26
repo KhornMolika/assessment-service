@@ -2,14 +2,14 @@ import type {
   AssessmentCatalogItem,
   AssessmentDetailQuestionItem,
 } from "@/src/types";
-import type { QuestionRendererValue } from "../renderers/types";
+import type { QuestionRendererValue } from "@/src/components/assessment/renderers/types";
 import type {
   LeaderboardEntry,
   RoomParticipant,
   QuestionOption,
   QuestionRound,
   ResultReleaseMode,
-} from "./session.types";
+} from '@/src/types/session.types';
 
 export function normalizeQuestionRendererType(type: string) {
   const normalized = type.trim().toLowerCase();
@@ -85,10 +85,10 @@ export function getParticipantIdentityLabel(
   return "External display name";
 }
 
-export function requiresParticipantDisplayName(
+export function requiresParticipantIdentity(
   identity: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL",
 ) {
-  return identity === "EXTERNAL";
+  return identity === "AUTHENTICATED" || identity === "EXTERNAL";
 }
 
 export function getResultReleaseMode(showResults: string): ResultReleaseMode {

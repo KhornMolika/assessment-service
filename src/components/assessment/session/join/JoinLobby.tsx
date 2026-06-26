@@ -1,10 +1,10 @@
-import { ArrowRight, Users, Zap } from "lucide-react";
+import { ArrowRight, Users, Zap, CheckCircle2, User } from "lucide-react";
 import { Label } from "@/src/components/ui/ui/label";
 import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
 
 export function JoinLobby({
-  requiresDisplayName,
+  requiresIdentity,
   displayName,
   onDisplayNameChange,
   email,
@@ -12,7 +12,7 @@ export function JoinLobby({
   onJoin,
   eventName,
 }: {
-  requiresDisplayName: boolean;
+  requiresIdentity: boolean;
   displayName: string;
   onDisplayNameChange: (value: string) => void;
   email: string;
@@ -21,77 +21,91 @@ export function JoinLobby({
   eventName?: string;
 }) {
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <div className="max-w-2xl lg:pr-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#4CC9F0_0%,#277DA1_100%)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
-          <Users className="h-4 w-4" />
-          Real-time lobby
-        </div>
-        <h2 className="mt-4 text-3xl font-bold text-primary">Join the live session</h2>
-        <p className="mt-3 text-sm leading-6 text-inkd">
-          Enter a display name to join. After that, wait for the host to start the session.
-        </p>
-        <div className="mt-6 grid gap-3">
-          <div className="rounded-2xl border border-border bg-[linear-gradient(135deg,#F9C74F_0%,#FFD166_100%)] p-4 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-primary" />
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                Bonus in play
-              </p>
-            </div>
-            <p className="mt-2 text-sm font-semibold text-primary">
-              Fastest correct answer earns extra points.
-            </p>
+    <div className="mx-auto flex w-full max-w-2xl my-auto flex-col items-center justify-center py-6 sm:py-8">
+      <div className="w-full overflow-hidden rounded-[32px] border border-border/60 bg-white/70 shadow-2xl shadow-primary/5 backdrop-blur-xl">
+        
+        {/* Header Section */}
+        <div className="border-b border-border/50 bg-gradient-to-b from-primary/[0.03] to-transparent p-6 text-center sm:p-8">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#4CC9F0_0%,#277DA1_100%)] shadow-lg shadow-sky-500/20">
+            <Users className="h-6 w-6 text-white" />
           </div>
-        </div>
-      </div>
-
-      <div className="rt-card-pop w-full rounded-[30px] border border-border bg-white/85 p-5 shadow-sm sm:p-6 lg:max-w-none lg:self-stretch lg:flex lg:flex-col lg:justify-center xl:min-h-[24rem]">
-        {requiresDisplayName ? (
-          <div className="space-y-4">
-            <Label className="block space-y-2">
-              <span className="text-sm font-semibold text-primary">Display name</span>
-              <Input
-                type="text"
-                value={displayName}
-                onChange={(event) => onDisplayNameChange(event.target.value)}
-                placeholder="Enter your display name"
-                className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
-              />
-            </Label>
-            <Label className="block space-y-2">
-              <span className="text-sm font-semibold text-primary">Email address</span>
-              <Input
-                type="email"
-                value={email}
-                onChange={(event) => onEmailChange(event.target.value)}
-                placeholder="Enter your email address"
-                className="w-full rounded-2xl border border-border bg-white px-4 py-3 text-sm text-primary outline-none transition focus:border-primary"
-              />
-            </Label>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-border bg-muted/20 p-4 mb-4">
-            <p className="text-sm font-semibold text-primary">Participant identity</p>
-            <p className="mt-2 text-sm leading-6 text-inkd">Internal participants can continue without entering a display name.</p>
-          </div>
-        )}
-        <div className="mt-4 rounded-2xl border border-border bg-muted/20 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-            Next step
+          <h2 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
+            Join the live session
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-inkd">
+            Enter the lobby to secure your spot. The session will begin shortly when the host starts.
           </p>
-          <p className="mt-2 text-sm leading-6 text-inkd">Waiting for host to start...</p>
+
+          {/* Inline Badges */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-border/80 bg-white px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
+              <User className="h-4 w-4 text-primary/70" />
+              {requiresIdentity ? "Identity required" : "Anonymous session"}
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-border/80 bg-[linear-gradient(135deg,#F9C74F_0%,#FFD166_100%)] px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
+              <Zap className="h-4 w-4 text-primary" />
+              Speed bonus active
+            </div>
+          </div>
         </div>
-        <Button
-          type="button"
-          data-flow-event={eventName}
-          disabled={requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)}
-          onClick={onJoin}
-          className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50" variant="ghost"
-        >
-          Join lobby
-          <ArrowRight className="h-4 w-4" />
-        </Button>
+
+        {/* Form Section */}
+        <div className="p-6 sm:p-8">
+          {requiresIdentity ? (
+            <div className="space-y-5">
+              <div className="space-y-4">
+                <Label className="block space-y-2">
+                  <span className="text-sm font-semibold text-primary">Display Name</span>
+                  <Input
+                    type="text"
+                    value={displayName}
+                    onChange={(event) => onDisplayNameChange(event.target.value)}
+                    placeholder="Enter your name"
+                    className="h-12 w-full rounded-2xl border-2 border-border/60 bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/30 hover:border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  />
+                </Label>
+                <Label className="block space-y-2">
+                  <span className="text-sm font-semibold text-primary">Email Address</span>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(event) => onEmailChange(event.target.value)}
+                    placeholder="Enter your email"
+                    className="h-12 w-full rounded-2xl border-2 border-border/60 bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/30 hover:border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  />
+                </Label>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <p className="text-sm leading-relaxed text-blue-900/80">
+                  Your identity helps us prevent duplicate entries and ensures your answers are securely associated with your email.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/30 p-8 text-center">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
+                <User className="h-5 w-5 text-primary/40" />
+              </div>
+              <p className="text-base font-semibold text-primary">Anonymous Lobby</p>
+              <p className="mt-2 text-sm leading-relaxed text-inkd">No display name is required for this session.</p>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-end">
+            <Button
+              type="button"
+              data-flow-event={eventName}
+              disabled={requiresIdentity && (displayName.trim().length === 0 || email.trim().length === 0)}
+              onClick={onJoin}
+              className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-6 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-red-500/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
+            >
+              Join lobby
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

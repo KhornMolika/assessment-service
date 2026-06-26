@@ -1,8 +1,8 @@
 import Avatar from "boring-avatars";
 import { Crown } from "lucide-react";
 import { BackButton } from "@/src/components/ui/navigation/BackButton";
-import type { LeaderboardEntry } from "../session.types";
-import { getAvatarColors, getAvatarVariant } from "../avatar.utils";
+import type { LeaderboardEntry } from '@/src/types/session.types';
+import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 
 export function HostWinner({
   leaderboard,

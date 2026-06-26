@@ -1,5 +1,5 @@
 import { ArrowRight, Trophy } from "lucide-react";
-import type { LeaderboardEntry } from "../session.types";
+import type { LeaderboardEntry } from '@/src/types/session.types';
 import { Button } from "@/src/components/ui/ui/button";
 
 export function HostLeaderboard({

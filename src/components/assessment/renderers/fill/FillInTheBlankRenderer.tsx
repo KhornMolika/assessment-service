@@ -44,8 +44,8 @@ export function FillInTheBlankRenderer({ question, value, disabled, onChange }: 
 
   let blankIndex = 0;
   return (
-    <div className="rounded-2xl border border-border bg-white p-5">
-      <p className="text-sm leading-8 text-primary">
+    <div className="flex flex-1 flex-col w-full rounded-[24px] border border-border/60 bg-white/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
+      <p className="text-base leading-relaxed text-primary sm:text-lg sm:leading-loose">
         {parts.map((part: string, i: number) => {
           if (/^\[blank_\d+\]$/.test(part)) {
             const currentIndex = blankIndex++;
@@ -62,7 +62,7 @@ export function FillInTheBlankRenderer({ question, value, disabled, onChange }: 
                   })
                 }
                 placeholder={`blank ${currentIndex + 1}`}
-                className="mx-1 inline-block w-40 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 px-3 py-1 text-center text-sm font-semibold text-primary outline-none transition focus:border-primary focus:bg-white"
+                className="mx-2 inline-flex h-10 w-40 items-center justify-center rounded-xl border-b-2 border-l-0 border-r-0 border-t-0 border-border/80 bg-primary/[0.02] px-3 text-center text-base font-bold text-primary shadow-inner outline-none transition-all duration-300 placeholder:text-primary/20 hover:border-primary/40 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/20"
               />
             );
           }

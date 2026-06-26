@@ -18,7 +18,7 @@ export interface QuestionCatalogPageData {
 export async function getQuestions(): Promise<Question[]> {
   try {
     const response = await apiClient.get<{ data: any[] }>(
-      "/questions?limit=5000",
+      "/questions?limit=1000",
     );
     return (response.data || []).map((q) => ({
       id: String(q.id),

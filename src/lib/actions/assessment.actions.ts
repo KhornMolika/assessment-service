@@ -66,13 +66,23 @@ export async function createAssessmentAction(topicId: string, data: any) {
 
 export async function updateAssessmentAction(id: string, data: any) {
   try {
-    // 1. Update base assessment
-    const basePayload = {
-      name: data.name,
-      type: data.type || "QUIZ",
-      description: data.description,
-    };
-    const updatedAssessment = await apiClient.patch<AssessmentDetailPageData>(`/assessments/${id}`, basePayload);
+    // 0. Check current status
+    const currentAssessmentRaw = await apiClient.get<AssessmentDetailPageData>(`/assessments/${id}`);
+    const currentAssessment = (currentAssessmentRaw as any).data || currentAssessmentRaw;
+    const originalStatus = currentAssessment.status;
+    const isPublishedOrArchived = originalStatus === "PUBLISHED" || originalStatus === "ARCHIVED";
+
+    let updatedAssessment = currentAssessment;
+
+    // 1. Update base assessment (skip if published/archived as backend blocks it)
+    if (!isPublishedOrArchived) {
+      const basePayload = {
+        name: data.name,
+        type: data.type || "QUIZ",
+        description: data.description,
+      };
+      updatedAssessment = await apiClient.patch<AssessmentDetailPageData>(`/assessments/${id}`, basePayload);
+    }
 
     // 2. Update settings
     const settingsPayload = {
@@ -102,8 +112,8 @@ export async function updateAssessmentAction(id: string, data: any) {
     };
     await apiClient.patch(`/assessments/${id}/settings`, settingsPayload);
 
-    // 3. Update questions (if manual and has questions)
-    if (data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
+    // 3. Update questions (skip if published/archived as backend blocks it)
+    if (!isPublishedOrArchived && data.questionSelection === "MANUAL" && data.selectedQuestionIds && data.selectedQuestionIds.length > 0) {
       await apiClient.put(`/assessments/${id}/questions`, {
         questionIds: data.selectedQuestionIds,
       });
@@ -111,9 +121,6 @@ export async function updateAssessmentAction(id: string, data: any) {
 
     // 4. Handle status transitions if changed
     if (data.status) {
-      const currentAssessmentRaw = await apiClient.get<AssessmentDetailPageData>(`/assessments/${id}`);
-      const currentAssessment = (currentAssessmentRaw as any).data || currentAssessmentRaw;
-      const originalStatus = currentAssessment.status;
 
       if (originalStatus === "DRAFT" && data.status === "PUBLISHED") {
         await apiClient.post(`/assessments/${id}/publish`, {});

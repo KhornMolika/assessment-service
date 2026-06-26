@@ -4,7 +4,7 @@ import type {
   RealtimeEventName,
   RealtimeHostToServerEvents,
   RealtimeServerToRoomEvents,
-} from "./session.types";
+} from '@/src/types/session.types';
 
 export const realtimeEvents = {
   joinRoom: "JOIN_ROOM",

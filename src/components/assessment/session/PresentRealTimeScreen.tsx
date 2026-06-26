@@ -24,24 +24,24 @@ import type {
 } from "@/src/types";
 import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import { ScreenShell } from "./SessionShared";
-import { getAvatarColors, getAvatarVariant } from "./avatar.utils";
-import { useRealtimeAudio } from "./realtime.effects";
-import { realtimeEvents } from "./realtime.events";
-import type { HostPhase } from "./session.types";
+import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
+import { useRealtimeAudio } from '@/src/lib/session/realtime.effects';
+import { realtimeEvents } from '@/src/lib/session/realtime.events';
+import type { HostPhase } from '@/src/types/session.types';
 import {
   buildDistribution,
   buildLeaderboard,
   buildParticipantRoster,
   buildQuestionRounds,
   resolveLeaderboardRound,
-} from "./session.utils";
+} from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
 import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
 import { RoomRole } from "@/src/types/runtime.types";
 import { startRealtimeSessionHost } from "@/src/lib/actions/runtime.actions";
 import { toast } from "sonner";
 
-export function AssessmentHostScreen({
+export function PresentRealTimeScreen({
   assessment,
   questions,
   embedded,
@@ -85,7 +85,7 @@ export function AssessmentHostScreen({
   }, [assessment.id, joinRoom]);
 
   const currentRound = rounds[questionIndex];
-  const participantPath = `/assessments/${assessment.id}/join`;
+  const participantPath = `/assessments/${assessment.id}/enter-real-time-assessment`;
   const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
   const responseDistribution = useMemo(
     () => {
