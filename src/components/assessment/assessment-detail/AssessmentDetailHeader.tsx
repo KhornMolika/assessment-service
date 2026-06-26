@@ -11,6 +11,7 @@ import { Button } from "@/src/components/ui/ui/button";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import ActionConfirmModal from "@/src/components/ui/modals/ActionConfirmModal";
 import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import AssessmentShareAction from "../AssessmentShareAction";
 
 export default function AssessmentDetailHeader({
   assessment,
@@ -59,6 +60,7 @@ export default function AssessmentDetailHeader({
         if (res.success) {
           toast.success("Assessment published successfully");
           setShowPublishModal(false);
+          router.refresh();
         } else {
           toast.error(res.error || "Failed to publish assessment");
         }
@@ -75,6 +77,7 @@ export default function AssessmentDetailHeader({
         if (res.success) {
           toast.success("Assessment archived successfully");
           setShowArchiveModal(false);
+          router.refresh();
         } else {
           toast.error(res.error || "Failed to archive assessment");
         }
@@ -95,9 +98,24 @@ export default function AssessmentDetailHeader({
           title="Assessment Details"
           actions={
             <div className="flex items-center gap-3">
-              {mode === "SELF_PACED" ? (
+              {assessment.status === "PUBLISHED" ? (
+                <>
+                  <Link
+                    href={`/assessments/${assessment.id}/preview`}
+                    className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
+                  >
+                    <Play className="h-4 w-4" />
+                    Preview Flow
+                  </Link>
+                  <AssessmentShareAction
+                    assessment={assessment}
+                    buttonClassName="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                    labelClassName="text-sm font-semibold"
+                  />
+                </>
+              ) : mode === "SELF_PACED" ? (
                 <Link
-                  href={`/assessments/${assessment.id}/take`}
+                  href={`/assessments/${assessment.id}/start-self-paced-assessment`}
                   className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
                 >
                   <Play className="h-4 w-4" />
@@ -106,14 +124,14 @@ export default function AssessmentDetailHeader({
               ) : (
                 <>
                   <Link
-                    href={`/assessments/${assessment.id}/host`}
+                    href={`/assessments/${assessment.id}/present-real-time-assessment`}
                     className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
                   >
                     <MonitorPlay className="h-4 w-4" />
                     Host Session
                   </Link>
                   <Link
-                    href={`/assessments/${assessment.id}/join`}
+                    href={`/assessments/${assessment.id}/enter-real-time-assessment`}
                     className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
                   >
                     <Users className="h-4 w-4" />
@@ -133,12 +151,26 @@ export default function AssessmentDetailHeader({
 
               {showMenu && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
-                  <Link
-                    href={`/assessments/${assessment.id}/edit`}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
-                  >
-                    <Edit className="h-4 w-4" /> Edit
-                  </Link>
+                  {assessment.status === "ARCHIVED" ? (
+                    <button
+                      onClick={() => {
+                        setShowMenu(false);
+                        toast.error("An archived assessment cannot be edited anymore.", {
+                          id: "edit-blocked-toast",
+                        });
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 transition hover:bg-gray-50 cursor-not-allowed"
+                    >
+                      <Edit className="h-4 w-4" /> Edit
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/assessments/${assessment.id}/edit`}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+                    >
+                      <Edit className="h-4 w-4" /> Edit
+                    </Link>
+                  )}
                   <Link
                     href={`/assessments/${assessment.id}/duplicate`}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
@@ -166,22 +198,6 @@ export default function AssessmentDetailHeader({
                     >
                       <Archive className="h-4 w-4" /> Archive
                     </button>
-                  )}
-                  {assessment.status === "PUBLISHED" && mode === "SELF_PACED" && (
-                    <Link
-                      href={`/assessments/${assessment.id}/self-paced-preview`}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-pink-600 transition hover:bg-pink-50"
-                    >
-                      <Play className="h-4 w-4" /> Preview
-                    </Link>
-                  )}
-                  {assessment.status === "PUBLISHED" && mode === "REAL_TIME" && (
-                    <Link
-                      href={`/assessments/${assessment.id}/real-time-preview`}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-pink-600 transition hover:bg-pink-50"
-                    >
-                      <Play className="h-4 w-4" /> Preview
-                    </Link>
                   )}
                   <button
                     onClick={() => {

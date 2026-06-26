@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import type { QuestionRendererValue } from "../../renderers/types";
-import type { QuestionRound } from "../session.types";
-import { getAnswerResponseText, hasAnswerResponse } from "../session.utils";
+import type { QuestionRound } from '@/src/types/session.types';
+import { getAnswerResponseText, hasAnswerResponse } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
 
 export function JoinResult({

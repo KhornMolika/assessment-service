@@ -1,6 +1,6 @@
 import { Clock3 } from "lucide-react";
 import { QuestionRenderer } from "../../renderers/QuestionRenderer";
-import type { QuestionRound } from "../session.types";
+import type { QuestionRound } from '@/src/types/session.types';
 import { Button } from "@/src/components/ui/ui/button";
 
 export function HostReveal({

@@ -6,7 +6,7 @@ function LoadingBlock({
   return <div className={`animate-pulse rounded-2xl bg-white/70 ${className}`} />;
 }
 
-export function AssessmentSessionLoading() {
+export function SessionLoading() {
   return (
     <main className="min-h-[100dvh] bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
       <div className="mx-auto grid min-h-[calc(100dvh-1.5rem)] max-w-7xl gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">

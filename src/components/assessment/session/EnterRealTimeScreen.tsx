@@ -9,20 +9,20 @@ import { JoinFinal } from "./join/JoinFinal";
 import { JoinLobby } from "./join/JoinLobby";
 import { JoinResult } from "./join/JoinResult";
 import { JoinWaitingState } from "./join/JoinWaitingState";
-import { realtimeEvents } from "./realtime.events";
-import type { JoinPhase } from "./session.types";
+import { realtimeEvents } from '@/src/lib/session/realtime.events';
+import type { JoinPhase } from '@/src/types/session.types';
 import {
   buildQuestionRounds,
   hasAnswerResponse,
   isCorrectAnswerResponse,
-  requiresParticipantDisplayName,
-} from "./session.utils";
+  requiresParticipantIdentity,
+} from '@/src/lib/session/session.utils';
 import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
 import { RoomRole } from "@/src/types/runtime.types";
 import { apiClient } from "@/src/lib/api-client";
 import { toast } from "sonner";
 
-export function AssessmentJoinScreen({
+export function EnterRealTimeScreen({
   assessment,
   embedded,
 }: {
@@ -48,7 +48,7 @@ export function AssessmentJoinScreen({
     [assessment.id],
   );
   const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
+  const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -88,7 +88,7 @@ export function AssessmentJoinScreen({
   }, [phase, timerSeconds]);
 
   async function joinLobby() {
-    if (requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)) {
+    if (requiresIdentity && (displayName.trim().length === 0 || email.trim().length === 0)) {
       return;
     }
     
@@ -135,7 +135,7 @@ export function AssessmentJoinScreen({
         {phase === "lobby" ? (
           <div className="flex flex-1 items-start py-2 lg:items-center">
             <JoinLobby
-              requiresDisplayName={requiresDisplayName}
+              requiresIdentity={requiresIdentity}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
               email={email}

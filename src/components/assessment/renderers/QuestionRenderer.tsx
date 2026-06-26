@@ -1,6 +1,5 @@
 import { BooleanRenderer } from "./boolean/BooleanRenderer";
 import { EssayRenderer } from "./essay/EssayRenderer";
-import { FileUploadRenderer } from "./file/FileUploadRenderer";
 import { FillInTheBlankRenderer } from "./fill/FillInTheBlankRenderer";
 import { MatchingRenderer } from "./matching/MatchingRenderer";
 import { MultipleChoiceRenderer } from "./multiple/MultipleChoiceRenderer";
@@ -9,7 +8,7 @@ import { RatingRenderer } from "./rating/RatingRenderer";
 import { ShortAnswerRenderer } from "./short/ShortAnswerRenderer";
 import { SingleChoiceRenderer } from "./single/SingleChoiceRenderer";
 import type { QuestionRendererProps } from "./types";
-import { normalizeQuestionRendererType } from "../session/session.utils";
+import { normalizeQuestionRendererType } from "@/src/lib/session/session.utils";
 
 export function QuestionRenderer(props: QuestionRendererProps) {
   switch (normalizeQuestionRendererType(props.question.type)) {
@@ -29,8 +28,6 @@ export function QuestionRenderer(props: QuestionRendererProps) {
       return <FillInTheBlankRenderer {...props} />;
     case "matching":
       return <MatchingRenderer {...props} />;
-    case "file":
-      return <FileUploadRenderer {...props} />;
     default:
       return <SingleChoiceRenderer {...props} />;
   }

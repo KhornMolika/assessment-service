@@ -10,7 +10,7 @@ export function RatingRenderer({ question, value, disabled, onChange }: Question
   const scores = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
-    <div className="space-y-3">
+    <div className="w-full space-y-3">
       {(lowLabel || highLabel) ? (
         <div className="flex items-center justify-between text-xs font-medium text-inkd">
           <span>{lowLabel}</span>
@@ -19,19 +19,23 @@ export function RatingRenderer({ question, value, disabled, onChange }: Question
       ) : null}
       <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${scores.length}, minmax(0, 1fr))` }}>
         {scores.map((score) => (
-          <Button
+          <button
             key={score}
             type="button"
             disabled={disabled}
             onClick={() => onChange(score)}
-            className={`rounded-2xl border-2 px-3 py-5 text-center transition-all duration-200 ${
+            className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 px-3 py-6 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${
               value === score
-                ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(var(--color-primary),0.12)]"
-                : "border-border bg-white text-primary hover:border-primary/30 hover:bg-primary/[0.02]"
-            } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+                ? "border-amber-400 bg-amber-50 shadow-md shadow-amber-500/20 scale-105"
+                : "border-border/60 bg-white hover:-translate-y-1 hover:border-amber-300 hover:bg-amber-50/50 hover:shadow-lg hover:shadow-amber-500/10"
+            } ${disabled ? "cursor-not-allowed opacity-50 hover:-translate-y-0 hover:scale-100 hover:shadow-none" : ""}`}
           >
-            <p className="text-2xl font-bold text-primary">{score}</p>
-          </Button>
+            <p className={`text-2xl font-black transition-colors duration-300 ${
+              value === score ? "text-amber-600" : "text-primary/70 group-hover:text-amber-500"
+            }`}>
+              {score}
+            </p>
+          </button>
         ))}
       </div>
     </div>

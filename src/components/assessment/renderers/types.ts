@@ -1,4 +1,4 @@
-import type { QuestionRound } from "../session/session.types";
+import type { QuestionRound } from "@/src/types/session.types";
 
 export type QuestionRendererValue =
   | string

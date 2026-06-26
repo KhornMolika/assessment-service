@@ -25,6 +25,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 import { deleteAssessmentAction, publishAssessmentAction, archiveAssessmentAction } from "@/src/lib/actions/assessment.actions";
+import AssessmentShareAction from "../AssessmentShareAction";
 
 function formatDeliveryMode(deliveryMode: AssessmentDeliveryMode) {
   return deliveryMode === "SELF_PACED" ? "Self Paced" : "Real Time";
@@ -212,21 +213,20 @@ export default function AssessmentsTable({
                         <Archive className="h-4 w-4" /> Archive
                       </button>
                     )}
-                    {actualStatus === "PUBLISHED" && actualMode === "SELF_PACED" && (
-                      <Link
-                        href={`/assessments/${assessment.id}/self-paced-preview`}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
-                      >
-                        <Play className="h-4 w-4" /> Preview
-                      </Link>
-                    )}
-                    {actualStatus === "PUBLISHED" && actualMode === "REAL_TIME" && (
-                      <Link
-                        href={`/assessments/${assessment.id}/real-time-preview`}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
-                      >
-                        <Play className="h-4 w-4" /> Preview
-                      </Link>
+                    {actualStatus === "PUBLISHED" && (
+                      <>
+                        <AssessmentShareAction
+                          assessment={assessment as any}
+                          buttonClassName="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-sky-600 transition hover:bg-sky-50"
+                          labelClassName=""
+                        />
+                        <Link
+                          href={`/assessments/${assessment.id}/preview`}
+                          className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                        >
+                          <Play className="h-4 w-4" /> Preview
+                        </Link>
+                      </>
                     )}
                     <Link
                       href={`/assessments/${assessment.id}`}
@@ -234,12 +234,27 @@ export default function AssessmentsTable({
                     >
                       <Eye className="h-4 w-4" /> View
                     </Link>
-                    <Link
-                      href={`/assessments/${assessment.id}/edit`}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
-                    >
-                      <Edit className="h-4 w-4" /> Edit
-                    </Link>
+                    {actualStatus === "ARCHIVED" ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toast.error("An archived assessment cannot be edited anymore.", {
+                            id: "edit-blocked-toast",
+                          });
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-gray-400 transition hover:bg-gray-50 cursor-not-allowed"
+                      >
+                        <Edit className="h-4 w-4" /> Edit
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/assessments/${assessment.id}/edit`}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
+                      >
+                        <Edit className="h-4 w-4" /> Edit
+                      </Link>
+                    )}
                     <Link
                       href={`/assessments/${assessment.id}/duplicate`}
                       className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"

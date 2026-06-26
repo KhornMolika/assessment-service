@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getAssessmentCatalogItemById, getAssessmentDetailPageData } from "@/src/api/assessment.api";
-import { AssessmentHostScreen } from "@/src/components/assessment/session/AssessmentSessionScreens";
-import { AssessmentSessionLoading } from "@/src/components/assessment/session/AssessmentSessionLoading";
+import { PresentRealTimeScreen } from "@/src/components/assessment/session/SessionScreens";
+import { SessionLoading } from "@/src/components/assessment/session/SessionLoading";
 
-async function AssessmentHostPageContent({
+async function AssessmentPresentRealTimePageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -19,17 +19,17 @@ async function AssessmentHostPageContent({
     notFound();
   }
 
-  return <AssessmentHostScreen assessment={assessment} questions={detail.questions} />;
+  return <PresentRealTimeScreen assessment={assessment} questions={detail.questions} />;
 }
 
-export default function AssessmentHostPage({
+export default function AssessmentPresentRealTimePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   return (
-    <Suspense fallback={<AssessmentSessionLoading />}>
-      <AssessmentHostPageContent params={params} />
+    <Suspense fallback={<SessionLoading />}>
+      <AssessmentPresentRealTimePageContent params={params} />
     </Suspense>
   );
 }

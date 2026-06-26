@@ -19,8 +19,8 @@ import {
   formatDurationClock,
   getResultReleaseMode,
   isCorrectAnswerResponse,
-  requiresParticipantDisplayName,
-} from "./session.utils";
+  requiresParticipantIdentity,
+} from '@/src/lib/session/session.utils';
 import {
   startSelfPacedSession,
   saveAnswerIncremental,
@@ -29,7 +29,7 @@ import {
 } from "@/src/lib/actions/runtime.actions";
 import { toast } from "sonner";
 
-export function AssessmentTakeScreen({
+export function StartSelfPacedScreen({
   assessment,
   questions,
 }: {
@@ -38,7 +38,7 @@ export function AssessmentTakeScreen({
 }) {
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
   const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
+  const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
   const allowShareAnswerSheet = false;
@@ -122,7 +122,7 @@ export function AssessmentTakeScreen({
   async function handleStartQuiz() {
     setIsSubmitting(true);
     let participantData = undefined;
-    if (requiresDisplayName && displayName.trim()) {
+    if (requiresIdentity && displayName.trim()) {
       participantData = { name: displayName, email: email || "" };
     }
     
@@ -176,16 +176,12 @@ export function AssessmentTakeScreen({
       description={step === "entry" ? assessment.description! : ""}
       aside={null}
     >
-      <div
-        className={
-          step === "quiz" ? "lg:h-full lg:min-h-0" : ""
-        }
-      >
+      <div className="flex flex-1 min-h-0 flex-col">
         {step === "entry" ? (
           <SelfPacedEntry
             heading="Before you begin"
             timeLimitMinutes={assessment.settings?.timeLimit ?? 0}
-            requiresDisplayName={requiresDisplayName}
+            requiresIdentity={requiresIdentity}
             displayName={displayName}
             onDisplayNameChange={setDisplayName}
             email={email}

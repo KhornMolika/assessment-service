@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, Info, ShieldCheck } from "lucide-react";
-import { TimeLimitCard } from "../SessionShared";
+import { ArrowLeft, ArrowRight, ShieldCheck, Clock, User, CheckCircle2 } from "lucide-react";
 import { Label } from "@/src/components/ui/ui/label";
 import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
@@ -9,7 +8,7 @@ export function SelfPacedEntry({
   heading,
   description,
   timeLimitMinutes,
-  requiresDisplayName,
+  requiresIdentity,
   displayName,
   onDisplayNameChange,
   email,
@@ -25,7 +24,7 @@ export function SelfPacedEntry({
   heading: string;
   description?: string;
   timeLimitMinutes: number;
-  requiresDisplayName: boolean;
+  requiresIdentity: boolean;
   displayName: string;
   onDisplayNameChange: (value: string) => void;
   email: string;
@@ -39,121 +38,92 @@ export function SelfPacedEntry({
   showBackButton?: boolean;
 }) {
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="rounded-[24px] border border-border bg-white p-5 shadow-sm sm:p-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-inkd">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            Entry form
+    <div className="mx-auto flex w-full max-w-2xl my-auto flex-col items-center justify-center">
+      <div className="w-full overflow-hidden rounded-[32px] border border-border/60 bg-white/70 shadow-2xl shadow-primary/5 backdrop-blur-xl">
+        
+        {/* Header Section */}
+        <div className="border-b border-border/50 bg-gradient-to-b from-primary/[0.03] to-transparent p-6 text-center sm:p-8">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20">
+            <ShieldCheck className="h-6 w-6 text-white" />
           </div>
-          <h2 className="mt-5 text-3xl font-bold leading-tight text-primary sm:text-4xl">
+          <h2 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
             {heading}
           </h2>
           {description ? (
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-inkd">{description}</p>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-inkd">
+              {description}
+            </p>
           ) : null}
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                Identity
-              </p>
-              <p className="mt-2 text-sm font-semibold text-primary">{requiresDisplayName ? "Required" : "Managed"}</p>
+          {/* Inline Badges */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center gap-2 rounded-full border border-border/80 bg-white px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
+              <User className="h-4 w-4 text-primary/70" />
+              {requiresIdentity ? "Identity required" : "Anonymous session"}
             </div>
-            <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                Mode
-              </p>
-              <p className="mt-2 text-sm font-semibold text-primary">Self-paced</p>
-            </div>
-            <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                Timer
-              </p>
-              <p className="mt-2 text-sm font-semibold text-primary">
-                {timeLimitMinutes > 0 ? `${timeLimitMinutes} min` : "No limit"}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-start gap-3 rounded-2xl border border-border bg-white p-4 shadow-sm">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p className="text-sm leading-6 text-inkd">
-              Your answers save as you move through the quiz. Review everything once before submission.
-            </p>
+            {timeLimitMinutes > 0 && (
+              <div className="flex items-center gap-2 rounded-full border border-border/80 bg-white px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
+                <Clock className="h-4 w-4 text-primary/70" />
+                {timeLimitMinutes} min limit
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="rounded-[24px] border border-border bg-white p-5 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4">
-            <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#D8F3DC] px-3 py-1 text-xs font-semibold text-primary">
-              <ShieldCheck className="h-4 w-4" />
-                Participant setup
-              </div>
-            </div>
-            {timeLimitMinutes > 0 ? <TimeLimitCard minutes={timeLimitMinutes} compact /> : null}
-          </div>
-
-          <div className="mt-6 grid gap-4">
-            {requiresDisplayName ? (
+        {/* Form Section */}
+        <div className="p-6 sm:p-8">
+          {requiresIdentity ? (
+            <div className="space-y-5">
               <div className="space-y-4">
                 <Label className="block space-y-2">
-                  <span className="text-sm font-semibold text-primary">Display name</span>
+                  <span className="text-sm font-semibold text-primary">Display Name</span>
                   <Input
                     type="text"
                     value={displayName}
                     onChange={(event) => onDisplayNameChange(event.target.value)}
-                    placeholder="Enter your display name"
-                    className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    placeholder="Enter your name"
+                    className="h-12 w-full rounded-2xl border-2 border-border/60 bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/30 hover:border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
                   />
                 </Label>
                 <Label className="block space-y-2">
-                  <span className="text-sm font-semibold text-primary">Email address</span>
+                  <span className="text-sm font-semibold text-primary">Email Address</span>
                   <Input
                     type="email"
                     value={email}
                     onChange={(event) => onEmailChange(event.target.value)}
-                    placeholder="Enter your email address"
-                    className="h-12 w-full rounded-2xl border border-border bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/35 focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    placeholder="Enter your email"
+                    className="h-12 w-full rounded-2xl border-2 border-border/60 bg-white px-4 text-sm text-primary outline-none transition placeholder:text-primary/30 hover:border-primary/20 focus:border-primary focus:ring-4 focus:ring-primary/10"
                   />
                 </Label>
               </div>
-            ) : (
-              <div className="rounded-2xl border border-border bg-muted/20 p-4">
-                <p className="text-sm font-semibold text-primary">{helperTitle}</p>
-                <p className="mt-2 text-sm leading-6 text-inkd">{helperDescription}</p>
-              </div>
-            )}
 
-            {requiresDisplayName ? (
-              <div className="flex items-start gap-3 rounded-2xl border border-border bg-muted/20 p-4">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary/65" />
-                <p className="text-sm leading-6 text-inkd">
-                  Display name is required before the quiz begins.
+              <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                <p className="text-sm leading-relaxed text-blue-900/80">
+                  Your identity helps us prevent duplicate entries and ensures your answers are securely associated with your email.
                 </p>
               </div>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <div className={requiresIdentity ? "mt-6 flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between" : "flex flex-col-reverse gap-4 sm:flex-row sm:items-center sm:justify-between"}>
             {showBackButton && backHref && backLabel ? (
               <Link
                 href={backHref}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border-2 border-border/60 px-5 text-sm font-semibold text-primary transition hover:bg-muted"
               >
                 <ArrowLeft className="h-4 w-4" />
                 {backLabel}
               </Link>
-            ) : null}
+            ) : <div />}
             <Button
               type="button"
-              disabled={requiresDisplayName && (displayName.trim().length === 0 || email.trim().length === 0)}
+              disabled={requiresIdentity && (displayName.trim().length === 0 || email.trim().length === 0)}
               onClick={onContinue}
-              className="inline-flex h-12 w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:bg-pm disabled:cursor-not-allowed disabled:opacity-50"
+              className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-xl hover:shadow-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
             >
               {ctaLabel}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </div>
         </div>

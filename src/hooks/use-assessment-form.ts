@@ -236,7 +236,7 @@ export function useAssessmentForm({
     }));
   };
 
-  const destination = "/assessments";
+  const destination = mode === "edit" && assessmentId ? `/assessments/${assessmentId}` : "/assessments";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

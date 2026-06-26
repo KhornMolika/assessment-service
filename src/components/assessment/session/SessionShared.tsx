@@ -1,4 +1,5 @@
 import {
+  CheckCircle2,
   Clock3,
   ExternalLink,
   LoaderCircle,
@@ -9,8 +10,8 @@ import {
   Users,
 } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types";
-import type { QuestionOption } from "./session.types";
-import { formatStartDate, getParticipantIdentityLabel } from "./session.utils";
+import type { QuestionOption } from '@/src/types/session.types';
+import { formatStartDate, getParticipantIdentityLabel } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
 
 const realtimeOptionPalettes = [
@@ -53,11 +54,11 @@ export function ScreenShell({
   children,
   variant = "page",
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   headerAction?: React.ReactNode;
-  aside: React.ReactNode;
+  aside?: React.ReactNode;
   children: React.ReactNode;
   variant?: "page" | "panel";
 }) {
@@ -73,7 +74,7 @@ export function ScreenShell({
   }
 
   return (
-    <main className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-6">
+    <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-6">
       <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:h-full lg:min-h-0 lg:gap-6 lg:flex-row">
         <div className="flex flex-1 flex-col lg:min-h-0">
           {hasHeader || headerAction ? (
@@ -85,7 +86,7 @@ export function ScreenShell({
                   </p>
                 ) : null}
                 {title ? (
-                  <h1 className="mt-3 max-w-4xl text-3xl font-bold leading-tight text-primary sm:text-4xl">
+                  <h1 className="mt-2 max-w-4xl text-2xl font-bold leading-tight text-primary sm:text-3xl">
                     {title}
                   </h1>
                 ) : null}
@@ -96,7 +97,7 @@ export function ScreenShell({
               {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
             </div>
           ) : null}
-          <div className={`${hasHeader ? "mt-6 lg:mt-8" : ""} flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}>
+          <div className={`${hasHeader ? "mt-4 lg:mt-6" : ""} flex flex-col flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}>
             {children}
           </div>
         </div>
@@ -107,7 +108,7 @@ export function ScreenShell({
   );
 }
 
-export function AssessmentOverviewCard({
+export function OverviewCard({
   assessment,
 }: {
   assessment: AssessmentCatalogItem;
@@ -263,27 +264,40 @@ export function QuestionOptionButton({
   }
 
   return (
-    <Button
+    <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`group flex w-full items-center gap-4 rounded-2xl border-2 px-5 py-5 text-left transition-all duration-200 ${
+      className={`group relative flex w-full items-center gap-5 rounded-2xl border-2 p-3.5 text-left transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${
         selected
-          ? "border-primary bg-primary/5 shadow-[0_0_0_3px_rgba(var(--color-primary),0.12)]"
-          : "border-border bg-white hover:border-primary/30 hover:bg-primary/[0.02] hover:shadow-sm"
-      } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
+          ? "border-primary bg-primary/3 shadow-md shadow-primary/10"
+          : "border-border/60 bg-white hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-lg hover:shadow-primary/5"
+      } ${disabled ? "cursor-not-allowed opacity-60 hover:-translate-y-0 hover:shadow-none" : ""}`}
     >
       <span
-        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors ${
+        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold transition-all duration-300 ${
           selected
-            ? "bg-primary text-white"
-            : "bg-muted text-primary group-hover:bg-primary/10"
+            ? "bg-primary text-white shadow-md shadow-primary/30 scale-110"
+            : "bg-muted text-primary group-hover:bg-primary/10 group-hover:text-primary"
         }`}
       >
         {option.label}
       </span>
-      <span className="text-sm font-semibold leading-6 text-primary">{option.text}</span>
-    </Button>
+      <span className={`text-base font-medium leading-relaxed transition-colors duration-300 ${
+        selected ? "text-primary" : "text-inkd group-hover:text-primary"
+      }`}>
+        {option.text}
+      </span>
+      
+      {/* Selection Indicator */}
+      <div className={`ml-auto flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+        selected 
+          ? "border-primary bg-primary text-white scale-100 opacity-100" 
+          : "border-border/60 scale-75 opacity-0 group-hover:border-primary/30 group-hover:opacity-50"
+      }`}>
+        <CheckCircle2 className="h-4 w-4" />
+      </div>
+    </button>
   );
 }
 

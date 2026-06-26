@@ -19,7 +19,7 @@ export function MultipleChoiceRenderer({
   }
 
   return (
-    <div className={`grid gap-3 ${question.options.length === 4 ? 'sm:grid-cols-2' : ''}`}>
+    <div className={`grid w-full gap-3 ${question.options.length === 4 ? 'sm:grid-cols-2' : ''}`}>
       {question.options.map((option: { id: string; label: string; text: string }) => (
         <QuestionOptionButton
           key={option.id}

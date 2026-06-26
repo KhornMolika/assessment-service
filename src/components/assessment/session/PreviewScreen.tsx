@@ -9,7 +9,6 @@ import type {
 import { BackButton } from "@/src/components/ui/navigation/BackButton";
 import type { QuestionRendererValue } from "../renderers/types";
 import {
-  AssessmentOverviewCard,
   ProcessingAnswersCard,
   QuestionOptionButton,
   ScreenShell,
@@ -23,10 +22,10 @@ import {
   formatDurationClock,
   getResultReleaseMode,
   isCorrectAnswerResponse,
-  requiresParticipantDisplayName,
-} from "./session.utils";
+  requiresParticipantIdentity,
+} from '@/src/lib/session/session.utils';
 
-export function AssessmentPreviewScreen({
+export function PreviewScreen({
   assessment,
   questions,
   previewMode,
@@ -43,7 +42,7 @@ export function AssessmentPreviewScreen({
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
   const allowShareAnswerSheet = false;
   const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
-  const requiresDisplayName = requiresParticipantDisplayName(assessment.settings?.participantIdentity || "EXTERNAL");
+  const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
   const [displayName, setDisplayName] = useState(isSelfPacedPreview ? "Creator Preview" : "");
   const [email, setEmail] = useState(isSelfPacedPreview ? "preview@example.com" : "");
@@ -112,40 +111,13 @@ export function AssessmentPreviewScreen({
 
   return (
     <ScreenShell
-      eyebrow={isSelfPacedPreview ? "Self-paced Preview" : "Real-time Preview"}
-      title={assessment.name || "Untitled"}
-      description={
-        isSelfPacedPreview
-          ? "Creators can complete the self-paced participant experience as a dry run. Answers are evaluated in the UI, but nothing is saved in preview."
-          : "Creators see the real-time participant experience in read-only mode. No answers are saved in preview."
-      }
+      title={assessment.name ? `Preview: ${assessment.name}` : "Assessment Preview"}
+      description="Preview Mode Active — Your answers will not be recorded."
       headerAction={
         <BackButton
           href={backHref}
-          label="Back to assessment"
+          label="Exit Preview"
         />
-      }
-      aside={
-        isSelfPacedPreview && step === "entry" ? (
-          <div className="space-y-4">
-            <AssessmentOverviewCard assessment={assessment} />
-            <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/60">
-                Runtime state
-              </p>
-              <div className="mt-4 space-y-3 text-sm text-inkd">
-                <div className="rounded-2xl bg-muted/30 p-4">
-                  <p className="font-semibold text-primary">Answer responses saved</p>
-                  <p className="mt-1">Preview mode evaluates answers without saving them.</p>
-                </div>
-                <div className="rounded-2xl bg-muted/30 p-4">
-                  <p className="font-semibold text-primary">Result release</p>
-                  <p className="mt-1 capitalize">{resultMode}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null
       }
     >
       {!isSelfPacedPreview ? (
@@ -204,17 +176,13 @@ export function AssessmentPreviewScreen({
       ) : null}
 
       {isSelfPacedPreview ? (
-        <div
-          className={
-            step === "quiz" ? "lg:h-full lg:min-h-0" : ""
-          }
-        >
+        <div className="flex flex-1 min-h-0 flex-col">
           {step === "entry" ? (
             <SelfPacedEntry
               heading="Before you begin"
               description="This preview mirrors the participant entry experience. You can answer the full flow, but nothing is saved."
               timeLimitMinutes={assessment.settings?.timeLimit ?? 0}
-              requiresDisplayName={requiresDisplayName}
+              requiresIdentity={requiresIdentity}
               displayName={displayName}
               onDisplayNameChange={setDisplayName}
               email={email}

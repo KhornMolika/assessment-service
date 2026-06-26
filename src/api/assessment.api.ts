@@ -121,24 +121,16 @@ export async function getAssessmentDetailPageData(
   id: string,
 ): Promise<AssessmentDetailPageData | null> {
   try {
-    const [assessmentRes, settingsRes, reportRes, questionsRes] = await Promise.all([
-      apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
-      apiClient
-        .get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`)
-        .catch(() => null),
-      apiClient
-        .get<{
-          data: {
-            assessment: Record<string, number>;
-            participants: any[];
-            questionBreakdown: any[];
-          };
-        }>(`/assessments/${id}/report?limit=5000`)
-        .catch(() => null),
-      apiClient
-        .get<{ data: Record<string, unknown>[] }>(`/assessments/${id}/questions`)
-        .catch(() => null),
-    ]);
+    const assessmentRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`);
+    const settingsRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`).catch(() => null);
+    const reportRes = await apiClient.get<{
+      data: {
+        assessment: Record<string, number>;
+        participants: any[];
+        questionBreakdown: any[];
+      };
+    }>(`/assessments/${id}/report?limit=500`).catch(() => null);
+    const questionsRes = await apiClient.get<{ data: Record<string, unknown>[] }>(`/assessments/${id}/questions`).catch(() => null);
 
     const assessmentBase = (assessmentRes as any).data || (assessmentRes as any);
     const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
@@ -573,18 +565,12 @@ export async function getEditAssessmentPageData(id: string): Promise<{
   initialFormData: NewAssessmentFormData;
 }> {
   try {
-    const [banks, assessmentRes, settingsRes, assignedRes] = await Promise.all([
-      getBanks(),
-      apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`),
-      apiClient
-        .get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`)
-        .catch(() => null),
-      apiClient
-        .get<{
-          data: Record<string, unknown>[];
-        }>(`/assessments/${id}/questions`)
-        .catch(() => null),
-    ]);
+    const banks = await getBanks();
+    const assessmentRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`);
+    const settingsRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`).catch(() => null);
+    const assignedRes = await apiClient.get<{
+      data: Record<string, unknown>[];
+    }>(`/assessments/${id}/questions`).catch(() => null);
 
     const assessment = (assessmentRes as any).data || (assessmentRes as any);
     const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
