@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import type { QuestionRendererProps } from "../types";
-import { GripVertical, X } from "lucide-react";
 
 function isMatchingValue(value: QuestionRendererProps["value"]): value is Record<string, string> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -12,210 +11,334 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
   const rightOptions = raw?.rightSide || [];
   const selectedPairs = isMatchingValue(value) ? value : {};
 
-  // Stable shuffle for the right options
+  // Random shuffle on mount for the right options
   const shuffledRightOptions = useMemo(() => {
     const options = [...rightOptions];
-    let hash = 0;
-    for (let i = 0; i < question.id.length; i++) {
-      hash = question.id.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const random = () => {
-      const x = Math.sin(hash++) * 10000;
-      return x - Math.floor(x);
-    };
     for (let i = options.length - 1; i > 0; i--) {
-      const j = Math.floor(random() * (i + 1));
+      const j = Math.floor(Math.random() * (i + 1));
       [options[i], options[j]] = [options[j], options[i]];
     }
     return options;
   }, [question.id, rightOptions]);
 
-  const [draggedOptionId, setDraggedOptionId] = useState<string | null>(null);
-  const [dragOverLeftId, setDragOverLeftId] = useState<string | null>(null);
-
   const matchedCount = Object.values(selectedPairs).filter(Boolean).length;
+
+  // --- Coordinate Tracking ---
+  const containerRef = useRef<HTMLDivElement>(null);
+  const leftRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const rightRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
-  // Find which right options are currently available in the bank
-  const assignedRightIds = new Set(Object.values(selectedPairs));
-  const availableRightOptions = shuffledRightOptions.filter(
-    (opt) => !assignedRightIds.has(opt.id)
-  );
+  const [nodes, setNodes] = useState<Record<string, { x: number; y: number }>>({});
 
-  const handleDragStart = (id: string) => {
-    if (disabled) return;
-    setDraggedOptionId(id);
-  };
-
-  const handleDragOver = (e: React.DragEvent, leftId: string | null) => {
-    e.preventDefault();
-    if (disabled || !draggedOptionId) return;
-    setDragOverLeftId(leftId);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedOptionId(null);
-    setDragOverLeftId(null);
-  };
-
-  const handleDropToSlot = (e: React.DragEvent, leftId: string) => {
-    e.preventDefault();
-    if (disabled || !draggedOptionId) return;
+  const updateCoordinates = useCallback(() => {
+    if (!containerRef.current) return;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const newNodes: Record<string, { x: number; y: number }> = {};
     
-    // Assign dragged right option to the dropped left slot
-    // If the dragged option was already in another slot, remove it from there
-    const newPairs = { ...selectedPairs };
+    const calc = (el: HTMLDivElement | null, id: string) => {
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      newNodes[id] = {
+        x: rect.left - containerRect.left + rect.width / 2,
+        y: rect.top - containerRect.top + rect.height / 2,
+      };
+    };
+
+    leftOptions.forEach((opt: any) => calc(leftRefs.current[opt.id], `left-${opt.id}`));
+    shuffledRightOptions.forEach((opt: any) => calc(rightRefs.current[opt.id], `right-${opt.id}`));
     
-    // Find if the dragged option was previously assigned
-    for (const key of Object.keys(newPairs)) {
-      if (newPairs[key] === draggedOptionId) {
-        delete newPairs[key];
-      }
+    setNodes(newNodes);
+  }, [leftOptions, shuffledRightOptions]);
+
+  // Update coordinates on mount and resize
+  useEffect(() => {
+    updateCoordinates();
+    
+    // Also use ResizeObserver for more robust tracking (e.g. if fonts load, layout shifts)
+    const observer = new ResizeObserver(() => updateCoordinates());
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
+    window.addEventListener("resize", updateCoordinates);
     
-    // If the slot already had an option, it goes back to the bank automatically because it's overwritten
-    newPairs[leftId] = draggedOptionId;
-    onChange(newPairs);
-    handleDragEnd();
-  };
+    return () => {
+      window.removeEventListener("resize", updateCoordinates);
+      observer.disconnect();
+    };
+  }, [updateCoordinates]);
 
-  const handleDropToBank = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (disabled || !draggedOptionId) return;
-    
-    // Remove the dragged option from any slot it was assigned to
-    const newPairs = { ...selectedPairs };
-    let changed = false;
-    for (const key of Object.keys(newPairs)) {
-      if (newPairs[key] === draggedOptionId) {
-        delete newPairs[key];
-        changed = true;
-      }
-    }
-    if (changed) onChange(newPairs);
-    handleDragEnd();
-  };
+  // --- Interaction State ---
+  const [drawing, setDrawing] = useState<{
+    fromId: string;
+    fromSide: "left" | "right";
+    x: number;
+    y: number;
+  } | null>(null);
 
-  const handleRemoveFromSlot = (leftId: string) => {
+  const [hoveredTarget, setHoveredTarget] = useState<{
+    id: string;
+    side: "left" | "right";
+  } | null>(null);
+
+  const handlePointerDown = (e: React.PointerEvent, id: string, side: "left" | "right") => {
     if (disabled) return;
-    const newPairs = { ...selectedPairs };
-    delete newPairs[leftId];
-    onChange(newPairs);
+    
+    // Release capture so window can track pointer up/move natively
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    
+    const containerRect = containerRef.current?.getBoundingClientRect();
+    if (!containerRect) return;
+
+    setDrawing({
+      fromId: id,
+      fromSide: side,
+      x: e.clientX - containerRect.left,
+      y: e.clientY - containerRect.top,
+    });
+  };
+
+  useEffect(() => {
+    if (!drawing) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!containerRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      setDrawing(prev => prev ? {
+        ...prev,
+        x: e.clientX - containerRect.left,
+        y: e.clientY - containerRect.top
+      } : null);
+    };
+
+    const handlePointerUp = () => {
+      if (drawing && hoveredTarget) {
+        // Connect if dropped on opposite side
+        if (drawing.fromSide !== hoveredTarget.side) {
+          const leftId = drawing.fromSide === "left" ? drawing.fromId : hoveredTarget.id;
+          const rightId = drawing.fromSide === "right" ? drawing.fromId : hoveredTarget.id;
+          
+          const newPairs = { ...selectedPairs };
+          // Enforce 1:1 matching
+          for (const key of Object.keys(newPairs)) {
+            if (newPairs[key] === rightId) delete newPairs[key];
+          }
+          newPairs[leftId] = rightId;
+          onChange(newPairs);
+        }
+      } else if (drawing && !hoveredTarget) {
+        // Disconnect if dropped in empty space and starting from a connected node
+        const newPairs = { ...selectedPairs };
+        let changed = false;
+        
+        if (drawing.fromSide === "left" && newPairs[drawing.fromId]) {
+          delete newPairs[drawing.fromId];
+          changed = true;
+        } else if (drawing.fromSide === "right") {
+          for (const key of Object.keys(newPairs)) {
+            if (newPairs[key] === drawing.fromId) {
+              delete newPairs[key];
+              changed = true;
+            }
+          }
+        }
+        if (changed) onChange(newPairs);
+      }
+      setDrawing(null);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [drawing, hoveredTarget, onChange, selectedPairs]);
+
+  // --- SVG Rendering ---
+  const renderPath = (x1: number, y1: number, x2: number, y2: number, active = false, key: string) => {
+    const distance = Math.abs(x2 - x1);
+    const controlPointOffset = Math.max(distance * 0.4, 40);
+    const d = `M ${x1} ${y1} C ${x1 + controlPointOffset} ${y1}, ${x2 - controlPointOffset} ${y2}, ${x2} ${y2}`;
+    
+    return (
+      <path
+        key={key}
+        d={d}
+        fill="none"
+        stroke={active ? "currentColor" : "#10b981"}
+        strokeWidth={active ? "4" : "5"}
+        strokeLinecap="round"
+        className={active ? "text-emerald-500/60 stroke-dasharray-[8,8] animate-[dash_1s_linear_infinite]" : "drop-shadow-sm transition-all duration-300"}
+      />
+    );
+  };
+
+  const getTargetClasses = (side: "left" | "right", id: string) => {
+    const isDrawing = drawing !== null;
+    const isOpposite = drawing && drawing.fromSide !== side;
+    const isHovered = hoveredTarget?.id === id && hoveredTarget?.side === side;
+    
+    if (!isDrawing) return "";
+    if (isOpposite && isHovered) return "ring-4 ring-emerald-500/20 bg-emerald-50 scale-105 border-emerald-400";
+    if (isOpposite) return "ring-2 ring-primary/10 hover:border-primary/50";
+    return "opacity-50 grayscale";
   };
 
   return (
-    <div className="flex flex-1 flex-col w-full space-y-6">
+    <div className="flex flex-1 flex-col w-full space-y-6 select-none">
+      <style>{`
+        @keyframes dash {
+          to { stroke-dashoffset: -16; }
+        }
+      `}</style>
+      
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-[20px] border border-border/50 bg-primary/[0.02] px-6 py-4">
         <p className="text-sm font-medium leading-relaxed text-primary/80">
-          Match each term on the left by dragging an option from the bank into the corresponding slot.
+          Match each term by dragging a line connecting the dots between the left and right sides.
         </p>
         <div className="flex h-8 items-center justify-center rounded-full bg-primary/10 px-4 text-xs font-bold text-primary">
           {matchedCount}/{leftOptions.length} matched
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Left Side: Fixed Prompts with Drop Slots */}
-        <div className="space-y-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-primary/60">Match these terms</h3>
-          <div className="space-y-3">
-            {leftOptions.map((leftOpt: any, index: number) => {
-              const assignedRightId = selectedPairs[leftOpt.id];
-              const assignedRightOpt = rightOptions.find((o: any) => o.id === assignedRightId);
-              const isOver = dragOverLeftId === leftOpt.id;
+      <div className="relative flex gap-8 lg:gap-16 xl:gap-24 touch-none" ref={containerRef}>
+        
+        {/* SVG Overlay */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
+          {/* Established connections */}
+          {Object.entries(selectedPairs).map(([leftId, rightId]) => {
+            const lNode = nodes[`left-${leftId}`];
+            const rNode = nodes[`right-${rightId}`];
+            
+            // If drawing from one of these nodes, don't show the static line
+            if (drawing && ((drawing.fromSide === "left" && drawing.fromId === leftId) || 
+                            (drawing.fromSide === "right" && drawing.fromId === rightId))) {
+              return null;
+            }
 
-              return (
-                <div key={leftOpt.id} className="flex flex-col gap-2">
-                  <div className="rounded-2xl border-2 border-border/50 bg-white p-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-primary/70">
-                        {index + 1}
-                      </span>
-                      <p className="mt-0.5 text-sm font-semibold text-primary">{leftOpt.text}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Drop Slot */}
-                  <div
-                    onDragOver={(e) => handleDragOver(e, leftOpt.id)}
-                    onDrop={(e) => handleDropToSlot(e, leftOpt.id)}
-                    className={`ml-6 relative flex min-h-[3.5rem] items-center rounded-2xl border-2 transition-all duration-300 ${
-                      isOver
-                        ? "border-primary border-dashed bg-primary/[0.03] shadow-inner"
-                        : assignedRightOpt
-                          ? "border-emerald-200 bg-emerald-50 shadow-sm"
-                          : "border-border/60 border-dashed bg-muted/20"
-                    }`}
+            if (lNode && rNode) {
+              return renderPath(lNode.x, lNode.y, rNode.x, rNode.y, false, `conn-${leftId}-${rightId}`);
+            }
+            return null;
+          })}
+
+          {/* Active drawing connection */}
+          {drawing && (() => {
+            let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            if (drawing.fromSide === "left") {
+              const origin = nodes[`left-${drawing.fromId}`];
+              if (!origin) return null;
+              x1 = origin.x; y1 = origin.y;
+              
+              if (hoveredTarget && hoveredTarget.side === "right") {
+                const target = nodes[`right-${hoveredTarget.id}`];
+                if (target) { x2 = target.x; y2 = target.y; }
+              }
+              if (x2 === undefined) { x2 = drawing.x; y2 = drawing.y; }
+            } else {
+              const origin = nodes[`right-${drawing.fromId}`];
+              if (!origin) return null;
+              x2 = origin.x; y2 = origin.y;
+              
+              if (hoveredTarget && hoveredTarget.side === "left") {
+                const target = nodes[`left-${hoveredTarget.id}`];
+                if (target) { x1 = target.x; y1 = target.y; }
+              }
+              if (x1 === undefined) { x1 = drawing.x; y1 = drawing.y; }
+            }
+            return renderPath(x1, y1, x2, y2, true, 'active-drawing');
+          })()}
+        </svg>
+
+        {/* Left Terms */}
+        <div className="flex flex-col gap-4 w-1/2 z-10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2">Terms</h3>
+          {leftOptions.map((opt: any, index: number) => {
+            const isConnected = !!selectedPairs[opt.id];
+            const isActive = drawing?.fromSide === "left" && drawing?.fromId === opt.id;
+            
+            return (
+              <div 
+                key={opt.id} 
+                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm
+                  ${getTargetClasses("left", opt.id)}
+                  ${isConnected && !drawing ? "border-emerald-200" : "border-border/60"}
+                `}
+              >
+                <div className="flex flex-1 items-center gap-3 p-4">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-primary/70">
+                    {index + 1}
+                  </span>
+                  <p className="text-sm font-semibold text-primary">{opt.text}</p>
+                </div>
+                
+                {/* Connection Handle (Right side of left card) */}
+                <div 
+                  className="flex items-center justify-center border-l-2 border-border/30 px-3 cursor-pointer touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, opt.id, "left")}
+                  onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "left" })}
+                  onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
+                >
+                  <div 
+                    ref={el => { leftRefs.current[opt.id] = el; }}
+                    className={`h-5 w-5 rounded-full border-4 transition-all duration-300 flex items-center justify-center
+                      ${isActive ? "bg-emerald-500 border-emerald-300 scale-125 shadow-md" : 
+                        isConnected ? "bg-emerald-500 border-emerald-200" : 
+                        "bg-white border-primary/30 hover:border-emerald-400 hover:bg-emerald-50 hover:scale-110"
+                      }
+                    `}
                   >
-                    {assignedRightOpt ? (
-                      <div
-                        draggable={!disabled}
-                        onDragStart={() => handleDragStart(assignedRightOpt.id)}
-                        onDragEnd={handleDragEnd}
-                        className={`group flex w-full items-center justify-between gap-3 px-4 py-3 ${disabled ? "cursor-not-allowed opacity-70" : "cursor-grab active:cursor-grabbing"}`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <GripVertical className="h-4 w-4 shrink-0 text-emerald-600/40" />
-                          <p className="truncate text-sm font-bold text-emerald-800">{assignedRightOpt.text}</p>
-                        </div>
-                        {!disabled && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFromSlot(leftOpt.id)}
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-emerald-200 hover:text-emerald-800"
-                            aria-label="Remove match"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex w-full items-center justify-center py-3 text-xs font-medium uppercase tracking-widest text-primary/30">
-                        {isOver ? "Drop here" : "Drag answer here"}
-                      </div>
-                    )}
+                    {isConnected && !isActive && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Right Side: Draggable Answer Bank */}
-        <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-primary/60">Answer Bank</h3>
-          <div 
-            className="flex-1 rounded-[24px] border-2 border-border/50 bg-primary/[0.02] p-5 shadow-inner transition-colors"
-            onDragOver={(e) => handleDragOver(e, "bank")}
-            onDrop={handleDropToBank}
-          >
-            {availableRightOptions.length === 0 ? (
-              <div className="flex h-full min-h-[100px] items-center justify-center rounded-2xl border-2 border-dashed border-primary/20 bg-primary/[0.02] text-sm font-bold tracking-wider text-primary/40 uppercase">
-                All answers matched!
+        {/* Right Answers */}
+        <div className="flex flex-col gap-4 w-1/2 z-10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2">Answers</h3>
+          {shuffledRightOptions.map((opt: any) => {
+            const isConnected = Object.values(selectedPairs).includes(opt.id);
+            const isActive = drawing?.fromSide === "right" && drawing?.fromId === opt.id;
+            
+            return (
+              <div 
+                key={opt.id} 
+                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm
+                  ${getTargetClasses("right", opt.id)}
+                  ${isConnected && !drawing ? "border-emerald-200" : "border-border/60"}
+                `}
+              >
+                {/* Connection Handle (Left side of right card) */}
+                <div 
+                  className="flex items-center justify-center border-r-2 border-border/30 px-3 cursor-pointer touch-none"
+                  onPointerDown={(e) => handlePointerDown(e, opt.id, "right")}
+                  onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "right" })}
+                  onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
+                >
+                  <div 
+                    ref={el => { rightRefs.current[opt.id] = el; }}
+                    className={`h-5 w-5 rounded-full border-4 transition-all duration-300 flex items-center justify-center
+                      ${isActive ? "bg-emerald-500 border-emerald-300 scale-125 shadow-md" : 
+                        isConnected ? "bg-emerald-500 border-emerald-200" : 
+                        "bg-white border-primary/30 hover:border-emerald-400 hover:bg-emerald-50 hover:scale-110"
+                      }
+                    `}
+                  >
+                    {isConnected && !isActive && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-center gap-3 p-4">
+                  <p className="text-sm font-semibold text-primary">{opt.text}</p>
+                </div>
               </div>
-            ) : (
-              <div className="flex flex-wrap gap-3">
-                {availableRightOptions.map((rightOpt) => {
-                  const isDragging = draggedOptionId === rightOpt.id;
-                  
-                  return (
-                    <div
-                      key={rightOpt.id}
-                      draggable={!disabled}
-                      onDragStart={() => handleDragStart(rightOpt.id)}
-                      onDragEnd={handleDragEnd}
-                      className={`group flex items-center gap-2 rounded-[14px] border-2 border-border/60 bg-white px-4 py-2.5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md ${
-                        disabled ? "cursor-not-allowed opacity-70" : "cursor-grab active:cursor-grabbing"
-                      } ${isDragging ? "opacity-30 scale-95 border-primary bg-primary/5" : ""}`}
-                    >
-                      <GripVertical className="h-4 w-4 shrink-0 text-primary/30 transition-colors group-hover:text-primary/60" />
-                      <span className="text-sm font-bold text-primary">{rightOpt.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+            );
+          })}
         </div>
+        
       </div>
     </div>
   );

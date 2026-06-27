@@ -45,7 +45,7 @@ export function FillInTheBlankRenderer({ question, value, disabled, onChange }: 
   let blankIndex = 0;
   return (
     <div className="flex flex-1 flex-col w-full rounded-[24px] border border-border/60 bg-white/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
-      <p className="text-base leading-relaxed text-primary sm:text-lg sm:leading-loose">
+      <p className="text-base text-primary sm:text-lg leading-[2.5rem] sm:leading-[3rem]">
         {parts.map((part: string, i: number) => {
           if (/^\[blank_\d+\]$/.test(part)) {
             const currentIndex = blankIndex++;

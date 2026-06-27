@@ -63,8 +63,8 @@ export function EnterRealTimeScreen({
 
   const currentRound = roomState.currentQuestion || rounds[0];
   const isCorrect = isCorrectAnswerResponse(currentRound, answerValue);
-  const speedBonus = hasAnswerResponse(answerValue) && timerSeconds >= 8 ? 50 : 0;
-  const lastPoints = hasAnswerResponse(answerValue) ? (isCorrect ? currentRound.points + speedBonus : 0) : 0;
+  const speedBonus = hasAnswerResponse(currentRound, answerValue) && timerSeconds >= 8 ? 50 : 0;
+  const lastPoints = hasAnswerResponse(currentRound, answerValue) ? (isCorrect ? currentRound.points + speedBonus : 0) : 0;
   const phase = roomState.phase;
   const isLobbyPhase = phase === "lobby";
 

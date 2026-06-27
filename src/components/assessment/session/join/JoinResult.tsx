@@ -36,7 +36,7 @@ export function JoinResult({
           </p>
           <h2 className="mt-3 text-3xl font-bold">{isCorrect ? "Correct" : "Wrong"}</h2>
           <p className="mt-3 text-sm leading-6 text-white/75">
-            {hasAnswerResponse(answerValue)
+            {hasAnswerResponse(currentRound, answerValue)
               ? getAnswerResponseText(currentRound, answerValue)
               : "Timer ended before a choice was submitted."}
           </p>
