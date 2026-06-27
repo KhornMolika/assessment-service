@@ -136,8 +136,26 @@ function resolveCorrectOptionId(correctAnswers: any, options: { id: string }[]):
   return options[0]?.id ?? "";
 }
 
+export function shuffleArray<T>(array: T[], seed: string): T[] {
+  const shuffled = [...array];
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const random = () => {
+    const x = Math.sin(hash++) * 10000;
+    return x - Math.floor(x);
+  };
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export function buildQuestionRounds(
   questions: AssessmentDetailQuestionItem[],
+  shuffleOptions: boolean = false,
 ): QuestionRound[] {
   return questions.map((question, index) => {
     const optionLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -145,10 +163,18 @@ export function buildQuestionRounds(
 
     // 1. SINGLE_CHOICE, MULTIPLE_CHOICE, ORDERING — options is an array [{id, text}]
     if (Array.isArray(rawOptions) && rawOptions.length > 0) {
-      const options = rawOptions.map((opt: any, optIndex: number) => ({
+      let mappedOptions = rawOptions.map((opt: any, optIndex: number) => ({
         id: opt.id || opt.optionId || String(optIndex),
-        label: optionLetters[optIndex] || String(optIndex + 1),
         text: opt.text || opt.optionText || String(opt.value || opt.label || ""),
+      }));
+
+      if (shuffleOptions) {
+        mappedOptions = shuffleArray(mappedOptions, question.id);
+      }
+
+      const options = mappedOptions.map((opt, optIndex) => ({
+        ...opt,
+        label: optionLetters[optIndex] || String(optIndex + 1),
       }));
 
       return {
@@ -292,7 +318,22 @@ export function formatDurationClock(totalSeconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export function hasAnswerResponse(value: QuestionRendererValue) {
+export function hasAnswerResponse(question: QuestionRound | undefined, value: QuestionRendererValue) {
+  if (!question) return false;
+  
+  const rendererType = normalizeQuestionRendererType(question.type);
+
+  if (rendererType === "matching") {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+    const raw = question.rawOptions;
+    const leftOptions = raw?.leftSide || [];
+    // Count how many values have an actual rightId selected
+    const matchedCount = Object.values(value).filter((v) => String(v).trim().length > 0).length;
+    // Must match all left options
+    return matchedCount === leftOptions.length && leftOptions.length > 0;
+  }
+
+  // Fallback for others
   if (Array.isArray(value)) {
     return value.length > 0;
   }
@@ -355,7 +396,162 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
     return false;
   }
 
+  if (rendererType === "fill") {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+    const acceptedAnswers = question.correctAnswers?.answers;
+    if (!Array.isArray(acceptedAnswers)) return false;
+
+    let isCorrect = true;
+    acceptedAnswers.forEach((accepted: any, index: number) => {
+      const given = (String((value as Record<string, string>)[index] || "")).trim().toLowerCase();
+      const isMatch = Array.isArray(accepted) && accepted.some((a: string) => a.trim().toLowerCase() === given);
+      if (!isMatch) isCorrect = false;
+    });
+    return isCorrect;
+  }
+
+  if (rendererType === "multiple") {
+    if (!Array.isArray(value)) return false;
+    const correctIds = question.correctAnswers?.optionIds || [question.correctOptionId];
+    if (!Array.isArray(correctIds)) return false;
+    return value.length === correctIds.length && value.every(id => correctIds.includes(id));
+  }
+
+  if (rendererType === "boolean") {
+    if (typeof value !== "boolean") return false;
+    const correctValue = question.correctAnswers?.value;
+    return value === correctValue;
+  }
+
   return typeof value === "string" && value === question.correctOptionId;
+}
+
+export function calculateQuestionScore(question: QuestionRound, value: QuestionRendererValue): number {
+  const rendererType = normalizeQuestionRendererType(question.type);
+  const maxScore = question.points || 0;
+
+  if (isSubjectiveQuestion(question.type)) {
+    return 0; // Handled manually
+  }
+
+  // Deductive Scoring (Partial Credit with Penalty)
+  
+  if (rendererType === "multiple") {
+    if (!Array.isArray(value)) return 0;
+    const correctIds = question.correctAnswers?.optionIds || [question.correctOptionId];
+    if (!Array.isArray(correctIds) || correctIds.length === 0) return 0;
+
+    const correctSelected = value.filter(id => correctIds.includes(id)).length;
+    const wrongSelected = value.filter(id => !correctIds.includes(id)).length;
+    const totalCorrect = correctIds.length;
+
+    const ratio = Math.max(0, (correctSelected - wrongSelected) / totalCorrect);
+    return parseFloat((ratio * maxScore).toFixed(2));
+  }
+
+  if (rendererType === "fill") {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return 0;
+    const acceptedAnswers = question.correctAnswers?.answers;
+    if (!Array.isArray(acceptedAnswers) || acceptedAnswers.length === 0) return 0;
+
+    let correctCount = 0;
+    let emptyCount = 0;
+    const totalBlanks = acceptedAnswers.length;
+
+    acceptedAnswers.forEach((accepted: any, index: number) => {
+      const given = (String((value as Record<string, string>)[index] || "")).trim().toLowerCase();
+      if (!given) {
+        emptyCount++;
+      } else {
+        const isMatch = Array.isArray(accepted) && accepted.some((a: string) => a.trim().toLowerCase() === given);
+        if (isMatch) correctCount++;
+      }
+    });
+
+    const pointsPerBlank = maxScore / totalBlanks;
+    const correctScore = correctCount * pointsPerBlank;
+    const penaltyScore = emptyCount * (pointsPerBlank * 0.5);
+    const finalScore = Math.max(0, correctScore - penaltyScore);
+    return parseFloat(finalScore.toFixed(2));
+  }
+
+  if (rendererType === "matching") {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return 0;
+    
+    // In Preview mode, we check against correctAnswers.pairs if available
+    const pairs = question.correctAnswers?.pairs;
+    if (!Array.isArray(pairs) || pairs.length === 0) return 0;
+
+    const totalPairs = pairs.length;
+    let correctCount = 0;
+    let emptyCount = 0;
+    
+    const correctMap = new Map(pairs.map((p: any) => [p.leftId, p.rightId]));
+    
+    Array.from(correctMap.keys()).forEach((leftId) => {
+      const rightId = value[leftId];
+      if (!rightId || String(rightId).trim() === "") {
+        emptyCount++;
+      } else if (correctMap.get(leftId) === rightId) {
+        correctCount++;
+      }
+    });
+
+    const pointsPerPair = maxScore / totalPairs;
+    const correctScore = correctCount * pointsPerPair;
+    const penaltyScore = emptyCount * (pointsPerPair * 0.5);
+    const finalScore = Math.max(0, correctScore - penaltyScore);
+    return parseFloat(finalScore.toFixed(2));
+  }
+
+  // Binary Scoring (All-or-Nothing)
+  return isCorrectAnswerResponse(question, value) ? maxScore : 0;
+}
+
+export function getCorrectAnswerText(question: QuestionRound): string {
+  const rendererType = normalizeQuestionRendererType(question.type);
+
+  if (rendererType === "fill") {
+    const acceptedAnswers = question.correctAnswers?.answers;
+    if (Array.isArray(acceptedAnswers)) {
+      return acceptedAnswers.map((accepted, index) => {
+        const primaryAnswer = Array.isArray(accepted) ? accepted[0] : String(accepted);
+        return `[Blank ${index + 1}: ${primaryAnswer}]`;
+      }).join(" ");
+    }
+  }
+
+  if (rendererType === "ordering") {
+    const sequence = question.correctAnswers?.sequence;
+    if (Array.isArray(sequence)) {
+      return sequence.map(id => question.options.find((opt: any) => opt.id === id)?.text ?? id).join(" → ");
+    }
+  }
+
+  if (rendererType === "matching") {
+    const pairs = question.correctAnswers?.pairs;
+    const raw = question.rawOptions;
+    if (Array.isArray(pairs) && raw?.leftSide && raw?.rightSide) {
+      return pairs.map((pair: any) => {
+        const left = raw.leftSide.find((opt: any) => opt.id === pair.leftId)?.text;
+        const right = raw.rightSide.find((opt: any) => opt.id === pair.rightId)?.text;
+        return `${left} → ${right}`;
+      }).join(", ");
+    }
+  }
+
+  if (rendererType === "multiple") {
+    const optionIds = question.correctAnswers?.optionIds;
+    if (Array.isArray(optionIds)) {
+       return optionIds.map(id => question.options.find((opt: any) => opt.id === id)?.text ?? id).join(", ");
+    }
+  }
+
+  if (rendererType === "boolean") {
+    return question.correctAnswers?.value ? "True" : "False";
+  }
+
+  return question.options.find((option: any) => option.id === question.correctOptionId)?.text || "N/A";
 }
 
 export function getAnswerResponseText(question: QuestionRound, value: QuestionRendererValue) {
@@ -429,4 +625,9 @@ export function buildPreviewAnswerValue(question: QuestionRound, index: number):
     default:
       return question.options[index % question.options.length]?.id ?? null;
   }
+}
+
+export function isSubjectiveQuestion(type: string) {
+  const normalized = normalizeQuestionRendererType(type);
+  return ["short", "essay", "rating", "file"].includes(normalized);
 }

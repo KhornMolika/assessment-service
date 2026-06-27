@@ -45,7 +45,7 @@ export function SelfPacedQuiz({
               <span className="text-white/80">{totalQuestions}</span>
             </div>
             
-            {hasAnswerResponse(answerValue) ? (
+            {hasAnswerResponse(currentQuestion, answerValue) ? (
               <div className="flex h-10 items-center gap-1.5 rounded-xl border border-emerald-200/60 bg-emerald-50/80 px-4 text-sm font-bold text-emerald-700 shadow-sm backdrop-blur-sm transition-all duration-300 animate-in fade-in zoom-in-95">
                 <CheckCircle2 className="h-4 w-4" />
                 Saved
@@ -89,7 +89,7 @@ export function SelfPacedQuiz({
 
         {/* Renderer Area */}
         <div className="flex flex-1 flex-col overflow-y-auto p-6 sm:p-10">
-          <div className="flex w-full flex-1 flex-col">
+          <div className="flex w-full flex-1 flex-col justify-center">
             <QuestionRenderer question={currentQuestion} value={answerValue} onChange={onChange} />
           </div>
         </div>
@@ -109,7 +109,7 @@ export function SelfPacedQuiz({
             
             <Button
               type="button"
-              disabled={!hasAnswerResponse(answerValue)}
+              disabled={!hasAnswerResponse(currentQuestion, answerValue)}
               onClick={onNext}
               className="group inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-8 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-xl hover:shadow-primary/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
             >

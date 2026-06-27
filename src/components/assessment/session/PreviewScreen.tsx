@@ -22,7 +22,9 @@ import {
   formatDurationClock,
   getResultReleaseMode,
   isCorrectAnswerResponse,
+  calculateQuestionScore,
   requiresParticipantIdentity,
+  shuffleArray,
 } from '@/src/lib/session/session.utils';
 
 export function PreviewScreen({
@@ -36,7 +38,13 @@ export function PreviewScreen({
   previewMode: "SELF_PACED" | "REAL_TIME";
   backHref: string;
 }) {
-  const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
+  const rounds = useMemo(() => {
+    let qs = [...questions];
+    if (assessment.settings?.isShuffle) {
+      qs = shuffleArray(qs, assessment.id);
+    }
+    return buildQuestionRounds(qs, assessment.settings?.isShuffle ?? false);
+  }, [questions, assessment.id, assessment.settings?.isShuffle]);
   const isSelfPacedPreview = previewMode === "SELF_PACED";
   const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
@@ -60,14 +68,17 @@ export function PreviewScreen({
   const scoreSummary = useMemo(() => {
     const totalPoints = rounds.reduce((sum, question) => sum + question.points, 0);
     const earnedPoints = rounds.reduce((sum, question) => {
-      return isCorrectAnswerResponse(question, answers[question.id] ?? null)
-        ? sum + question.points
-        : sum;
+      return sum + calculateQuestionScore(question, answers[question.id] ?? null);
     }, 0);
     const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+    
+    const sortedGradeLabels = [...(assessment.settings?.gradeLabels || [])].sort(
+      (a, b) => b.minPercent - a.minPercent
+    );
+
     const grade =
-      assessment.settings?.gradeLabels?.find((band) => percent >= band.minPercent)?.grade ??
-      assessment.settings?.gradeLabels?.at(-1)?.grade ??
+      sortedGradeLabels.find((band) => percent >= band.minPercent)?.grade ??
+      sortedGradeLabels.at(-1)?.grade ??
       "N/A";
 
     return {
@@ -230,7 +241,7 @@ export function PreviewScreen({
               allowGoingBack={assessment.settings?.allowReview ?? true}
               onBack={() => setStep("quiz")}
               onSubmit={() => setStep("processing")}
-              submitLabel="Next preview step"
+              submitLabel="Submit"
             />
           ) : null}
 
@@ -242,15 +253,31 @@ export function PreviewScreen({
           ) : null}
 
           {step === "end" ? (
-            <SelfPacedResult
-              resultMode={resultMode}
-              scoreSummary={scoreSummary}
-              allowShareAnswerSheet={allowShareAnswerSheet}
-              showCorrectAnswers={showCorrectAnswers}
-              items={confirmationItems}
-              answerSheetTitle="Answer sheet"
-              answerSheetHeading="Preview every answer response"
-            />
+            <>
+              <SelfPacedResult
+                resultMode={resultMode}
+                scoreSummary={scoreSummary}
+                allowShareAnswerSheet={allowShareAnswerSheet}
+                showCorrectAnswers={showCorrectAnswers}
+                items={confirmationItems}
+                answerSheetTitle="Answer sheet"
+                answerSheetHeading="Preview every answer response"
+              />
+              <div className="mx-auto flex w-full max-w-4xl justify-center border-t border-border/40 pb-24 pt-12">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep(requiresEntry ? "entry" : "quiz");
+                    setQuestionIndex(0);
+                    setAnswers({});
+                    setRemainingSeconds(totalTimerSeconds);
+                  }}
+                  className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-primary/20 bg-primary/5 px-8 font-bold text-primary transition-all hover:bg-primary/10 hover:border-primary/30"
+                >
+                  Restart Preview
+                </button>
+              </div>
+            </>
           ) : null}
         </div>
       ) : null}

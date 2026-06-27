@@ -104,6 +104,22 @@
   [lang="kh"] {
     @apply font-khmer;
   }
+
+  /* Custom Scrollbar */
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-bdr);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-sage);
+  }
 }
 
 @keyframes realtime-pulse {
