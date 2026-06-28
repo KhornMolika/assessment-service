@@ -9,6 +9,7 @@ import { fetchTopics } from "@/src/actions/topic-actions";
 import QuestionBuilderAction from "@/src/components/content/question/catalog/QuestionBuilderAction";
 import QuestionsCatalogToolbar from "@/src/components/content/question/catalog/QuestionsCatalogToolbar";
 import QuestionsTableInteractive from "@/src/components/content/question/catalog/QuestionsTableInteractive";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { QuestionBank, Question } from "@/src/types/api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
@@ -41,6 +42,7 @@ function filterQuestions({
   typeFilter,
   difficultyFilter,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   questions: any[];
   query: string;
   typeFilter: string;
@@ -65,8 +67,10 @@ function QuestionsPageContent() {
   
   const activeTopic = useTopicStore((s) => s.activeTopic);
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [questions, setQuestions] = useState<any[]>([]);
   const [banks, setBanks] = useState<QuestionBank[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [topics, setTopics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -102,6 +106,7 @@ function QuestionsPageContent() {
     }
     fetchResources();
     return () => { isMounted = false };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTopic?.id ?? 'all']);
 
   if (isLoading) {

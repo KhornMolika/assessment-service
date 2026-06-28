@@ -63,18 +63,19 @@ export default function RecentAssessmentTable({
             description="Recent assessment activity will appear here once assessments are created or updated."
           />
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Assessment</TableHead>
-                <TableHead>Delivery</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Questions</TableHead>
-                <TableHead className="text-center">Participants</TableHead>
-                <TableHead className="text-center">Pass Rate</TableHead>
-                <TableHead className="text-right">Last Modified</TableHead>
-              </TableRow>
-            </TableHeader>
+          <div className="rounded-md border border-neutral-200 overflow-hidden bg-white shadow-sm">
+            <Table className="min-w-[900px]">
+              <TableHeader>
+                <TableRow className="bg-muted/40 hover:bg-muted/40">
+                  <TableHead className="w-[280px]">Assessment</TableHead>
+                  <TableHead className="w-[120px]">Delivery</TableHead>
+                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead className="w-[100px] text-center">Questions</TableHead>
+                  <TableHead className="w-[120px] text-center">Participants</TableHead>
+                  <TableHead className="w-[120px] text-center">Pass Rate</TableHead>
+                  <TableHead className="w-[160px] text-right pr-6">Last Modified</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {items.map((assessment) => (
                 <TableRow key={assessment.id}>
@@ -93,11 +94,12 @@ export default function RecentAssessmentTable({
                   <TableCell className="text-center">{assessment.questions}</TableCell>
                   <TableCell className="text-center">{assessment.participants}</TableCell>
                   <TableCell className="text-center">{assessment.passRate}</TableCell>
-                  <TableCell className="text-right text-inkd">{assessment.lastModified}</TableCell>
+                  <TableCell className="text-right text-inkd pr-6">{assessment.lastModified}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

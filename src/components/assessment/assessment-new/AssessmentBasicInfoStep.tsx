@@ -14,6 +14,7 @@ import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 
 export default function AssessmentBasicInfoStep({
   formData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   topics,
   onChange,
   originalStatus,

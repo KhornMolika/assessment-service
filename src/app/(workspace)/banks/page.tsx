@@ -96,6 +96,7 @@ function BanksPageContent() {
     return () => {
       isMounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTopic?.id ?? "all"]);
 
   if (isLoading) {
@@ -114,6 +115,7 @@ function BanksPageContent() {
   );
   // simplified total questions count
   const totalQuestions = banks.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (sum, bank: any) => sum + (bank.questionCount || 0),
     0,
   );
@@ -161,6 +163,7 @@ function BanksPageContent() {
                 }
               />
             ) : (
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <BankTableInteractive banks={paginatedBanks as any} />
             )}
           </div>

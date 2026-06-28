@@ -90,7 +90,6 @@ export default function AnalyticsPageView({
         description="Monitor topic-level performance, compare assessments, and spot where participant demand or question load is concentrated."
         meta={
           <>
-            <Badge variant="info">Mock data</Badge>
             <Badge variant="secondary" className="gap-1.5">
               <TrendingUp className="h-3.5 w-3.5" />
               Topic-aware analytics

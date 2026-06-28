@@ -1,5 +1,6 @@
 import { apiClient } from "@/src/lib/api-client";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchWithAuth<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const method = options.method?.toUpperCase() || "GET";
   

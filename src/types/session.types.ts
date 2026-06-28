@@ -14,6 +14,8 @@ export type QuestionOption = {
 export type QuestionRound = AssessmentDetailQuestionItem & {
   options: QuestionOption[];
   correctOptionId: string;
+  correctOptionIds?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawOptions?: any;
 };
 

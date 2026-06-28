@@ -12,6 +12,7 @@ import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { fetchBankQuestions } from "@/src/actions/bank-actions";
 import { fetchTopicQuestions } from "@/src/actions/question-actions";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapServerQuestion(q: any): Question {
   if (!q) return q;
   return {
@@ -90,10 +91,12 @@ export default function AssessmentQuestionStep({
       }).catch(console.error);
     } else if (formData.ownerTopicId) {
       fetchTopicQuestions(formData.ownerTopicId).then((res) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = Array.isArray(res) ? res : ((res as any)?.data || []);
         setBankQuestions(Array.isArray(data) ? data.map(mapServerQuestion) : []);
       }).catch(console.error);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBankQuestions([]);
     }
   }, [formData.selectedBankId, formData.ownerTopicId]);

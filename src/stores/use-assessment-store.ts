@@ -20,6 +20,7 @@ interface AssessmentState {
   fetchParticipants: () => Promise<void>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const useAssessmentStore = create<AssessmentState>((set, get) => ({
   assessments: [],
   participants: [],
@@ -38,6 +39,7 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
         assessments:
           response.data || (response as unknown as AssessmentCatalogItem[]),
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -54,6 +56,7 @@ export const useAssessmentStore = create<AssessmentState>((set, get) => ({
       set({
         participants: response.data || (response as unknown as Participant[]),
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {

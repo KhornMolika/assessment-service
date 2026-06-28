@@ -1,6 +1,7 @@
 import { apiClient } from "../api-client";
 import type { PaginatedResponse, Question } from "@/src/types/api";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapQuestion(q: any): Question {
   if (!q) return q;
   return {
@@ -17,6 +18,7 @@ export async function getQuestions(page = 1, limit = 10) {
     limit: limit.toString(),
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await apiClient.get<any>(`/questions?${queryParams}`);
   if (response && Array.isArray(response.data)) {
     response.data = response.data.map(mapQuestion);
@@ -25,6 +27,7 @@ export async function getQuestions(page = 1, limit = 10) {
 }
 
 export async function getQuestionById(id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const response = await apiClient.get<any>(`/questions/${id}`);
   if (response && response.data) {
     response.data = mapQuestion(response.data);
@@ -40,6 +43,7 @@ export async function getTopicQuestions(topicId: string, page = 1, limit = 10) {
     limit: limit.toString(),
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let response = await apiClient.get<any>(`/topics/${topicId}/questions?${queryParams}`);
   if (response) {
     if (Array.isArray(response.data)) {

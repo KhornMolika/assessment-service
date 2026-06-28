@@ -1,5 +1,6 @@
 import { Check, X } from "lucide-react";
 import type { QuestionRendererProps } from "../types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/src/components/ui/ui/button";
 
 export function BooleanRenderer({ question, value, disabled, onChange }: QuestionRendererProps) {

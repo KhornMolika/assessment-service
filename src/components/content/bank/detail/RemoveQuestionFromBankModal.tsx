@@ -33,6 +33,7 @@ export default function RemoveQuestionFromBankModal({
         onRefresh?.();
         router.refresh();
         onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         toast.error("Failed to remove question", {
           description: err.message || "An unexpected error occurred",

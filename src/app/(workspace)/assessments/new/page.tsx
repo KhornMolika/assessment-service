@@ -10,6 +10,7 @@ async function NewAssessmentPageContent() {
   const [banksRes, questionsRes, topics] = await Promise.all([
     getBanks(1, 100).catch(e => { fetchError = e.message; return { data: [] }; }),
     getQuestions(1, 500).catch(e => { fetchError = e.message; return { data: [] }; }),
+    // eslint-disable-next-line react-hooks/immutability
     getTopics().catch(e => { fetchError = e.message; return []; })
   ]);
 

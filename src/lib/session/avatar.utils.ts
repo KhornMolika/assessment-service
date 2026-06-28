@@ -1,7 +1,6 @@
 export function getAvatarVariant(seed: string) {
-  const variants = ["beam", "marble", "pixel", "sunset", "bauhaus"] as const;
-  const hash = Array.from(seed).reduce((total, char) => total + char.charCodeAt(0), 0);
-  return variants[hash % variants.length];
+  // 'beam' generates cute, friendly smiling faces which generally look the prettiest for participants!
+  return "beam" as const;
 }
 
 export function getAvatarColors(seed: string) {

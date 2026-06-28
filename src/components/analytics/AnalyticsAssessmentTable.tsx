@@ -29,18 +29,19 @@ export default function AnalyticsAssessmentTable({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Assessment</TableHead>
-          <TableHead>Topics</TableHead>
-          <TableHead className="text-right">Participants</TableHead>
-          <TableHead className="text-right">Questions</TableHead>
-          <TableHead className="text-right">Average score</TableHead>
-          <TableHead className="text-right">Pass rate</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
+    <div className="rounded-md border border-neutral-200 overflow-hidden bg-white shadow-sm">
+      <Table className="min-w-[900px]">
+        <TableHeader>
+          <TableRow className="bg-muted/40 hover:bg-muted/40">
+            <TableHead className="w-[280px]">Assessment</TableHead>
+            <TableHead className="w-[180px]">Topics</TableHead>
+            <TableHead className="w-[120px] text-right">Participants</TableHead>
+            <TableHead className="w-[120px] text-right">Questions</TableHead>
+            <TableHead className="w-[140px] text-right">Average score</TableHead>
+            <TableHead className="w-[120px] text-right">Pass rate</TableHead>
+            <TableHead className="w-[120px] pr-6">Status</TableHead>
+          </TableRow>
+        </TableHeader>
       <TableBody>
         {rows.map((row) => (
           <TableRow key={row.id}>
@@ -67,7 +68,7 @@ export default function AnalyticsAssessmentTable({
             <TableCell className="text-right font-medium text-primary">{row.questions}</TableCell>
             <TableCell className="text-right">{formatMetric(row.averageScore)}</TableCell>
             <TableCell className="text-right">{formatMetric(row.passRate)}</TableCell>
-            <TableCell>
+            <TableCell className="pr-6">
               <Badge
                 variant={
                   row.lifecycle === "PUBLISHED"
@@ -83,6 +84,7 @@ export default function AnalyticsAssessmentTable({
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+      </Table>
+    </div>
   );
 }

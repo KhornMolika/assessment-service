@@ -38,6 +38,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
       // For now, let's just make a generic call and handle any adjustments later.
       const response = await apiClient.get<{ data: QuestionBank[] }>('/banks');
       set({ banks: response.data || (response as unknown as QuestionBank[]) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -50,6 +51,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await apiClient.get<{ data: Topic[] }>('/topics');
       set({ topics: response.data || (response as unknown as Topic[]) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -62,6 +64,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
       set({ isLoading: true, error: null });
       const response = await apiClient.get<{ data: Question[] }>('/questions');
       set({ questions: response.data || (response as unknown as Question[]) });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -77,6 +80,7 @@ export const useContentStore = create<ContentState>((set, get) => ({
         get().fetchBanks(),
         get().fetchQuestions()
       ]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {

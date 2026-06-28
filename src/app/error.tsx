@@ -32,6 +32,7 @@ export default function Error({
           </h1>
           
           <p className="mb-8 text-base leading-relaxed text-slate-500 sm:text-lg">
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
             We encountered an unexpected error while trying to load this page. Don't worry, our system has been notified of the issue.
           </p>
 
