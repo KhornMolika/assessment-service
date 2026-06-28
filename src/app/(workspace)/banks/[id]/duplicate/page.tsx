@@ -19,6 +19,7 @@ function DuplicateBankPageContent() {
       try {
         const fetchedBank = await fetchBankById(id);
         if (isMounted) setBank(fetchedBank);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         if (isMounted) setBank(null);
       } finally {

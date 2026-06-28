@@ -2,8 +2,8 @@ import Avatar from "boring-avatars";
 import { Copy, PlayCircle, QrCode, Radio, Volume2, VolumeX } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { RealtimeParticipant } from '@/src/types/session.types';
-import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 import { Button } from "@/src/components/ui/ui/button";
+import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 
 export function HostLobby({
   embedded,

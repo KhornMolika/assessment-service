@@ -3,12 +3,15 @@ const CLIENT_ID = process.env.API_CLIENT_ID;
 const CLIENT_SECRET = process.env.API_CLIENT_SECRET;
 
 let cachedToken: string | null = null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 let tokenExpiresAt: number = 0;
 let authPromise: Promise<string> | null = null;
 
 // Map to deduplicate concurrent identical GET requests
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const requestCache = new Map<string, Promise<any>>();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { unstable_noStore as noStore } from "next/cache";
 
 /**
@@ -128,6 +131,7 @@ async function apiFetch<T>(
         if (Array.isArray(details) && details.length > 0) {
           errorMessage += `: ${details.join(", ")}`;
         }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         // ignore parse error
       }

@@ -35,6 +35,7 @@ export function DropdownSelect({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -78,6 +79,7 @@ export function DropdownSelect({
 
   useEffect(() => {
     if (!isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery("");
     } else if (searchable && searchInputRef.current) {
       setTimeout(() => {

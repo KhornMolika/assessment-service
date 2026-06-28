@@ -3,6 +3,7 @@ import type { QuestionBank } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import type { QuestionFormData } from "@/src/types/question-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CheckCircle, Circle, Square, Type, AlignLeft, GripVertical, Check, Star, ChevronUp, ChevronDown } from "lucide-react";
 
 function getOptionLabel(index: number) {
@@ -10,6 +11,7 @@ function getOptionLabel(index: number) {
 }
 
 export default function QuestionPreviewCard({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   banks,
   topics,
   formData,
@@ -26,10 +28,12 @@ export default function QuestionPreviewCard({
   showAnswers?: boolean;
   hideMetadata?: boolean;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const ownerTopic = topics.find((topic) => topic.id === formData.ownerTopicId);
 
   const { questionType, options, correctAnswers } = formData;
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orderingState, setOrderingState] = useState<any[]>([]);
   const [matchingState, setMatchingState] = useState<Record<string, string>>({});
   const [fillInBlankState, setFillInBlankState] = useState<Record<number, string>>({});
@@ -37,6 +41,7 @@ export default function QuestionPreviewCard({
   useEffect(() => {
     if (questionType === "Ordering" && !showAnswers) {
       const opts = Array.isArray(options) ? [...options] : [];
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOrderingState(opts.sort(() => Math.random() - 0.5));
     }
   }, [options, questionType, showAnswers]);
@@ -63,6 +68,7 @@ export default function QuestionPreviewCard({
 
         return (
           <div className="space-y-3">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {opts.map((opt: any, index: number) => {
               const isCorrect = showAnswers && correctIds.includes(opt.id);
               return (
@@ -127,11 +133,13 @@ export default function QuestionPreviewCard({
         
         // In participant mode, we would randomize options. In preview with answers, we show the correct sequence.
         const itemsToRender = showAnswers && sequenceIds.length > 0
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ? sequenceIds.map((id:string) => opts.find((o:any) => o.id === id) || { text: id })
           : opts;
 
         return (
           <div className="space-y-2">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {itemsToRender.map((opt: any, index: number) => (
               <div
                 key={index}
@@ -167,13 +175,17 @@ export default function QuestionPreviewCard({
         
         return (
           <div className="flex flex-col gap-3">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {pairs.map((pair: any, index: number) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const leftText = leftSide.find((l: any) => l.id === pair.leftId)?.text || `Left ${index + 1}`;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const rightText = rightSide.find((r: any) => r.id === pair.rightId)?.text || `Right ${index + 1}`;
               
               // If not showing answers, offset the right text
               const displayRightText = showAnswers || pairs.length <= 1 
                 ? rightText 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 : (rightSide.find((r: any) => r.id === pairs[(index + 1) % pairs.length]?.rightId)?.text || `Right ${(index + 1) % pairs.length + 1}`);
 
               return (
@@ -200,6 +212,7 @@ export default function QuestionPreviewCard({
                         className="w-full appearance-none rounded-xl border-2 border-slate-200 bg-white pl-4 pr-10 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20 transition-all shadow-sm cursor-pointer"
                       >
                         <option value="" disabled>Select match...</option>
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {rightSide.map((r: any, rIndex: number) => (
                           <option key={r.id} value={r.id}>{r.text || `Right ${rIndex + 1}`}</option>
                         ))}

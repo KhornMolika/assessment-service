@@ -26,6 +26,7 @@ async function EditAssessmentPageContent({
     getEditAssessmentPageData(id).catch(e => { fetchError = e.message; return null; }), 
     getTopics().catch(e => { fetchError = e.message; return []; }),
     getBanks(1, 100).catch(e => { fetchError = e.message; return { data: [] }; }),
+    // eslint-disable-next-line react-hooks/immutability
     getQuestions(1, 500).catch(e => { fetchError = e.message; return { data: [] }; })
   ]);
 

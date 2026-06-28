@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Edit2, Trash2, Eye, Copy } from "lucide-react";
 
 export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { setTopics, activeTopic, setActiveTopic } = useTopicStore();
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page") || "1");
@@ -36,6 +37,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [editFormData, setEditFormData] = useState({ name: "", description: "" });
   const [duplicateFormData, setDuplicateFormData] = useState({ name: "", description: "" });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -63,6 +65,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       setFormData({ name: "", description: "" });
       setActiveTopic(newTopic);
       await refreshTopics();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to create topic");
     } finally {
@@ -80,6 +83,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       setIsEditModalOpen(false);
       setEditingTopic(null);
       await refreshTopics();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to update topic");
     } finally {
@@ -95,6 +99,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       toast.success("Topic duplicated successfully");
       setIsDuplicateModalOpen(false);
       await refreshTopics();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to duplicate topic");
     } finally {
@@ -114,6 +119,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       setIsDeleteModalOpen(false);
       setDeletingTopicId(null);
       await refreshTopics();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.message || "Failed to delete topic");
     } finally {

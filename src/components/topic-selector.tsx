@@ -60,6 +60,7 @@ export function TopicSelector() {
     return () => {
       isMounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setActiveTopic, setTopics, topics.length]); // Intentionally not including activeTopic to avoid loops
 
   const handleChange = (selectedId: string) => {

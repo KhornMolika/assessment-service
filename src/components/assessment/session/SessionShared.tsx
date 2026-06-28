@@ -74,9 +74,9 @@ export function ScreenShell({
   }
 
   return (
-    <main className="min-h-dvh overflow-x-hidden bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:h-[100dvh] lg:overflow-hidden lg:px-6 lg:py-6">
-      <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:h-full lg:min-h-0 lg:gap-6 lg:flex-row">
-        <div className="flex flex-1 flex-col lg:min-h-0">
+    <main className="min-h-dvh bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
+      <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:gap-6 lg:flex-row">
+        <div className="flex flex-1 flex-col">
           {hasHeader || headerAction ? (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -97,12 +97,16 @@ export function ScreenShell({
               {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
             </div>
           ) : null}
-          <div className={`${hasHeader ? "mt-4 lg:mt-6" : ""} flex flex-col flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1`}>
+          <div className={`${hasHeader ? "mt-4 lg:mt-6" : ""} flex flex-col flex-1`}>
             {children}
           </div>
         </div>
 
-        {aside ? <aside className="w-full shrink-0 lg:w-100">{aside}</aside> : null}
+        {aside ? (
+          <aside className="w-full shrink-0 lg:w-100 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
+            {aside}
+          </aside>
+        ) : null}
       </div>
     </main>
   );
@@ -372,71 +376,103 @@ const shareDestinations = [
     name: "Facebook",
     caption: "Share a result card with the answer sheet link.",
     icon: "f",
-    iconClassName: "bg-[#1877F2] text-white",
+    iconClassName: "bg-[#E7F6EA] text-primary",
   },
   {
     name: "Telegram",
     caption: "Send your score and answer sheet directly to chats or groups.",
     icon: "T",
-    iconClassName: "bg-[#229ED9] text-white",
+    iconClassName: "bg-[#EAF4F1] text-primary",
   },
   {
     name: "LinkedIn",
     caption: "Post a polished assessment result update to your network.",
     icon: "in",
-    iconClassName: "bg-[#0A66C2] text-white",
+    iconClassName: "bg-[#EEF3E6] text-primary",
   },
 ] as const;
 
-export function ShareAnswerSheetPanel({ enabled }: { enabled: boolean }) {
+export function ShareAnswerSheetPanel({
+  enabled,
+  title,
+  description,
+  shareUrl = "",
+}: {
+  enabled: boolean;
+  title?: string;
+  description?: string;
+  shareUrl?: string;
+}) {
+  const absoluteShareUrl = typeof window !== "undefined" && shareUrl.startsWith("/") 
+    ? `${window.location.origin}${shareUrl}`
+    : shareUrl;
+  const encodedUrl = encodeURIComponent(absoluteShareUrl);
+  const getHref = (name: string) => {
+    switch (name) {
+      case "Facebook":
+      case "Messenger":
+        return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+      case "Telegram":
+        return `https://t.me/share/url?url=${encodedUrl}`;
+      case "LinkedIn":
+        return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+      default:
+        return "#";
+    }
+  };
+
   return (
-    <div className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
+    <div className="mx-auto w-full max-w-5xl rounded-2xl border border-[#D7E4DA] bg-white/88 p-4 shadow-[0_14px_34px_rgba(27,67,50,0.08)] backdrop-blur sm:p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/50">
             Share answer sheet
           </p>
-          <h3 className="mt-2 text-xl font-bold text-primary">Send your result anywhere it helps</h3>
-          <p className="mt-2 text-sm leading-6 text-inkd">
-            Share the score summary together with the your answer response and the
-            correct answers when they are shown.
+          <h3 className="mt-1 text-lg font-bold leading-tight text-primary">{title || "Send your result anywhere it helps"}</h3>
+          <p className="mt-1.5 max-w-2xl text-sm leading-5 text-inkd">
+            {description ||
+              "Share the score summary together with the your answer response and the correct answers when they are shown."}
           </p>
         </div>
-        <div className="rounded-2xl bg-[#D8F3DC] p-3 text-primary">
-          <Share2 className="h-5 w-5" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary">
+          <Share2 className="h-4 w-4" />
         </div>
       </div>
 
       {enabled ? (
-        <div className="mt-5 grid gap-3 xl:grid-cols-3">
+        <div className="mt-4 grid gap-2.5 md:grid-cols-3">
           {shareDestinations.map((destination) => (
-            <Button
+            <a
               key={destination.name}
-              type="button"
-              className="group rounded-3xl border border-border bg-muted/15 p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/35 hover:bg-white hover:shadow-sm" variant="secondary"
+              href={getHref(destination.name)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex min-h-[5.5rem] items-center gap-3 rounded-2xl border border-[#DDE6DC] bg-[#FBFCF7] p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm"
             >
-              <div className="flex items-start justify-between gap-3">
-                <span
-                  className={`inline-flex h-11 min-w-11 items-center justify-center rounded-2xl text-sm font-bold ${destination.iconClassName}`}
-                >
-                  {destination.icon}
-                </span>
-                <ExternalLink className="h-4 w-4 text-primary/45 transition group-hover:text-primary" />
+              <span
+                className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-primary/8 ${destination.iconClassName}`}
+              >
+                {destination.icon}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-bold leading-tight text-primary">{destination.name}</p>
+                  <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/40 transition group-hover:text-primary" />
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-inkd">{destination.caption}</p>
               </div>
-              <p className="mt-4 text-base font-semibold text-primary">{destination.name}</p>
-              <p className="mt-2 text-sm leading-6 text-inkd">{destination.caption}</p>
-            </Button>
+            </a>
           ))}
         </div>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed border-border bg-muted/15 p-4 text-sm leading-6 text-inkd">
+        <div className="mt-4 rounded-2xl border border-dashed border-[#DDE6DC] bg-[#FBFCF7] p-3 text-sm leading-5 text-inkd">
           Sharing is disabled for this assessment, so participants can review the answer sheet here
           but cannot send it to social channels.
         </div>
       )}
 
-      <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-muted/20 px-3 py-2 text-xs font-semibold text-primary/70">
-        <MessageCircleMore className="h-4 w-4" />
+      <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#F3F7EF] px-3 py-1.5 text-[11px] font-semibold text-primary/65">
+        <MessageCircleMore className="h-3.5 w-3.5" />
         Supported targets: Facebook, Telegram, LinkedIn
       </div>
     </div>

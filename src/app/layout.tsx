@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${dmSerif.variable} ${dmSans.variable} ${kohSantepheap.variable}`}
     >
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Toaster position="top-center" richColors />
       </body>

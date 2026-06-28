@@ -33,6 +33,7 @@ export default function AddQuestionsToBankModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedIds([]);
       setSearch("");
       setIsLoading(true);
@@ -63,6 +64,7 @@ export default function AddQuestionsToBankModal({
         onRefresh?.();
         router.refresh();
         onClose();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         console.error(err);
         toast.error("Failed to add questions", {

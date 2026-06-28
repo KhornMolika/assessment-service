@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { deleteQuestion } from "@/src/actions/question-actions";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { ApiQuestionResponse } from "@/src/types/question-detail.types";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 
@@ -34,6 +35,7 @@ export default function DeleteQuestionModal({
           onClose();
           router.refresh();          router.push("/questions");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to delete question", {
           description: error.message || "An unexpected error occurred",

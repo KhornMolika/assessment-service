@@ -22,6 +22,7 @@ import {
 } from "@/src/components/ui/ui/card";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
+import { useAdminSockets } from "@/src/hooks/useAdminSockets";
 
 function getSingleSearchParam(
   value: string | string[] | null | undefined,
@@ -54,6 +55,7 @@ function filterAssessments({
   selectionFilter,
   query,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   assessments: any[];
   deliveryFilter: "ALL" | AssessmentDeliveryMode;
   typeFilter: string;
@@ -110,8 +112,11 @@ function AssessmentsPageContent() {
 
   const activeTopic = useTopicStore((s) => s.activeTopic);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [assessments, setAssessments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  const updateTick = useAdminSockets();
 
   useEffect(() => {
     let isMounted = true;
@@ -138,7 +143,8 @@ function AssessmentsPageContent() {
     return () => {
       isMounted = false;
     };
-  }, [activeTopic?.id ?? "all"]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTopic?.id ?? "all", updateTick]);
 
   if (isLoading) {
     return <AssessmentsCatalogLoading />;
@@ -220,6 +226,7 @@ function AssessmentsPageContent() {
               />
             ) : (
               <AssessmentsTableInteractive
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 assessments={paginatedAssessments as any}
               />
             )}

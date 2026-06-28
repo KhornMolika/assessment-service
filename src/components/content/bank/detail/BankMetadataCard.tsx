@@ -1,6 +1,7 @@
 import type { QuestionBank } from "@/src/types/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",

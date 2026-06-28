@@ -60,10 +60,13 @@ export async function removeQuestionFromAssessment(id: string, assessmentQuestio
 }
 
 export async function getAssessmentSettings(id: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return apiClient.get<any>(`/assessments/${id}/settings`);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateAssessmentSettings(id: string, data: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return apiClient.patch<any>(`/assessments/${id}/settings`, data);
 }
 

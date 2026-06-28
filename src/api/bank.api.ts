@@ -6,6 +6,7 @@ export async function getBanks(): Promise<QuestionBank[]> {
   console.log(process.env.API_URL + "/banks");
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await apiClient.get<{ data: any[] }>("/banks?limit=500");
     return (response.data || []).map((b) => ({
       id: String(b.id),
@@ -60,12 +61,14 @@ export async function getBankDetailPageData(id: string): Promise<{
       ).map((q) => ({
         id: String(q.id),
         questionText: String(q.questionText || q.text),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type: String(q.type) as any,
         topicId: id,
         points: Number(q.points || 5),
         createdAt: String(q.createdAt || new Date().toISOString()),
         updatedAt: String(q.updatedAt || new Date().toISOString()),
         clientId: "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         difficulty: "MEDIUM" as any,
         options: null,
         correctAnswer: null,

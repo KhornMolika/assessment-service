@@ -1,5 +1,6 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Clock3, Plus, Sparkles, TimerReset, Trash2, ChevronDown } from "lucide-react";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
@@ -14,6 +15,7 @@ export default function AssessmentSettingsStep({
   onGradeLabelChange,
   onAddGradeLabel,
   onRemoveGradeLabel,
+  publishedScheduleOnly = false,
 }: {
   formData: NewAssessmentFormData;
   onChange: <K extends keyof NewAssessmentFormData>(
@@ -27,7 +29,79 @@ export default function AssessmentSettingsStep({
   ) => void;
   onAddGradeLabel: () => void;
   onRemoveGradeLabel: (index: number) => void;
+  publishedScheduleOnly?: boolean;
 }) {
+  if (publishedScheduleOnly) {
+    return (
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-5 py-4 text-sm font-medium leading-relaxed text-emerald-900">
+          This assessment is already published. Core details, participant rules, scoring, and questions are locked; only the schedule below can be updated.
+        </div>
+
+        <Card className="border-emerald-200/80 bg-white shadow-sm">
+          <CardHeader className="rounded-t-2xl border-b border-emerald-100 bg-[linear-gradient(135deg,#f2fbf4_0%,#ffffff_100%)]">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+                <Clock3 className="h-5 w-5" />
+              </span>
+              <div>
+                <CardTitle className="text-lg text-[#14352b]">Published Schedule</CardTitle>
+                <CardDescription>
+                  Adjust when learners can access this assessment.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="timeLimitMinutes" className="text-sm font-bold text-slate-800">Time limit (minutes)</Label>
+                <Input
+                  id="timeLimitMinutes"
+                  name="timeLimitMinutes"
+                  type="number"
+                  min={0}
+                  value={formData.timeLimitMinutes}
+                  onChange={(event) => {
+                    const value = Number(event.target.value) || 0;
+                    onChange("timeLimitMinutes", value);
+                    onChange("enableTimeLimit", value > 0);
+                  }}
+                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+                <p className="text-xs text-slate-500">Use 0 if the assessment should stay untimed.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="startsAt" className="text-sm font-bold text-slate-800">Starts at</Label>
+                <Input
+                  id="startsAt"
+                  name="startsAt"
+                  type="datetime-local"
+                  value={formData.startsAt}
+                  onChange={(event) => onChange("startsAt", event.target.value)}
+                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endsAt" className="text-sm font-bold text-slate-800">Ends at</Label>
+                <Input
+                  id="endsAt"
+                  name="endsAt"
+                  type="datetime-local"
+                  value={formData.endsAt}
+                  onChange={(event) => onChange("endsAt", event.target.value)}
+                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">

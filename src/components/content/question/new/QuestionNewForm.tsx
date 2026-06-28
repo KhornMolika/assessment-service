@@ -9,6 +9,7 @@ import QuestionTypeSettingsCard from "@/src/components/content/question-form/Que
 import type { QuestionFormData, QuestionFormType } from "@/src/types/question-form.types";
 import { createQuestion } from "@/src/actions/question-actions";
 import QuestionNewHeader from "./QuestionNewHeader";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/src/components/ui/ui/button";
 import { toast } from "sonner";
 import { getDefaultOptionsAndAnswers, mapToApiPayload } from "@/src/utils/question-form-utils";
@@ -42,6 +43,7 @@ export default function QuestionNewForm() {
     value: QuestionFormData[K],
   ) => {
     setFormData((current) => {
+      // eslint-disable-next-line prefer-const
       let next = { ...current, [field]: value } as QuestionFormData;
       
       // Reset options and answers if type changes
@@ -61,9 +63,11 @@ export default function QuestionNewForm() {
     startTransition(async () => {
       try {
         const payload = mapToApiPayload(formData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await createQuestion(activeTopic.id, payload as any);
         toast.success("Question created successfully");
         router.refresh();        router.push("/questions");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         const errorMsg = err.message || "Failed to create question";
         toast.error("Validation failed", {

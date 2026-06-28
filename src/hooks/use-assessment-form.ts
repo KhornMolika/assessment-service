@@ -76,7 +76,9 @@ export function useAssessmentForm({
   const pathname = usePathname();
   const activeTopic = useTopicStore((s) => s.activeTopic);
 
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(
+    mode === "edit" && initialFormData?.status === "PUBLISHED" ? 2 : 1,
+  );
   const [questionSearch, setQuestionSearch] = useState("");
   const [formData, setFormData] = useState<NewAssessmentFormData>(
     initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || "" },
@@ -84,11 +86,12 @@ export function useAssessmentForm({
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setCurrentStep(1);
     if (mode === "create" && pathname === "/assessments/new") {
+      setCurrentStep(1);
       setFormData({ ...defaultFormData, ownerTopicId: activeTopic?.id || "" });
       setQuestionSearch("");
     } else if (initialFormData) {
+      setCurrentStep(mode === "edit" && initialFormData.status === "PUBLISHED" ? 2 : 1);
       setFormData(initialFormData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,7 +141,35 @@ export function useAssessmentForm({
     return getStepValidationMessages(step as 1 | 2 | 3).length === 0;
   };
 
-  const canContinue = isStepComplete(currentStep);
+  const isPublishedEdit = mode === "edit" && formData.status === "PUBLISHED";
+  const getPublishedScheduleValidationMessages = () => {
+    const messages: string[] = [];
+    const timeLimit = formData.timeLimitMinutes;
+
+    if (!Number.isInteger(timeLimit) || timeLimit < 0 || timeLimit > 1440) {
+      messages.push("Time limit must be a whole number between 0 and 1440 minutes.");
+    }
+
+    const start = formData.startsAt ? new Date(formData.startsAt).getTime() : null;
+    const end = formData.endsAt ? new Date(formData.endsAt).getTime() : null;
+
+    if (start !== null && Number.isNaN(start)) {
+      messages.push("Start time is not a valid date.");
+    }
+
+    if (end !== null && Number.isNaN(end)) {
+      messages.push("End time is not a valid date.");
+    }
+
+    if (start !== null && end !== null && !Number.isNaN(start) && !Number.isNaN(end) && end < start) {
+      messages.push("End time must be after the start time.");
+    }
+
+    return messages;
+  };
+  const canContinue = isPublishedEdit
+    ? getPublishedScheduleValidationMessages().length === 0
+    : isStepComplete(currentStep);
 
   const handleChange = <K extends keyof NewAssessmentFormData>(
     field: K,
@@ -155,12 +186,17 @@ export function useAssessmentForm({
       return {
         ...current,
         [field]: value,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         questionSelection: field === "questionSelection" ? (value as any) : nextQuestionSelection,
       };
     });
   };
 
   const handleNext = () => {
+    if (isPublishedEdit) {
+      return;
+    }
+
     if (currentStep >= 4) {
       return;
     }
@@ -175,6 +211,10 @@ export function useAssessmentForm({
   };
 
   const handlePrevious = () => {
+    if (isPublishedEdit) {
+      return;
+    }
+
     if (currentStep <= 1) {
       return;
     }
@@ -241,8 +281,9 @@ export function useAssessmentForm({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
-    // Prevent accidental auto-saving when pressing Enter on steps 1 and 2
-    if (currentStep < 3) {
+    // Prevent accidental auto-saving when pressing Enter before the final step.
+    // Published assessments are schedule-only edits, so their editable step saves directly.
+    if (currentStep < 3 && !isPublishedEdit) {
       return;
     }
 
@@ -256,12 +297,22 @@ export function useAssessmentForm({
       ownerTopicId: mode === "create" ? (activeTopic?.id || formData.ownerTopicId) : (formData.ownerTopicId || activeTopic?.id)
     };
 
-    if (submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
+    if (isPublishedEdit) {
+      const messages = getPublishedScheduleValidationMessages();
+      if (messages.length > 0) {
+        messages.forEach((msg) => toast.error(msg));
+        return;
+      }
+    }
+
+    if (!isPublishedEdit && submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
       toast.error("Select at least one question for manual question selection.");
       return;
     }
     
-    const validationResult = assessmentFormSchema.safeParse(submitData);
+    const validationResult = isPublishedEdit
+      ? { success: true as const }
+      : assessmentFormSchema.safeParse(submitData);
 
     if (!validationResult.success) {
       const errorMessages = Array.from(
@@ -327,6 +378,7 @@ export function useAssessmentForm({
           toast.error(createRes.error || "Failed to create assessment for publishing");
           return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         currentAssessmentId = (createRes.assessment as any).id;
       } else {
         // If editing existing, save draft first

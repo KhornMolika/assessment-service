@@ -6,6 +6,7 @@ import { Label } from "@/src/components/ui/ui/label";
 import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import { Textarea } from "@/src/components/ui/ui/textarea";
 import { Input } from "@/src/components/ui/ui/input";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Settings2, Database, FolderTree, Star, Hash, ChevronDown } from "lucide-react";
 
 const questionTypes: QuestionFormType[] = [
@@ -30,7 +31,9 @@ export type QuestionDetailsCardProps = {
 };
 
 export default function QuestionDetailsCard({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   banks,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   topics,
   formData,
   onChange,

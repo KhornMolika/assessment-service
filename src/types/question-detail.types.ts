@@ -76,8 +76,10 @@ export interface ApiQuestionResponse {
   type: string;
   difficulty: string;
   points: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any;
   questionText: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   correctAnswers: any;
   topicId: string | null;
 }

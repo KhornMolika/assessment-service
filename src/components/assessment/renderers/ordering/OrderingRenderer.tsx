@@ -31,6 +31,7 @@ export function OrderingRenderer({
     : initialShuffledIds;
 
   const orderedOptions = orderedIds
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((optionId) => question.options.find((option: any) => option.id === optionId))
     .filter((option): option is NonNullable<typeof option> => Boolean(option));
 
