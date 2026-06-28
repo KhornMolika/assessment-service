@@ -9,6 +9,7 @@ import { Badge } from "@/src/components/ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { exportResultSheetCsv } from "./results.export";
 import { retryAIGrading } from "@/src/api/assessment.api";
+import { getAnswerResponseText, getCorrectAnswerText } from "@/src/lib/session/session.utils";
 import { Button } from "@/src/components/ui/ui/button";
 import { Label } from "@/src/components/ui/ui/label";
 import { Select } from "@/src/components/ui/ui/select";
@@ -32,62 +33,43 @@ function formatSubmittedAt(value: string | null) {
 function parseResponseValue(entry: AnswerEntry) {
   if (typeof entry.response === "string") {
     try {
-      return JSON.parse(entry.response) as Record<string, unknown>;
+      const parsed = JSON.parse(entry.response);
+      if (typeof parsed === "number" && entry.questionSnapshot.typeId === "SINGLE_CHOICE") {
+        return String(parsed);
+      }
+      return parsed;
     } catch {
-      return { raw: entry.response } as Record<string, unknown>;
+      return entry.response;
     }
   }
-
-  return entry.response as Record<string, unknown>;
+  return entry.response;
 }
 
-function getOptionText(entry: AnswerEntry, optionId: unknown) {
-  const id = String(optionId ?? "");
-  return entry.questionSnapshot.options?.find((option) => option.id === id)?.text ?? id;
+function toQuestionRound(entry: AnswerEntry) {
+  return {
+    id: entry.questionId,
+    type: entry.questionSnapshot.typeId,
+    question: entry.questionSnapshot.questionText,
+    options: Array.isArray(entry.questionSnapshot.options) ? entry.questionSnapshot.options : [],
+    rawOptions: entry.questionSnapshot.options,
+    correctAnswers: entry.questionSnapshot.correctAnswers,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    correctOptionId: (entry.questionSnapshot.correctAnswers as any)?.optionId,
+    points: entry.questionSnapshot.points,
+  } as unknown as import("@/src/types/session.types").QuestionRound;
 }
 
 function formatResponse(entry: AnswerEntry) {
-  const response = parseResponseValue(entry);
-  const type = String(response.type ?? "").toLowerCase();
-
-  if (type === "single") return getOptionText(entry, response.selected_option_id);
-  if (type === "multiple") {
-    return Array.isArray(response.selected_option_ids)
-      ? response.selected_option_ids.map((value) => getOptionText(entry, value)).join(", ")
-      : "-";
-  }
-  if (type === "boolean") return response.value ? "True" : "False";
-  if (type === "short" || type === "essay") return String(response.text ?? "-");
-  if (type === "rating") return String(response.value ?? "-");
-  if (type === "ordering") {
-    return Array.isArray(response.ordered_ids)
-      ? response.ordered_ids.map((value) => getOptionText(entry, value)).join(" -> ")
-      : "-";
-  }
-  if (type === "fill") return Array.isArray(response.answers) ? response.answers.join(", ") : "-";
-  if (type === "matching") {
-    return Array.isArray(response.pairs)
-      ? response.pairs
-          .map(
-            (pair) =>
-              `${getOptionText(entry, (pair as { left_id?: string }).left_id)} -> ${getOptionText(entry, (pair as { right_id?: string }).right_id)}`,
-          )
-          .join(", ")
-      : "-";
-  }
-  if (type === "file") return String(response.file_url ?? "-");
-
-  return JSON.stringify(entry.response);
+  const round = toQuestionRound(entry);
+  const val = parseResponseValue(entry);
+  const text = getAnswerResponseText(round, val);
+  return text || <span className="italic opacity-50">No answer provided</span>;
 }
 
 function formatCorrectAnswer(entry: AnswerEntry) {
-  const value = entry.questionSnapshot.correctAnswers;
-  if (value == null) return null;
-  if (Array.isArray(value)) return value.map((item) => getOptionText(entry, item)).join(", ");
-  if (typeof value === "boolean") return value ? "True" : "False";
-  if (typeof value === "object") return JSON.stringify(value);
-  if (typeof value === "string") return getOptionText(entry, value);
-  return String(value);
+  const round = toQuestionRound(entry);
+  const text = getCorrectAnswerText(round);
+  return text || <span className="italic opacity-50">Not applicable for manual review</span>;
 }
 
 function getGradingBadge(status: GradingStatus) {

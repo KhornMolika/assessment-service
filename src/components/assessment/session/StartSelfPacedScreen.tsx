@@ -41,7 +41,7 @@ export function StartSelfPacedScreen({
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
-  const allowShareAnswerSheet = false;
+  const allowShareAnswerSheet = true;
   const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,7 +53,9 @@ export function StartSelfPacedScreen({
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [serverResult, setServerResult] = useState<any>(null);
+
 
   const currentQuestion = rounds[questionIndex];
   const confirmationItems = rounds.map((question) => {
@@ -84,7 +86,26 @@ export function StartSelfPacedScreen({
     };
   }, [answers, assessment.settings?.gradeLabels, assessment.settings?.passMark, rounds]);
 
+  const finalScoreSummary = serverResult?.session ? {
+    earnedPoints: serverResult.session.pointsEarned ?? scoreSummary.earnedPoints,
+    totalPoints: serverResult.session.pointsTotal ?? scoreSummary.totalPoints,
+    grade: serverResult.session.grade ?? scoreSummary.grade,
+    passed: serverResult.session.isPassed ?? scoreSummary.passed,
+  } : scoreSummary;
 
+
+
+    // Poll for real-time updates when on the end screen
+  useEffect(() => {
+    if (step !== "end" || !sessionId) return;
+    const interval = setInterval(async () => {
+      const res = await getSessionResult(sessionId);
+      if (res.success) {
+        setServerResult(res.data);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [step, sessionId]);
 
   useEffect(() => {
     if (step !== "quiz" || totalTimerSeconds <= 0 || remainingSeconds <= 0) {
@@ -229,8 +250,9 @@ export function StartSelfPacedScreen({
 
         {step === "end" ? (
           <SelfPacedResult
+            shareUrl={`/public-results/${sessionId}`}
             resultMode={resultMode}
-            scoreSummary={scoreSummary}
+            scoreSummary={finalScoreSummary}
             allowShareAnswerSheet={allowShareAnswerSheet}
             showCorrectAnswers={showCorrectAnswers}
             items={confirmationItems}

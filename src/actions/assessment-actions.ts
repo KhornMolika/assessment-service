@@ -75,12 +75,12 @@ export async function deleteAssessment(id: string): Promise<void> {
 }
 
 export async function fetchTopicAssessments(topicId: string): Promise<Assessment[]> {
-  const data = await fetchWithAuth(`/topics/${topicId}/assessments`);
+  const data = await fetchWithAuth(`/topics/${topicId}/assessments?limit=500`);
   return Array.isArray(data.data) ? data.data : data;
 }
 
 export async function fetchGlobalAssessments(): Promise<Assessment[]> {
-  const data = await fetchWithAuth(`/assessments`);
+  const data = await fetchWithAuth(`/assessments?limit=500`);
   return Array.isArray(data.data) ? data.data : data;
 }
 

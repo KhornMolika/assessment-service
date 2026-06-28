@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircle2, Clock3, Radio } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types";
 import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import type { QuestionRendererValue } from "../renderers/types";
@@ -10,25 +11,36 @@ import { JoinLobby } from "./join/JoinLobby";
 import { JoinResult } from "./join/JoinResult";
 import { JoinWaitingState } from "./join/JoinWaitingState";
 import { realtimeEvents } from '@/src/lib/session/realtime.events';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { JoinPhase } from '@/src/types/session.types';
 import {
   buildQuestionRounds,
   hasAnswerResponse,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isCorrectAnswerResponse,
   requiresParticipantIdentity,
 } from '@/src/lib/session/session.utils';
-import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
+import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
 import { RoomRole } from "@/src/types/runtime.types";
-import { apiClient } from "@/src/lib/api-client";
+import { joinRealTimeSessionAction } from "@/src/lib/actions/assessment.actions";
 import { toast } from "sonner";
+
+const QUESTION_DURATION_SECONDS = 30;
+const SPEED_BONUS_RATIO = 0.5;
 
 export function EnterRealTimeScreen({
   assessment,
   embedded,
+  session: externalSession,
+  onPreviewParticipantJoined,
 }: {
   assessment: AssessmentCatalogItem;
   embedded?: boolean;
+  session?: RealtimeSessionReturn;
+  onPreviewParticipantJoined?: (participant: { id: string; name: string }) => void;
 }) {
+  const internalSession = useRealtimeSession({ enabled: !externalSession });
+  const activeSession = externalSession || internalSession;
   const rounds = useMemo(
     () =>
       buildQuestionRounds([
@@ -47,6 +59,7 @@ export function EnterRealTimeScreen({
       ]),
     [assessment.id],
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   
@@ -58,34 +71,74 @@ export function EnterRealTimeScreen({
   const [totalScore, setTotalScore] = useState(0);
   const [streakCount, setStreakCount] = useState(0);
   const [participantId, setParticipantId] = useState<string | null>(null);
+  const [lastAwardedPoints, setLastAwardedPoints] = useState(0);
+  const [submittedSpeedBonus, setSubmittedSpeedBonus] = useState(0);
+  const awardedQuestionRef = useRef<string | null>(null);
+  const backendScoreAppliedQuestionRef = useRef<string | null>(null);
+  const scoreBeforeQuestionRef = useRef(0);
+  const totalScoreRef = useRef(0);
 
-  const { isConnected, roomState, joinRoom, emitSubmitAnswer } = useRealtimeSession();
+  const { isConnected, roomState, joinRoom, emitSubmitAnswer } = activeSession;
 
   const currentRound = roomState.currentQuestion || rounds[0];
-  const isCorrect = isCorrectAnswerResponse(currentRound, answerValue);
-  const speedBonus = hasAnswerResponse(currentRound, answerValue) && timerSeconds >= 8 ? 50 : 0;
-  const lastPoints = hasAnswerResponse(currentRound, answerValue) ? (isCorrect ? currentRound.points + speedBonus : 0) : 0;
   const phase = roomState.phase;
+  const questionNumber = roomState.questionNumber || questionIndex + 1;
+  const totalQuestions = roomState.totalQuestions || rounds.length;
+  const currentPoints = Number.isFinite(Number(currentRound.points))
+    ? Number(currentRound.points)
+    : 0;
+  const timerProgressPercent = Math.max(
+    0,
+    Math.min(100, (timerSeconds / QUESTION_DURATION_SECONDS) * 100),
+  );
+  const hasTimedOut = phase === "active" && timerSeconds <= 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const speedBonus = getRealtimeSpeedBonus(currentPoints, timerSeconds);
   const isLobbyPhase = phase === "lobby";
+  const resultQuestionId =
+    typeof roomState.myResult?.questionId === "string" ? roomState.myResult.questionId : null;
+  const hasCurrentRoundResult =
+    Boolean(currentRound?.id) && resultQuestionId === currentRound.id;
+  const backendCorrect =
+    hasCurrentRoundResult && typeof roomState.myResult?.correct === "boolean"
+      ? roomState.myResult.correct
+      : undefined;
+  const revealedCorrect =
+    backendCorrect ?? isAnswerCorrectFromReveal(roomState.questionResults?.correct, answerValue);
+
+  useEffect(() => {
+    totalScoreRef.current = totalScore;
+  }, [totalScore]);
 
   // Reset local state when a new question starts
   useEffect(() => {
     if (phase === "active") {
-      setTimerSeconds(12);
+      setTimerSeconds(QUESTION_DURATION_SECONDS);
       setAnswerValue(null);
+      setLastAwardedPoints(0);
+      setSubmittedSpeedBonus(0);
+      awardedQuestionRef.current = null;
+      backendScoreAppliedQuestionRef.current = null;
+      scoreBeforeQuestionRef.current = totalScoreRef.current;
+      setQuestionIndex(Math.max(0, (roomState.questionNumber || 1) - 1));
     }
-  }, [phase, currentRound?.id]);
+  }, [phase, currentRound?.id, roomState.questionNumber]);
 
   useEffect(() => {
-    if (phase !== "active") return;
-    if (timerSeconds <= 0) return;
+    if (phase !== "active" || !roomState.endTime) return;
 
-    const timeoutId = window.setTimeout(() => {
-      setTimerSeconds((seconds) => seconds - 1);
-    }, 1000);
+    const tick = () => {
+      const remaining = Math.max(
+        0,
+        Math.floor((new Date(roomState.endTime!).getTime() - Date.now()) / 1000),
+      );
+      setTimerSeconds(remaining);
+    };
 
-    return () => window.clearTimeout(timeoutId);
-  }, [phase, timerSeconds]);
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [phase, roomState.endTime]);
 
   async function joinLobby() {
     if (requiresIdentity && (displayName.trim().length === 0 || email.trim().length === 0)) {
@@ -95,33 +148,143 @@ export function EnterRealTimeScreen({
     let createdParticipantId: string | undefined = undefined;
     if (displayName.trim().length > 0) {
       try {
-        const pRes = await apiClient.post<any>("/participants", { name: displayName, email });
-        createdParticipantId = pRes.id || pRes.data?.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = { name: displayName };
+        if (email.trim().length > 0) {
+          payload.email = email;
+        }
+        
+        const pRes = await joinRealTimeSessionAction(assessment.id, payload);
+        if (!pRes.success) {
+          throw new Error(pRes.error);
+        }
+        
+        createdParticipantId =
+          pRes.data?.id ||
+          pRes.data?.data?.id ||
+          pRes.data?.data?.data?.id ||
+          pRes.data?.participant?.id ||
+          pRes.data?.data?.participant?.id;
         setParticipantId(createdParticipantId || null);
-      } catch (err) {
-        toast.error("Failed to register participant details");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        console.error("Participant registration failed:", err);
+        const msg = err?.response?.data?.message || err.message || "Failed to register participant details";
+        toast.error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        return;
       }
     }
 
-    joinRoom(assessment.id, RoomRole.PARTICIPANT, createdParticipantId, displayName);
+    if (!isConnected) {
+      toast.error("Realtime connection is still starting. Please try again in a moment.");
+      return;
+    }
+
+    const participantName = displayName.trim() || "Anonymous";
+    const roomParticipantId =
+      createdParticipantId ||
+      `preview-${participantName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}`;
+    
+    setParticipantId(roomParticipantId);
+    onPreviewParticipantJoined?.({ id: roomParticipantId, name: participantName });
+    joinRoom(assessment.id, RoomRole.PARTICIPANT, roomParticipantId, participantName);
   }
 
-  function submitAnswer(value: QuestionRendererValue) {
-    setAnswerValue(value);
-    const roundSpeedBonus = hasAnswerResponse(value) && timerSeconds >= 8 ? 50 : 0;
+  const [submitted, setSubmitted] = useState(false);
 
-    if (isCorrectAnswerResponse(currentRound, value)) {
-      setTotalScore((score) => score + currentRound.points + roundSpeedBonus);
+  function selectAnswer(value: QuestionRendererValue) {
+    if (submitted) return; // prevent changing after submit
+    setAnswerValue(value);
+  }
+
+  function handleSubmit() {
+    if (!hasAnswerResponse(currentRound, answerValue) || submitted || hasTimedOut) return;
+    setSubmitted(true);
+    scoreBeforeQuestionRef.current = totalScore;
+    const roundSpeedBonus = getRealtimeSpeedBonus(currentPoints, timerSeconds);
+    setSubmittedSpeedBonus(roundSpeedBonus);
+    
+    if (participantId) {
+      const timeSpentSecs = QUESTION_DURATION_SECONDS - timerSeconds;
+      emitSubmitAnswer(answerValue, timeSpentSecs);
+    }
+  }
+
+  // Reset submitted state when new question arrives
+  useEffect(() => {
+    if (phase === "active") {
+      setSubmitted(false);
+    }
+  }, [phase, currentRound?.id]);
+
+  useEffect(() => {
+    if (!roomState.questionResults || phase === "active") return;
+    if (awardedQuestionRef.current === currentRound.id) return;
+
+    awardedQuestionRef.current = currentRound.id;
+    const correct =
+      hasCurrentRoundResult && typeof roomState.myResult?.correct === "boolean"
+        ? roomState.myResult.correct
+        : isAnswerCorrectFromReveal(roomState.questionResults.correct, answerValue);
+    
+    if (correct) {
       setStreakCount((count) => count + 1);
     } else {
       setStreakCount(0);
     }
-    
-    if (participantId) {
-      const timeSpentMs = (12 - timerSeconds) * 1000;
-      emitSubmitAnswer(currentRound.id, participantId, value, timeSpentMs);
+  }, [
+    answerValue,
+    currentRound?.id,
+    hasCurrentRoundResult,
+    phase,
+    roomState.myResult?.correct,
+    roomState.questionResults,
+  ]);
+
+  // Sync total score with backend truth when it arrives and calculate exact points earned
+  useEffect(() => {
+    if (roomState.myRank?.score !== undefined && hasCurrentRoundResult) {
+      const resultTotalScore = Number(roomState.myResult?.totalScore);
+      const rankScore = Number(roomState.myRank.score);
+      const newScore = Number.isFinite(resultTotalScore)
+        ? Math.max(0, resultTotalScore)
+        : Number.isFinite(rankScore)
+          ? Math.max(0, rankScore)
+          : totalScoreRef.current;
+      setTotalScore(newScore);
+
+      if (phase !== "active") {
+        if (backendScoreAppliedQuestionRef.current !== currentRound?.id) {
+          backendScoreAppliedQuestionRef.current = currentRound?.id || null;
+          const resultPoints = Number(roomState.myResult?.pointsEarned);
+          const resultSpeedBonus = Number(roomState.myResult?.speedBonus);
+          const delta = Number.isFinite(resultPoints)
+            ? Math.max(0, resultPoints)
+            : Math.max(0, newScore - scoreBeforeQuestionRef.current);
+          const backendSpeedBonus = Number.isFinite(resultSpeedBonus)
+            ? Math.max(0, resultSpeedBonus)
+            : revealedCorrect
+              ? Math.max(0, delta - currentPoints)
+              : 0;
+          setLastAwardedPoints(delta);
+          setSubmittedSpeedBonus(backendSpeedBonus);
+        }
+      }
     }
-  }
+  }, [
+    answerValue,
+    currentPoints,
+    currentRound?.id,
+    hasCurrentRoundResult,
+    phase,
+    roomState.myRank?.score,
+    roomState.myResult?.correct,
+    roomState.myResult?.questionId,
+    roomState.myResult?.pointsEarned,
+    roomState.myResult?.speedBonus,
+    roomState.myResult?.totalScore,
+    roomState.questionResults?.correct,
+  ]);
 
   return (
     <ScreenShell
@@ -154,27 +317,105 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "active" ? (
-          <div className="mx-auto flex w-full max-w-4xl flex-1 items-start py-2 sm:py-4 lg:items-center">
-            <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
-              <QuestionRenderer
-                question={currentRound}
-                value={answerValue}
-                onChange={submitAnswer}
-              />
+          <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col py-2 sm:py-4 lg:justify-center">
+            <div className="rt-card-pop overflow-hidden rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
+              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-5 text-white sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
+                    <Radio className="h-4 w-4 text-[#95D5B2]" />
+                    Live question
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/85">
+                    Question {questionNumber} of {totalQuestions}
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <h2 className="max-w-3xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                    {currentRound.question || (currentRound as any).questionText}
+                  </h2>
+                  <div
+                    className={`shrink-0 rounded-3xl border border-white/15 bg-white/10 px-5 py-4 text-right backdrop-blur ${
+                      timerSeconds <= 5 ? "rt-timer-critical" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-end gap-2 text-white/65">
+                      <Clock3 className="h-4 w-4" />
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+                        Time left
+                      </span>
+                    </div>
+                    <p className="mt-1 text-4xl font-black">{timerSeconds}s</p>
+                  </div>
+                </div>
+
+                <div className="rt-progress-shimmer mt-5 h-2.5 rounded-full bg-white/12">
+                  <div
+                    className={`h-full rounded-full transition ${
+                      timerSeconds <= 5
+                        ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
+                        : "bg-[linear-gradient(90deg,#FFD166_0%,#95D5B2_100%)]"
+                    }`}
+                    style={{ width: `${timerProgressPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-4 sm:p-6">
+                <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
+                  <QuestionRenderer
+                    question={currentRound}
+                    value={answerValue}
+                    onChange={selectAnswer}
+                    disabled={submitted || hasTimedOut}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mx-auto mt-6 w-full max-w-md">
+              {submitted ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl bg-[#113023] px-6 py-4 text-center text-base font-bold text-white shadow-[0_18px_40px_rgba(17,48,35,0.18)]">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                  Answer submitted! Waiting for results…
+                </div>
+              ) : hasTimedOut ? (
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-[#FFD166]/60 bg-[#FFF6CC] px-6 py-4 text-center text-base font-bold text-[#113023] shadow-sm">
+                  <Clock3 className="h-5 w-5" />
+                  Time is up. Waiting for results…
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={!hasAnswerResponse(currentRound, answerValue)}
+                  className="w-full rounded-2xl bg-gradient-to-r from-[#FFD166] to-[#F9C74F] px-6 py-4 text-base font-bold text-[#113023] shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                >
+                  Submit Answer
+                </button>
+              )}
             </div>
           </div>
         ) : null}
 
-        {roomState.questionResults ? (
-          <JoinResult
-            currentRound={currentRound}
-            answerValue={answerValue}
-            isCorrect={roomState.questionResults?.correct}
-            lastPoints={roomState.questionResults?.points || 0}
-            totalScore={totalScore}
-            speedBonus={speedBonus}
-            isLastQuestion={questionIndex === rounds.length - 1}
-          />
+        {roomState.questionResults && phase !== "active" ? (
+          hasCurrentRoundResult ? (
+            <JoinResult
+              currentRound={currentRound}
+              answerValue={answerValue}
+              isCorrect={revealedCorrect}
+              lastPoints={Number.isFinite(lastAwardedPoints) ? lastAwardedPoints : 0}
+              totalScore={Number.isFinite(totalScore) ? totalScore : 0}
+              speedBonus={submittedSpeedBonus}
+              isLastQuestion={questionIndex === rounds.length - 1}
+            />
+          ) : (
+            <JoinWaitingState
+              title="Checking your result..."
+              description="Your score will appear as soon as this round result is ready."
+            />
+          )
         ) : null}
 
         {phase === "results" ? (
@@ -188,4 +429,84 @@ export function EnterRealTimeScreen({
       </div>
     </ScreenShell>
   );
+}
+
+function getRealtimeSpeedBonus(questionPoints: number, timerSeconds: number): number {
+  if (!Number.isFinite(questionPoints) || questionPoints <= 0) return 0;
+  const timeRatio = Math.max(0, Math.min(1, timerSeconds / QUESTION_DURATION_SECONDS));
+  return questionPoints * SPEED_BONUS_RATIO * timeRatio;
+}
+
+function parseCorrectAnswer(correct: unknown): unknown {
+  if (typeof correct !== "string") return correct;
+  try {
+    return JSON.parse(correct);
+  } catch {
+    return correct;
+  }
+}
+
+function isAnswerCorrectFromReveal(
+  correct: unknown,
+  answerValue: QuestionRendererValue,
+): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!hasAnswerResponse({ options: [], type: "SINGLE_CHOICE" } as any, answerValue)) {
+    return false;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parsed = parseCorrectAnswer(correct) as any;
+  if (Array.isArray(answerValue)) {
+    if (Array.isArray(parsed?.sequence)) {
+      return (
+        answerValue.length === parsed.sequence.length &&
+        answerValue.every((id, index) => id === parsed.sequence[index])
+      );
+    }
+    const correctIds = Array.isArray(parsed?.optionIds)
+      ? parsed.optionIds
+      : Array.isArray(parsed)
+        ? parsed
+        : [];
+    return (
+      answerValue.length === correctIds.length &&
+      answerValue.every((id) => correctIds.includes(id))
+    );
+  }
+
+  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue)) {
+    if (Array.isArray(parsed?.pairs)) {
+      return parsed.pairs.every(
+        (pair: any) => {
+          const lId = pair.leftId || pair.left;
+          const rId = pair.rightId || pair.right;
+          if (!lId || !rId) return false;
+          return answerValue[lId] === rId;
+        }
+      );
+    }
+  }
+
+  // FILL IN THE BLANK
+  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue) && parsed?.answers) {
+    const acceptedAnswers = parsed.answers as string[][];
+    // answerValue is like { "0": "val1", "1": "val2" }
+    return acceptedAnswers.every((accepted, index) => {
+      const given = (answerValue[String(index)] ?? "").trim().toLowerCase();
+      return accepted.some((a) => a.trim().toLowerCase() === given);
+    });
+  }
+
+  if (typeof answerValue === "boolean" || typeof answerValue === "string") {
+    const pVal = parsed?.value !== undefined ? parsed.value : parsed;
+    
+    // Case-insensitive comparison for short answer
+    if (String(pVal).trim().toLowerCase() === String(answerValue).trim().toLowerCase()) return true;
+    if (parsed?.optionId && String(parsed.optionId) === String(answerValue)) return true;
+  }
+
+
+
+  return false;
 }

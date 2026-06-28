@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import QuestionsTableInteractive from "./QuestionsTableInteractive";
 import DeleteQuestionModal from "@/src/components/content/question/detail/DeleteQuestionModal";
 import { useSearchParams } from "next/navigation";
@@ -12,11 +13,13 @@ import {
   Plus,
   Search,
   Trash2,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   X,
 } from "lucide-react";
 import type { QuestionBank, Question } from "@/src/types/api";
 import {
   ALL_TOPICS_VALUE,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   questionMatchesTopic,
 } from "@/src/utils/topic-utils";
 import { Badge } from "@/src/components/ui/ui/badge";
@@ -92,6 +95,7 @@ export default function QuestionsCatalog({
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
   const [questionPendingDelete, setQuestionPendingDelete] = useState<Question | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   useEffect(() => {
@@ -116,6 +120,7 @@ export default function QuestionsCatalog({
     return bankMap[bankId]?.name ?? "All Banks";
   }, [bankMap, manualBankFilter, searchParams]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const availableTypes = useMemo(

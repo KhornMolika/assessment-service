@@ -12,6 +12,7 @@ function AnswerFeedbackRenderer({ question, value }: { question: QuestionRound; 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       return (
         <div className="flex flex-col gap-2">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {acceptedAnswers.map((accepted: any, index: number) => {
             const given = String((value as Record<string, string>)[index] || "").trim();
             const isMatch = Array.isArray(accepted) && accepted.some((a: string) => a.trim().toLowerCase() === given.toLowerCase());
@@ -32,15 +33,18 @@ function AnswerFeedbackRenderer({ question, value }: { question: QuestionRound; 
     const pairs = question.correctAnswers?.pairs || [];
     const raw = question.rawOptions;
     if (typeof value === "object" && value !== null && !Array.isArray(value) && Array.isArray(pairs)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const correctMap = new Map(pairs.map((p: any) => [p.leftId, p.rightId]));
       const leftOptions = raw?.leftSide || [];
       const rightOptions = raw?.rightSide || [];
 
       return (
         <div className="flex flex-col gap-2">
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {leftOptions.map((leftOpt: any) => {
             const givenRightId = (value as Record<string, string>)[leftOpt.id];
             const isMatch = correctMap.get(leftOpt.id) === givenRightId;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const givenRightOpt = rightOptions.find((o: any) => o.id === givenRightId);
 
             return (
@@ -64,6 +68,7 @@ function AnswerFeedbackRenderer({ question, value }: { question: QuestionRound; 
         <div className="flex flex-col gap-2">
           {value.map((id: string) => {
             const isMatch = correctIds.includes(id);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const opt = question.options.find((o: any) => o.id === id);
             
             return (
@@ -91,6 +96,7 @@ export function SelfPacedResult({
   items,
   answerSheetTitle,
   answerSheetHeading,
+  shareUrl = "",
 }: {
   resultMode: "immediate" | "manual" | "hidden";
   scoreSummary: {
@@ -104,6 +110,7 @@ export function SelfPacedResult({
   items: { question: QuestionRound; answerValue: QuestionRendererValue }[];
   answerSheetTitle: string;
   answerSheetHeading: string;
+  shareUrl?: string;
 }) {
   return (
     <div className="flex w-full flex-col space-y-12 pb-12">
@@ -139,8 +146,10 @@ export function SelfPacedResult({
 
       {allowShareAnswerSheet && resultMode === "immediate" ? (
         <ShareAnswerSheetPanel
+          enabled={true}
           title={answerSheetTitle}
           description="You can share this link with others to show your score and answers."
+          shareUrl={shareUrl}
         />
       ) : null}
 

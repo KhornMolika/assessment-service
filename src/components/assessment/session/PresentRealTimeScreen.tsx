@@ -12,6 +12,7 @@ import {
   Crown,
   PlayCircle,
   QrCode,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   Radio,
   Trophy,
   Volume2,
@@ -33,56 +34,98 @@ import {
   buildLeaderboard,
   buildParticipantRoster,
   buildQuestionRounds,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolveLeaderboardRound,
+  getCorrectAnswerText,
 } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
-import { useRealtimeSession } from "@/src/hooks/use-realtime-session";
+import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
 import { RoomRole } from "@/src/types/runtime.types";
 import { startRealtimeSessionHost } from "@/src/lib/actions/runtime.actions";
 import { toast } from "sonner";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+
+const QUESTION_DURATION_SECONDS = 30;
 
 export function PresentRealTimeScreen({
   assessment,
   questions,
   embedded,
+  session: externalSession,
+  previewParticipants = [],
 }: {
   assessment: AssessmentCatalogItem;
   questions: AssessmentDetailQuestionItem[];
   embedded?: boolean;
+  session?: RealtimeSessionReturn;
+  previewParticipants?: Array<{ id: string; name: string }>;
 }) {
+  const internalSession = useRealtimeSession({ enabled: !externalSession });
+  const activeSession = externalSession || internalSession;
   const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
   const [copied, setCopied] = useState(false);
-  const [phase, setPhase] = useState<HostPhase>("lobby");
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [timerSeconds, setTimerSeconds] = useState(15);
+  const [timerSeconds, setTimerSeconds] = useState(0);
   const [origin, setOrigin] = useState("");
   const previousTimerRef = useRef(timerSeconds);
-  const previousPhaseRef = useRef<HostPhase>(phase);
+  const autoRevealQuestionRef = useRef<string | null>(null);
   const { soundEnabled, setSoundEnabled, prime, playTone } = useRealtimeAudio();
+  const [parent] = useAutoAnimate();
 
-  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers } = useRealtimeSession();
+  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers } = activeSession;
+
+  const phase = roomState.phase === "active" ? "reveal" : roomState.phase === "results" ? "winner" : roomState.phase as HostPhase;
+  const previousPhaseRef = useRef<HostPhase>(phase);
 
   const participants = useMemo(() => buildParticipantRoster(), []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const initialLeaderboard = useMemo(() => buildLeaderboard(), []);
 
-  const activeParticipants = roomState.participants.length > 0 ? roomState.participants : participants; // Fallback to mock if empty
-  const [mockResponseCount, setMockResponseCount] = useState(0);
-  const responseCount = roomState.questionResults ? activeParticipants.length : mockResponseCount;
+  const activeParticipants = roomState.participants.length > 0 ? roomState.participants : previewParticipants;
+  const responseCount = roomState.questionResults ? (roomState.questionResults.totalAnswered || 0) : 0;
   
-  const leaderboard = roomState.leaderboard || initialLeaderboard;
+  const leaderboard = roomState.leaderboard || [];
+  const displayLeaderboard = [
+    ...leaderboard,
+    ...activeParticipants
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((participant: any) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        !leaderboard.some((entry: any) => entry.id === participant.id),
+      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((participant: any) => ({
+        id: participant.id,
+        name: participant.name || "Anonymous",
+        score: 0,
+        rank: 0,
+        previousRank: 0,
+        streak: 0,
+        lastGain: 0,
+      })),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ].map((entry: any, index: number) => ({
+    ...entry,
+    rank: entry.rank || index + 1,
+    previousRank: entry.previousRank || entry.rank || index + 1,
+  }));
+  const hasParticipants = activeParticipants.length > 0;
 
+  // When used standalone (no external session), auto-join as host
+  const hostJoinedRef = useRef(false);
   useEffect(() => {
-    // Start session as host on mount
+    if (externalSession || !isConnected || hostJoinedRef.current) return;
     async function initHost() {
       const res = await startRealtimeSessionHost(assessment.id);
       if (res.success) {
         joinRoom(assessment.id, RoomRole.HOST);
+        hostJoinedRef.current = true;
       } else {
         toast.error("Failed to initialize host session on backend");
       }
     }
     initHost();
-  }, [assessment.id, joinRoom]);
+  }, [externalSession, assessment.id, joinRoom, isConnected]);
 
   const currentRound = rounds[questionIndex];
   const participantPath = `/assessments/${assessment.id}/enter-real-time-assessment`;
@@ -108,29 +151,73 @@ export function PresentRealTimeScreen({
     return () => window.cancelAnimationFrame(frameId);
   }, []);
 
+  
   useEffect(() => {
-    if (phase !== "reveal") {
+    if (phase !== "reveal" || !roomState.endTime) return;
+    
+    const tick = () => {
+      const remaining = Math.max(0, Math.floor((new Date(roomState.endTime!).getTime() - Date.now()) / 1000));
+      setTimerSeconds(remaining);
+    };
+    
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [phase, roomState.endTime]);
+
+  useEffect(() => {
+    if (
+      phase !== "reveal" ||
+      !roomState.endTime ||
+      !roomState.currentQuestion?.id
+    ) {
       return;
     }
 
-    if (timerSeconds <= 0) {
-      return;
-    }
-
+    const delay = Math.max(
+      0,
+      new Date(roomState.endTime).getTime() - Date.now() + 100,
+    );
     const timeoutId = window.setTimeout(() => {
-      if (timerSeconds <= 1) {
-        setMockResponseCount(activeParticipants.length);
-        setPhase("correct");
-        emitRevealAnswers();
+      if (autoRevealQuestionRef.current === roomState.currentQuestion?.id) {
         return;
       }
-
-      setTimerSeconds((seconds) => seconds - 1);
-      setMockResponseCount((count) => Math.min(activeParticipants.length, count + 1));
-    }, 1000);
+      autoRevealQuestionRef.current = roomState.currentQuestion.id;
+      emitRevealAnswers(assessment.id);
+    }, delay);
 
     return () => window.clearTimeout(timeoutId);
-  }, [activeParticipants.length, phase, timerSeconds, emitRevealAnswers]);
+  }, [
+    assessment.id,
+    emitRevealAnswers,
+    phase,
+    roomState.currentQuestion?.id,
+    roomState.endTime,
+  ]);
+
+  useEffect(() => {
+    if (
+      phase !== "reveal" ||
+      !roomState.endTime ||
+      !roomState.currentQuestion?.id
+    ) {
+      return;
+    }
+    const remainingMs = new Date(roomState.endTime).getTime() - Date.now();
+    if (remainingMs > 0) return;
+    if (autoRevealQuestionRef.current === roomState.currentQuestion.id) return;
+
+    autoRevealQuestionRef.current = roomState.currentQuestion.id;
+    emitRevealAnswers(assessment.id);
+  }, [
+    assessment.id,
+    emitRevealAnswers,
+    phase,
+    roomState.currentQuestion?.id,
+    roomState.endTime,
+    timerSeconds,
+  ]);
+
 
   useEffect(() => {
     if (previousPhaseRef.current !== phase) {
@@ -159,39 +246,43 @@ export function PresentRealTimeScreen({
     previousTimerRef.current = timerSeconds;
   }, [phase, playTone, timerSeconds]);
 
+  
   function startSession() {
+    if (!hasParticipants) {
+      toast.error("At least one participant must join before the session can start.");
+      return;
+    }
     prime();
     setQuestionIndex(0);
-    setTimerSeconds(15);
-    setMockResponseCount(0);
-    setPhase("reveal");
     emitStartQuestion(rounds[0].id);
   }
 
+
+  
   function skipToCorrectAnswer() {
-    setTimerSeconds(0);
-    setMockResponseCount(activeParticipants.length);
-    setPhase("correct");
-    emitRevealAnswers();
+    emitRevealAnswers(assessment.id);
   }
 
+
+  
   function showLeaderboard() {
-    setPhase("leaderboard");
+    // handled by backend SHOW_RANK via automatic transition or something else? Wait, backend sends SHOW_RANK automatically after Q_RESULTS!
+    // Wait, no. The host might need to explicitly request SHOW_RANK. But in backend, endQuestion automatically broadcasts SHOW_RANK.
+    // So the host just needs to know they are in leaderboard phase.
   }
 
+
+  
   function advanceToNextQuestion() {
     if (questionIndex === rounds.length - 1) {
-      setPhase("winner");
+      // Backend automatically sends SESSION_ENDED or SHOW_FINAL_RANK which sets phase=results
       return;
     }
-
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
-    setTimerSeconds(15);
-    setMockResponseCount(0);
-    setPhase("reveal");
     emitStartQuestion(rounds[nextIndex].id);
   }
+
 
   async function handleCopyLink() {
     await navigator.clipboard.writeText(participantUrl);
@@ -210,69 +301,77 @@ export function PresentRealTimeScreen({
       <div className="lg:h-full">
         {phase === "lobby" ? (
           <div
-            className={`grid gap-5 ${
+            className={`grid h-full gap-6 ${
               embedded
-                ? "2xl:h-full 2xl:grid-cols-[22rem_minmax(0,1fr)]"
-                : "xl:h-full xl:grid-cols-[30rem_minmax(0,1fr)]"
+                ? "2xl:grid-cols-[26rem_minmax(0,1fr)]"
+                : "xl:grid-cols-[30rem_minmax(0,1fr)]"
             }`}
           >
-            <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
-                <QrCode className="h-4 w-4 text-[#95D5B2]" />
-                Lobby
-              </div>
-              <h2 className="mt-4 text-2xl font-bold leading-tight">Ask participants to scan this QR code to join</h2>
-              <p className="mt-3 text-sm leading-6 text-white/75">
-                Open their phone camera, scan the code, enter a display name, and wait in the lobby
-                until host start sthe session.
-              </p>
-              <div className="mt-5 rt-floating flex items-center justify-center rounded-[28px] bg-white p-4">
-                <QRCodeSVG
-                  value={participantUrl}
-                  title={`Join ${assessment.name}`}
-                  size={180}
-                  bgColor="#FFFFFF"
-                  fgColor="#16352A"
-                />
-              </div>
-              <div className="mt-5 space-y-3">
-                <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/80 break-all">
-                  {participantUrl}
+            {/* Left Column: QR Code & Start Controls */}
+            <div className="relative flex flex-col justify-between overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(180deg,#FFFEF8_0%,#F3F8F1_100%)] p-8 text-primary shadow-[0_22px_55px_rgba(27,67,50,0.10)]">
+              
+              <div className="relative z-10">
+                <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#1C5C45]/15 bg-primary/8 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary">
+                  <QrCode className="h-4 w-4 text-[#95D5B2]" />
+                  Join Lobby
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                
+                <h2 className="text-3xl font-extrabold leading-tight tracking-tight">
+                  Invite your participants to join
+                </h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-inkd">
+                  Ask participants to scan this QR code or go to the link below to enter the live session.
+                </p>
+
+                <div className="mt-10 flex items-center justify-center">
+                  <div className="animate-float relative rounded-[32px] border border-[#1C5C45]/15 bg-white p-4 shadow-[0_18px_45px_rgba(27,67,50,0.12)]">
+                    <div className="rounded-[24px] bg-white p-4">
+                      <QRCodeSVG
+                        value={participantUrl}
+                        title={`Join ${assessment.name}`}
+                        size={180}
+                        bgColor="#FFFFFF"
+                        fgColor="#113023"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative z-10 mt-10 space-y-4">
+                <div className="flex items-center justify-between rounded-2xl border border-[#1C5C45]/15 bg-white p-3 shadow-sm">
+                  <span className="truncate px-2 text-sm font-medium text-primary">
+                    {participantUrl}
+                  </span>
                   <Button
                     type="button"
                     onClick={() => void handleCopyLink()}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10" variant="ghost"
+                    className="ml-2 flex-shrink-0 rounded-xl bg-primary/10 px-3 py-1 text-xs font-semibold text-primary transition hover:bg-primary/15"
+                    variant="ghost"
                   >
-                    <Copy className="h-4 w-4" />
-                    {copied ? "Copied" : "Copy link"}
-                  </Button>
-                  <Button
-                    type="button"
-                    data-flow-event={realtimeEvents.startQuestion}
-                    onClick={startSession}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FFD166_0%,#F9C74F_100%)] px-4 py-3 text-sm font-semibold text-primary transition hover:scale-[1.01]" variant="ghost"
-                  >
-                    <PlayCircle className="h-4 w-4" />
-                    Start
+                    {copied ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   </Button>
                 </div>
+                
+                <Button
+                  type="button"
+                  data-flow-event={realtimeEvents.startQuestion}
+                  onClick={startSession}
+                  disabled={!hasParticipants}
+                  className="group relative w-full overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-4 py-6 text-lg font-bold text-white shadow-[0_18px_36px_rgba(249,65,68,0.20)] transition-all hover:scale-[1.02] hover:shadow-[0_22px_45px_rgba(249,65,68,0.26)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100"
+                >
+                  <div className="absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
+                  <PlayCircle className="mr-2 h-6 w-6" />
+                  {hasParticipants ? "Start Session Now" : "Waiting for participants"}
+                </Button>
               </div>
             </div>
 
-            <div className="rt-card-pop rounded-[30px] border border-border bg-white/80 p-5 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                    Participants joined
-                  </p>
-                  <h2 className="mt-2 text-2xl font-bold text-primary">{participants.length} in lobby</h2>
-                  <p className="mt-2 text-sm leading-6 text-inkd">
-                    New participants appear here as soon as they join the room.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
+            {/* Right Column: Participant Roster */}
+            <div className="flex h-full flex-col rounded-[32px] border border-border bg-white/80 shadow-[0_18px_45px_rgba(27,67,50,0.08)] backdrop-blur-sm">
+              <div className="flex items-center justify-between border-b border-border/50 px-8 py-6">
+                <h3 className="text-xl font-bold text-ink">Lobby Roster</h3>
+                <div className="flex items-center gap-4">
                   <Button
                     type="button"
                     onClick={() => setSoundEnabled((enabled) => !enabled)}
@@ -281,77 +380,56 @@ export function PresentRealTimeScreen({
                   >
                     {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                   </Button>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
-                    <Radio className="h-4 w-4" />
-                    WAITING state
+                  <div className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                    </span>
+                    {activeParticipants.length} joined
                   </div>
                 </div>
               </div>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] p-4 text-white shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                    Questions
-                  </p>
-                  <p className="mt-2 text-2xl font-bold">{rounds.length}</p>
-                </div>
-                <div className="rt-join-glow rounded-2xl border border-border bg-[linear-gradient(135deg,#277DA1_0%,#4CC9F0_100%)] p-4 text-white shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
-                    Ready to start
-                  </p>
-                  <p className="mt-2 text-lg font-bold">{participants.filter((participant) => participant.status === "READY").length} ready now</p>
-                </div>
-              </div>
-
-              <div
-                className={`mt-6 grid gap-3 ${
-                  embedded ? "sm:grid-cols-2" : "sm:grid-cols-2 xl:grid-cols-3"
-                }`}
-              >
-                {participants.map((participant, index) => (
-                  <div
-                    key={participant.id}
-                    className={`rt-join-card rounded-3xl border border-border bg-white p-4 shadow-sm transition ${
-                      index < 2 ? "rt-card-pop" : ""
-                    }`}
-                    style={{ animationDelay: `${index * 70}ms` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl shadow-sm ring-1 ring-border/60">
-                        <Avatar
-                          size={48}
-                          name={`${participant.id}-${participant.name}`}
-                          variant={getAvatarVariant(`${participant.id}-${participant.name}`)}
-                          colors={getAvatarColors(`${participant.id}-${participant.name}`)}
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-primary">{participant.name}</p>
-                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                          {participant.status}
-                        </p>
-                      </div>
+              <div className="flex-1 overflow-y-auto p-8">
+                {activeParticipants.length === 0 ? (
+                  <div className="flex h-full flex-col items-center justify-center space-y-4 text-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/5">
+                      <Clock3 className="h-8 w-8 text-primary/40" />
                     </div>
-                    <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={`h-full rounded-full ${
-                          participant.status === "READY"
-                            ? "bg-[linear-gradient(90deg,#43AA8B_0%,#7FE0C0_100%)]"
-                            : participant.status === "CONNECTED"
-                              ? "bg-[linear-gradient(90deg,#277DA1_0%,#4CC9F0_100%)]"
-                              : "bg-[linear-gradient(90deg,#F9C74F_0%,#FFD166_100%)]"
-                        }`}
-                        style={{ width: participant.status === "READY" ? "100%" : participant.status === "CONNECTED" ? "72%" : "48%" }}
-                      />
+                    <div>
+                      <p className="text-lg font-semibold text-ink">Waiting for participants</p>
+                      <p className="text-sm text-inkd mt-1">They will appear here instantly as they join.</p>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {activeParticipants.map((p) => {
+                      const colors = getAvatarColors(p.id);
+                      return (
+                        <div
+                          key={p.id}
+                          className="group flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-white p-4 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md animate-in fade-in zoom-in duration-300"
+                        >
+                          <Avatar
+                            size={56}
+                            name={p.id}
+                            variant={getAvatarVariant(p.id)}
+                            colors={colors}
+                          />
+                          <span className="truncate font-semibold text-ink mt-2 w-full text-center">
+                            {p.name || "Anonymous"}
+                          </span>
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                            Connected
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        ) : null}
-
-        {phase === "reveal" ? (
+        ) : phase === "reveal" ? (
           <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
             <div className="grid gap-4 lg:grid-cols-2">
               <div
@@ -375,7 +453,7 @@ export function PresentRealTimeScreen({
                         ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
                         : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
                     }`}
-                    style={{ width: `${(timerSeconds / 15) * 100}%` }}
+                    style={{ width: `${(timerSeconds / QUESTION_DURATION_SECONDS) * 100}%` }}
                   />
                 </div>
               </div>
@@ -385,7 +463,7 @@ export function PresentRealTimeScreen({
                   Responses received
                 </p>
                 <p className="mt-2 text-4xl font-bold text-primary">
-                  {responseCount}/{participants.length}
+                  {responseCount}/{activeParticipants.length}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-inkd">Live response wave is building while the room races the clock.</p>
               </div>
@@ -415,6 +493,20 @@ export function PresentRealTimeScreen({
                   readOnly
                   onChange={() => undefined}
                 />
+                {/* Correct answer indicator for the host */}
+                {embedded && (() => {
+                  const correctText = getCorrectAnswerText(currentRound);
+                  if (!correctText || correctText === "N/A") return null;
+                  return (
+                    <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />
+                      <span className="text-sm font-semibold text-emerald-800">
+                        {currentRound.correctOptionIds && currentRound.correctOptionIds.length > 1 ? "Correct answers: " : "Correct answer: "}
+                        <span className="font-bold">{correctText}</span>
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
@@ -440,7 +532,7 @@ export function PresentRealTimeScreen({
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#43AA8B_0%,#7FE0C0_100%)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
                   <CheckCircle2 className="h-4 w-4" />
-                  Correct answer
+                  {currentRound.correctOptionIds && currentRound.correctOptionIds.length > 1 ? "Correct answers" : "Correct answer"}
                 </div>
                 <h2 className="mt-4 max-w-4xl text-2xl font-bold text-primary">
                   {currentRound.question}
@@ -459,13 +551,16 @@ export function PresentRealTimeScreen({
 
             <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
               <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   {currentRound.options.map((option: any, index: number) => {
                     const distribution =
                       responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
                     const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
                     const heightPercent =
                       maxCount > 0 ? Math.max(18, Math.round((distribution / maxCount) * 100)) : 18;
-                    const isCorrect = option.id === currentRound.correctOptionId;
+                    const isCorrect = currentRound.correctOptionIds 
+                      ? currentRound.correctOptionIds.includes(option.id) 
+                      : option.id === currentRound.correctOptionId;
                     const paletteClassName = [
                       "from-[#F94144] to-[#FF6B6F]",
                       "from-[#277DA1] to-[#4CC9F0]",
@@ -506,14 +601,19 @@ export function PresentRealTimeScreen({
         ) : null}
 
         {phase === "leaderboard" ? (
-          <div className="flex flex-col gap-5 lg:h-full lg:min-h-0">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 lg:h-full lg:min-h-0 lg:justify-center">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#F9C74F_0%,#FFD166_100%)] px-3 py-1 text-xs font-semibold text-primary shadow-sm">
                   <Trophy className="h-4 w-4" />
                   Leaderboard
                 </div>
-                <h1 className="mt-4 text-4xl font-bold text-primary">Leaderboard</h1>
+                <h1 className="mt-3 text-4xl font-black tracking-tight text-primary">
+                  Round standings
+                </h1>
+                <p className="mt-2 text-sm font-medium text-inkd">
+                  Scores are calculated from question points and live speed bonus.
+                </p>
               </div>
               <Button
                 type="button"
@@ -526,71 +626,125 @@ export function PresentRealTimeScreen({
               </Button>
             </div>
 
-            <div className="rt-card-pop flex-1 rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] p-4 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] sm:p-5 lg:min-h-0 lg:p-6">
-              <div className="rounded-[28px] border border-white/10 bg-white/6 p-4 backdrop-blur-sm sm:p-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                    Full ranking
-                  </p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                    Gap to lead
-                  </p>
+            <div className="rt-card-pop h-[34rem] overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(135deg,#FFFEF8_0%,#F5F8F0_55%,#FFF6D8_100%)] p-5 text-primary shadow-[0_24px_65px_rgba(27,67,50,0.12)]">
+              {displayLeaderboard.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-center">
+                  <div>
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#FFF1C8] text-primary shadow-sm">
+                      <Trophy className="h-7 w-7" />
+                    </div>
+                    <p className="mt-4 text-xl font-black">No scores yet</p>
+                    <p className="mt-2 max-w-sm text-sm leading-6 text-inkd">
+                      The ranking appears as soon as participants answer a round.
+                    </p>
+                  </div>
                 </div>
+              ) : (
+                <div className="grid h-full gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
+                  <div className="flex h-full flex-col justify-between rounded-[26px] bg-primary p-5 text-white shadow-[0_18px_45px_rgba(27,67,50,0.18)]">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">
+                        Current leader
+                      </p>
+                      <div className="mt-5 flex items-center gap-4">
+                        <div className="h-18 w-18 overflow-hidden rounded-[24px] ring-4 ring-white/15">
+                          <Avatar
+                            size={72}
+                            name={`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`}
+                            variant={getAvatarVariant(`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`)}
+                            colors={getAvatarColors(`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`)}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-2xl font-black">
+                            {displayLeaderboard[0].name}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-white/60">
+                            Rank #{displayLeaderboard[0].rank}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr">
-                  {leaderboard.slice(0, 5).map((entry: any, index: number) => {
-                        const gapToLead = Math.max(0, leaderboard[0]?.score - entry.score);
-                        const rankDelta = entry.previousRank - entry.rank;
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/55">
+                        Score
+                      </p>
+                      <p className="mt-2 text-6xl font-black tracking-tight">
+                        {Number(displayLeaderboard[0].score || 0).toFixed(2).replace(/\.00$/, '')}
+                      </p>
+                      <div className="mt-5 grid grid-cols-3 gap-2">
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                        {displayLeaderboard.slice(0, 3).map((entry: any, index: number) => (
+                          <div
+                            key={entry.id}
+                            className="rounded-2xl border border-white/10 bg-white/8 p-3 text-center"
+                          >
+                            <p className="text-xs font-bold text-white/50">#{index + 1}</p>
+                            <p className="mt-1 truncate text-sm font-bold">{entry.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex min-h-0 flex-col">
+                    <div className="grid grid-cols-[4rem_minmax(0,1fr)_7rem] gap-3 px-3 text-xs font-bold uppercase tracking-[0.18em] text-primary/45">
+                      <span>Rank</span>
+                      <span>Participant</span>
+                      <span className="text-right">Score</span>
+                    </div>
+                    <div ref={parent} className="mt-3 grid gap-3 overflow-hidden">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {displayLeaderboard.slice(0, 5).map((entry: any) => {
+                        const entryScore = Number(entry.score || 0);
+                        const rankDelta = (entry.previousRank || entry.rank) - entry.rank;
+                        const isTop = entry.rank === 1;
 
                         return (
                           <div
                             key={entry.id}
-                            className={`rounded-[26px] border p-4 lg:flex lg:min-h-23 lg:flex-1 lg:items-center ${
-                              index === 0
-                                ? "border-[#FFD166]/35 bg-[linear-gradient(135deg,rgba(249,199,79,0.28)_0%,rgba(255,255,255,0.09)_100%)] shadow-[0_18px_40px_rgba(249,199,79,0.12)]"
-                                : "border-white/10 bg-white/5"
+                            className={`grid h-18 grid-cols-[4rem_minmax(0,1fr)_7rem] items-center gap-3 rounded-[22px] border px-4 shadow-sm ${
+                              isTop
+                                ? "border-[#FFD166]/70 bg-[#FFF6CC]"
+                                : "border-[#1C5C45]/10 bg-white/85"
                             }`}
                           >
-                            <div className="flex w-full flex-wrap items-center justify-between gap-3">
-                              <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-primary shadow-sm">
-                                  {entry.rank}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="truncate font-semibold">{entry.name}</p>
-                                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                                    <span className="rounded-full bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                                      {rankDelta > 0
-                                        ? `Up ${rankDelta}`
-                                        : rankDelta < 0
-                                          ? `Down ${Math.abs(rankDelta)}`
-                                          : "No move"}
-                                    </span>
-                                    {entry.streak >= 2 ? (
-                                      <span className="rounded-full bg-[#FFD166] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
-                                        Streak x{entry.streak}
-                                      </span>
-                                    ) : null}
-                                    {entry.lastGain > 0 ? (
-                                      <span className="rounded-full bg-[#43AA8B]/18 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#95D5B2]">
-                                        +{entry.lastGain}
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                </div>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sm font-black text-primary shadow-sm">
+                              {entry.rank}
+                            </div>
+                            <div className="flex min-w-0 items-center gap-3">
+                              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-2xl">
+                                <Avatar
+                                  size={40}
+                                  name={`${entry.id}-${entry.name}`}
+                                  variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
+                                  colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                                />
                               </div>
-                              <div className="text-right">
-                                <p className="text-xl font-bold">{entry.score}</p>
-                                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
-                                  {gapToLead === 0 ? "Top" : `-${gapToLead}`}
+                              <div className="min-w-0">
+                                <p className="truncate text-base font-black text-primary">
+                                  {entry.name}
+                                </p>
+                                <p className="mt-0.5 text-[11px] font-bold uppercase tracking-[0.16em] text-primary/45">
+                                  {rankDelta > 0
+                                    ? `Up ${rankDelta}`
+                                    : rankDelta < 0
+                                      ? `Down ${Math.abs(rankDelta)}`
+                                      : "No move"}
                                 </p>
                               </div>
                             </div>
+                            <p className="text-right text-2xl font-black tabular-nums text-primary">
+                              {Number(entryScore).toFixed(2).replace(/\.00$/, '')}
+                            </p>
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         ) : null}
@@ -611,7 +765,8 @@ export function PresentRealTimeScreen({
             <div className="mt-8 grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_18rem]">
               <div className="rounded-[32px] border border-white/10 bg-white/6 p-5 backdrop-blur-sm lg:flex lg:min-h-0 lg:flex-col lg:justify-end">
                 <div className="grid items-end gap-4 md:grid-cols-3">
-                  {leaderboard.slice(0, 3).map((entry: any, index: number) => {
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {displayLeaderboard.slice(0, 3).map((entry: any, index: number) => {
                     const place = index + 1;
                     const orderClassName =
                       place === 1 ? "md:order-2" : place === 2 ? "md:order-1" : "md:order-3";
@@ -670,7 +825,7 @@ export function PresentRealTimeScreen({
                   </p>
 
                   <Link
-                    href={`/assessments/${assessment.id}`}
+                    href={embedded ? `/assessments/${assessment.id}/preview` : `/assessments/${assessment.id}`}
                     className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
                   >
                     <ArrowLeft className="h-4 w-4" />

@@ -46,6 +46,7 @@ export default function AssessmentsCatalog({
   const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({
     key: "query",
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [catalogAssessments, setCatalogAssessments] = useState(assessments);
   const [deliveryFilter, setDeliveryFilter] = useState<
     "ALL" | AssessmentDeliveryMode

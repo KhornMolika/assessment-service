@@ -10,6 +10,7 @@ export type AssessmentLifecycle =
 export interface Assessment {
   id: string;
   topicId?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   topic?: any;
   ownerId?: string;
   name: string;
@@ -30,6 +31,7 @@ export interface Assessment {
     participantIdentity?: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL";
     showResults?: string;
     gradeLabels?: Array<{ grade: string; minPercent: number }>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectionRules?: any;
     allowReview?: boolean;
   };

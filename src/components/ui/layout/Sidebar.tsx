@@ -12,6 +12,9 @@ import {
   Library,
   Tags,
   TrendingUp,
+  BarChart2,
+  ArrowLeft,
+  Settings,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -63,6 +66,20 @@ export default function Sidebar() {
       })),
     [selectedTopic],
   );
+
+  const assessmentMatch = pathname.match(/^\/assessments\/([0-9a-fA-F-]+)(?:\/|$)/);
+  const isNewAssessment = pathname.endsWith('/new');
+  const isAssessmentsList = pathname === '/assessments';
+  const assessmentId = assessmentMatch && !isNewAssessment && !isAssessmentsList ? assessmentMatch[1] : null;
+
+  const assessmentNavigation = useMemo(() => {
+    if (!assessmentId) return [];
+    return [
+      { name: "Overview", href: `/assessments/${assessmentId}`, icon: LayoutDashboard, hrefWithTopic: `/assessments/${assessmentId}`, exact: true },
+      { name: "Setup", href: `/assessments/${assessmentId}/edit`, icon: Settings, hrefWithTopic: `/assessments/${assessmentId}/edit` },
+      { name: "Results", href: `/assessments/${assessmentId}/reports`, icon: BarChart2, hrefWithTopic: `/assessments/${assessmentId}/reports` },
+    ];
+  }, [assessmentId]);
 
   const handleNavigation = (nextPathname?: string) => {
     if (nextPathname) {
@@ -130,35 +147,69 @@ export default function Sidebar() {
         </div>
 
         <div className="flex-1 space-y-6 px-2 py-4">
-          {!collapsed && (
-            <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
-          )}
-          <nav className="flex flex-col space-y-1">
-            <SidebarNavLinks
-              items={workspaceLinks}
-              collapsed={collapsed}
-              activePathname={activePathname}
-              currentPathname={pathname}
-              optimisticPathname={optimisticPathname}
-              onIntent={(href) => router.prefetch(href)}
-              onNavigate={handleNavigation}
-            />
-          </nav>
+          {assessmentId ? (
+            <>
+              {!collapsed && (
+                <div className="mb-4 px-3">
+                  <Link
+                    href="/assessments"
+                    onClick={() => handleNavigation("/assessments")}
+                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
+                  >
+                    <ArrowLeft className="mr-2 h-3 w-3" /> Back to Catalog
+                  </Link>
+                </div>
+              )}
+              {!collapsed && (
+                <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                  Assessment
+                </div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={assessmentNavigation}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
+            </>
+          ) : (
+            <>
+              {!collapsed && (
+                <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={workspaceLinks}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
 
-          {!collapsed && (
-            <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
+              {!collapsed && (
+                <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={insightLinks}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
+            </>
           )}
-          <nav className="flex flex-col space-y-1">
-            <SidebarNavLinks
-              items={insightLinks}
-              collapsed={collapsed}
-              activePathname={activePathname}
-              currentPathname={pathname}
-              optimisticPathname={optimisticPathname}
-              onIntent={(href) => router.prefetch(href)}
-              onNavigate={handleNavigation}
-            />
-          </nav>
         </div>
       </div>
     </aside>

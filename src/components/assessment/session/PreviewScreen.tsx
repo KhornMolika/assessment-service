@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Eye } from "lucide-react";
 import type {
   AssessmentDetailQuestionItem,
@@ -10,6 +11,7 @@ import { BackButton } from "@/src/components/ui/navigation/BackButton";
 import type { QuestionRendererValue } from "../renderers/types";
 import {
   ProcessingAnswersCard,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   QuestionOptionButton,
   ScreenShell,
 } from "./SessionShared";
@@ -17,10 +19,12 @@ import { SelfPacedConfirm } from "./self-paced/SelfPacedConfirm";
 import { SelfPacedEntry } from "./self-paced/SelfPacedEntry";
 import { SelfPacedQuiz } from "./self-paced/SelfPacedQuiz";
 import { SelfPacedResult } from "./self-paced/SelfPacedResult";
+import { RealTimeSimulator } from "./RealTimeSimulator";
 import {
   buildQuestionRounds,
   formatDurationClock,
   getResultReleaseMode,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isCorrectAnswerResponse,
   calculateQuestionScore,
   requiresParticipantIdentity,
@@ -125,65 +129,30 @@ export function PreviewScreen({
       title={assessment.name ? `Preview: ${assessment.name}` : "Assessment Preview"}
       description="Preview Mode Active — Your answers will not be recorded."
       headerAction={
-        <BackButton
-          href={backHref}
-          label="Exit Preview"
-        />
+        <div className="flex items-center gap-3">
+          {step === "end" && (
+            <button
+              type="button"
+              onClick={() => {
+                setStep(requiresEntry ? "entry" : "quiz");
+                setQuestionIndex(0);
+                setAnswers({});
+                setRemainingSeconds(totalTimerSeconds);
+              }}
+              className="inline-flex h-9 items-center justify-center rounded-xl bg-primary/10 px-4 text-sm font-bold text-primary transition-all hover:bg-primary/20"
+            >
+              Restart Preview
+            </button>
+          )}
+          <BackButton
+            href={backHref}
+            label="Exit Preview"
+          />
+        </div>
       }
     >
       {!isSelfPacedPreview ? (
-        <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
-          <div className="rounded-[28px] border border-border bg-muted/30 p-5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary ring-1 ring-border">
-              <Eye className="h-4 w-4" />
-              Preview only
-            </div>
-            <h2 className="mt-4 text-2xl font-bold text-primary">Entry screen</h2>
-            <p className="mt-2 text-sm leading-6 text-inkd">
-              This mirrors what a real-time participant sees before joining the live session.
-              Inputs are visible, but no participant state is persisted.
-            </p>
-
-            <div className="mt-6 space-y-4">
-              <div className="rounded-2xl border border-border bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                  Identity mode
-                </p>
-                <p className="mt-2 text-sm font-semibold text-primary">
-                  Real-time participants always enter a display name before the host starts
-                </p>
-              </div>
-              <BackButton
-                href={backHref}
-                label="Back to assessment"
-                variant="solid"
-                fullWidth
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {rounds.slice(0, 2).map((question, index) => (
-              <div key={question.id} className="rounded-[28px] border border-border bg-white p-5 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary/60">
-                  Question {index + 1}
-                </p>
-                <p className="mt-2 text-lg font-semibold text-primary">{question.question}</p>
-                <div className="mt-5 grid gap-3">
-                  {question.options.map((option: any) => (
-                    <QuestionOptionButton
-                      key={option.id}
-                      option={option}
-                      selected={false}
-                      disabled
-                      onClick={() => undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <RealTimeSimulator assessment={assessment} questions={questions} />
       ) : null}
 
       {isSelfPacedPreview ? (
@@ -263,20 +232,6 @@ export function PreviewScreen({
                 answerSheetTitle="Answer sheet"
                 answerSheetHeading="Preview every answer response"
               />
-              <div className="mx-auto flex w-full max-w-4xl justify-center border-t border-border/40 pb-24 pt-12">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep(requiresEntry ? "entry" : "quiz");
-                    setQuestionIndex(0);
-                    setAnswers({});
-                    setRemainingSeconds(totalTimerSeconds);
-                  }}
-                  className="inline-flex h-12 items-center justify-center rounded-xl border-2 border-primary/20 bg-primary/5 px-8 font-bold text-primary transition-all hover:bg-primary/10 hover:border-primary/30"
-                >
-                  Restart Preview
-                </button>
-              </div>
             </>
           ) : null}
         </div>

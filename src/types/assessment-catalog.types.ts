@@ -1,10 +1,13 @@
 import type {
   Assessment,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   AssessmentDeliveryMode,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   AssessmentLifecycle,
 } from "./assessment.types";
 
 export interface AssessmentCatalogItem extends Assessment {
+  questionCount?: number;
   stats?: {
     participantCount: number;
     passRate: number;

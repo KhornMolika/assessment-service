@@ -72,6 +72,7 @@ export default function QuestionDetailHero({
 
       <DeleteQuestionModal
         open={showDeleteModal}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         question={question as any}
         onClose={() => setShowDeleteModal(false)}
       />

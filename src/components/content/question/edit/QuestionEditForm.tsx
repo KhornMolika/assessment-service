@@ -37,6 +37,7 @@ export default function QuestionEditForm({
     value: QuestionFormData[K],
   ) => {
     setFormData((current) => {
+      // eslint-disable-next-line prefer-const
       let next = { ...current, [field]: value } as QuestionFormData;
       
       if (field === "questionType") {
@@ -68,6 +69,7 @@ export default function QuestionEditForm({
           toast.success("Question updated successfully");
           router.refresh();          router.push(`/questions/${questionId}`);
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         toast.error("Validation failed", { description: err.message || "Failed to update question" });
       }

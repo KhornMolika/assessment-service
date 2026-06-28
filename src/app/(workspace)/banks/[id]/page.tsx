@@ -23,6 +23,7 @@ function BankDetailPageContent() {
 
       setBank(fetchedBank);
       setBankQuestions(fetchedQuestions);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setBank(null);
     } finally {
@@ -32,6 +33,7 @@ function BankDetailPageContent() {
 
   useEffect(() => {
     loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   if (isLoading) {

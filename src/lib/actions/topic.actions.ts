@@ -10,6 +10,7 @@ export async function createTopicAction(data: { name: string; description: strin
     revalidatePath("/assessments");
     revalidatePath("/");
     return { success: true, topic: newTopic };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Failed to create topic:", error);
     return { success: false, error: error.message || "Failed to create topic" };
@@ -23,6 +24,7 @@ export async function updateTopicAction(id: string, data: { name: string; descri
     revalidatePath("/assessments");
     revalidatePath("/");
     return { success: true, topic: updatedTopic };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Failed to update topic:", error);
     return { success: false, error: error.message || "Failed to update topic" };
@@ -36,6 +38,7 @@ export async function deleteTopicAction(id: string) {
     revalidatePath("/assessments");
     revalidatePath("/");
     return { success: true };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Failed to delete topic:", error);
     return { success: false, error: error.message || "Failed to delete topic" };

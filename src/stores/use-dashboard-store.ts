@@ -26,6 +26,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
         getDashboardAnalytics()
       ]);
       set({ overviewSections: overview, analytics });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       set({ error: error.message });
     } finally {

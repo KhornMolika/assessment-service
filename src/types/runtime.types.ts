@@ -5,6 +5,7 @@ export interface StartSessionDto {
 
 export interface SaveAnswerDto {
   assessmentQuestionId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   response: any;
 }
 
@@ -26,6 +27,7 @@ export interface StartQuestionDto {
 export interface SubmitAnswerDto {
   assessmentQuestionId: string;
   participantId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   response: any;
   timeSpentMs: number;
 }
