@@ -59,7 +59,7 @@ export default function DashboardPageView() {
             frameBorder="0"
             width="100%"
             height="100%"
-            allowTransparency
+            allowtransparency
             className="w-full h-full min-h-[800px]"
           />
         </div>
