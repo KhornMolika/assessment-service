@@ -395,18 +395,13 @@ export function PresentRealTimeScreen({
           <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
             Correct order
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-col gap-3">
             {sequence.map((id: string, index: number) => (
-              <div key={`${id}-${index}`} className="flex items-center gap-3">
-                <div className="flex min-h-14 items-center gap-3 rounded-2xl bg-[#D8F3DC] px-4 py-3 text-primary">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-black text-white">
-                    {index + 1}
-                  </span>
-                  <span className="font-black">{answerLookup(id)}</span>
-                </div>
-                {index < sequence.length - 1 ? (
-                  <ArrowRight className="h-5 w-5 text-primary/35" />
-                ) : null}
+              <div key={`${id}-${index}`} className="flex min-h-14 items-center gap-3 rounded-2xl bg-[#D8F3DC] px-4 py-3 text-primary">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-black text-white">
+                  {index + 1}
+                </span>
+                <span className="font-black">{answerLookup(id)}</span>
               </div>
             ))}
           </div>
