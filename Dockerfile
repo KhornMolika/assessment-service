@@ -10,7 +10,7 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN pnpm build
+RUN NODE_TLS_REJECT_UNAUTHORIZED=0 pnpm build
 
 EXPOSE 3000
 
