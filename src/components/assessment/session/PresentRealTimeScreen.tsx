@@ -208,14 +208,6 @@ export function PresentRealTimeScreen({
     timerSeconds,
   ]);
 
-  // Auto-advance from correct answer view to leaderboard after 7 seconds
-  useEffect(() => {
-    if (phase !== "correct") return;
-    const timeoutId = window.setTimeout(() => {
-      showLeaderboard();
-    }, 7000);
-    return () => window.clearTimeout(timeoutId);
-  }, [phase, showLeaderboard]);
 
 
   useEffect(() => {
