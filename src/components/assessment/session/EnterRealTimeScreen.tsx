@@ -307,10 +307,12 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "waiting" ? (
-          <JoinWaitingState
-            title="Waiting for host to start..."
-            description="The first question opens when the host starts the round."
-          />
+          <div className="flex flex-1 items-center justify-center h-full">
+            <JoinWaitingState
+              title="Waiting for host to start..."
+              description="The first question opens when the host starts the round."
+            />
+          </div>
         ) : null}
 
         {phase === "active" ? (
@@ -396,7 +398,7 @@ export function EnterRealTimeScreen({
           </div>
         ) : null}
 
-        {roomState.questionResults && phase !== "active" ? (
+        {roomState.questionResults && phase !== "active" && phase !== "results" ? (
           hasCurrentRoundResult ? (
             <JoinResult
               currentRound={currentRound}
@@ -408,10 +410,12 @@ export function EnterRealTimeScreen({
               isLastQuestion={questionIndex === rounds.length - 1}
             />
           ) : (
-            <JoinWaitingState
-              title="Checking your result..."
-              description="Your score will appear as soon as this round result is ready."
-            />
+            <div className="flex flex-1 items-center justify-center h-full">
+              <JoinWaitingState
+                title="Checking your result..."
+                description="Your score will appear as soon as this round result is ready."
+              />
+            </div>
           )
         ) : null}
 
@@ -419,7 +423,7 @@ export function EnterRealTimeScreen({
           <JoinFinal
             displayName={displayName}
             totalScore={totalScore}
-            rank="#4"
+            rank={roomState.myRank?.rank ? `#${roomState.myRank.rank}` : "-"}
             streakCount={streakCount}
           />
         ) : null}
