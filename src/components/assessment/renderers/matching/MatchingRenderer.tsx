@@ -17,7 +17,6 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
   const shuffledRightOptions = useMemo(() => {
     const options = [...rightOptions];
     for (let i = options.length - 1; i > 0; i--) {
-      // eslint-disable-next-line react-hooks/purity
       const j = Math.floor(Math.random() * (i + 1));
       [options[i], options[j]] = [options[j], options[i]];
     }

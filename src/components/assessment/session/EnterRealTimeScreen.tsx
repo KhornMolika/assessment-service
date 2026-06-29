@@ -5,19 +5,16 @@ import { CheckCircle2, Clock3, Radio } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types";
 import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import type { QuestionRendererValue } from "../renderers/types";
+import type { QuestionRound } from "@/src/types/session.types";
 import { ScreenShell } from "./SessionShared";
 import { JoinFinal } from "./join/JoinFinal";
 import { JoinLobby } from "./join/JoinLobby";
 import { JoinResult } from "./join/JoinResult";
 import { JoinWaitingState } from "./join/JoinWaitingState";
 import { realtimeEvents } from '@/src/lib/session/realtime.events';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { JoinPhase } from '@/src/types/session.types';
 import {
   buildQuestionRounds,
   hasAnswerResponse,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isCorrectAnswerResponse,
   requiresParticipantIdentity,
 } from '@/src/lib/session/session.utils';
 import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
@@ -59,8 +56,6 @@ export function EnterRealTimeScreen({
       ]),
     [assessment.id],
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   
   const [displayName, setDisplayName] = useState("");
@@ -237,6 +232,7 @@ export function EnterRealTimeScreen({
     currentRound?.id,
     hasCurrentRoundResult,
     phase,
+    revealedCorrect,
     roomState.myResult?.correct,
     roomState.questionResults,
   ]);
@@ -277,6 +273,7 @@ export function EnterRealTimeScreen({
     currentRound?.id,
     hasCurrentRoundResult,
     phase,
+    revealedCorrect,
     roomState.myRank?.score,
     roomState.myResult?.correct,
     roomState.myResult?.questionId,
@@ -446,25 +443,28 @@ function parseCorrectAnswer(correct: unknown): unknown {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function isAnswerCorrectFromReveal(
   correct: unknown,
   answerValue: QuestionRendererValue,
 ): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!hasAnswerResponse({ options: [], type: "SINGLE_CHOICE" } as any, answerValue)) {
+  if (!hasAnswerResponse({ options: [], type: "SINGLE_CHOICE" } as QuestionRound, answerValue)) {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parsed = parseCorrectAnswer(correct) as any;
+  const parsed = parseCorrectAnswer(correct);
   if (Array.isArray(answerValue)) {
-    if (Array.isArray(parsed?.sequence)) {
+    const sequence = isRecord(parsed) && Array.isArray(parsed.sequence) ? parsed.sequence : null;
+    if (sequence) {
       return (
-        answerValue.length === parsed.sequence.length &&
-        answerValue.every((id, index) => id === parsed.sequence[index])
+        answerValue.length === sequence.length &&
+        answerValue.every((id, index) => id === sequence[index])
       );
     }
-    const correctIds = Array.isArray(parsed?.optionIds)
+    const correctIds = isRecord(parsed) && Array.isArray(parsed.optionIds)
       ? parsed.optionIds
       : Array.isArray(parsed)
         ? parsed
@@ -476,11 +476,14 @@ function isAnswerCorrectFromReveal(
   }
 
   if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue)) {
-    if (Array.isArray(parsed?.pairs)) {
-      return parsed.pairs.every(
-        (pair: any) => {
-          const lId = pair.leftId || pair.left;
-          const rId = pair.rightId || pair.right;
+    const pairs = isRecord(parsed) && Array.isArray(parsed.pairs) ? parsed.pairs : null;
+    if (pairs) {
+      return pairs.every(
+        (pair) => {
+          if (!isRecord(pair)) return false;
+          const lId = typeof pair.leftId === "string" ? pair.leftId : pair.left;
+          const rId = typeof pair.rightId === "string" ? pair.rightId : pair.right;
+          if (typeof lId !== "string" || typeof rId !== "string") return false;
           if (!lId || !rId) return false;
           return answerValue[lId] === rId;
         }
@@ -489,7 +492,7 @@ function isAnswerCorrectFromReveal(
   }
 
   // FILL IN THE BLANK
-  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue) && parsed?.answers) {
+  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue) && isRecord(parsed) && Array.isArray(parsed.answers)) {
     const acceptedAnswers = parsed.answers as string[][];
     // answerValue is like { "0": "val1", "1": "val2" }
     return acceptedAnswers.every((accepted, index) => {
@@ -499,11 +502,11 @@ function isAnswerCorrectFromReveal(
   }
 
   if (typeof answerValue === "boolean" || typeof answerValue === "string") {
-    const pVal = parsed?.value !== undefined ? parsed.value : parsed;
+    const pVal = isRecord(parsed) && parsed.value !== undefined ? parsed.value : parsed;
     
     // Case-insensitive comparison for short answer
     if (String(pVal).trim().toLowerCase() === String(answerValue).trim().toLowerCase()) return true;
-    if (parsed?.optionId && String(parsed.optionId) === String(answerValue)) return true;
+    if (isRecord(parsed) && parsed.optionId && String(parsed.optionId) === String(answerValue)) return true;
   }
 
 
