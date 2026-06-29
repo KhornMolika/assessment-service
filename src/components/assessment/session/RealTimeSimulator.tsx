@@ -37,7 +37,7 @@ export function RealTimeSimulator({
       resetRoomState();
       resetParticipantRoomState();
       setPreviewParticipants([]);
-      const res = await startRealtimeSessionHost(assessment.id, { reset: true });
+      const res = await startRealtimeSessionHost(assessment.id, { reset: true, preview: true });
       if (res.success) {
         joinRoom(assessment.id, RoomRole.HOST);
         hostJoinedRef.current = true;
@@ -57,10 +57,10 @@ export function RealTimeSimulator({
   }, [assessment.id, hostSession.roomState.phase, joinRoom, viewMode]);
 
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden relative bg-transparent">
+    <div className="relative flex h-full min-h-[calc(100dvh-9rem)] w-full flex-col overflow-hidden bg-transparent">
       
       {/* Segmented Control Header */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-full bg-white/90 p-1.5 shadow-lg shadow-black/5 backdrop-blur-xl border border-slate-200">
+      <div className="absolute left-1/2 top-6 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-slate-200 bg-white/90 p-1.5 shadow-lg shadow-black/5 backdrop-blur-xl">
         <button
           type="button"
           onClick={() => setViewMode("host")}
@@ -90,15 +90,15 @@ export function RealTimeSimulator({
       </div>
 
       {/* Simulator Content */}
-      <div className="flex-1 min-h-0 w-full grid grid-cols-1 transition-all duration-300 ease-in-out">
+      <div className="grid min-h-0 w-full flex-1 grid-cols-1 px-4 pb-3 pt-24 transition-all duration-300 ease-in-out sm:px-6 lg:px-8">
         
         {/* Host View Pane */}
-        <div className={cn("flex h-full min-h-0 flex-col bg-transparent relative", viewMode !== "host" && "hidden")}>
-          <div className="flex-1 overflow-auto">
+        <div className={cn("relative flex h-full min-h-0 flex-col bg-transparent", viewMode !== "host" && "hidden")}>
+          <div className="min-h-0 flex-1 overflow-hidden">
             <PresentRealTimeScreen 
               assessment={assessment} 
               questions={questions} 
-              embedded={false}
+              embedded
               session={hostSession}
               previewParticipants={previewParticipants}
             />
@@ -106,11 +106,11 @@ export function RealTimeSimulator({
         </div>
 
         {/* Participant View Pane */}
-        <div className={cn("flex h-full min-h-0 flex-col bg-transparent relative", viewMode !== "participant" && "hidden")}>
-          <div className="flex-1 overflow-auto">
+        <div className={cn("relative flex h-full min-h-0 flex-col bg-transparent", viewMode !== "participant" && "hidden")}>
+          <div className="min-h-0 flex-1 overflow-hidden">
              <EnterRealTimeScreen 
                assessment={assessment}
-               embedded={false}
+               embedded
                session={participantSession}
                onPreviewParticipantJoined={(participant) => {
                  setPreviewParticipants((current) => {

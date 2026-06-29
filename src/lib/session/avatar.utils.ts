@@ -1,4 +1,5 @@
-export function getAvatarVariant(seed: string) {
+export function getAvatarVariant(_seed?: string) {
+  void _seed;
   // 'beam' generates cute, friendly smiling faces which generally look the prettiest for participants!
   return "beam" as const;
 }

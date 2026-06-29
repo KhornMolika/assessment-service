@@ -1,13 +1,9 @@
 /* eslint-disable */
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { Client } = require('pg');
 const email = 'molikakhorn71@gmail.com';
 const password = 'assessment1234';
 const METABASE_URL = process.env.METABASE_SITE_URL || 'http://localhost:3002';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-/* eslint-disable */
 const crypto = require('crypto');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
 
 async function main() {
@@ -368,7 +364,6 @@ async function main() {
 
   // Read and update .env if needed
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const envPath = require('path').join(process.cwd(), '.env');
     let envContent = fs.readFileSync(envPath, 'utf8');
     if (envContent.includes('METABASE_DASHBOARD_ID=')) {
@@ -378,8 +373,7 @@ async function main() {
     }
     fs.writeFileSync(envPath, envContent);
     console.log("Updated .env file with the Dashboard ID automatically!");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
+  } catch {
     console.log("Could not update .env file automatically. Please ensure METABASE_DASHBOARD_ID is set.");
   }
 }

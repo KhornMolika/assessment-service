@@ -11,12 +11,11 @@ import {
   LayoutDashboard,
   Library,
   Tags,
-  TrendingUp,
   BarChart2,
   ArrowLeft,
   Settings,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 ;
 import {
@@ -35,14 +34,10 @@ const workspaceNavigation = [
   { name: "Assessments", href: "/assessments", icon: ClipboardList },
 ];
 
-const insightsNavigation = [
-  { name: "Results", href: "/results", icon: FileText },
-  { name: "Analytics", href: "/analytics", icon: TrendingUp },
-];
-
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
   const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } = useSidebar();
   const selectedTopic = useSelectedTopic();
@@ -58,19 +53,16 @@ export default function Sidebar() {
       })),
     [selectedTopic],
   );
-  const insightLinks = useMemo(
-    () =>
-      insightsNavigation.map((item) => ({
-        ...item,
-        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
-      })),
-    [selectedTopic],
-  );
-
   const assessmentMatch = pathname.match(/^\/assessments\/([0-9a-fA-F-]+)(?:\/|$)/);
+  const resultMatch = pathname.match(/^\/results\/([0-9a-fA-F-]+)(?:\/|$)/);
   const isNewAssessment = pathname.endsWith('/new');
   const isAssessmentsList = pathname === '/assessments';
   const assessmentId = assessmentMatch && !isNewAssessment && !isAssessmentsList ? assessmentMatch[1] : null;
+  const resultId = resultMatch ? resultMatch[1] : null;
+  const requestedBackHref = searchParams.get("backHref");
+  const resultBackHref = requestedBackHref?.startsWith("/")
+    ? requestedBackHref
+    : "/assessments";
 
   const assessmentNavigation = useMemo(() => {
     if (!assessmentId) return [];
@@ -80,6 +72,18 @@ export default function Sidebar() {
       { name: "Results", href: `/assessments/${assessmentId}/reports`, icon: BarChart2, hrefWithTopic: `/assessments/${assessmentId}/reports` },
     ];
   }, [assessmentId]);
+  const resultNavigation = useMemo(() => {
+    if (!resultId) return [];
+    return [
+      {
+        name: "Answer sheet",
+        href: `/results/${resultId}`,
+        icon: FileText,
+        hrefWithTopic: `/results/${resultId}`,
+        exact: true,
+      },
+    ];
+  }, [resultId]);
 
   const handleNavigation = (nextPathname?: string) => {
     if (nextPathname) {
@@ -177,14 +181,27 @@ export default function Sidebar() {
                 />
               </nav>
             </>
-          ) : (
+          ) : resultId ? (
             <>
               {!collapsed && (
-                <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
+                <div className="mb-4 px-3">
+                  <Link
+                    href={resultBackHref}
+                    onClick={() => handleNavigation(resultBackHref)}
+                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
+                  >
+                    <ArrowLeft className="mr-2 h-3 w-3" /> Back to Results
+                  </Link>
+                </div>
+              )}
+              {!collapsed && (
+                <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                  Result detail
+                </div>
               )}
               <nav className="flex flex-col space-y-1">
                 <SidebarNavLinks
-                  items={workspaceLinks}
+                  items={resultNavigation}
                   collapsed={collapsed}
                   activePathname={activePathname}
                   currentPathname={pathname}
@@ -193,13 +210,15 @@ export default function Sidebar() {
                   onNavigate={handleNavigation}
                 />
               </nav>
-
+            </>
+          ) : (
+            <>
               {!collapsed && (
-                <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
+                <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
               )}
               <nav className="flex flex-col space-y-1">
                 <SidebarNavLinks
-                  items={insightLinks}
+                  items={workspaceLinks}
                   collapsed={collapsed}
                   activePathname={activePathname}
                   currentPathname={pathname}
