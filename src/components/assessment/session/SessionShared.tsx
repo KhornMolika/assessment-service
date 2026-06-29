@@ -261,18 +261,18 @@ export function QuestionOptionButton({
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`rt-answer-tile flex w-full items-center gap-3 sm:gap-4 rounded-[26px] border px-3 py-3 sm:px-5 sm:py-5 text-left transition ${
+        className={`rt-answer-tile flex w-full items-center gap-2 sm:gap-4 rounded-[26px] border px-2 py-2 sm:px-5 sm:py-5 text-left transition ${
           palette.tileClassName
         } ${selected ? palette.selectedClassName : ""} ${
           disabled ? "cursor-not-allowed opacity-65" : ""
         }`}
       >
         <span
-          className={`inline-flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl text-sm sm:text-base font-black ${palette.badgeClassName}`}
+          className={`inline-flex h-8 w-8 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl text-xs sm:text-base font-black ${palette.badgeClassName}`}
         >
           {option.label}
         </span>
-        <span className="text-sm font-bold leading-tight sm:leading-6 sm:text-lg">{option.text}</span>
+        <span className="text-xs font-bold leading-tight sm:leading-6 sm:text-lg">{option.text}</span>
       </Button>
     );
   }
@@ -282,14 +282,14 @@ export function QuestionOptionButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`group relative flex w-full items-center gap-5 rounded-2xl border-2 p-3.5 text-left transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${
+      className={`group relative flex w-full items-center gap-3 sm:gap-5 rounded-xl sm:rounded-2xl border-2 p-2.5 sm:p-3.5 text-left transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 ${
         selected
           ? "border-primary bg-primary/3 shadow-md shadow-primary/10"
           : "border-border/60 bg-white hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-lg hover:shadow-primary/5"
       } ${disabled ? "cursor-not-allowed opacity-60 hover:-translate-y-0 hover:shadow-none" : ""}`}
     >
       <span
-        className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold transition-all duration-300 ${
+        className={`inline-flex h-8 w-8 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-lg sm:rounded-xl text-xs sm:text-base font-bold transition-all duration-300 ${
           selected
             ? "bg-primary text-white shadow-md shadow-primary/30 scale-110"
             : "bg-muted text-primary group-hover:bg-primary/10 group-hover:text-primary"
@@ -297,19 +297,19 @@ export function QuestionOptionButton({
       >
         {option.label}
       </span>
-      <span className={`text-base font-medium leading-relaxed transition-colors duration-300 ${
+      <span className={`text-sm sm:text-base font-medium leading-tight sm:leading-relaxed transition-colors duration-300 ${
         selected ? "text-primary" : "text-inkd group-hover:text-primary"
       }`}>
         {option.text}
       </span>
       
       {/* Selection Indicator */}
-      <div className={`ml-auto flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+      <div className={`ml-auto flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full border-2 transition-all duration-300 ${
         selected 
           ? "border-primary bg-primary text-white scale-100 opacity-100" 
           : "border-border/60 scale-75 opacity-0 group-hover:border-primary/30 group-hover:opacity-50"
       }`}>
-        <CheckCircle2 className="h-4 w-4" />
+        <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
       </div>
     </button>
   );
