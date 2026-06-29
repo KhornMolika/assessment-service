@@ -314,7 +314,7 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "active" ? (
-          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col justify-center py-1">
+          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-4">
             <div className="rt-card-pop overflow-hidden rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
               <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-4 text-white sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
