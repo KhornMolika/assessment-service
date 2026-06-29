@@ -24,6 +24,8 @@ export interface RoomState {
   myRank: any | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   myResult: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pendingLeaderboard: any | null;
 }
 
 const initialRoomState: RoomState = {
@@ -38,6 +40,7 @@ const initialRoomState: RoomState = {
   leaderboard: null,
   myRank: null,
   myResult: null,
+  pendingLeaderboard: null,
 };
 
 export function useRealtimeSession(options?: { enabled?: boolean }) {
@@ -128,6 +131,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
           totalQuestions: data.totalQuestions || 0,
           questionResults: null,
           myResult: null,
+          pendingLeaderboard: null,
         }));
       });
 
@@ -136,10 +140,12 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
       });
 
       activeSocket.on(RealtimeEvents.SHOW_RANK, (data) => {
+        const isHostRankPayload = joinParamsRef.current?.role === RoomRole.HOST;
         setRoomState((prev) => ({
           ...prev,
-          phase: "leaderboard",
+          phase: isHostRankPayload ? prev.phase : "leaderboard",
           leaderboard: data.top5,
+          pendingLeaderboard: isHostRankPayload ? data.top5 : null,
           myRank: data.myRank ?? prev.myRank,
           myResult: data.myResult ?? null,
         }));
@@ -150,6 +156,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
           ...prev,
           phase: "results",
           leaderboard: Array.isArray(data) ? data : data.leaderboard,
+          pendingLeaderboard: null,
           myResult: null,
         }));
       });
@@ -191,6 +198,15 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
 
   const resetRoomState = useCallback(() => {
     setRoomState(initialRoomState);
+  }, []);
+
+  const showStoredLeaderboard = useCallback(() => {
+    setRoomState((prev) => ({
+      ...prev,
+      phase: "leaderboard",
+      leaderboard: prev.pendingLeaderboard ?? prev.leaderboard,
+      pendingLeaderboard: null,
+    }));
   }, []);
 
   const emitStartQuestion = useCallback((questionId?: string) => {
@@ -251,6 +267,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
     isConnected,
     roomState,
     resetRoomState,
+    showStoredLeaderboard,
     joinRoom,
     emitStartQuestion,
     emitRevealAnswers,

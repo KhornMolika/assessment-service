@@ -371,90 +371,68 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
 export async function getAssessmentResultSheetPageData(
   sheetId: string, // In this new backend, sheetId acts as sessionId
 ): Promise<AssessmentResultSheetPageData | null> {
-  // The backend endpoint `GET /assessments/:assessmentId/sessions/:sessionId/report` requires assessmentId.
-  // We'll need to figure out assessmentId. For now, since the global results page loads all sheets, we can
-  // find the assessmentId by scanning reports, or we assume the UI will be updated to pass assessmentId.
-  // For the sake of this deep integration, we will scan the assessments.
   try {
-    const assessmentsRes = await apiClient.get<{
-      data: Record<string, unknown>[];
-    }>("/assessments?limit=500");
-    let assessments =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (assessmentsRes as any)?.data?.data ||
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (assessmentsRes as any)?.data ||
-      assessmentsRes || [];
-
-    // Sort descending and take top 30. We scan recent ones for the session.
-    assessments = assessments
-      .sort(
+    const reportRes = await apiClient.get<{
+      data: {
+        session: {
+          id: string;
+          assessmentId: string;
+          assessmentTitle: string | null;
+          participantId: string | null;
+          participantName: string | null;
+          participantEmail: string | null;
+          status: string;
+          startedAt: string;
+          submittedAt: string | null;
+          totalScore: number | null;
+          maxScore: number;
+          grade: string | null;
+          isPassed: boolean | null;
+        };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (a: any, b: any) =>
-          new Date(String(b.updated_at || 0)).getTime() -
-          new Date(String(a.updated_at || 0)).getTime(),
-      )
-      .slice(0, 30);
+        questions: any[];
+      };
+    }>(`/sessions/${sheetId}/report`);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const reportPromises = assessments.map((a: any) =>
-      apiClient
-        .get<{
-          data: {
-            participantId: string;
-            name: string;
-            email: string;
-            submittedAt: string;
-            duration: number;
-            score: number;
-            isPassed: boolean;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            questions: any[];
-          };
-        }>(`/assessments/${a.id}/sessions/${sheetId}/report`)
-        .then((res) => ({
-          assessmentId: a.id,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          report: (res as any)?.data?.data || (res as any)?.data || res,
-        }))
-        .catch(() => null),
-    );
-
-    const reports = await Promise.all(reportPromises);
-    const targetMatch = reports.find((r) => r != null);
-
-    if (!targetMatch) return null;
-
-    const { assessmentId: targetAssessmentId, report: targetReport } =
-      targetMatch;
-    const assessment = assessments.find(
-      (a: Record<string, unknown>) => a.id === targetAssessmentId,
-    );
+    const targetReport = (reportRes as any)?.data?.data || (reportRes as any)?.data || reportRes;
+    const session = targetReport.session;
+    if (!session) return null;
 
     // Map the deep session report to the old AnswerSheet / AnswerEntry UI shape
     const participant = {
-      id: targetReport.participantId,
-      assessment_id: String(targetAssessmentId),
-      display_name: targetReport.name || "Anonymous",
-      joined_at: targetReport.submittedAt || new Date().toISOString(),
+      id: session.participantId || "anonymous",
+      assessment_id: session.assessmentId,
+      display_name: session.participantName || "Anonymous",
+      joined_at: session.submittedAt || session.startedAt || new Date().toISOString(),
     } as Participant;
+
+    const hasPendingReview = targetReport.questions.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (q: any) => q.gradingStatus === "PENDING",
+    );
 
     const answerSheet = {
       id: sheetId,
-      assessmentId: String(targetAssessmentId),
-      participantId: targetReport.participantId,
-      status: targetReport.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-      startedAt: new Date(
-        new Date(targetReport.submittedAt || Date.now()).getTime() -
-          (targetReport.duration || 0) * 1000,
-      ).toISOString(),
-      submittedAt: targetReport.submittedAt || null,
-      totalScore: targetReport.score,
-      maxScore: 100,
-      isPassed: targetReport.isPassed,
-      grade: targetReport.isPassed ? "Pass" : "Fail",
+      assessmentId: session.assessmentId,
+      participantId: session.participantId || "anonymous",
+      status: hasPendingReview ? "REVIEW_PENDING" : session.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+      startedAt: session.startedAt,
+      submittedAt: session.submittedAt || null,
+      totalScore: session.totalScore,
+      maxScore: session.maxScore,
+      isPassed: session.isPassed,
+      grade: session.grade,
       shareToken: sheetId,
     } as AnswerSheet;
+
+    const assessment = {
+      id: session.assessmentId,
+      name: session.assessmentTitle || "Untitled assessment",
+      status: "PUBLISHED",
+      createdAt: session.startedAt,
+      updatedAt: session.submittedAt || session.startedAt,
+    } as AssessmentCatalogItem;
 
     const questions = targetReport.questions.map(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -483,7 +461,7 @@ export async function getAssessmentResultSheetPageData(
       isCorrect: q.isCorrect,
       scoreAwarded: q.scoreAwarded,
       gradingStatus: q.gradingStatus || "AUTOMATIC",
-      ai_grading: q.aiGrading
+      aiGrading: q.aiGrading
         ? {
             suggestedScore: q.aiGrading.suggestedScore,
             reasoning: q.aiGrading.reasoning,
@@ -496,8 +474,7 @@ export async function getAssessmentResultSheetPageData(
     }));
 
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      assessment: assessment as any,
+      assessment,
       participant,
       answerSheet,
       questions,
@@ -546,27 +523,6 @@ export async function getAssessmentScopedResultsPageData(
         }) as Participant,
     );
 
-    const answerSheets = (report.participants || []).map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (p: any) =>
-        ({
-          id: p.sessionId,
-          assessmentId: String(assessmentId),
-          participantId: p.participantId,
-          status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-          startedAt: new Date(
-            new Date(p.submittedAt || Date.now()).getTime() -
-              (p.duration || 0) * 1000,
-          ).toISOString(),
-          submittedAt: p.submittedAt || null,
-          totalScore: p.score,
-          maxScore: 100,
-          isPassed: p.isPassed,
-          grade: p.isPassed ? "Pass" : "Fail",
-          shareToken: p.sessionId,
-        }) as AnswerSheet,
-    );
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -577,6 +533,32 @@ export async function getAssessmentScopedResultsPageData(
           typeId: q.type || q.typeId,
           points: q.points || 5,
         }) as ResultQuestionEntity,
+    );
+    const totalQuestionPoints = questions.reduce(
+      (sum: number, question: ResultQuestionEntity) =>
+        sum + Number(question.points || 0),
+      0,
+    );
+
+    const answerSheets = (report.participants || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (p: any) =>
+        ({
+          id: p.sessionId,
+          assessmentId: String(assessmentId),
+          participantId: p.participantId,
+          status: p.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+          startedAt: new Date(
+            new Date(p.submittedAt || Date.now()).getTime() -
+              (p.duration || 0) * 1000,
+          ).toISOString(),
+          submittedAt: p.submittedAt || null,
+          totalScore: p.score,
+          maxScore: totalQuestionPoints,
+          isPassed: p.isPassed,
+          grade: p.grade ?? (p.isPassed ? "Pass" : "Fail"),
+          shareToken: p.sessionId,
+        }) as AnswerSheet,
     );
 
     return {
