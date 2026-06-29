@@ -279,10 +279,10 @@ export default function AssessmentQuestionStep({
                         key={question.id}
                         type="button"
                         onClick={() => onQuestionToggle(question.id)}
-                        disabled={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME"}
-                        title={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" ? "REAL_TIME assessments cannot contain ESSAY questions" : undefined}
+                        disabled={(question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME"}
+                        title={(question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME" ? "REAL_TIME assessments cannot contain manual grading questions" : undefined}
                         className={`group relative flex w-full flex-col items-start overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#C8A246]/50 focus-visible:ring-offset-2 ${
-                          question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" 
+                          (question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME" 
                             ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
                             : selected
                               ? "border-[#C8A246] bg-[#faf8f3] shadow-md ring-inset ring-1 ring-[#C8A246]"
