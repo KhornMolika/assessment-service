@@ -35,6 +35,12 @@ jobs:
 
       - name: Build Docker Image
         run: |
+          echo "API_URL=https://assessment-backend.molika.app/api/v1" > .env.production
+          echo "API_CLIENT_ID=dummy_id" >> .env.production
+          echo "API_CLIENT_SECRET=dummy_secret" >> .env.production
+          echo "METABASE_SITE_URL=https://metabase.molika.app" >> .env.production
+          echo "METABASE_SECRET_KEY=dummy_key" >> .env.production
+          echo "METABASE_DASHBOARD_ID=2" >> .env.production
           docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
 
       - name: Push Docker Image
