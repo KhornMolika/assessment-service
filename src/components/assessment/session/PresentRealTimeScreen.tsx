@@ -12,8 +12,6 @@ import {
   Crown,
   PlayCircle,
   QrCode,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  Radio,
   Trophy,
   Volume2,
   VolumeX,
@@ -28,14 +26,10 @@ import { ScreenShell } from "./SessionShared";
 import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 import { useRealtimeAudio } from '@/src/lib/session/realtime.effects';
 import { realtimeEvents } from '@/src/lib/session/realtime.events';
-import type { HostPhase } from '@/src/types/session.types';
+import type { HostPhase, LeaderboardEntry, QuestionOption } from '@/src/types/session.types';
 import {
   buildDistribution,
-  buildLeaderboard,
-  buildParticipantRoster,
   buildQuestionRounds,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resolveLeaderboardRound,
   getCorrectAnswerText,
 } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
@@ -77,24 +71,20 @@ export function PresentRealTimeScreen({
   const phase = roomState.phase === "active" ? "reveal" : roomState.phase === "results" ? "winner" : roomState.phase as HostPhase;
   const previousPhaseRef = useRef<HostPhase>(phase);
 
-  const participants = useMemo(() => buildParticipantRoster(), []);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const initialLeaderboard = useMemo(() => buildLeaderboard(), []);
-
-  const activeParticipants = roomState.participants.length > 0 ? roomState.participants : previewParticipants;
+  const activeParticipants: Array<{ id: string; name: string }> =
+    roomState.participants.length > 0 ? roomState.participants : previewParticipants;
   const responseCount = roomState.questionResults ? (roomState.questionResults.totalAnswered || 0) : 0;
   
-  const leaderboard = roomState.leaderboard || [];
+  const leaderboard: LeaderboardEntry[] = Array.isArray(roomState.leaderboard)
+    ? roomState.leaderboard
+    : [];
   const displayLeaderboard = [
     ...leaderboard,
     ...activeParticipants
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((participant: any) =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        !leaderboard.some((entry: any) => entry.id === participant.id),
+      .filter((participant) =>
+        !leaderboard.some((entry) => entry.id === participant.id),
       )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((participant: any) => ({
+      .map((participant) => ({
         id: participant.id,
         name: participant.name || "Anonymous",
         score: 0,
@@ -103,8 +93,7 @@ export function PresentRealTimeScreen({
         streak: 0,
         lastGain: 0,
       })),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ].map((entry: any, index: number) => ({
+  ].map((entry, index) => ({
     ...entry,
     rank: entry.rank || index + 1,
     previousRank: entry.previousRank || entry.rank || index + 1,
@@ -551,8 +540,7 @@ export function PresentRealTimeScreen({
 
             <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
               <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {currentRound.options.map((option: any, index: number) => {
+                  {currentRound.options.map((option: QuestionOption, index: number) => {
                     const distribution =
                       responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
                     const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
@@ -674,8 +662,7 @@ export function PresentRealTimeScreen({
                         {Number(displayLeaderboard[0].score || 0).toFixed(2).replace(/\.00$/, '')}
                       </p>
                       <div className="mt-5 grid grid-cols-3 gap-2">
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {displayLeaderboard.slice(0, 3).map((entry: any, index: number) => (
+                        {displayLeaderboard.slice(0, 3).map((entry, index: number) => (
                           <div
                             key={entry.id}
                             className="rounded-2xl border border-white/10 bg-white/8 p-3 text-center"
@@ -695,8 +682,7 @@ export function PresentRealTimeScreen({
                       <span className="text-right">Score</span>
                     </div>
                     <div ref={parent} className="mt-3 grid gap-3 overflow-hidden">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {displayLeaderboard.slice(0, 5).map((entry: any) => {
+                      {displayLeaderboard.slice(0, 5).map((entry) => {
                         const entryScore = Number(entry.score || 0);
                         const rankDelta = (entry.previousRank || entry.rank) - entry.rank;
                         const isTop = entry.rank === 1;
@@ -765,8 +751,7 @@ export function PresentRealTimeScreen({
             <div className="mt-8 grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_18rem]">
               <div className="rounded-[32px] border border-white/10 bg-white/6 p-5 backdrop-blur-sm lg:flex lg:min-h-0 lg:flex-col lg:justify-end">
                 <div className="grid items-end gap-4 md:grid-cols-3">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  {displayLeaderboard.slice(0, 3).map((entry: any, index: number) => {
+                  {displayLeaderboard.slice(0, 3).map((entry, index: number) => {
                     const place = index + 1;
                     const orderClassName =
                       place === 1 ? "md:order-2" : place === 2 ? "md:order-1" : "md:order-3";
