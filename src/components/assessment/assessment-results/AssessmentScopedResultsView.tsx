@@ -92,7 +92,10 @@ export default function AssessmentScopedResultsView({
             </div>
           ) : null}
 
-          <ResultsTable rows={rows} />
+          <ResultsTable
+            rows={rows}
+            detailBackHref={`/assessments/${data.assessment.id}/reports`}
+          />
         </div>
       </div>
     </div>
