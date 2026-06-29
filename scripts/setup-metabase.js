@@ -146,7 +146,7 @@ async function main() {
   }
 
   // Run the seeder BEFORE configuring the dashboard
-  await seedRealisticData();
+  // await seedRealisticData();
 
   console.log("Fetching databases...");
   const dbRes = await fetch(`${METABASE_URL}/api/database`, { headers });
