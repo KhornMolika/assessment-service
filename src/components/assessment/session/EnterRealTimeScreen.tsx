@@ -318,38 +318,38 @@ export function EnterRealTimeScreen({
         {phase === "active" ? (
           <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-1 sm:py-4">
             <div className="rt-card-pop overflow-hidden rounded-[20px] sm:rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
-              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-3 sm:p-5 text-white">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
-                    <Radio className="h-4 w-4 text-[#95D5B2]" />
+              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-2.5 sm:p-5 text-white">
+                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                  <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
+                    <Radio className="h-3 w-3 sm:h-4 sm:w-4 text-[#95D5B2]" />
                     Live question
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/85">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-white/85">
                     Question {questionNumber} of {totalQuestions}
                   </div>
                 </div>
 
-                <div className="mt-3 sm:mt-4 flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <h2 className="max-w-3xl text-lg font-bold leading-tight tracking-tight sm:text-2xl">
+                <div className="mt-2 sm:mt-4 flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <h2 className="max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-2xl">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {currentRound.question || (currentRound as any).questionText}
                   </h2>
                   <div
-                    className={`shrink-0 rounded-2xl sm:rounded-3xl border border-white/15 bg-white/10 px-3 py-2 sm:px-4 sm:py-3 text-right backdrop-blur ${
+                    className={`shrink-0 rounded-xl sm:rounded-3xl border border-white/15 bg-white/10 px-2.5 py-1.5 sm:px-4 sm:py-3 text-right backdrop-blur ${
                       timerSeconds <= 5 ? "rt-timer-critical" : ""
                     }`}
                   >
-                    <div className="flex items-center justify-end gap-2 text-white/65">
-                      <Clock3 className="h-4 w-4" />
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+                    <div className="flex items-center justify-end gap-1.5 sm:gap-2 text-white/65">
+                      <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
                         Time left
                       </span>
                     </div>
-                    <p className="mt-1 text-2xl sm:text-3xl font-black">{timerSeconds}s</p>
+                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-3xl font-black">{timerSeconds}s</p>
                   </div>
                 </div>
 
-                <div className="rt-progress-shimmer mt-4 h-2.5 rounded-full bg-white/12">
+                <div className="rt-progress-shimmer mt-3 sm:mt-4 h-1.5 sm:h-2.5 rounded-full bg-white/12">
                   <div
                     className={`h-full rounded-full transition ${
                       timerSeconds <= 5
