@@ -1,7 +1,7 @@
 /* eslint-disable */
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { Client } = require('pg');
-const email = 'assessment@gmail.com';
+const email = 'molikakhorn71@gmail.com';
 const password = 'SECRET_REMOVED';
 const METABASE_URL = process.env.METABASE_SITE_URL || 'http://localhost:3002';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
