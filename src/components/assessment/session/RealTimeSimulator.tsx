@@ -94,7 +94,7 @@ export function RealTimeSimulator({
         
         {/* Host View Pane */}
         <div className={cn("relative flex h-full min-h-0 flex-col bg-transparent", viewMode !== "host" && "hidden")}>
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
             <PresentRealTimeScreen 
               assessment={assessment} 
               questions={questions} 
@@ -107,7 +107,7 @@ export function RealTimeSimulator({
 
         {/* Participant View Pane */}
         <div className={cn("relative flex h-full min-h-0 flex-col bg-transparent", viewMode !== "participant" && "hidden")}>
-          <div className="min-h-0 flex-1 overflow-hidden">
+          <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
              <EnterRealTimeScreen 
                assessment={assessment}
                embedded
