@@ -113,11 +113,17 @@ export async function getSessionResult(sessionId: string) {
   }
 }
 
-export async function startRealtimeSessionHost(assessmentId: string, options?: { reset?: boolean }) {
+export async function startRealtimeSessionHost(
+  assessmentId: string,
+  options?: { reset?: boolean; preview?: boolean },
+) {
   try {
-    const resetQuery = options?.reset ? "?reset=true" : "";
+    const params = new URLSearchParams();
+    if (options?.reset) params.set("reset", "true");
+    if (options?.preview) params.set("preview", "true");
+    const query = params.toString();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res = await apiClient.post<any>(`/runtime/real-time/${assessmentId}/start${resetQuery}`, {});
+    const res = await apiClient.post<any>(`/runtime/real-time/${assessmentId}/start${query ? `?${query}` : ""}`, {});
     return { success: true, data: res.data || res };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

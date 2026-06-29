@@ -9,8 +9,10 @@ import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 
 export function ResultsTable({
   rows,
+  detailBackHref,
 }: {
   rows: ResultsRow[];
+  detailBackHref?: string;
 }) {
   if (rows.length === 0) {
     return (
@@ -101,7 +103,11 @@ export function ResultsTable({
               <div className="flex justify-center">
                 <ActionMenu>
                   <Link
-                    href={`/results/${result.sheetId}`}
+                    href={
+                      detailBackHref
+                        ? `/results/${result.sheetId}?backHref=${encodeURIComponent(detailBackHref)}`
+                        : `/results/${result.sheetId}`
+                    }
                     className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                   >
                     <Eye className="h-4 w-4" /> View Details

@@ -4,6 +4,13 @@ import type { ResultsRow } from "./results.types";
 
 export function getGradeTone(grade: string | null) {
   if (!grade) return "bg-slate-100 text-slate-700";
+  const normalizedGrade = grade.toLowerCase();
+  if (normalizedGrade === "pass" || normalizedGrade === "passed") {
+    return "bg-green-100 text-green-700";
+  }
+  if (normalizedGrade === "fail" || normalizedGrade === "failed") {
+    return "bg-red-100 text-red-700";
+  }
   if (grade.startsWith("A")) return "bg-green-100 text-green-700";
   if (grade.startsWith("B")) return "bg-blue-100 text-blue-700";
   if (grade.startsWith("C")) return "bg-yellow-100 text-yellow-700";

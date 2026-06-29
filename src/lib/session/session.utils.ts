@@ -454,7 +454,7 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     return 0; // Handled manually
   }
 
-  // Deductive Scoring (Partial Credit with Penalty)
+  // Partial-credit scoring
   
   if (rendererType === "multiple") {
     if (!Array.isArray(value)) return 0;
@@ -462,10 +462,9 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     if (!Array.isArray(correctIds) || correctIds.length === 0) return 0;
 
     const correctSelected = value.filter(id => correctIds.includes(id)).length;
-    const wrongSelected = value.filter(id => !correctIds.includes(id)).length;
     const totalCorrect = correctIds.length;
 
-    const ratio = Math.max(0, (correctSelected - wrongSelected) / totalCorrect);
+    const ratio = Math.max(0, correctSelected / totalCorrect);
     return parseFloat((ratio * maxScore).toFixed(2));
   }
 

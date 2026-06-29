@@ -203,30 +203,29 @@ export default function AssessmentShareAction({
               </Button>
             </div>
           ) : (
-            <div className="mt-6 space-y-6">
-              <p className="text-sm leading-6 text-inkd">
-                This assessment runs in real time. Choose whether you want to launch the live
-                session now or preview the assessment first.
-              </p>
+            <div className="mt-6 space-y-5">
+              <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,#F8FCF8_0%,#FFFFFF_100%)] p-5">
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/8 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
+                  <PlayCircle className="h-4 w-4" />
+                  Real-time session
+                </div>
+                <p className="mt-4 text-sm leading-6 text-inkd">
+                  Launch the host room when you are ready. Participants can join from the live
+                  session lobby after it opens.
+                </p>
+              </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-[0.8fr_1.2fr]">
                 <Button
                   type="button"
                   onClick={() => setShowShareModal(false)}
-                  className="min-h-11 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
+                  className="min-h-12 rounded-2xl border border-border bg-[#F4F1EA] px-4 py-3 text-sm font-bold text-primary shadow-sm transition hover:bg-[#ECE7DD]" variant="secondary"
                 >
                   Cancel
                 </Button>
                 <Link
-                  href={previewPath}
-                  onClick={openFreshPreview}
-                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5 lg:col-span-2"
-                >
-                  Preview
-                </Link>
-                <Link
                   href={hostPath}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 lg:col-span-2"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.18)] transition hover:bg-[#174735]"
                 >
                   <PlayCircle className="h-4 w-4" />
                   Launch

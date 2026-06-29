@@ -5,19 +5,16 @@ import { CheckCircle2, Clock3, Radio } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types";
 import { QuestionRenderer } from "../renderers/QuestionRenderer";
 import type { QuestionRendererValue } from "../renderers/types";
+import type { QuestionRound } from "@/src/types/session.types";
 import { ScreenShell } from "./SessionShared";
 import { JoinFinal } from "./join/JoinFinal";
 import { JoinLobby } from "./join/JoinLobby";
 import { JoinResult } from "./join/JoinResult";
 import { JoinWaitingState } from "./join/JoinWaitingState";
 import { realtimeEvents } from '@/src/lib/session/realtime.events';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { JoinPhase } from '@/src/types/session.types';
 import {
   buildQuestionRounds,
   hasAnswerResponse,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  isCorrectAnswerResponse,
   requiresParticipantIdentity,
 } from '@/src/lib/session/session.utils';
 import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
@@ -59,8 +56,6 @@ export function EnterRealTimeScreen({
       ]),
     [assessment.id],
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   
   const [displayName, setDisplayName] = useState("");
@@ -237,6 +232,7 @@ export function EnterRealTimeScreen({
     currentRound?.id,
     hasCurrentRoundResult,
     phase,
+    revealedCorrect,
     roomState.myResult?.correct,
     roomState.questionResults,
   ]);
@@ -277,6 +273,7 @@ export function EnterRealTimeScreen({
     currentRound?.id,
     hasCurrentRoundResult,
     phase,
+    revealedCorrect,
     roomState.myRank?.score,
     roomState.myResult?.correct,
     roomState.myResult?.questionId,
@@ -294,9 +291,9 @@ export function EnterRealTimeScreen({
       variant={embedded ? "panel" : "page"}
       aside={null}
     >
-      <div className="flex min-h-[32rem] flex-col sm:min-h-[34rem] lg:h-full lg:min-h-0">
+      <div className="flex h-full min-h-0 flex-col">
         {phase === "lobby" ? (
-          <div className="flex flex-1 items-start py-2 lg:items-center">
+          <div className="flex min-h-0 flex-1 items-center py-1">
             <JoinLobby
               requiresIdentity={requiresIdentity}
               displayName={displayName}
@@ -317,9 +314,9 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "active" ? (
-          <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col py-2 sm:py-4 lg:justify-center">
+          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col justify-center py-1">
             <div className="rt-card-pop overflow-hidden rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
-              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-5 text-white sm:p-6">
+              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-4 text-white sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
                     <Radio className="h-4 w-4 text-[#95D5B2]" />
@@ -330,13 +327,13 @@ export function EnterRealTimeScreen({
                   </div>
                 </div>
 
-                <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <h2 className="max-w-3xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <h2 className="max-w-3xl text-xl font-bold leading-tight tracking-tight sm:text-2xl">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {currentRound.question || (currentRound as any).questionText}
                   </h2>
                   <div
-                    className={`shrink-0 rounded-3xl border border-white/15 bg-white/10 px-5 py-4 text-right backdrop-blur ${
+                    className={`shrink-0 rounded-3xl border border-white/15 bg-white/10 px-4 py-3 text-right backdrop-blur ${
                       timerSeconds <= 5 ? "rt-timer-critical" : ""
                     }`}
                   >
@@ -346,11 +343,11 @@ export function EnterRealTimeScreen({
                         Time left
                       </span>
                     </div>
-                    <p className="mt-1 text-4xl font-black">{timerSeconds}s</p>
+                    <p className="mt-1 text-3xl font-black">{timerSeconds}s</p>
                   </div>
                 </div>
 
-                <div className="rt-progress-shimmer mt-5 h-2.5 rounded-full bg-white/12">
+                <div className="rt-progress-shimmer mt-4 h-2.5 rounded-full bg-white/12">
                   <div
                     className={`h-full rounded-full transition ${
                       timerSeconds <= 5
@@ -362,7 +359,7 @@ export function EnterRealTimeScreen({
                 </div>
               </div>
 
-              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-4 sm:p-6">
+              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-4 sm:p-5">
                 <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
                   <QuestionRenderer
                     question={currentRound}
@@ -374,7 +371,7 @@ export function EnterRealTimeScreen({
               </div>
             </div>
 
-            <div className="mx-auto mt-6 w-full max-w-md">
+            <div className="mx-auto mt-4 w-full max-w-md">
               {submitted ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl bg-[#113023] px-6 py-4 text-center text-base font-bold text-white shadow-[0_18px_40px_rgba(17,48,35,0.18)]">
                   <CheckCircle2 className="h-5 w-5 text-emerald-300" />
@@ -446,25 +443,28 @@ function parseCorrectAnswer(correct: unknown): unknown {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function isAnswerCorrectFromReveal(
   correct: unknown,
   answerValue: QuestionRendererValue,
 ): boolean {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!hasAnswerResponse({ options: [], type: "SINGLE_CHOICE" } as any, answerValue)) {
+  if (!hasAnswerResponse({ options: [], type: "SINGLE_CHOICE" } as QuestionRound, answerValue)) {
     return false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parsed = parseCorrectAnswer(correct) as any;
+  const parsed = parseCorrectAnswer(correct);
   if (Array.isArray(answerValue)) {
-    if (Array.isArray(parsed?.sequence)) {
+    const sequence = isRecord(parsed) && Array.isArray(parsed.sequence) ? parsed.sequence : null;
+    if (sequence) {
       return (
-        answerValue.length === parsed.sequence.length &&
-        answerValue.every((id, index) => id === parsed.sequence[index])
+        answerValue.length === sequence.length &&
+        answerValue.every((id, index) => id === sequence[index])
       );
     }
-    const correctIds = Array.isArray(parsed?.optionIds)
+    const correctIds = isRecord(parsed) && Array.isArray(parsed.optionIds)
       ? parsed.optionIds
       : Array.isArray(parsed)
         ? parsed
@@ -476,11 +476,14 @@ function isAnswerCorrectFromReveal(
   }
 
   if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue)) {
-    if (Array.isArray(parsed?.pairs)) {
-      return parsed.pairs.every(
-        (pair: any) => {
-          const lId = pair.leftId || pair.left;
-          const rId = pair.rightId || pair.right;
+    const pairs = isRecord(parsed) && Array.isArray(parsed.pairs) ? parsed.pairs : null;
+    if (pairs) {
+      return pairs.every(
+        (pair) => {
+          if (!isRecord(pair)) return false;
+          const lId = typeof pair.leftId === "string" ? pair.leftId : pair.left;
+          const rId = typeof pair.rightId === "string" ? pair.rightId : pair.right;
+          if (typeof lId !== "string" || typeof rId !== "string") return false;
           if (!lId || !rId) return false;
           return answerValue[lId] === rId;
         }
@@ -489,7 +492,7 @@ function isAnswerCorrectFromReveal(
   }
 
   // FILL IN THE BLANK
-  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue) && parsed?.answers) {
+  if (typeof answerValue === "object" && answerValue !== null && !Array.isArray(answerValue) && isRecord(parsed) && Array.isArray(parsed.answers)) {
     const acceptedAnswers = parsed.answers as string[][];
     // answerValue is like { "0": "val1", "1": "val2" }
     return acceptedAnswers.every((accepted, index) => {
@@ -499,11 +502,11 @@ function isAnswerCorrectFromReveal(
   }
 
   if (typeof answerValue === "boolean" || typeof answerValue === "string") {
-    const pVal = parsed?.value !== undefined ? parsed.value : parsed;
+    const pVal = isRecord(parsed) && parsed.value !== undefined ? parsed.value : parsed;
     
     // Case-insensitive comparison for short answer
     if (String(pVal).trim().toLowerCase() === String(answerValue).trim().toLowerCase()) return true;
-    if (parsed?.optionId && String(parsed.optionId) === String(answerValue)) return true;
+    if (isRecord(parsed) && parsed.optionId && String(parsed.optionId) === String(answerValue)) return true;
   }
 
 

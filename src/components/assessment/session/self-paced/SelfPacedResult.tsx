@@ -112,46 +112,53 @@ export function SelfPacedResult({
   answerSheetHeading: string;
   shareUrl?: string;
 }) {
+  const showSharePanel = allowShareAnswerSheet && resultMode === "immediate";
+
   return (
-    <div className="flex w-full flex-col space-y-12 pb-12">
+    <div className="flex w-full flex-col space-y-10 pb-12">
       {/* Minimal Header */}
-      <div className="border-b border-border/50 pb-10">
-        <div className="mb-4 inline-flex items-center rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary/60">
-          {resultMode === "immediate" ? "Results" : "Submitted"}
+      <div className="border-b border-border/50 pb-8">
+        <div className={showSharePanel ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,28rem)] lg:justify-between" : ""}>
+          <div className="min-w-0">
+            <div className="mb-4 inline-flex items-center rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary/60">
+              {resultMode === "immediate" ? "Results" : "Submitted"}
+            </div>
+
+            {resultMode === "immediate" ? (
+              <div>
+                <h2 className="text-4xl font-bold tracking-tight text-primary">Your score is {scoreSummary.earnedPoints}/{scoreSummary.totalPoints}</h2>
+                <p className="mt-3 max-w-2xl text-base text-primary/60">
+                  Review your detailed performance below. 
+                  {scoreSummary.grade !== "N/A" ? (
+                    <> You received a grade of <strong className="text-primary">{scoreSummary.grade}</strong> ({scoreSummary.passed ? "Passed" : "Failed"}).</>
+                  ) : (
+                    <> You <strong className="text-primary">{scoreSummary.passed ? "Passed" : "Failed"}</strong>.</>
+                  )}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <h2 className="text-4xl font-bold tracking-tight text-primary">Assessment Submitted</h2>
+                <p className="mt-3 max-w-2xl text-base text-primary/60">
+                  {resultMode === "manual" 
+                    ? "Your responses were submitted successfully. Scores remain hidden until released."
+                    : "Your responses were captured successfully."}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {showSharePanel ? (
+            <ShareAnswerSheetPanel
+              compact
+              enabled={true}
+              title={answerSheetTitle}
+              description="Share your score and answer sheet."
+              shareUrl={shareUrl}
+            />
+          ) : null}
         </div>
-
-        {resultMode === "immediate" ? (
-          <div>
-            <h2 className="text-4xl font-bold tracking-tight text-primary">Your score is {scoreSummary.earnedPoints}/{scoreSummary.totalPoints}</h2>
-            <p className="mt-3 text-base text-primary/60">
-              Review your detailed performance below. 
-              {scoreSummary.grade !== "N/A" ? (
-                <> You received a grade of <strong className="text-primary">{scoreSummary.grade}</strong> ({scoreSummary.passed ? "Passed" : "Failed"}).</>
-              ) : (
-                <> You <strong className="text-primary">{scoreSummary.passed ? "Passed" : "Failed"}</strong>.</>
-              )}
-            </p>
-          </div>
-        ) : (
-          <div>
-            <h2 className="text-4xl font-bold tracking-tight text-primary">Assessment Submitted</h2>
-            <p className="mt-3 text-base text-primary/60">
-              {resultMode === "manual" 
-                ? "Your responses were submitted successfully. Scores remain hidden until released."
-                : "Your responses were captured successfully."}
-            </p>
-          </div>
-        )}
       </div>
-
-      {allowShareAnswerSheet && resultMode === "immediate" ? (
-        <ShareAnswerSheetPanel
-          enabled={true}
-          title={answerSheetTitle}
-          description="You can share this link with others to show your score and answers."
-          shareUrl={shareUrl}
-        />
-      ) : null}
 
       {/* Clean Answer Sheet List */}
       {resultMode !== "hidden" ? (
