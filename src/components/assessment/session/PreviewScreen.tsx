@@ -128,6 +128,7 @@ export function PreviewScreen({
     <ScreenShell
       title={assessment.name ? `Preview: ${assessment.name}` : "Assessment Preview"}
       description="Preview Mode Active — Your answers will not be recorded."
+      viewportLocked={step === "quiz"}
       headerAction={
         <div className="flex items-center gap-3">
           {step === "end" && (

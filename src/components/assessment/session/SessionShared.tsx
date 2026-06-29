@@ -53,6 +53,7 @@ export function ScreenShell({
   aside,
   children,
   variant = "page",
+  viewportLocked = false,
 }: {
   eyebrow?: string;
   title: string;
@@ -61,6 +62,7 @@ export function ScreenShell({
   aside?: React.ReactNode;
   children: React.ReactNode;
   variant?: "page" | "panel";
+  viewportLocked?: boolean;
 }) {
   const hasHeader = Boolean(eyebrow || title || description);
 
@@ -74,9 +76,17 @@ export function ScreenShell({
   }
 
   return (
-    <main className="min-h-dvh bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
-      <div className="mx-auto flex min-h-[calc(100dvh-1.5rem)] max-w-7xl flex-col gap-4 lg:gap-6 lg:flex-row">
-        <div className="flex flex-1 flex-col">
+    <main
+      className={`bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 ${
+        viewportLocked ? "h-dvh overflow-hidden" : "min-h-dvh"
+      }`}
+    >
+      <div
+        className={`mx-auto flex max-w-7xl flex-col gap-4 lg:gap-6 lg:flex-row ${
+          viewportLocked ? "h-full min-h-0" : "min-h-[calc(100dvh-1.5rem)]"
+        }`}
+      >
+        <div className="flex min-h-0 flex-1 flex-col">
           {hasHeader || headerAction ? (
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -97,7 +107,7 @@ export function ScreenShell({
               {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
             </div>
           ) : null}
-          <div className={`${hasHeader ? "mt-4 lg:mt-6" : ""} flex flex-col flex-1`}>
+          <div className={`${hasHeader ? "mt-4 lg:mt-6" : ""} flex min-h-0 flex-1 flex-col`}>
             {children}
           </div>
         </div>
@@ -397,11 +407,13 @@ export function ShareAnswerSheetPanel({
   title,
   description,
   shareUrl = "",
+  compact = false,
 }: {
   enabled: boolean;
   title?: string;
   description?: string;
   shareUrl?: string;
+  compact?: boolean;
 }) {
   const absoluteShareUrl = typeof window !== "undefined" && shareUrl.startsWith("/") 
     ? `${window.location.origin}${shareUrl}`
@@ -422,35 +434,41 @@ export function ShareAnswerSheetPanel({
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl rounded-2xl border border-[#D7E4DA] bg-white/88 p-4 shadow-[0_14px_34px_rgba(27,67,50,0.08)] backdrop-blur sm:p-5">
+    <div
+      className={
+        compact
+          ? "w-full rounded-2xl border border-[#D7E4DA] bg-[#FBFCF7]/90 p-3 shadow-[0_12px_28px_rgba(27,67,50,0.07)] backdrop-blur sm:p-4"
+          : "mx-auto w-full max-w-5xl rounded-2xl border border-[#D7E4DA] bg-white/88 p-4 shadow-[0_14px_34px_rgba(27,67,50,0.08)] backdrop-blur sm:p-5"
+      }
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/50">
             Share answer sheet
           </p>
-          <h3 className="mt-1 text-lg font-bold leading-tight text-primary">{title || "Send your result anywhere it helps"}</h3>
-          <p className="mt-1.5 max-w-2xl text-sm leading-5 text-inkd">
+          <h3 className={compact ? "mt-1 text-base font-bold leading-tight text-primary" : "mt-1 text-lg font-bold leading-tight text-primary"}>{title || "Send your result anywhere it helps"}</h3>
+          <p className={compact ? "mt-1 max-w-md text-xs leading-5 text-inkd" : "mt-1.5 max-w-2xl text-sm leading-5 text-inkd"}>
             {description ||
               "Share the score summary together with the your answer response and the correct answers when they are shown."}
           </p>
         </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary">
+        <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary" : "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary"}>
           <Share2 className="h-4 w-4" />
         </div>
       </div>
 
       {enabled ? (
-        <div className="mt-4 grid gap-2.5 md:grid-cols-3">
+        <div className={compact ? "mt-3 grid gap-2" : "mt-4 grid gap-2.5 md:grid-cols-3"}>
           {shareDestinations.map((destination) => (
             <a
               key={destination.name}
               href={getHref(destination.name)}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex min-h-[5.5rem] items-center gap-3 rounded-2xl border border-[#DDE6DC] bg-[#FBFCF7] p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm"
+              className={compact ? "group flex min-h-[3.75rem] items-center gap-2.5 rounded-xl border border-[#DDE6DC] bg-white/72 p-2.5 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm" : "group flex min-h-[5.5rem] items-center gap-3 rounded-2xl border border-[#DDE6DC] bg-[#FBFCF7] p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm"}
             >
               <span
-                className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-primary/8 ${destination.iconClassName}`}
+                className={`${compact ? "inline-flex h-8 w-8" : "inline-flex h-10 w-10"} shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-primary/8 ${destination.iconClassName}`}
               >
                 {destination.icon}
               </span>
@@ -459,7 +477,7 @@ export function ShareAnswerSheetPanel({
                   <p className="text-sm font-bold leading-tight text-primary">{destination.name}</p>
                   <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/40 transition group-hover:text-primary" />
                 </div>
-                <p className="mt-1 line-clamp-2 text-xs leading-5 text-inkd">{destination.caption}</p>
+                <p className={compact ? "mt-0.5 line-clamp-1 text-[11px] leading-4 text-inkd" : "mt-1 line-clamp-2 text-xs leading-5 text-inkd"}>{destination.caption}</p>
               </div>
             </a>
           ))}
@@ -471,7 +489,7 @@ export function ShareAnswerSheetPanel({
         </div>
       )}
 
-      <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#F3F7EF] px-3 py-1.5 text-[11px] font-semibold text-primary/65">
+      <div className={compact ? "mt-3 inline-flex items-center gap-2 rounded-full bg-[#EEF6EA] px-2.5 py-1 text-[10px] font-semibold text-primary/65" : "mt-3 inline-flex items-center gap-2 rounded-full bg-[#F3F7EF] px-3 py-1.5 text-[11px] font-semibold text-primary/65"}>
         <MessageCircleMore className="h-3.5 w-3.5" />
         Supported targets: Facebook, Telegram, LinkedIn
       </div>

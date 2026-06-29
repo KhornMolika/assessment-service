@@ -28,9 +28,9 @@ import { useRealtimeAudio } from '@/src/lib/session/realtime.effects';
 import { realtimeEvents } from '@/src/lib/session/realtime.events';
 import type { HostPhase, LeaderboardEntry, QuestionOption } from '@/src/types/session.types';
 import {
-  buildDistribution,
   buildQuestionRounds,
   getCorrectAnswerText,
+  normalizeQuestionRendererType,
 } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
 import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const QUESTION_DURATION_SECONDS = 30;
+const LEADERBOARD_DURATION_SECONDS = 10;
 
 export function PresentRealTimeScreen({
   assessment,
@@ -60,13 +61,15 @@ export function PresentRealTimeScreen({
   const [copied, setCopied] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [leaderboardSeconds, setLeaderboardSeconds] = useState(LEADERBOARD_DURATION_SECONDS);
+  const [winnerView, setWinnerView] = useState<"podium" | "rankings">("podium");
   const [origin, setOrigin] = useState("");
   const previousTimerRef = useRef(timerSeconds);
   const autoRevealQuestionRef = useRef<string | null>(null);
   const { soundEnabled, setSoundEnabled, prime, playTone } = useRealtimeAudio();
   const [parent] = useAutoAnimate();
 
-  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers } = activeSession;
+  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers, showStoredLeaderboard } = activeSession;
 
   const phase = roomState.phase === "active" ? "reveal" : roomState.phase === "results" ? "winner" : roomState.phase as HostPhase;
   const previousPhaseRef = useRef<HostPhase>(phase);
@@ -105,7 +108,7 @@ export function PresentRealTimeScreen({
   useEffect(() => {
     if (externalSession || !isConnected || hostJoinedRef.current) return;
     async function initHost() {
-      const res = await startRealtimeSessionHost(assessment.id);
+      const res = await startRealtimeSessionHost(assessment.id, { reset: true });
       if (res.success) {
         joinRoom(assessment.id, RoomRole.HOST);
         hostJoinedRef.current = true;
@@ -119,17 +122,15 @@ export function PresentRealTimeScreen({
   const currentRound = rounds[questionIndex];
   const participantPath = `/assessments/${assessment.id}/enter-real-time-assessment`;
   const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
-  const responseDistribution = useMemo(
-    () => {
-      // If we have actual results from backend, map them
-      if (roomState.questionResults) {
-        // Map backend results to distribution, for now fallback to mock
-        return buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId);
-      }
-      return buildDistribution(currentRound.options, responseCount, currentRound.correctOptionId);
-    },
-    [currentRound, responseCount, roomState.questionResults],
-  );
+  const responseDistribution = useMemo(() => {
+    const stats = roomState.questionResults?.stats;
+    return Array.isArray(stats)
+      ? stats.map((item) => ({
+          optionId: String(item.optionId),
+          count: Number(item.count ?? 0),
+        }))
+      : [];
+  }, [roomState.questionResults?.stats]);
   const isLobbyPhase = phase === "lobby";
 
   useEffect(() => {
@@ -223,6 +224,22 @@ export function PresentRealTimeScreen({
   }, [phase, playTone]);
 
   useEffect(() => {
+    if (phase !== "leaderboard") return;
+
+    if (leaderboardSeconds === 0) {
+      advanceToNextQuestion();
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setLeaderboardSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, leaderboardSeconds]);
+
+  useEffect(() => {
     if (phase !== "reveal" || previousTimerRef.current === timerSeconds) {
       previousTimerRef.current = timerSeconds;
       return;
@@ -243,6 +260,7 @@ export function PresentRealTimeScreen({
     }
     prime();
     setQuestionIndex(0);
+    setWinnerView("podium");
     emitStartQuestion(rounds[0].id);
   }
 
@@ -252,23 +270,21 @@ export function PresentRealTimeScreen({
     emitRevealAnswers(assessment.id);
   }
 
-
-  
   function showLeaderboard() {
-    // handled by backend SHOW_RANK via automatic transition or something else? Wait, backend sends SHOW_RANK automatically after Q_RESULTS!
-    // Wait, no. The host might need to explicitly request SHOW_RANK. But in backend, endQuestion automatically broadcasts SHOW_RANK.
-    // So the host just needs to know they are in leaderboard phase.
+    setLeaderboardSeconds(LEADERBOARD_DURATION_SECONDS);
+    showStoredLeaderboard();
   }
 
 
-  
   function advanceToNextQuestion() {
     if (questionIndex === rounds.length - 1) {
-      // Backend automatically sends SESSION_ENDED or SHOW_FINAL_RANK which sets phase=results
+      setWinnerView("podium");
+      emitStartQuestion();
       return;
     }
     const nextIndex = questionIndex + 1;
     setQuestionIndex(nextIndex);
+    setLeaderboardSeconds(LEADERBOARD_DURATION_SECONDS);
     emitStartQuestion(rounds[nextIndex].id);
   }
 
@@ -279,46 +295,423 @@ export function PresentRealTimeScreen({
     window.setTimeout(() => setCopied(false), 1800);
   }
 
+  const currentRendererType = normalizeQuestionRendererType(currentRound.type);
+  const isChoiceResult =
+    currentRendererType === "single" ||
+    currentRendererType === "multiple" ||
+    currentRendererType === "boolean";
+  const correctAnswerText = getCorrectAnswerText(currentRound);
+  const answerLookup = (id: string) =>
+    currentRound.options.find((option: QuestionOption) => option.id === id)?.text ?? id;
+  const correctOptionIds =
+    currentRound.correctOptionIds && currentRound.correctOptionIds.length > 0
+      ? currentRound.correctOptionIds
+      : currentRound.correctOptionId
+        ? [currentRound.correctOptionId]
+        : [];
+
+  function renderCorrectAnswerPanel() {
+    if (isChoiceResult) {
+      return (
+        <div className={`grid gap-3 md:grid-cols-2 ${
+          currentRound.options?.length === 2 ? "xl:grid-cols-2" :
+          currentRound.options?.length === 3 ? "xl:grid-cols-3" :
+          "xl:grid-cols-4"
+        }`}>
+          {currentRound.options.map((option: QuestionOption, index: number) => {
+            const distribution =
+              responseDistribution.find((item) =>
+                [option.id, option.label, option.text].some(
+                  (value) => String(value).toLowerCase() === item.optionId.toLowerCase(),
+                ),
+              )?.count ?? 0;
+            const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
+            const heightPercent =
+              maxCount > 0 ? Math.max(8, Math.round((distribution / maxCount) * 100)) : 8;
+            const percent =
+              responseCount > 0 ? Math.round((distribution / responseCount) * 100) : 0;
+            const isCorrect = correctOptionIds.includes(option.id);
+            const paletteClassName = [
+              "from-[#F94144] to-[#FF6B6F]",
+              "from-[#277DA1] to-[#4CC9F0]",
+              "from-[#F9C74F] to-[#FFD166]",
+              "from-[#43AA8B] to-[#7FE0C0]",
+            ][index % 4];
+
+            return (
+              <div
+                key={option.id}
+                className={`rounded-[24px] border bg-white p-4 shadow-sm transition ${
+                  isCorrect ? "border-[#95D5B2] ring-4 ring-[#D8F3DC]" : "border-[#1C5C45]/10"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-linear-to-br ${paletteClassName} text-base font-black ${index === 2 ? "text-primary" : "text-white"}`}>
+                    {option.label}
+                  </div>
+                  {isCorrect ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#D8F3DC] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-primary">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Correct
+                    </span>
+                  ) : null}
+                </div>
+
+                <p className="mt-4 line-clamp-2 min-h-12 text-lg font-black text-primary">
+                  {option.text}
+                </p>
+
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-4xl font-black tabular-nums text-primary">{distribution}</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary/45">
+                      votes
+                    </p>
+                  </div>
+                  <p className="text-sm font-black text-primary/60">{percent}%</p>
+                </div>
+
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-primary/8">
+                  <div
+                    className={`h-full rounded-full bg-linear-to-r ${paletteClassName} transition-all duration-500`}
+                    style={{
+                      width: `${heightPercent}%`,
+                      animationDelay: `${index * 90}ms`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (currentRendererType === "ordering") {
+      const sequence = Array.isArray(currentRound.correctAnswers?.sequence)
+        ? currentRound.correctAnswers.sequence
+        : correctOptionIds;
+      return (
+        <div className="rounded-[24px] border border-[#95D5B2] bg-white p-5 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
+            Correct order
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {sequence.map((id: string, index: number) => (
+              <div key={`${id}-${index}`} className="flex items-center gap-3">
+                <div className="flex min-h-14 items-center gap-3 rounded-2xl bg-[#D8F3DC] px-4 py-3 text-primary">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-black text-white">
+                    {index + 1}
+                  </span>
+                  <span className="font-black">{answerLookup(id)}</span>
+                </div>
+                {index < sequence.length - 1 ? (
+                  <ArrowRight className="h-5 w-5 text-primary/35" />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (currentRendererType === "matching") {
+      const pairs = Array.isArray(currentRound.correctAnswers?.pairs)
+        ? currentRound.correctAnswers.pairs
+        : [];
+      const raw = currentRound.rawOptions;
+      const leftOptions = raw?.leftSide || raw?.left || [];
+      const rightOptions = raw?.rightSide || raw?.right || [];
+      return (
+        <div className="grid gap-3 md:grid-cols-2">
+          {pairs.map((pair: { leftId?: string; left?: string; rightId?: string; right?: string }, index: number) => {
+            const leftId = pair.leftId || pair.left || "";
+            const rightId = pair.rightId || pair.right || "";
+            const leftText =
+              leftOptions.find((option: { id: string; text?: string }) => option.id === leftId)?.text ?? leftId;
+            const rightText =
+              rightOptions.find((option: { id: string; text?: string }) => option.id === rightId)?.text ?? rightId;
+
+            return (
+              <div key={`${leftId}-${rightId}-${index}`} className="rounded-[24px] border border-[#95D5B2] bg-white p-4 shadow-sm">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
+                  Pair {index + 1}
+                </p>
+                <div className="mt-3 grid items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+                  <div className="rounded-2xl bg-[#F4FBF6] px-4 py-3 font-black text-primary">
+                    {leftText}
+                  </div>
+                  <ArrowRight className="mx-auto h-5 w-5 text-primary/40" />
+                  <div className="rounded-2xl bg-[#D8F3DC] px-4 py-3 font-black text-primary">
+                    {rightText}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (currentRendererType === "fill") {
+      const acceptedAnswers = Array.isArray(currentRound.correctAnswers?.answers)
+        ? currentRound.correctAnswers.answers
+        : [];
+      return (
+        <div className="grid gap-3 md:grid-cols-2">
+          {acceptedAnswers.map((accepted: string | string[], index: number) => {
+            const answers = Array.isArray(accepted) ? accepted : [String(accepted)];
+            return (
+              <div key={index} className="rounded-[24px] border border-[#95D5B2] bg-white p-4 shadow-sm">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
+                  Blank {index + 1}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {answers.map((answer) => (
+                    <span key={answer} className="rounded-full bg-[#D8F3DC] px-3 py-1.5 text-sm font-black text-primary">
+                      {answer}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (currentRendererType === "rating") {
+      return (
+        <div className="rounded-[24px] border border-[#1C5C45]/10 bg-white p-5 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
+            Rating question
+          </p>
+          <p className="mt-3 text-xl font-black text-primary">
+            Rating questions do not have a fixed correct answer.
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="rounded-[24px] border border-[#95D5B2] bg-white p-5 shadow-sm">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-primary/45">
+          Reference answer
+        </p>
+        <p className="mt-3 whitespace-pre-wrap text-xl font-black leading-8 text-primary">
+          {correctAnswerText}
+        </p>
+      </div>
+    );
+  }
+
+  if (phase === "winner") {
+    return (
+      <div className={`${embedded ? "absolute inset-0 rounded-[2.5rem]" : "fixed inset-0"} z-50 overflow-hidden bg-[radial-gradient(circle_at_top,#D8F3DC_0%,transparent_34%),linear-gradient(180deg,#123426_0%,#1B4F3B_54%,#0F2B21_100%)] p-5 text-white shadow-[0_26px_70px_rgba(17,48,35,0.24)] lg:flex lg:flex-col lg:p-7`}>
+        <div className="pointer-events-none absolute inset-0 opacity-80">
+          {Array.from({ length: 18 }).map((_, index) => (
+            <span
+              key={index}
+              className="absolute h-2 w-2 animate-bounce rounded-full"
+              style={{
+                left: `${8 + ((index * 17) % 84)}%`,
+                top: `${6 + ((index * 29) % 30)}%`,
+                animationDelay: `${index * 80}ms`,
+                backgroundColor: ["#FFD166", "#95D5B2", "#52B788", "#F4F1DE"][index % 4],
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
+              <Crown className="h-4 w-4 text-[#FFD166]" />
+              Winner podium
+            </div>
+            <h1 className="mt-3 text-4xl font-black tracking-tight">Champion results</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
+              {winnerView === "podium"
+                ? "Top performers take the stage first."
+                : "Every participant ranked from first to last."}
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={() => setWinnerView((view) => (view === "podium" ? "rankings" : "podium"))}
+              className="rounded-2xl bg-[#FFD166] px-5 py-3 text-sm font-black text-primary shadow-[0_18px_36px_rgba(0,0,0,0.18)] transition hover:bg-[#FFE08A]"
+            >
+              {winnerView === "podium" ? "Next: all ranks" : "Back to podium"}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Link
+              href={embedded ? `/assessments/${assessment.id}/preview` : `/assessments/${assessment.id}`}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/16"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-6 min-h-0 flex-1">
+          {winnerView === "podium" ? (
+            <div className="flex h-full min-h-0 flex-col justify-end rounded-[32px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
+              <div className="flex items-end justify-center gap-4">
+                {displayLeaderboard.slice(0, 3).map((entry, index: number) => {
+                  const place = index + 1;
+                  const orderClassName =
+                    place === 1 ? "order-2" : place === 2 ? "order-1" : "order-3";
+                  const stepHeight =
+                    place === 1 ? "h-64" : place === 2 ? "h-52" : "h-44";
+                  const stepTone =
+                    place === 1
+                      ? "from-[#FFD166] to-[#F9C74F] text-primary"
+                      : place === 2
+                        ? "from-[#D8F3DC] to-[#95D5B2] text-primary"
+                        : "from-[#74C69D] to-[#40916C] text-white";
+
+                  return (
+                    <div
+                      key={entry.id}
+                      className={`animate-in slide-in-from-bottom-6 fade-in duration-500 w-full max-w-[16rem] ${orderClassName}`}
+                      style={{ animationDelay: `${index * 120}ms` }}
+                    >
+                      <div className="-rotate-3 rounded-xl bg-white px-4 py-2 text-center text-lg font-black text-primary shadow-[0_18px_34px_rgba(0,0,0,0.18)]">
+                        {entry.name}
+                      </div>
+                      <div className="mx-auto mt-4 h-16 w-16 overflow-hidden rounded-3xl ring-4 ring-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
+                        <Avatar
+                          size={64}
+                          name={`${entry.id}-${entry.name}`}
+                          variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
+                          colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                        />
+                      </div>
+                      <div
+                        className={`mt-4 flex w-full flex-col items-center justify-center rounded-t-[34px] bg-linear-to-t ${stepTone} ${stepHeight} shadow-[0_24px_50px_rgba(0,0,0,0.20)]`}
+                      >
+                        {place === 1 ? <Crown className="mb-3 h-9 w-9 text-primary" /> : null}
+                        <p className="text-5xl font-black">{place}</p>
+                        <p className="mt-3 text-sm font-black tabular-nums">
+                          {Number(entry.score || 0).toFixed(2).replace(/\.00$/, '')} pts
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {displayLeaderboard.length > 3 ? (
+                <div className="mx-auto mt-4 w-full max-w-lg rounded-t-[26px] bg-white/10 p-3">
+                  <p className="text-center text-xs font-black uppercase tracking-[0.18em] text-white/65">
+                    Runners-up
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {displayLeaderboard.slice(3, 5).map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2 text-sm font-bold">
+                        <span>#{entry.rank} {entry.name}</span>
+                        <span>{Number(entry.score || 0).toFixed(2).replace(/\.00$/, '')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="h-full min-h-0 rounded-[32px] border border-white/10 bg-white/95 p-5 text-primary shadow-[0_24px_60px_rgba(0,0,0,0.16)]">
+              <div className="grid grid-cols-[4rem_minmax(0,1fr)_7rem] gap-3 px-3 text-xs font-black uppercase tracking-[0.18em] text-primary/50">
+                <span>Rank</span>
+                <span>Participant</span>
+                <span className="text-right">Score</span>
+              </div>
+              <div className="mt-3 grid max-h-[calc(100%-2rem)] gap-2 overflow-y-auto pr-1">
+                {displayLeaderboard.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="grid grid-cols-[4rem_minmax(0,1fr)_7rem] items-center gap-3 rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] px-4 py-3 shadow-sm"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
+                      {entry.rank}
+                    </div>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded-2xl">
+                        <Avatar
+                          size={40}
+                          name={`${entry.id}-${entry.name}`}
+                          variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
+                          colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                        />
+                      </div>
+                      <p className="truncate text-base font-black">{entry.name}</p>
+                    </div>
+                    <p className="text-right text-xl font-black tabular-nums">
+                      {Number(entry.score || 0).toFixed(2).replace(/\.00$/, '')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <ScreenShell
+    <>
+      {phase === "leaderboard" && (
+        <div className={`${embedded ? "absolute" : "fixed"} inset-x-0 top-0 z-[100] h-1.5 bg-primary/10`}>
+          <div
+            className="h-full bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)] shadow-[0_0_10px_rgba(82,183,136,0.8)] transition-all duration-1000 ease-linear"
+            style={{
+              width: `${((LEADERBOARD_DURATION_SECONDS - leaderboardSeconds) / LEADERBOARD_DURATION_SECONDS) * 100}%`,
+            }}
+          />
+        </div>
+      )}
+      <ScreenShell
       eyebrow={isLobbyPhase ? "Real-time Host Flow" : ""}
       title={isLobbyPhase ? assessment.name || "Untitled" : ""}
       description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
+      viewportLocked={!embedded}
       aside={null}
     >
-      <div className="lg:h-full">
+      <div className="h-full min-h-0">
         {phase === "lobby" ? (
           <div
-            className={`grid h-full gap-6 ${
+            className={`grid h-full min-h-0 gap-4 ${
               embedded
-                ? "2xl:grid-cols-[26rem_minmax(0,1fr)]"
+                ? "xl:grid-cols-[24rem_minmax(0,1fr)] 2xl:grid-cols-[26rem_minmax(0,1fr)]"
                 : "xl:grid-cols-[30rem_minmax(0,1fr)]"
             }`}
           >
             {/* Left Column: QR Code & Start Controls */}
-            <div className="relative flex flex-col justify-between overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(180deg,#FFFEF8_0%,#F3F8F1_100%)] p-8 text-primary shadow-[0_22px_55px_rgba(27,67,50,0.10)]">
+            <div className="relative flex min-h-0 flex-col justify-between overflow-hidden rounded-[26px] border border-[#1C5C45]/15 bg-[linear-gradient(180deg,#FFFEF8_0%,#F3F8F1_100%)] p-5 text-primary shadow-[0_22px_55px_rgba(27,67,50,0.10)] 2xl:p-6">
               
               <div className="relative z-10">
-                <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#1C5C45]/15 bg-primary/8 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#1C5C45]/15 bg-primary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary 2xl:mb-6">
                   <QrCode className="h-4 w-4 text-[#95D5B2]" />
                   Join Lobby
                 </div>
                 
-                <h2 className="text-3xl font-extrabold leading-tight tracking-tight">
+                <h2 className="text-2xl font-extrabold leading-tight tracking-tight 2xl:text-3xl">
                   Invite your participants to join
                 </h2>
-                <p className="mt-3 text-[15px] leading-relaxed text-inkd">
+                <p className="mt-2 text-sm leading-relaxed text-inkd 2xl:text-[15px]">
                   Ask participants to scan this QR code or go to the link below to enter the live session.
                 </p>
 
-                <div className="mt-10 flex items-center justify-center">
-                  <div className="animate-float relative rounded-[32px] border border-[#1C5C45]/15 bg-white p-4 shadow-[0_18px_45px_rgba(27,67,50,0.12)]">
-                    <div className="rounded-[24px] bg-white p-4">
+                <div className="mt-5 flex items-center justify-center 2xl:mt-8">
+                  <div className="animate-float relative rounded-[26px] border border-[#1C5C45]/15 bg-white p-3 shadow-[0_18px_45px_rgba(27,67,50,0.12)]">
+                    <div className="rounded-[20px] bg-white p-3">
                       <QRCodeSVG
                         value={participantUrl}
                         title={`Join ${assessment.name}`}
-                        size={180}
+                        size={embedded ? 132 : 180}
                         bgColor="#FFFFFF"
                         fgColor="#113023"
                       />
@@ -327,8 +720,8 @@ export function PresentRealTimeScreen({
                 </div>
               </div>
 
-              <div className="relative z-10 mt-10 space-y-4">
-                <div className="flex items-center justify-between rounded-2xl border border-[#1C5C45]/15 bg-white p-3 shadow-sm">
+              <div className="relative z-10 mt-5 space-y-3 2xl:mt-8">
+                <div className="flex items-center justify-between rounded-2xl border border-[#1C5C45]/15 bg-white p-2.5 shadow-sm">
                   <span className="truncate px-2 text-sm font-medium text-primary">
                     {participantUrl}
                   </span>
@@ -347,9 +740,9 @@ export function PresentRealTimeScreen({
                   data-flow-event={realtimeEvents.startQuestion}
                   onClick={startSession}
                   disabled={!hasParticipants}
-                  className="group relative w-full overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-4 py-6 text-lg font-bold text-white shadow-[0_18px_36px_rgba(249,65,68,0.20)] transition-all hover:scale-[1.02] hover:shadow-[0_22px_45px_rgba(249,65,68,0.26)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100"
+                  className="group relative w-full overflow-hidden rounded-2xl bg-primary px-4 py-4 text-base font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.22)] transition-all hover:scale-[1.02] hover:bg-[#174735] hover:shadow-[0_22px_45px_rgba(17,48,35,0.28)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100 2xl:py-5"
                 >
-                  <div className="absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
+                  <div className="absolute inset-0 bg-white/12 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
                   <PlayCircle className="mr-2 h-6 w-6" />
                   {hasParticipants ? "Start Session Now" : "Waiting for participants"}
                 </Button>
@@ -357,8 +750,8 @@ export function PresentRealTimeScreen({
             </div>
 
             {/* Right Column: Participant Roster */}
-            <div className="flex h-full flex-col rounded-[32px] border border-border bg-white/80 shadow-[0_18px_45px_rgba(27,67,50,0.08)] backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b border-border/50 px-8 py-6">
+            <div className="flex h-full min-h-0 flex-col rounded-[26px] border border-border bg-white/80 shadow-[0_18px_45px_rgba(27,67,50,0.08)] backdrop-blur-sm">
+              <div className="flex items-center justify-between border-b border-border/50 px-5 py-4 2xl:px-6">
                 <h3 className="text-xl font-bold text-ink">Lobby Roster</h3>
                 <div className="flex items-center gap-4">
                   <Button
@@ -378,7 +771,7 @@ export function PresentRealTimeScreen({
                   </div>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-8">
+              <div className="min-h-0 flex-1 overflow-hidden p-5 2xl:p-6">
                 {activeParticipants.length === 0 ? (
                   <div className="flex h-full flex-col items-center justify-center space-y-4 text-center">
                     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/5">
@@ -390,26 +783,34 @@ export function PresentRealTimeScreen({
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {activeParticipants.map((p) => {
+                  <div className="grid grid-cols-1 gap-2.5 2xl:grid-cols-2">
+                    {activeParticipants.map((p, index) => {
                       const colors = getAvatarColors(p.id);
                       return (
                         <div
                           key={p.id}
-                          className="group flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-white p-4 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md animate-in fade-in zoom-in duration-300"
+                          className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#1C5C45]/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] px-3.5 py-3 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-1 duration-300 hover:border-primary/25 hover:shadow-md"
                         >
-                          <Avatar
-                            size={56}
-                            name={p.id}
-                            variant={getAvatarVariant(p.id)}
-                            colors={colors}
-                          />
-                          <span className="truncate font-semibold text-ink mt-2 w-full text-center">
-                            {p.name || "Anonymous"}
-                          </span>
-                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
-                            Connected
-                          </span>
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/8 text-xs font-bold text-primary">
+                            {index + 1}
+                          </div>
+                          <div className="shrink-0 rounded-full border border-white bg-white p-0.5 shadow-sm">
+                            <Avatar
+                              size={38}
+                              name={p.id}
+                              variant={getAvatarVariant(p.id)}
+                              colors={colors}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-bold text-ink">
+                              {p.name || "Anonymous"}
+                            </span>
+                            <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                              Connected
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
@@ -516,73 +917,34 @@ export function PresentRealTimeScreen({
         ) : null}
 
         {phase === "correct" ? (
-          <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 lg:h-full lg:min-h-0 lg:justify-center">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#43AA8B_0%,#7FE0C0_100%)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
                   <CheckCircle2 className="h-4 w-4" />
                   {currentRound.correctOptionIds && currentRound.correctOptionIds.length > 1 ? "Correct answers" : "Correct answer"}
                 </div>
-                <h2 className="mt-4 max-w-4xl text-2xl font-bold text-primary">
+                <h2 className="mt-3 max-w-4xl text-3xl font-black leading-tight text-primary">
                   {currentRound.question}
                 </h2>
+                <p className="mt-2 text-sm font-semibold text-inkd">
+                  {responseCount} {responseCount === 1 ? "participant" : "participants"} answered this round.
+                </p>
               </div>
               <Button
                 type="button"
                 data-flow-event={realtimeEvents.showRank}
                 onClick={showLeaderboard}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(17,48,35,0.18)] transition hover:bg-[#174735]"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
-              <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
-                  {currentRound.options.map((option: QuestionOption, index: number) => {
-                    const distribution =
-                      responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
-                    const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
-                    const heightPercent =
-                      maxCount > 0 ? Math.max(18, Math.round((distribution / maxCount) * 100)) : 18;
-                    const isCorrect = currentRound.correctOptionIds 
-                      ? currentRound.correctOptionIds.includes(option.id) 
-                      : option.id === currentRound.correctOptionId;
-                    const paletteClassName = [
-                      "from-[#F94144] to-[#FF6B6F]",
-                      "from-[#277DA1] to-[#4CC9F0]",
-                      "from-[#F9C74F] to-[#FFD166]",
-                      "from-[#43AA8B] to-[#7FE0C0]",
-                    ][index % 4];
-
-                    return (
-                      <div key={option.id} className="flex h-full min-w-0 flex-col items-center gap-3">
-                        <div className="shrink-0 text-lg font-bold text-primary">{distribution}</div>
-                        <div className="flex min-h-0 flex-1 w-full items-end justify-center">
-                          <div
-                            className={`rt-bar-grow flex w-full max-w-32 flex-col justify-end rounded-t-3xl bg-linear-to-t ${paletteClassName} px-3 py-4 text-center shadow-[0_16px_30px_rgba(27,67,50,0.12)] ${isCorrect ? "ring-4 ring-[#D8F7EC]" : ""}`}
-                            style={{
-                              height: `${heightPercent}%`,
-                              animationDelay: `${index * 90}ms`,
-                            }}
-                          >
-                            {isCorrect ? (
-                              <span className="mb-2 inline-flex self-center rounded-full bg-white/80 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-                                Correct
-                              </span>
-                            ) : null}
-                            <span className={`text-sm font-black ${index === 2 ? "text-primary" : "text-white"}`}>
-                              {option.label}
-                            </span>
-                          </div>
-                        </div>
-                        <p className="line-clamp-3 min-h-15 shrink-0 text-center text-sm font-semibold leading-5 text-primary">
-                          {option.text}
-                        </p>
-                      </div>
-                    );
-                  })}
+            <div className="min-h-0 rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
+              <div className="rounded-[26px] bg-[linear-gradient(135deg,#F8FBF7_0%,#EEF7F1_100%)] p-4 sm:p-5">
+                {renderCorrectAnswerPanel()}
               </div>
             </div>
           </div>
@@ -603,15 +965,6 @@ export function PresentRealTimeScreen({
                   Scores are calculated from question points and live speed bonus.
                 </p>
               </div>
-              <Button
-                type="button"
-                data-flow-event={questionIndex === rounds.length - 1 ? realtimeEvents.showFinalRank : realtimeEvents.startQuestion}
-                onClick={advanceToNextQuestion}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]" variant="ghost"
-              >
-                {questionIndex === rounds.length - 1 ? "Show winner podium" : "Next question"}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
             </div>
 
             <div className="rt-card-pop h-[34rem] overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(135deg,#FFFEF8_0%,#F5F8F0_55%,#FFF6D8_100%)] p-5 text-primary shadow-[0_24px_65px_rgba(27,67,50,0.12)]">
@@ -734,94 +1087,8 @@ export function PresentRealTimeScreen({
             </div>
           </div>
         ) : null}
-
-        {phase === "winner" ? (
-          <div className="rounded-4xl border border-border bg-[radial-gradient(circle_at_top,rgba(249,199,79,0.3),transparent_30%),linear-gradient(180deg,#16352A_0%,#1E4738_55%,#245C47_100%)] p-6 text-white shadow-sm lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:p-8">
-            <div className="flex flex-col items-center text-center">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
-                <Crown className="h-4 w-4 text-[#FFD166]" />
-                Winner podium
-              </div>
-              <h1 className="mt-4 text-4xl font-black tracking-tight">Champion results</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/70">
-                Final standings are locked. Top 3 participants take the podium.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-6 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1fr)_18rem]">
-              <div className="rounded-[32px] border border-white/10 bg-white/6 p-5 backdrop-blur-sm lg:flex lg:min-h-0 lg:flex-col lg:justify-end">
-                <div className="grid items-end gap-4 md:grid-cols-3">
-                  {displayLeaderboard.slice(0, 3).map((entry, index: number) => {
-                    const place = index + 1;
-                    const orderClassName =
-                      place === 1 ? "md:order-2" : place === 2 ? "md:order-1" : "md:order-3";
-                    const stepHeight =
-                      place === 1 ? "h-56" : place === 2 ? "h-44" : "h-36";
-                    const stepTone =
-                      place === 1
-                        ? "from-[#F9C74F] to-[#FFD166] text-primary"
-                        : place === 2
-                          ? "from-[#D9E6F2] to-[#F4F8FB] text-primary"
-                          : "from-[#E8B179] to-[#F4CC9C] text-primary";
-
-                    return (
-                      <div
-                        key={entry.id}
-                        className={`flex flex-col items-center ${orderClassName}`}
-                      >
-                        <div className="mb-4 flex flex-col items-center text-center">
-                          <div className="h-16 w-16 overflow-hidden rounded-3xl ring-2 ring-white/25 shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
-                            <Avatar
-                              size={64}
-                              name={`${entry.id}-${entry.name}`}
-                              variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                              colors={getAvatarColors(`${entry.id}-${entry.name}`)}
-                            />
-                          </div>
-                          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                            {place === 1 ? "Champion" : `Place ${place}`}
-                          </p>
-                          <p className="mt-2 text-xl font-bold">{entry.name}</p>
-                          <p className="mt-1 text-sm font-semibold text-[#D8F3DC]">{entry.score} pts</p>
-                        </div>
-
-                        <div
-                          className={`flex w-full max-w-[13rem] flex-col items-center justify-center rounded-t-[32px] bg-linear-to-t ${stepTone} ${stepHeight} shadow-[0_24px_50px_rgba(0,0,0,0.16)]`}
-                        >
-                          {place === 1 ? (
-                            <Crown className="mb-3 h-8 w-8 text-primary" />
-                          ) : null}
-                          <p className="text-4xl font-black">{place}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex flex-col justify-end">
-                <div className="rounded-[30px] border border-white/10 bg-white/8 p-5 backdrop-blur-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                    Session closed
-                  </p>
-                  <h2 className="mt-3 text-2xl font-bold">Back to assessment</h2>
-                  <p className="mt-3 text-sm leading-6 text-white/70">
-                    Return to the assessment detail page to review the setup or launch another session.
-                  </p>
-
-                  <Link
-                    href={embedded ? `/assessments/${assessment.id}/preview` : `/assessments/${assessment.id}`}
-                    className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01]"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to assessment
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </div>
     </ScreenShell>
+    </>
   );
 }

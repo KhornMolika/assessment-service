@@ -195,6 +195,7 @@ export function StartSelfPacedScreen({
       eyebrow={step === "entry" ? "Self-paced Participant Flow" : ""}
       title={step === "entry" ? assessment.name || "Untitled" : ""}
       description={step === "entry" ? assessment.description! : ""}
+      viewportLocked={step === "quiz"}
       aside={null}
     >
       <div className="flex flex-1 min-h-0 flex-col">
