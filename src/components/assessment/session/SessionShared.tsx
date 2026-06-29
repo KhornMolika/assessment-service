@@ -261,18 +261,18 @@ export function QuestionOptionButton({
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`rt-answer-tile flex w-full items-center gap-4 rounded-[26px] border px-5 py-5 text-left transition ${
+        className={`rt-answer-tile flex w-full items-center gap-3 sm:gap-4 rounded-[26px] border px-3 py-3 sm:px-5 sm:py-5 text-left transition ${
           palette.tileClassName
         } ${selected ? palette.selectedClassName : ""} ${
           disabled ? "cursor-not-allowed opacity-65" : ""
         }`}
       >
         <span
-          className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-black ${palette.badgeClassName}`}
+          className={`inline-flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl text-sm sm:text-base font-black ${palette.badgeClassName}`}
         >
           {option.label}
         </span>
-        <span className="text-base font-bold leading-6 sm:text-lg">{option.text}</span>
+        <span className="text-sm font-bold leading-tight sm:leading-6 sm:text-lg">{option.text}</span>
       </Button>
     );
   }
