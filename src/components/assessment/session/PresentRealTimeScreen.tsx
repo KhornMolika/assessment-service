@@ -666,7 +666,7 @@ export function PresentRealTimeScreen({
   return (
     <>
       {phase === "leaderboard" && (
-        <div className={`${embedded ? "absolute" : "fixed"} inset-x-0 top-0 z-[100] h-1.5 bg-primary/10`}>
+        <div className="fixed inset-x-0 top-0 z-[100] h-1.5 bg-primary/10">
           <div
             className="h-full bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)] shadow-[0_0_10px_rgba(82,183,136,0.8)] transition-all duration-1000 ease-linear"
             style={{
