@@ -208,6 +208,15 @@ export function PresentRealTimeScreen({
     timerSeconds,
   ]);
 
+  // Auto-advance from reveal to leaderboard after 7 seconds
+  useEffect(() => {
+    if (phase !== "reveal") return;
+    const timeoutId = window.setTimeout(() => {
+      showLeaderboard();
+    }, 7000);
+    return () => window.clearTimeout(timeoutId);
+  }, [phase]);
+
 
   useEffect(() => {
     if (previousPhaseRef.current !== phase) {
