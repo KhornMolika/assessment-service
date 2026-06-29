@@ -267,12 +267,15 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
             return (
               <div 
                 key={opt.id} 
-                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm
+                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm cursor-pointer touch-none
                   ${getTargetClasses("left", opt.id)}
                   ${isConnected && !drawing ? "border-emerald-200" : "border-border/60"}
                 `}
+                onPointerDown={(e) => handlePointerDown(e, opt.id, "left")}
+                onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "left" })}
+                onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
               >
-                <div className="flex flex-1 items-center gap-3 p-4">
+                <div className="flex flex-1 items-center gap-3 p-4 pointer-events-none">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-primary/70">
                     {index + 1}
                   </span>
@@ -281,17 +284,14 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
                 
                 {/* Connection Handle (Right side of left card) */}
                 <div 
-                  className="flex items-center justify-center border-l-2 border-border/30 px-3 cursor-pointer touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, opt.id, "left")}
-                  onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "left" })}
-                  onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
+                  className="flex items-center justify-center border-l-2 border-border/30 px-3 pointer-events-none"
                 >
                   <div 
                     ref={el => { leftRefs.current[opt.id] = el; }}
                     className={`h-5 w-5 rounded-full border-4 transition-all duration-300 flex items-center justify-center
                       ${isActive ? "bg-emerald-500 border-emerald-300 scale-125 shadow-md" : 
                         isConnected ? "bg-emerald-500 border-emerald-200" : 
-                        "bg-white border-primary/30 hover:border-emerald-400 hover:bg-emerald-50 hover:scale-110"
+                        "bg-white border-primary/30 group-hover:border-emerald-400 group-hover:bg-emerald-50 group-hover:scale-110"
                       }
                     `}
                   >
@@ -314,24 +314,24 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
             return (
               <div 
                 key={opt.id} 
-                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm
+                className={`flex items-stretch rounded-2xl border-2 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm cursor-pointer touch-none
                   ${getTargetClasses("right", opt.id)}
                   ${isConnected && !drawing ? "border-emerald-200" : "border-border/60"}
                 `}
+                onPointerDown={(e) => handlePointerDown(e, opt.id, "right")}
+                onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "right" })}
+                onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
               >
                 {/* Connection Handle (Left side of right card) */}
                 <div 
-                  className="flex items-center justify-center border-r-2 border-border/30 px-3 cursor-pointer touch-none"
-                  onPointerDown={(e) => handlePointerDown(e, opt.id, "right")}
-                  onPointerEnter={() => setHoveredTarget({ id: opt.id, side: "right" })}
-                  onPointerLeave={() => setHoveredTarget(prev => prev?.id === opt.id ? null : prev)}
+                  className="flex items-center justify-center border-r-2 border-border/30 px-3 pointer-events-none"
                 >
                   <div 
                     ref={el => { rightRefs.current[opt.id] = el; }}
                     className={`h-5 w-5 rounded-full border-4 transition-all duration-300 flex items-center justify-center
                       ${isActive ? "bg-emerald-500 border-emerald-300 scale-125 shadow-md" : 
                         isConnected ? "bg-emerald-500 border-emerald-200" : 
-                        "bg-white border-primary/30 hover:border-emerald-400 hover:bg-emerald-50 hover:scale-110"
+                        "bg-white border-primary/30 group-hover:border-emerald-400 group-hover:bg-emerald-50 group-hover:scale-110"
                       }
                     `}
                   >
@@ -339,7 +339,7 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
                   </div>
                 </div>
 
-                <div className="flex flex-1 items-center gap-3 p-4">
+                <div className="flex flex-1 items-center gap-3 p-4 pointer-events-none">
                   <p className="text-sm font-semibold text-primary">{opt.text}</p>
                 </div>
               </div>
