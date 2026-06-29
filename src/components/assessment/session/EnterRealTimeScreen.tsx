@@ -314,9 +314,9 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "active" ? (
-          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-4">
-            <div className="rt-card-pop overflow-hidden rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
-              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-4 text-white sm:p-5">
+          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-1 sm:py-4">
+            <div className="rt-card-pop overflow-hidden rounded-[20px] sm:rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
+              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] p-3 sm:p-5 text-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
                     <Radio className="h-4 w-4 text-[#95D5B2]" />
@@ -327,13 +327,13 @@ export function EnterRealTimeScreen({
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  <h2 className="max-w-3xl text-xl font-bold leading-tight tracking-tight sm:text-2xl">
+                <div className="mt-3 sm:mt-4 flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+                  <h2 className="max-w-3xl text-lg font-bold leading-tight tracking-tight sm:text-2xl">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {currentRound.question || (currentRound as any).questionText}
                   </h2>
                   <div
-                    className={`shrink-0 rounded-3xl border border-white/15 bg-white/10 px-4 py-3 text-right backdrop-blur ${
+                    className={`shrink-0 rounded-2xl sm:rounded-3xl border border-white/15 bg-white/10 px-3 py-2 sm:px-4 sm:py-3 text-right backdrop-blur ${
                       timerSeconds <= 5 ? "rt-timer-critical" : ""
                     }`}
                   >
@@ -343,7 +343,7 @@ export function EnterRealTimeScreen({
                         Time left
                       </span>
                     </div>
-                    <p className="mt-1 text-3xl font-black">{timerSeconds}s</p>
+                    <p className="mt-1 text-2xl sm:text-3xl font-black">{timerSeconds}s</p>
                   </div>
                 </div>
 
@@ -359,7 +359,7 @@ export function EnterRealTimeScreen({
                 </div>
               </div>
 
-              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-4 sm:p-5">
+              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-3 sm:p-5">
                 <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
                   <QuestionRenderer
                     question={currentRound}
@@ -371,14 +371,14 @@ export function EnterRealTimeScreen({
               </div>
             </div>
 
-            <div className="mx-auto mt-4 w-full max-w-md">
+            <div className="mx-auto mt-2 sm:mt-4 w-full max-w-md">
               {submitted ? (
-                <div className="flex items-center justify-center gap-2 rounded-2xl bg-[#113023] px-6 py-4 text-center text-base font-bold text-white shadow-[0_18px_40px_rgba(17,48,35,0.18)]">
+                <div className="flex items-center justify-center gap-2 rounded-2xl bg-[#113023] px-4 py-3 sm:px-6 sm:py-4 text-center text-sm sm:text-base font-bold text-white shadow-[0_18px_40px_rgba(17,48,35,0.18)]">
                   <CheckCircle2 className="h-5 w-5 text-emerald-300" />
                   Answer submitted! Waiting for results…
                 </div>
               ) : hasTimedOut ? (
-                <div className="flex items-center justify-center gap-2 rounded-2xl border border-[#FFD166]/60 bg-[#FFF6CC] px-6 py-4 text-center text-base font-bold text-[#113023] shadow-sm">
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-[#FFD166]/60 bg-[#FFF6CC] px-4 py-3 sm:px-6 sm:py-4 text-center text-sm sm:text-base font-bold text-[#113023] shadow-sm">
                   <Clock3 className="h-5 w-5" />
                   Time is up. Waiting for results…
                 </div>
@@ -387,7 +387,7 @@ export function EnterRealTimeScreen({
                   type="button"
                   onClick={handleSubmit}
                   disabled={!hasAnswerResponse(currentRound, answerValue)}
-                  className="w-full rounded-2xl bg-gradient-to-r from-[#FFD166] to-[#F9C74F] px-6 py-4 text-base font-bold text-[#113023] shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
+                  className="w-full rounded-2xl bg-gradient-to-r from-[#FFD166] to-[#F9C74F] px-4 py-3 sm:px-6 sm:py-4 text-sm sm:text-base font-bold text-[#113023] shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                 >
                   Submit Answer
                 </button>
