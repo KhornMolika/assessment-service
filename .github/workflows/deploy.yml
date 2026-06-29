@@ -55,17 +55,17 @@ jobs:
             sudo docker rm ${{ env.SERVICE_NAME }} || true
             
             # Write secrets to an env file on the VM
-            echo \"API_URL=https://assessment-backend.molika.app/api/v1\" > /opt/assessment-frontend.env
-            echo \"API_CLIENT_ID=\${{ secrets.API_CLIENT_ID }}\" >> /opt/assessment-frontend.env
-            echo \"API_CLIENT_SECRET=\${{ secrets.API_CLIENT_SECRET }}\" >> /opt/assessment-frontend.env
-            echo \"METABASE_SITE_URL=https://metabase.molika.app\" >> /opt/assessment-frontend.env
-            echo \"METABASE_SECRET_KEY=\${{ secrets.METABASE_SECRET_KEY }}\" >> /opt/assessment-frontend.env
-            echo \"METABASE_DASHBOARD_ID=2\" >> /opt/assessment-frontend.env
+            echo \"API_URL=https://assessment-backend.molika.app/api/v1\" > ./assessment-frontend.env
+            echo \"API_CLIENT_ID=\${{ secrets.API_CLIENT_ID }}\" >> ./assessment-frontend.env
+            echo \"API_CLIENT_SECRET=\${{ secrets.API_CLIENT_SECRET }}\" >> ./assessment-frontend.env
+            echo \"METABASE_SITE_URL=https://metabase.molika.app\" >> ./assessment-frontend.env
+            echo \"METABASE_SECRET_KEY=\${{ secrets.METABASE_SECRET_KEY }}\" >> ./assessment-frontend.env
+            echo \"METABASE_DASHBOARD_ID=2\" >> ./assessment-frontend.env
 
             sudo docker run -d --name ${{ env.SERVICE_NAME }} \
               --restart unless-stopped \
               --network traefik-public \
-              --env-file /opt/assessment-frontend.env \
+              --env-file ./assessment-frontend.env \
               --label 'traefik.enable=true' \
               --label 'traefik.http.routers.frontend.rule=Host(\`assessment-service.molika.app\`)' \
               --label 'traefik.http.routers.frontend.entrypoints=websecure' \
