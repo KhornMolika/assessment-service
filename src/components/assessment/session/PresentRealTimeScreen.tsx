@@ -298,8 +298,7 @@ export function PresentRealTimeScreen({
   const currentRendererType = normalizeQuestionRendererType(currentRound.type);
   const isChoiceResult =
     currentRendererType === "single" ||
-    currentRendererType === "multiple" ||
-    currentRendererType === "boolean";
+    currentRendererType === "multiple";
   const correctAnswerText = getCorrectAnswerText(currentRound);
   const answerLookup = (id: string) =>
     currentRound.options.find((option: QuestionOption) => option.id === id)?.text ?? id;
