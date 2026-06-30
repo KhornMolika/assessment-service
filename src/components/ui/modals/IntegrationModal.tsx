@@ -43,7 +43,9 @@ export function IntegrationModal({
   description,
 }: IntegrationModalProps) {
   const configCode = `/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
@@ -117,7 +119,7 @@ export default nextConfig;`;
           <h4 className="font-semibold text-sm text-slate-800">1. Webpack / Next.js Configuration</h4>
           <div className="relative rounded-lg overflow-hidden border border-zinc-800 bg-[#1e1e1e] shadow-lg">
             <div className="flex items-center px-4 py-2 bg-[#2d2d2d] border-b border-zinc-800/50">
-              <span className="text-xs font-medium text-zinc-400">next.config.js</span>
+              <span className="text-xs font-medium text-zinc-400">next.config.ts</span>
             </div>
             <CopyButton text={configCode} />
             <div className="text-[13px] leading-relaxed">
