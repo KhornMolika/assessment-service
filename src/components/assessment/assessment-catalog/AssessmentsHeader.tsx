@@ -43,9 +43,10 @@ export default function AssessmentsHeader({
       <IntegrationModal
         open={integrationOpen}
         onClose={() => setIntegrationOpen(false)}
-        componentName="AssessmentBuilder"
-        componentExport="AssessmentBuilder"
-        description="A complete multi-step wizard for creating and configuring assessments."
+        componentName="Assessment Dashboard"
+        componentExport="AssessmentDashboard"
+        description="Embed the Assessment dashboard into your application to allow users to view and manage assessments."
+        embedPath="/embed/assessments"
       />
     </>
   );

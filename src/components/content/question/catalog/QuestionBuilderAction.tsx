@@ -22,9 +22,10 @@ export default function QuestionBuilderAction() {
       <IntegrationModal
         open={integrationOpen}
         onClose={() => setIntegrationOpen(false)}
-        componentName="QuestionBuilder"
-        componentExport="QuestionBuilder"
-        description="The individual builder wizard for authoring new questions."
+        componentName="Questions Catalog"
+        componentExport="QuestionsCatalog"
+        description="Embed the Questions catalog into your application."
+        embedPath="/embed/questions"
       />
     </>
   );
