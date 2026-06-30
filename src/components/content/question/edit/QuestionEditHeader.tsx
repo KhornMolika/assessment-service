@@ -15,7 +15,7 @@ export default function QuestionEditHeader({
       title="Edit Question"
       actions={
         <div className="flex shrink-0 items-center gap-3">
-          <TopicSelector />
+          <TopicSelector className="embed-only-element" />
           <Button
             type="submit"
             form={formId}

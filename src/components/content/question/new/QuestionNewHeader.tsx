@@ -20,7 +20,7 @@ export default function QuestionNewHeader({
       description="Add a new question to your catalog with clear response rules, grading guidance, and metadata. It will be available for all your assessments immediately."
       actions={
         <div className="flex shrink-0 items-center gap-3">
-          <TopicSelector />
+          <TopicSelector className="embed-only-element" />
           <Link
             href="/questions"
             className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted"
