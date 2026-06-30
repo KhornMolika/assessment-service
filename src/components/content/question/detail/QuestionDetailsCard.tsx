@@ -24,7 +24,7 @@ export default function QuestionDetailsCard({ question }: { question: ApiQuestio
       <CardContent className="space-y-4">
         {/* Topic */}
         <div className="flex items-center gap-3">
-          <Layers className="h-5 w-5 text-indigo-500" />
+          <Layers className="h-5 w-5 text-primary" />
           <div>
             <div className="text-xs font-medium text-slate-500">Topic</div>
             <div className="text-sm font-medium text-slate-900">

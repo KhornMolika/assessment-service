@@ -222,7 +222,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                               size="icon" 
                               onClick={() => openDuplicateModal(topic)} 
                               title="Duplicate topic"
-                              className="h-8 w-8 rounded-lg text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                              className="h-8 w-8 rounded-lg text-primary hover:text-primary hover:bg-primary/5 transition-colors"
                             >
                               <Copy className="h-4.5 w-4.5" />
                             </Btn>

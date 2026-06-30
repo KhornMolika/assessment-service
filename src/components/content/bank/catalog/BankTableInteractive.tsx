@@ -132,7 +132,7 @@ export default function BankTableInteractive({
                     </Link>
                     <Link
                       href={`/banks/${bank.id}/duplicate`}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-primary transition hover:bg-primary/5"
                     >
                       <Copy className="h-4 w-4" /> Duplicate
                     </Link>

@@ -76,7 +76,7 @@ export default function AssessmentDetailInformationCard({
         </CardHeader>
         <CardContent className="space-y-4 flex-1">
           <div className="flex items-center gap-3">
-            <Type className="h-5 w-5 text-indigo-500" />
+            <Type className="h-5 w-5 text-primary" />
             <div>
               <div className="text-xs font-medium text-slate-500">Name</div>
               <div className="text-sm font-medium text-slate-900">
@@ -140,7 +140,7 @@ export default function AssessmentDetailInformationCard({
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 flex-1">
           <div className="flex items-center gap-3">
-            <Settings2 className="h-5 w-5 text-indigo-500" />
+            <Settings2 className="h-5 w-5 text-primary" />
             <div>
               <div className="text-xs font-medium text-slate-500">Delivery Mode</div>
               <div className="text-sm font-medium text-slate-900 capitalize">
@@ -170,7 +170,7 @@ export default function AssessmentDetailInformationCard({
           </div>
 
           <div className="flex items-center gap-3">
-            <Hash className="h-5 w-5 text-purple-500" />
+            <Hash className="h-5 w-5 text-primary" />
             <div>
               <div className="text-xs font-medium text-slate-500">Fixed Questions Count</div>
               <div className="text-sm font-medium text-slate-900">

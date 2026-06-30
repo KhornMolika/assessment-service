@@ -32,7 +32,7 @@ export default function BankFormDetailsCard({
     <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
       <CardHeader className="bg-slate-50/50 border-b border-slate-100 rounded-t-2xl">
         <CardTitle className="text-lg text-slate-800 flex items-center gap-2">
-          <FolderOpen className="h-5 w-5 text-indigo-500" />
+          <FolderOpen className="h-5 w-5 text-primary" />
           {title}
         </CardTitle>
         {description ? <CardDescription>{description}</CardDescription> : null}
@@ -52,7 +52,7 @@ export default function BankFormDetailsCard({
               onChange={(event) => onChange("name", event.target.value)}
               required
               disabled={disabled}
-              className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
             />
           </div>
 
@@ -66,7 +66,7 @@ export default function BankFormDetailsCard({
               value={formData.description || ""}
               onChange={(event) => onChange("description", event.target.value)}
               disabled={disabled}
-              className="w-full flex-1 min-h-[120px] resize-none rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full flex-1 min-h-[120px] resize-none rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
             />
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function BankFormDetailsCard({
               value={formData.visibility}
               onChange={(event) => onChange("visibility", event.target.value as BankVisibility)}
               disabled={disabled}
-              className="w-full rounded-xl border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full rounded-xl border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
             >
               <option value="PRIVATE">Private</option>
               <option value="SHARED">Shared</option>
@@ -105,7 +105,7 @@ export default function BankFormDetailsCard({
               value={formData.tags}
               onChange={(event) => onChange("tags", event.target.value)}
               disabled={disabled}
-              className="w-full rounded-xl border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+              className="w-full rounded-xl border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
             />
             <p className="text-xs text-slate-500 mt-1">Separate tags with commas.</p>
           </div>

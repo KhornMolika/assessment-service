@@ -151,7 +151,7 @@ export default function QuestionOptionsAndAnswers({ question }: { question: ApiQ
     
     // Highlight the template placeholders
     const formattedTemplate = template.replace(/\[blank_\d+\]/g, (match: string) => {
-      return `<span class="bg-indigo-100 text-indigo-700 font-bold px-1 rounded">${match}</span>`;
+      return `<span class="bg-primary/10 text-primary font-bold px-1 rounded">${match}</span>`;
     });
 
     return (

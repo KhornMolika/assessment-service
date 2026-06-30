@@ -35,7 +35,7 @@ function getQuestionTypeTone(type: string) {
     case "ESSAY":
       return "bg-rose-100 text-rose-700";
     case "MATCHING":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-primary/10 text-primary";
     case "ORDERING":
       return "bg-fuchsia-100 text-fuchsia-700";
     case "FILL_IN_THE_BLANK":
