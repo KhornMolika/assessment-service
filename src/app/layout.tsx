@@ -20,11 +20,13 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from 'sonner';
+import EmbedDetector from "@/src/components/ui/layout/EmbedDetector";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>
+        <EmbedDetector />
         {children}
         <Toaster position="top-center" richColors />
       </body>
