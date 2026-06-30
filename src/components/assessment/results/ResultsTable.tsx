@@ -7,6 +7,8 @@ import type { ResultsRow } from "./results.types";
 import { getGradeTone, getOutcomeBadge } from "./results.utils";
 import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 
+import { useRouter } from "next/navigation";
+
 export function ResultsTable({
   rows,
   detailBackHref,
@@ -14,6 +16,8 @@ export function ResultsTable({
   rows: ResultsRow[];
   detailBackHref?: string;
 }) {
+  const router = useRouter();
+
   if (rows.length === 0) {
     return (
       <StateMessage
@@ -34,12 +38,20 @@ export function ResultsTable({
           <TableHead>Status</TableHead>
           <TableHead>Time</TableHead>
           <TableHead>Submitted</TableHead>
-          <TableHead className="text-center">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {rows.map((result) => (
-          <TableRow key={result.sheetId} className="hover:bg-muted/30">
+          <TableRow 
+            key={result.sheetId} 
+            className="hover:bg-muted/30 cursor-pointer"
+            onClick={() => {
+              const href = detailBackHref
+                ? `/results/${result.sheetId}?backHref=${encodeURIComponent(detailBackHref)}`
+                : `/results/${result.sheetId}`;
+              router.push(href);
+            }}
+          >
             <TableCell>
               <div className="font-semibold text-primary">{result.participantDisplayName}</div>
             </TableCell>
@@ -98,22 +110,6 @@ export function ResultsTable({
             </TableCell>
             <TableCell>
               <span className="text-sm text-inkd">{result.submittedAt}</span>
-            </TableCell>
-            <TableCell>
-              <div className="flex justify-center">
-                <ActionMenu>
-                  <Link
-                    href={
-                      detailBackHref
-                        ? `/results/${result.sheetId}?backHref=${encodeURIComponent(detailBackHref)}`
-                        : `/results/${result.sheetId}`
-                    }
-                    className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
-                  >
-                    <Eye className="h-4 w-4" /> View Details
-                  </Link>
-                </ActionMenu>
-              </div>
             </TableCell>
           </TableRow>
         ))}
