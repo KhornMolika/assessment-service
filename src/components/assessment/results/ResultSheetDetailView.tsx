@@ -264,7 +264,6 @@ export default function ResultSheetDetailView({
               </Badge>
             </div>
             <h1 className="mt-4 text-3xl font-bold text-primary">{data.participant.display_name}</h1>
-            <p className="mt-2 text-sm text-inkd">{data.assessment.name || "Untitled"}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button

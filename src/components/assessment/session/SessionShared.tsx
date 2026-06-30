@@ -424,7 +424,6 @@ export function ShareAnswerSheetPanel({
   const getHref = (name: string) => {
     switch (name) {
       case "Facebook":
-      case "Messenger":
         return `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
       case "Telegram":
         return `https://t.me/share/url?url=${encodedUrl}`;
