@@ -9,6 +9,7 @@ import { fetchTopics } from "@/src/actions/topic-actions";
 import QuestionBuilderAction from "@/src/components/content/question/catalog/QuestionBuilderAction";
 import QuestionsCatalogToolbar from "@/src/components/content/question/catalog/QuestionsCatalogToolbar";
 import QuestionsTableInteractive from "@/src/components/content/question/catalog/QuestionsTableInteractive";
+import { TopicSelector } from "@/src/components/topic-selector";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { QuestionBank, Question } from "@/src/types/api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
@@ -151,9 +152,21 @@ export function QuestionsPageContent() {
       />
 
       <Card className="overflow-hidden embed-transparent-card">
-        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle>Question catalog</CardTitle>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <TopicSelector />
+            <QuestionBuilderAction />
+            <Link
+              href="/questions/new"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Question</span>
+              <span className="sm:hidden">New</span>
+            </Link>
           </div>
         </CardHeader>
         <CardContent className="space-y-6 px-0 pb-0 sm:px-0 sm:pb-0">

@@ -10,6 +10,8 @@ import type { QuestionBank } from "@/src/types/api";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { WorkspacePageSkeleton } from "@/src/components/ui/layout/PageSkeletons";
 import Pagination from "@/src/components/ui/navigation/Pagination";
+import { Plus } from "lucide-react";
+import { TopicSelector } from "@/src/components/topic-selector";
 import {
   Card,
   CardContent,
@@ -126,15 +128,26 @@ export function BanksPageContent() {
       <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
 
       <Card className="overflow-hidden embed-transparent-card">
-        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle>
               Bank library {activeTopic ? `(${activeTopic.name})` : ""}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="hidden sm:block">
               Search, scan metadata, and jump into bank-specific authoring
               workflows.
             </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <TopicSelector />
+            <Link
+              href="/banks/new"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Bank</span>
+              <span className="sm:hidden">New</span>
+            </Link>
           </div>
         </CardHeader>
 

@@ -12,7 +12,9 @@ import AssessmentsCatalogToolbar from "@/src/components/assessment/assessment-ca
 import AssessmentsHeader from "@/src/components/assessment/assessment-catalog/AssessmentsHeader";
 import AssessmentsTableInteractive from "@/src/components/assessment/assessment-catalog/AssessmentsTableInteractive";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
+import { Plus } from "lucide-react";
 import Pagination from "@/src/components/ui/navigation/Pagination";
+import { TopicSelector } from "@/src/components/topic-selector";
 import {
   Card,
   CardContent,
@@ -181,15 +183,26 @@ export function AssessmentsPageContent() {
       <AssessmentsHeader totalAssessments={assessments.length} />
 
       <Card className="overflow-hidden embed-transparent-card">
-        <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle>
               Assessment catalog {activeTopic ? `(${activeTopic.name})` : ""}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="hidden sm:block">
               Track readiness, delivery mode, and performance signals across the
               workspace.
             </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <TopicSelector />
+            <Link
+              href="/assessments/new"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Assessment</span>
+              <span className="sm:hidden">New</span>
+            </Link>
           </div>
         </CardHeader>
 
