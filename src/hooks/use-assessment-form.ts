@@ -40,6 +40,7 @@ const defaultFormData: NewAssessmentFormData = {
     { grade: "F", minPercent: 0 },
   ],
   showResults: "IMMEDIATELY",
+  enableAiGrading: true,
 };
 
 const stepValidationFields: Record<1 | 2 | 3, string[]> = {

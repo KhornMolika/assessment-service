@@ -57,7 +57,10 @@ export function PresentRealTimeScreen({
 }) {
   const internalSession = useRealtimeSession({ enabled: !externalSession });
   const activeSession = externalSession || internalSession;
-  const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
+  const rounds = useMemo(() => {
+    const objectiveQuestions = questions.filter((q) => !isSubjectiveQuestion(q.type));
+    return buildQuestionRounds(objectiveQuestions);
+  }, [questions]);
   const [copied, setCopied] = useState(false);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -226,19 +229,8 @@ export function PresentRealTimeScreen({
 
   useEffect(() => {
     if (phase !== "leaderboard") return;
-
-    if (leaderboardSeconds === 0) {
-      advanceToNextQuestion();
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      setLeaderboardSeconds((seconds) => Math.max(0, seconds - 1));
-    }, 1000);
-
-    return () => window.clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, leaderboardSeconds]);
+    // Auto-advance removed. Host must manually click "Next".
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "reveal" || previousTimerRef.current === timerSeconds) {
@@ -674,6 +666,35 @@ export function PresentRealTimeScreen({
       variant={embedded ? "panel" : "page"}
       viewportLocked={!embedded}
       aside={null}
+      headerAction={
+        phase === "reveal" ? (
+          <div className="flex flex-col items-end gap-1.5 sm:gap-2">
+            <div
+              className={`shrink-0 rounded-xl sm:rounded-3xl border border-border bg-white px-2.5 py-1.5 sm:px-4 sm:py-2 text-right shadow-sm ${
+                timerSeconds <= 5 ? "rt-timer-critical text-[#F94144]" : "text-primary"
+              }`}
+            >
+              <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+                <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
+                  {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
+                </span>
+                <span className="ml-2 text-lg sm:text-2xl font-black">{timerSeconds}s</span>
+              </div>
+            </div>
+            <div className="rt-progress-shimmer w-full max-w-[200px] h-1.5 sm:h-2 rounded-full bg-primary/10">
+              <div
+                className={`h-full rounded-full transition ${
+                  timerSeconds <= 5
+                    ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
+                    : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
+                }`}
+                style={{ width: `${(timerSeconds / QUESTION_DURATION_SECONDS) * 100}%` }}
+              />
+            </div>
+          </div>
+        ) : null
+      }
     >
       <div className="h-full min-h-0">
         {phase === "lobby" ? (
@@ -816,39 +837,13 @@ export function PresentRealTimeScreen({
           </div>
         ) : phase === "reveal" ? (
           <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div
-                className={`rounded-3xl border border-border bg-[linear-gradient(135deg,#16352A_0%,#24513D_100%)] p-4 text-white shadow-sm ${
-                  timerSeconds <= 5 ? "rt-timer-critical" : "rt-card-pop"
-                }`}
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                  Timer
-                </p>
-                <div className="mt-2 flex items-end justify-between gap-3">
-                  <p className="text-4xl font-black">{timerSeconds}s</p>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
-                    {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
-                  </p>
-                </div>
-                <div className="rt-progress-shimmer mt-3 h-2.5 rounded-full bg-white/10">
-                  <div
-                    className={`h-full rounded-full transition ${
-                      timerSeconds <= 5
-                        ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
-                        : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
-                    }`}
-                    style={{ width: `${(timerSeconds / QUESTION_DURATION_SECONDS) * 100}%` }}
-                  />
-                </div>
-              </div>
-
+            <div className="grid gap-4 lg:grid-cols-1">
               <div className="rounded-3xl border border-border bg-white p-4 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
                   Responses received
                 </p>
                 <p className="mt-2 text-4xl font-bold text-primary">
-                  {responseCount}/{activeParticipants.length}
+                  {responseCount} <span className="text-xl font-medium text-inkd">/ {activeParticipants.length}</span>
                 </p>
                 <p className="mt-2 text-sm leading-6 text-inkd">Live response wave is building while the room races the clock.</p>
               </div>
@@ -960,6 +955,14 @@ export function PresentRealTimeScreen({
                   Scores are calculated from question points and live speed bonus.
                 </p>
               </div>
+              <Button
+                type="button"
+                onClick={advanceToNextQuestion}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(17,48,35,0.18)] transition hover:bg-[#174735]"
+              >
+                {questionIndex === rounds.length - 1 ? "Finish Assessment" : "Next Question"}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="rt-card-pop h-[34rem] overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(135deg,#FFFEF8_0%,#F5F8F0_55%,#FFF6D8_100%)] p-5 text-primary shadow-[0_24px_65px_rgba(27,67,50,0.12)]">

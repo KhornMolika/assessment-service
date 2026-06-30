@@ -59,9 +59,13 @@ export function StartSelfPacedScreen({
 
   const currentQuestion = rounds[questionIndex];
   const confirmationItems = rounds.map((question) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const serverEntry = serverResult?.entries?.find((e: any) => e.assessmentQuestionId === question.id || e.assessmentQuestion?.id === question.id);
     return {
       question,
       answerValue: answers[question.id] ?? null,
+      serverScore: serverEntry ? (serverEntry.scoreAwarded !== null && serverEntry.scoreAwarded !== undefined ? Number(serverEntry.scoreAwarded) : null) : undefined,
+      gradingStatus: serverEntry?.gradingStatus,
     };
   });
 
@@ -86,11 +90,11 @@ export function StartSelfPacedScreen({
     };
   }, [answers, assessment.settings?.gradeLabels, assessment.settings?.passMark, rounds]);
 
-  const finalScoreSummary = serverResult?.session ? {
-    earnedPoints: serverResult.session.pointsEarned ?? scoreSummary.earnedPoints,
-    totalPoints: serverResult.session.pointsTotal ?? scoreSummary.totalPoints,
-    grade: serverResult.session.grade ?? scoreSummary.grade,
-    passed: serverResult.session.isPassed ?? scoreSummary.passed,
+  const finalScoreSummary = serverResult ? {
+    earnedPoints: serverResult.totalScore ?? scoreSummary.earnedPoints,
+    totalPoints: serverResult.maxScore ?? scoreSummary.totalPoints,
+    grade: serverResult.grade ?? scoreSummary.grade,
+    passed: serverResult.isPassed ?? scoreSummary.passed,
   } : scoreSummary;
 
 
@@ -175,13 +179,21 @@ export function StartSelfPacedScreen({
       return;
     }
 
-    // Get the final result
-    const resultRes = await getSessionResult(sessionId);
+    // Get the final result, polling if it's still being graded by AI
+    let resultRes = await getSessionResult(sessionId);
+    let attempts = 0;
+    while (resultRes.success && resultRes.data?.status === "REQUIRES_REVIEW" && attempts < 10) {
+      // If AI is enabled, the backend processes it. Wait 2 seconds and poll again.
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      resultRes = await getSessionResult(sessionId);
+      attempts++;
+    }
+
     if (resultRes.success) {
       setServerResult(resultRes.data);
     }
 
-    // Ensure a minimum of 1.5s delay for the processing animation UX
+    // Ensure a minimum of 1.5s delay for the processing animation UX if no polling occurred
     const elapsed = Date.now() - startTime;
     if (elapsed < 1500) {
       await new Promise(resolve => setTimeout(resolve, 1500 - elapsed));

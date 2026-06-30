@@ -107,7 +107,7 @@ export function SelfPacedResult({
   };
   allowShareAnswerSheet: boolean;
   showCorrectAnswers: boolean;
-  items: { question: QuestionRound; answerValue: QuestionRendererValue }[];
+  items: { question: QuestionRound; answerValue: QuestionRendererValue; serverScore?: number | null; gradingStatus?: string }[];
   answerSheetTitle: string;
   answerSheetHeading: string;
   shareUrl?: string;
@@ -118,7 +118,7 @@ export function SelfPacedResult({
     <div className="flex w-full flex-col space-y-10 pb-12">
       {/* Minimal Header */}
       <div className="border-b border-border/50 pb-8">
-        <div className={showSharePanel ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(21rem,28rem)] lg:justify-between" : ""}>
+        <div className="flex flex-col gap-8">
           <div className="min-w-0">
             <div className="mb-4 inline-flex items-center rounded-full bg-primary/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary/60">
               {resultMode === "immediate" ? "Results" : "Submitted"}
@@ -149,13 +149,14 @@ export function SelfPacedResult({
           </div>
 
           {showSharePanel ? (
-            <ShareAnswerSheetPanel
-              compact
-              enabled={true}
-              title={answerSheetTitle}
-              description="Share your score and answer sheet."
-              shareUrl={shareUrl}
-            />
+            <div className="w-full">
+              <ShareAnswerSheetPanel
+                enabled={true}
+                title={answerSheetTitle}
+                description="Share your score and answer sheet."
+                shareUrl={shareUrl}
+              />
+            </div>
           ) : null}
         </div>
       </div>
@@ -166,10 +167,10 @@ export function SelfPacedResult({
           <h3 className="text-xl font-bold text-primary mb-8">{answerSheetHeading}</h3>
           
           <div className="grid gap-10">
-            {items.map(({ question, answerValue }, index) => {
+            {items.map(({ question, answerValue, serverScore, gradingStatus }, index) => {
               const isSubjective = isSubjectiveQuestion(question.type);
-              const isCorrect = isCorrectAnswerResponse(question, answerValue);
-              const questionScore = calculateQuestionScore(question, answerValue);
+              const isPending = isSubjective && gradingStatus === "PENDING";
+              const questionScore = typeof serverScore === "number" ? serverScore : calculateQuestionScore(question, answerValue);
               
               const isPerfect = questionScore === (question.points || 0) && (question.points || 0) > 0;
               const isPartial = questionScore > 0 && questionScore < (question.points || 0);
@@ -177,7 +178,7 @@ export function SelfPacedResult({
               return (
                 <div key={index} className="flex gap-4">
                   <div className="shrink-0 pt-1">
-                    {isSubjective ? (
+                    {isPending ? (
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                         <Minus className="h-4 w-4" />
                       </div>
@@ -202,7 +203,7 @@ export function SelfPacedResult({
                         <p className="text-lg font-semibold leading-relaxed text-primary">{question.question}</p>
                         <div className="shrink-0 text-right mt-1">
                           <span className="text-sm font-bold text-primary/60">
-                            {isSubjective ? '—' : questionScore} / {question.points} pts
+                            {isPending ? '—' : questionScore} / {question.points} pts
                           </span>
                         </div>
                       </div>

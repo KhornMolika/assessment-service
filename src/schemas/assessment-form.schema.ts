@@ -32,6 +32,7 @@ export const assessmentFormSchema = z
       }),
     ),
     showResults: z.enum(["IMMEDIATELY", "MANUAL", "NEVER"]),
+    enableAiGrading: z.boolean(),
   })
   .superRefine((data, ctx) => {
     if (data.name.trim().length === 0) {
