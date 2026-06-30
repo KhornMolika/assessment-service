@@ -140,18 +140,7 @@ export default function AssessmentShareAction({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <a
-                  href={`fb-messenger://share/?link=${encodeURIComponent(shareUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center justify-center gap-1 rounded-xl border border-border p-3 transition hover:bg-muted"
-                >
-                  <svg viewBox="0 0 24 24" className="h-6 w-6 text-[#00B2FF]" fill="currentColor">
-                    <path d="M12 2C6.477 2 2 6.145 2 11.26c0 2.925 1.503 5.534 3.86 7.272V22l3.522-1.937c.833.23 1.714.356 2.618.356 5.523 0 10-4.145 10-9.26S17.523 2 12 2zm1.093 12.35l-2.793-2.984-5.46 2.984 6.012-6.38 2.89 2.983 5.358-2.983-6.007 6.38z" />
-                  </svg>
-                  <span className="text-[10px] font-semibold text-inkd">Messenger</span>
-                </a>
+              <div className="grid grid-cols-2 gap-2">
                 <a
                   href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Join my assessment: ${assessment.name}`)}`}
                   target="_blank"
