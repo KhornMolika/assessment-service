@@ -8,9 +8,20 @@ import { TopicSelector } from "@/src/components/topic-selector";
 import { TopbarSearch } from "./TopbarSearch";
 import { Button } from "@/src/components/ui/ui/button";
 
+import { usePathname, useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+
 export default function TopbarControls() {
   const { setSidebarOpen } = useSidebar();
-  const [locale, setLocale] = useState<"EN" | "KH">("EN");
+  const currentLocale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLocaleChange = (nextValue: string) => {
+    const nextLocale = nextValue.toLowerCase();
+    const newPath = pathname.replace(/^\/(en|kh)/, `/${nextLocale}`);
+    router.push(newPath);
+  };
 
   return (
     <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
@@ -30,8 +41,8 @@ export default function TopbarControls() {
         <TopicSelector />
 
         <LocaleSwitch
-          value={locale}
-          onChange={(nextValue) => setLocale(nextValue as "EN" | "KH")}
+          value={currentLocale.toUpperCase()}
+          onChange={handleLocaleChange}
           options={[
             { label: "EN", value: "EN" },
             { label: "KH", value: "KH" },

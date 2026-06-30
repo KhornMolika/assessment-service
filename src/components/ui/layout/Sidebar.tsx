@@ -25,16 +25,18 @@ import {
 import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
 import SidebarNavLinks from "./SidebarNavLinks";
 import { Button } from "@/src/components/ui/ui/button";
+import { useTranslations } from "next-intl";
 
 const workspaceNavigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Topics", href: "/topics", icon: Tags },
-  { name: "Questions", href: "/questions", icon: HelpCircle },
-  { name: "Question Banks", href: "/banks", icon: Library },
-  { name: "Assessments", href: "/assessments", icon: ClipboardList },
+  { tKey: "dashboard", href: "/", icon: LayoutDashboard },
+  { tKey: "topics", href: "/topics", icon: Tags },
+  { tKey: "questions", href: "/questions", icon: HelpCircle },
+  { tKey: "banks", href: "/banks", icon: Library },
+  { tKey: "assessments", href: "/assessments", icon: ClipboardList },
 ];
 
 export default function Sidebar() {
+  const t = useTranslations("Sidebar");
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,9 +51,10 @@ export default function Sidebar() {
     () =>
       workspaceNavigation.map((item) => ({
         ...item,
+        name: t(item.tKey),
         hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
       })),
-    [selectedTopic],
+    [selectedTopic, t],
   );
   const assessmentMatch = pathname.match(/^\/assessments\/([0-9a-fA-F-]+)(?:\/|$)/);
   const resultMatch = pathname.match(/^\/results\/([0-9a-fA-F-]+)(?:\/|$)/);
@@ -67,23 +70,23 @@ export default function Sidebar() {
   const assessmentNavigation = useMemo(() => {
     if (!assessmentId) return [];
     return [
-      { name: "Overview", href: `/assessments/${assessmentId}`, icon: LayoutDashboard, hrefWithTopic: `/assessments/${assessmentId}`, exact: true },
-      { name: "Setup", href: `/assessments/${assessmentId}/edit`, icon: Settings, hrefWithTopic: `/assessments/${assessmentId}/edit` },
-      { name: "Results", href: `/assessments/${assessmentId}/reports`, icon: BarChart2, hrefWithTopic: `/assessments/${assessmentId}/reports` },
+      { name: t("overview"), href: `/assessments/${assessmentId}`, icon: LayoutDashboard, hrefWithTopic: `/assessments/${assessmentId}`, exact: true },
+      { name: t("setup"), href: `/assessments/${assessmentId}/edit`, icon: Settings, hrefWithTopic: `/assessments/${assessmentId}/edit` },
+      { name: t("results"), href: `/assessments/${assessmentId}/reports`, icon: BarChart2, hrefWithTopic: `/assessments/${assessmentId}/reports` },
     ];
-  }, [assessmentId]);
+  }, [assessmentId, t]);
   const resultNavigation = useMemo(() => {
     if (!resultId) return [];
     return [
       {
-        name: "Answer sheet",
+        name: t("answerSheet"),
         href: `/results/${resultId}`,
         icon: FileText,
         hrefWithTopic: `/results/${resultId}`,
         exact: true,
       },
     ];
-  }, [resultId]);
+  }, [resultId, t]);
 
   const handleNavigation = (nextPathname?: string) => {
     if (nextPathname) {
@@ -160,13 +163,13 @@ export default function Sidebar() {
                     onClick={() => handleNavigation("/assessments")}
                     className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
                   >
-                    <ArrowLeft className="mr-2 h-3 w-3" /> Back to Catalog
+                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("catalogBack")}
                   </Link>
                 </div>
               )}
               {!collapsed && (
                 <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-                  Assessment
+                  {t("assessmentCategory")}
                 </div>
               )}
               <nav className="flex flex-col space-y-1">
@@ -190,13 +193,13 @@ export default function Sidebar() {
                     onClick={() => handleNavigation(resultBackHref)}
                     className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
                   >
-                    <ArrowLeft className="mr-2 h-3 w-3" /> Back to Results
+                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("resultBack")}
                   </Link>
                 </div>
               )}
               {!collapsed && (
                 <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
-                  Result detail
+                  {t("resultCategory")}
                 </div>
               )}
               <nav className="flex flex-col space-y-1">
@@ -214,7 +217,7 @@ export default function Sidebar() {
           ) : (
             <>
               {!collapsed && (
-                <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
+                <div className="mb-4 px-3 text-xs font-semibold uppercase text-white/40">{t("workspaceCategory")}</div>
               )}
               <nav className="flex flex-col space-y-1">
                 <SidebarNavLinks
