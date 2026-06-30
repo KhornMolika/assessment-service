@@ -23,7 +23,7 @@ export function PageHeaderCard({
   return (
     <div
       className={[
-        "flex flex-col gap-3 rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] p-5 shadow-sm sm:p-6",
+        "page-header-card flex flex-col gap-3 rounded-2xl border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] p-5 shadow-sm sm:p-6",
         className,
       ]
         .filter(Boolean)
