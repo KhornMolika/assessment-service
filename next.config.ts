@@ -10,6 +10,29 @@ const nextConfig: NextConfig = {
     turbopackFileSystemCacheForDev: true,
   },
   outputFileTracingRoot: __dirname,
+
+  /**
+   * MULTI ZONES CONFIGURATION
+   * 
+   * As the "Main Zone", you can route specific URL paths to completely separate Next.js applications
+   * (Child Zones) hosted elsewhere. The end user will see it as a single unified application.
+   * 
+   * Example below: Traffic going to /demo-app/... will be seamlessly proxied to https://other-domain.com/demo-app/...
+   * Make sure the Child Zone has \`basePath: '/demo-app'\` in its own next.config.ts!
+   */
+  async rewrites() {
+    return [
+      // Example Multi Zone Rewrite:
+      // {
+      //   source: '/demo-app',
+      //   destination: 'https://other-domain.com/demo-app',
+      // },
+      // {
+      //   source: '/demo-app/:path*',
+      //   destination: 'https://other-domain.com/demo-app/:path*',
+      // },
+    ];
+  },
 };
 
 export default nextConfig;
