@@ -247,7 +247,7 @@ export default function AssessmentSettingsStep({
                   onChange("timeLimitMinutes", value);
                   onChange("enableTimeLimit", value > 0);
                 }}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
               />
               <p className="text-xs text-slate-500">Use `0` if the assessment should stay untimed.</p>
             </div>
@@ -260,7 +260,7 @@ export default function AssessmentSettingsStep({
                 type="datetime-local"
                 value={formData.startsAt}
                 onChange={(event) => onChange("startsAt", event.target.value)}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
               />
             </div>
 
@@ -272,12 +272,12 @@ export default function AssessmentSettingsStep({
                 type="datetime-local"
                 value={formData.endsAt}
                 onChange={(event) => onChange("endsAt", event.target.value)}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
               />
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-1">
+          <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -292,6 +292,25 @@ export default function AssessmentSettingsStep({
                   type="checkbox"
                   checked={formData.shuffleQuestions}
                   onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
+                  className="mt-1 h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500/50 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Label htmlFor="enableAiGrading" className="font-bold text-slate-800 cursor-pointer">Enable AI Auto-Grading</Label>
+                  <p className="mt-1 text-sm text-slate-500 whitespace-normal leading-relaxed">
+                    Automatically use AI to review and score subjective questions (Essay/Short Answer).
+                  </p>
+                </div>
+                <Input
+                  id="enableAiGrading"
+                  name="enableAiGrading"
+                  type="checkbox"
+                  checked={formData.enableAiGrading}
+                  onChange={(event) => onChange("enableAiGrading", event.target.checked)}
                   className="mt-1 h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500/50 cursor-pointer"
                 />
               </div>

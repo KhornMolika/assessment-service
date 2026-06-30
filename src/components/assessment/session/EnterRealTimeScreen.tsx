@@ -290,8 +290,37 @@ export function EnterRealTimeScreen({
       description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
       aside={null}
+      headerAction={
+        phase === "active" ? (
+          <div className="flex flex-col items-end gap-1.5 sm:gap-2">
+            <div
+              className={`shrink-0 rounded-xl sm:rounded-3xl border border-white/15 bg-white/10 px-2.5 py-1.5 sm:px-4 sm:py-2 text-right backdrop-blur ${
+                timerSeconds <= 5 ? "rt-timer-critical text-[#F94144]" : "text-primary/75 bg-primary/5"
+              }`}
+            >
+              <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+                <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
+                  Time left
+                </span>
+                <span className="ml-2 text-lg sm:text-2xl font-black">{timerSeconds}s</span>
+              </div>
+            </div>
+            <div className="rt-progress-shimmer w-full max-w-[200px] h-1.5 sm:h-2 rounded-full bg-primary/10">
+              <div
+                className={`h-full rounded-full transition ${
+                  timerSeconds <= 5
+                    ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
+                    : "bg-[linear-gradient(90deg,#FFD166_0%,#95D5B2_100%)]"
+                }`}
+                style={{ width: `${timerProgressPercent}%` }}
+              />
+            </div>
+          </div>
+        ) : null
+      }
     >
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex flex-1 h-full min-h-0 flex-col">
         {phase === "lobby" ? (
           <div className="flex min-h-0 flex-1 items-center py-1">
             <JoinLobby
@@ -307,7 +336,7 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "waiting" ? (
-          <div className="flex flex-1 items-center justify-center h-full">
+          <div className="flex flex-1 items-center justify-center min-h-[50vh]">
             <JoinWaitingState
               title="Waiting for host to start..."
               description="The first question opens when the host starts the round."
@@ -329,35 +358,11 @@ export function EnterRealTimeScreen({
                   </div>
                 </div>
 
-                <div className="mt-2 sm:mt-4 flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="mt-2 sm:mt-4">
                   <h2 className="max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-2xl">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {currentRound.question || (currentRound as any).questionText}
                   </h2>
-                  <div
-                    className={`shrink-0 rounded-xl sm:rounded-3xl border border-white/15 bg-white/10 px-2.5 py-1.5 sm:px-4 sm:py-3 text-right backdrop-blur ${
-                      timerSeconds <= 5 ? "rt-timer-critical" : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-end gap-1.5 sm:gap-2 text-white/65">
-                      <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
-                        Time left
-                      </span>
-                    </div>
-                    <p className="mt-0.5 sm:mt-1 text-xl sm:text-3xl font-black">{timerSeconds}s</p>
-                  </div>
-                </div>
-
-                <div className="rt-progress-shimmer mt-3 sm:mt-4 h-1.5 sm:h-2.5 rounded-full bg-white/12">
-                  <div
-                    className={`h-full rounded-full transition ${
-                      timerSeconds <= 5
-                        ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
-                        : "bg-[linear-gradient(90deg,#FFD166_0%,#95D5B2_100%)]"
-                    }`}
-                    style={{ width: `${timerProgressPercent}%` }}
-                  />
                 </div>
               </div>
 

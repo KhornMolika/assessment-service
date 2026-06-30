@@ -88,6 +88,7 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
   const handlePointerDown = (e: React.PointerEvent, id: string, side: "left" | "right") => {
     if (disabled) return;
     
+    e.preventDefault(); // Prevent text selection
     // Release capture so window can track pointer up/move natively
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
@@ -258,7 +259,7 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
 
         {/* Left Terms */}
         <div className="flex flex-col gap-4 w-1/2 z-10">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2">Terms</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2 pointer-events-none select-none">Terms</h3>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {leftOptions.map((opt: any, index: number) => {
             const isConnected = !!selectedPairs[opt.id];
@@ -305,7 +306,7 @@ export function MatchingRenderer({ question, value, disabled, onChange }: Questi
 
         {/* Right Answers */}
         <div className="flex flex-col gap-4 w-1/2 z-10">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2">Answers</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-primary/60 mb-2 pl-2 pointer-events-none select-none">Answers</h3>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {shuffledRightOptions.map((opt: any) => {
             const isConnected = Object.values(selectedPairs).includes(opt.id);

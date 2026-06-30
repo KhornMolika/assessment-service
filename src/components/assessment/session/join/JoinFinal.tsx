@@ -37,18 +37,12 @@ export function JoinFinal({
         <h2 className="mt-5 text-3xl font-bold text-primary">{avatarSeed}</h2>
         <p className="mt-2 text-sm leading-6 text-inkd">Session complete</p>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+        <div className="mt-8 grid gap-3 sm:grid-cols-1">
           <div className="rounded-[24px] border border-border bg-white p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
               Total score
             </p>
             <p className="mt-3 text-3xl font-black text-primary">{totalScore}</p>
-          </div>
-          <div className="rounded-[24px] border border-border bg-white p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-              Rank
-            </p>
-            <p className="mt-3 text-3xl font-black text-primary">{rank}</p>
           </div>
         </div>
 
