@@ -48,7 +48,7 @@ export default function BanksHeader({
         componentName="Question Banks Library"
         componentExport="BanksCatalog"
         description="Embed the Question Banks library into your application to allow users to browse and author assessment content."
-        embedPath="/embed/banks"
+        embedPath="/banks"
       />
     </>
   );

@@ -25,7 +25,7 @@ export default function QuestionBuilderAction() {
         componentName="Questions Catalog"
         componentExport="QuestionsCatalog"
         description="Embed the Questions catalog into your application."
-        embedPath="/embed/questions"
+        embedPath="/questions"
       />
     </>
   );
