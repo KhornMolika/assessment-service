@@ -352,3 +352,54 @@ body.embed-mode .embed-hide {
 body.embed-mode .embed-stack {
   grid-template-columns: minmax(0, 1fr) !important;
 }
+
+/* Comprehensive Dark Mode Overrides for Hardcoded Light Classes */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-zinc-50,
+.dark .bg-gray-50,
+.dark .bg-emerald-50,
+.dark .bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.dark [class*="bg-[linear-gradient"] {
+  background: transparent !important;
+  border-color: var(--color-border) !important;
+}
+
+/* For embedded dark mode, let cards blend transparently, but if they need a surface, use a subtle dark color */
+html.embed-mode.dark .bg-white,
+html.embed-mode.dark .bg-slate-50 {
+  background-color: transparent !important;
+}
+
+.dark *:not(button):not(.bg-primary):not([class*="bg-["]) {
+  /* Only apply if we really need to override text, but safer to target text classes */
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-[#14352b] {
+  color: var(--color-foreground) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-emerald-700 {
+  color: var(--color-inkl) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-emerald-100,
+.dark .border-emerald-200 {
+  border-color: var(--color-border) !important;
+}
