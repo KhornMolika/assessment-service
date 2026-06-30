@@ -100,10 +100,16 @@ export function useAssessmentForm({
 
   // Keep ownerTopicId in sync with activeTopic if it hydrates after mount or changes
   useEffect(() => {
-    if (mode === "create" && activeTopic?.id) {
+    if (mode === "create") {
       setFormData((prev) => {
-        if (prev.ownerTopicId !== activeTopic.id) {
-          return { ...prev, ownerTopicId: activeTopic.id };
+        const newTopicId = activeTopic?.id || "";
+        if (prev.ownerTopicId !== newTopicId) {
+          return { 
+            ...prev, 
+            ownerTopicId: newTopicId,
+            selectedBankId: "",
+            selectedQuestionIds: []
+          };
         }
         return prev;
       });
