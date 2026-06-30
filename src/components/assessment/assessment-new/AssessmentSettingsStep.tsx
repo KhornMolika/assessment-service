@@ -53,7 +53,7 @@ export default function AssessmentSettingsStep({
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="timeLimitMinutes" className="text-sm font-bold text-slate-800">Time limit (minutes)</Label>
                 <Input
@@ -67,7 +67,7 @@ export default function AssessmentSettingsStep({
                     onChange("timeLimitMinutes", value);
                     onChange("enableTimeLimit", value > 0);
                   }}
-                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                  className="w-full rounded-xl border-emerald-200 px-3 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
                 />
                 <p className="text-xs text-slate-500">Use 0 if the assessment should stay untimed.</p>
               </div>
@@ -80,7 +80,7 @@ export default function AssessmentSettingsStep({
                   type="datetime-local"
                   value={formData.startsAt}
                   onChange={(event) => onChange("startsAt", event.target.value)}
-                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                  className="w-full rounded-xl border-emerald-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
                 />
               </div>
 
@@ -92,7 +92,7 @@ export default function AssessmentSettingsStep({
                   type="datetime-local"
                   value={formData.endsAt}
                   onChange={(event) => onChange("endsAt", event.target.value)}
-                  className="w-full rounded-xl border-emerald-200 px-4 py-3 text-base text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                  className="w-full rounded-xl border-emerald-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
                 />
               </div>
             </div>
