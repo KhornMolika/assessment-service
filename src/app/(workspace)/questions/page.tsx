@@ -157,7 +157,7 @@ export function QuestionsPageContent() {
             <CardTitle>Question catalog</CardTitle>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <TopicSelector />
+            <TopicSelector className="embed-only-element" />
             <QuestionBuilderAction />
             <Link
               href="/questions/new"
