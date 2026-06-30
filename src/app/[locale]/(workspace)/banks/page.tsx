@@ -21,6 +21,7 @@ import {
 } from "@/src/components/ui/ui/card";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 function getSingleSearchParam(
   value: string | string[] | null | undefined,
@@ -67,6 +68,7 @@ export function BanksPageContent() {
   const query = getSingleSearchParam(searchParams.get("query"));
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
+  const t = useTranslations("Banks");
 
   const activeTopic = useTopicStore((s) => s.activeTopic);
 
@@ -131,11 +133,10 @@ export function BanksPageContent() {
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle>
-              Bank library {activeTopic ? `(${activeTopic.name})` : ""}
+              {t("bankLibrary")} {activeTopic ? `(${activeTopic.name})` : ""}
             </CardTitle>
             <CardDescription className="hidden sm:block">
-              Search, scan metadata, and jump into bank-specific authoring
-              workflows.
+              {t("bankLibraryDesc")}
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -145,8 +146,8 @@ export function BanksPageContent() {
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Bank</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t("newBank")}</span>
+              <span className="sm:hidden">{t("new")}</span>
             </Link>
           </div>
         </CardHeader>
@@ -157,12 +158,12 @@ export function BanksPageContent() {
             {filteredBanks.length === 0 ? (
               <StateMessage
                 title={
-                  hasActiveFilters ? "No banks found" : "No banks available"
+                  hasActiveFilters ? t("noBanksTitle") : t("noBanksAvailTitle")
                 }
                 description={
                   hasActiveFilters
-                    ? "No question banks match the current search or topic filter."
-                    : "Question banks will appear here once they are added."
+                    ? t("noBanksDesc")
+                    : t("noBanksAvailDesc")
                 }
                 action={
                   hasActiveFilters ? (
@@ -170,7 +171,7 @@ export function BanksPageContent() {
                       href="/banks"
                       className="inline-flex items-center justify-center rounded-2xl border border-border bg-white px-5 py-3 text-sm font-semibold text-primary transition hover:bg-muted"
                     >
-                      Clear filters
+                      {t("clearFilters")}
                     </Link>
                   ) : null
                 }

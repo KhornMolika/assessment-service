@@ -30,13 +30,14 @@ export function ShareModal({
       <Modal 
         open={open} 
         onClose={() => setOpen(false)} 
-        className="max-w-2xl bg-transparent p-0 shadow-none border-0"
+        className="max-w-xl bg-transparent p-0 shadow-none border-0"
       >
         <ShareAnswerSheetPanel
           enabled={true}
           title={title}
           description="Share your beautiful result card with others."
           shareUrl={shareUrl}
+          onClose={() => setOpen(false)}
         />
       </Modal>
     </>

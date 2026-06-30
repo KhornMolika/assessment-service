@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { Menu } from "lucide-react";
 import { LocaleSwitch } from "@/src/components/ui/ui/locale-switch";
+import { ThemeSwitch } from "@/src/components/ui/ui/theme-switch";
 import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
 import { TopicSelector } from "@/src/components/topic-selector";
 import { TopbarSearch } from "./TopbarSearch";
 import { Button } from "@/src/components/ui/ui/button";
 
-import { usePathname, useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
+import { useRouter, usePathname } from "@/src/navigation";
 
 export default function TopbarControls() {
   const { setSidebarOpen } = useSidebar();
@@ -19,8 +20,12 @@ export default function TopbarControls() {
 
   const handleLocaleChange = (nextValue: string) => {
     const nextLocale = nextValue.toLowerCase();
-    const newPath = pathname.replace(/^\/(en|kh)/, `/${nextLocale}`);
-    router.push(newPath);
+    
+    // Clean the pathname just in case usePathname isn't stripping the locale correctly
+    const cleanPath = pathname.replace(/^\/(en|kh)(?=\/|$)/i, '') || '/';
+    
+    // next-intl router handles the locale prefixing automatically
+    router.replace(cleanPath, { locale: nextLocale });
   };
 
   return (
@@ -40,6 +45,8 @@ export default function TopbarControls() {
       <div className="order-2 flex min-w-0 items-center gap-2 sm:gap-3">
         <TopicSelector />
 
+        <ThemeSwitch className="shrink-0" />
+        
         <LocaleSwitch
           value={currentLocale.toUpperCase()}
           onChange={handleLocaleChange}

@@ -34,7 +34,7 @@ export function HostLobby({
         embedded ? "2xl:h-full 2xl:grid-cols-[22rem_minmax(0,1fr)]" : "xl:h-full xl:grid-cols-[30rem_minmax(0,1fr)]"
       }`}
     >
-      <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
+      <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] dark:bg-background dark:bg-none p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
           <QrCode className="h-4 w-4 text-[#95D5B2]" />
           Lobby

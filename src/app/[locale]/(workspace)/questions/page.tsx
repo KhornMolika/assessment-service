@@ -24,6 +24,7 @@ import {
 } from "@/src/components/ui/ui/card";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 // Utility functions
 function getSingleSearchParam(value: string | string[] | null | undefined, fallback = "") {
@@ -74,6 +75,7 @@ export function QuestionsPageContent() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [topics, setTopics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("Questions");
 
   useEffect(() => {
     let isMounted = true;
@@ -135,8 +137,8 @@ export function QuestionsPageContent() {
     <div className="space-y-6">
       <PageHeaderCard
         className="catalog-header"
-        title="Questions"
-        description={`${questions.length} reusable questions ${activeTopic ? `in ${activeTopic.name}` : "across all topics"}.`}
+        title={t("title")}
+        description={activeTopic ? t("descriptionTopic", { total: questions.length, topic: activeTopic.name }) : t("description", { total: questions.length })}
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <QuestionBuilderAction />
@@ -145,7 +147,7 @@ export function QuestionsPageContent() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
             >
               <Plus className="h-4 w-4" />
-              New Question
+              {t("newQuestion")}
             </Link>
           </div>
         }
@@ -154,7 +156,7 @@ export function QuestionsPageContent() {
       <Card className="overflow-hidden embed-transparent-card">
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <CardTitle>Question catalog</CardTitle>
+            <CardTitle>{t("catalogTitle")}</CardTitle>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <TopicSelector className="embed-only-element" />
@@ -166,8 +168,8 @@ export function QuestionsPageContent() {
               className="embed-only-element inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">New Question</span>
-              <span className="sm:hidden">New</span>
+              <span className="hidden sm:inline">{t("newQuestion")}</span>
+              <span className="sm:hidden">{t("new")}</span>
             </Link>
           </div>
         </CardHeader>

@@ -142,7 +142,7 @@ export function exportResultsPdf(rows: ResultsRow[]) {
     row.submittedAt,
   ]);
 
-  // @ts-ignore - jspdf-autotable extends jsPDF but types might complain
+  // @ts-expect-error - jspdf-autotable extends jsPDF but types might complain
   doc.autoTable({
     startY: 40,
     head: [headers],
@@ -165,7 +165,8 @@ export function exportResultsPdf(rows: ResultsRow[]) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didDrawPage: function (data: any) {
       // Footer
-      const str = "Page " + (doc as any).internal.getNumberOfPages();
+      // @ts-expect-error - jspdf-autotable types might complain
+      const str = "Page " + doc.internal.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text(
@@ -243,7 +244,7 @@ export function exportResultSheetPdf(data: AssessmentResultSheetPageData) {
     entry.isCorrect == null ? "Not set" : entry.isCorrect ? "Yes" : "No",
   ]);
 
-  // @ts-ignore
+  // @ts-expect-error - jspdf-autotable extends jsPDF but types might complain
   doc.autoTable({
     startY: currentY,
     head: [headers],
@@ -275,7 +276,8 @@ export function exportResultSheetPdf(data: AssessmentResultSheetPageData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didDrawPage: function (data: any) {
       // Footer
-      const str = "Page " + (doc as any).internal.getNumberOfPages();
+      // @ts-expect-error - jspdf-autotable types might complain
+      const str = "Page " + doc.internal.getNumberOfPages();
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text(

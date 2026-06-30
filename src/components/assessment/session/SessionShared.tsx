@@ -10,6 +10,7 @@ import {
   Sparkles,
   UserRound,
   Users,
+  X,
 } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types";
 import type { QuestionOption } from '@/src/types/session.types';
@@ -79,7 +80,7 @@ export function ScreenShell({
 
   return (
     <main
-      className={`bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 ${
+      className={`bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] dark:bg-card dark:bg-none px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6 ${
         viewportLocked ? "h-dvh overflow-hidden" : "min-h-dvh"
       }`}
     >
@@ -383,24 +384,42 @@ export function QuizTimerCard({
   );
 }
 
+const FacebookIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+  </svg>
+);
+
+const TelegramIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.892-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+);
+
+const LinkedInIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path fillRule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clipRule="evenodd" />
+  </svg>
+);
+
 const shareDestinations = [
   {
     name: "Facebook",
     caption: "Share a result card with the answer sheet link.",
-    icon: "f",
-    iconClassName: "bg-[#E7F6EA] text-primary",
+    icon: <FacebookIcon className="w-5 h-5" />,
+    iconClassName: "bg-[#E7F6EA] text-[#1877F2]",
   },
   {
     name: "Telegram",
     caption: "Send your score and answer sheet directly to chats or groups.",
-    icon: "T",
-    iconClassName: "bg-[#EAF4F1] text-primary",
+    icon: <TelegramIcon className="w-5 h-5" />,
+    iconClassName: "bg-[#EAF4F1] text-[#2CA5E0]",
   },
   {
     name: "LinkedIn",
     caption: "Post a polished assessment result update to your network.",
-    icon: "in",
-    iconClassName: "bg-[#EEF3E6] text-primary",
+    icon: <LinkedInIcon className="w-5 h-5" />,
+    iconClassName: "bg-[#EEF3E6] text-[#0A66C2]",
   },
 ] as const;
 
@@ -410,12 +429,14 @@ export function ShareAnswerSheetPanel({
   description,
   shareUrl = "",
   compact = false,
+  onClose,
 }: {
   enabled: boolean;
   title?: string;
   description?: string;
   shareUrl?: string;
   compact?: boolean;
+  onClose?: () => void;
 }) {
   const absoluteShareUrl = typeof window !== "undefined" && shareUrl.startsWith("/") 
     ? `${window.location.origin}${shareUrl}`
@@ -467,9 +488,20 @@ export function ShareAnswerSheetPanel({
               "Share the score summary together with the your answer response and the correct answers when they are shown."}
           </p>
         </div>
-        <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary" : "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-[#cce8d0] text-emerald-700 shadow-sm border border-emerald-200/50"}>
-          <Share2 className={compact ? "h-4 w-4" : "h-5 w-5"} />
-        </div>
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition" : "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100/80 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition shadow-sm border border-slate-200/50"}
+            aria-label="Close"
+          >
+            <X className={compact ? "h-4 w-4" : "h-5 w-5"} />
+          </button>
+        ) : (
+          <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary" : "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-[#cce8d0] text-emerald-700 shadow-sm border border-emerald-200/50"}>
+            <Share2 className={compact ? "h-4 w-4" : "h-5 w-5"} />
+          </div>
+        )}
       </div>
 
       {enabled ? (
@@ -547,7 +579,7 @@ export function ProcessingAnswersCard({
   description?: string;
 }) {
   return (
-    <div className="mx-auto max-w-3xl rounded-[36px] border border-white/70 bg-[linear-gradient(180deg,#ffffff_0%,#f4f0e5_100%)] p-8 shadow-xl sm:p-10">
+    <div className="mx-auto max-w-3xl rounded-[36px] border border-white/70 bg-[linear-gradient(180deg,#ffffff_0%,#f4f0e5_100%)] dark:bg-card dark:bg-none p-8 shadow-xl sm:p-10">
       <div className="mx-auto max-w-xl text-center">
         <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[28px] bg-[linear-gradient(180deg,#dcf6df_0%,#cbeccd_100%)] text-primary shadow-inner shadow-[#95D5B2]/50">
           <div className="relative">

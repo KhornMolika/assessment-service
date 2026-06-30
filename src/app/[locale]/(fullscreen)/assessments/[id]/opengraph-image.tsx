@@ -99,7 +99,7 @@ export default async function OpenGraphImage({
                 textTransform: "uppercase",
               }}
             >
-              You're Invited!
+              You&apos;re Invited!
             </div>
 
             <div

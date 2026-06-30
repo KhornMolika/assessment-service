@@ -619,7 +619,7 @@ export function PresentRealTimeScreen({
                 {displayLeaderboard.map((entry) => (
                   <div
                     key={entry.id}
-                    className="grid grid-cols-[4rem_minmax(0,1fr)_7rem] items-center gap-3 rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] px-4 py-3 shadow-sm"
+                    className="grid grid-cols-[4rem_minmax(0,1fr)_7rem] items-center gap-3 rounded-2xl border border-primary/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] dark:bg-card dark:bg-none px-4 py-3 shadow-sm"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
                       {entry.rank}
@@ -707,7 +707,7 @@ export function PresentRealTimeScreen({
             }`}
           >
             {/* Left Column: QR Code & Start Controls */}
-            <div className="relative flex min-h-0 flex-col justify-between overflow-hidden rounded-[26px] border border-[#1C5C45]/15 bg-[linear-gradient(180deg,#FFFEF8_0%,#F3F8F1_100%)] p-5 text-primary shadow-[0_22px_55px_rgba(27,67,50,0.10)] 2xl:p-6">
+            <div className="relative flex min-h-0 flex-col justify-between overflow-hidden rounded-[26px] border border-[#1C5C45]/15 bg-[linear-gradient(180deg,#FFFEF8_0%,#F3F8F1_100%)] dark:bg-card dark:bg-none p-5 text-primary shadow-[0_22px_55px_rgba(27,67,50,0.10)] 2xl:p-6">
               
               <div className="relative z-10">
                 <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#1C5C45]/15 bg-primary/8 px-3 py-1.5 text-[11px] font-bold uppercase tracking-widest text-primary 2xl:mb-6">
@@ -757,7 +757,7 @@ export function PresentRealTimeScreen({
                   data-flow-event={realtimeEvents.startQuestion}
                   onClick={startSession}
                   disabled={!hasParticipants}
-                  className="group relative w-full overflow-hidden rounded-2xl bg-primary px-4 py-4 text-base font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.22)] transition-all hover:scale-[1.02] hover:bg-[#174735] hover:shadow-[0_22px_45px_rgba(17,48,35,0.28)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100 2xl:py-5"
+                  className="group relative w-full overflow-hidden rounded-2xl bg-primary px-4 py-4 text-base font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.22)] transition-all hover:scale-[1.02] hover:bg-[#174735] hover:shadow-[0_22px_45px_rgba(17,48,35,0.28)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] dark:bg-card dark:bg-none disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100 2xl:py-5"
                 >
                   <div className="absolute inset-0 bg-white/12 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
                   <PlayCircle className="mr-2 h-6 w-6" />
@@ -806,7 +806,7 @@ export function PresentRealTimeScreen({
                       return (
                         <div
                           key={p.id}
-                          className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#1C5C45]/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] px-3.5 py-3 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-1 duration-300 hover:border-primary/25 hover:shadow-md"
+                          className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#1C5C45]/10 bg-[linear-gradient(135deg,#FFFFFF_0%,#F4FBF6_100%)] dark:bg-card dark:bg-none px-3.5 py-3 shadow-sm transition-all animate-in fade-in slide-in-from-bottom-1 duration-300 hover:border-primary/25 hover:shadow-md"
                         >
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/8 text-xs font-bold text-primary">
                             {index + 1}
@@ -850,7 +850,7 @@ export function PresentRealTimeScreen({
               </div>
             </div>
 
-            <div className="rt-card-pop flex-1 rounded-[30px] border border-[#FFD166]/55 bg-[linear-gradient(135deg,#FFF6CC_0%,#FFE7B8_42%,#FFF9E1_100%)] p-5 shadow-sm lg:flex lg:min-h-0 lg:flex-col lg:p-6">
+            <div className="rt-card-pop flex-1 rounded-[30px] border border-[#FFD166]/55 bg-[linear-gradient(135deg,#FFF6CC_0%,#FFE7B8_42%,#FFF9E1_100%)] dark:bg-card dark:bg-none p-5 shadow-sm lg:flex lg:min-h-0 lg:flex-col lg:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
@@ -934,7 +934,7 @@ export function PresentRealTimeScreen({
             </div>
 
             <div className="min-h-0 rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
-              <div className="rounded-[26px] bg-[linear-gradient(135deg,#F8FBF7_0%,#EEF7F1_100%)] p-4 sm:p-5">
+              <div className="rounded-[26px] bg-[linear-gradient(135deg,#F8FBF7_0%,#EEF7F1_100%)] dark:bg-card dark:bg-none p-4 sm:p-5">
                 {renderCorrectAnswerPanel()}
               </div>
             </div>
@@ -966,7 +966,7 @@ export function PresentRealTimeScreen({
               </Button>
             </div>
 
-            <div className="rt-card-pop h-[34rem] overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(135deg,#FFFEF8_0%,#F5F8F0_55%,#FFF6D8_100%)] p-5 text-primary shadow-[0_24px_65px_rgba(27,67,50,0.12)]">
+            <div className="rt-card-pop h-[34rem] overflow-hidden rounded-[32px] border border-[#1C5C45]/15 bg-[linear-gradient(135deg,#FFFEF8_0%,#F5F8F0_55%,#FFF6D8_100%)] dark:bg-card dark:bg-none p-5 text-primary shadow-[0_24px_65px_rgba(27,67,50,0.12)]">
               {displayLeaderboard.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-center">
                   <div>
