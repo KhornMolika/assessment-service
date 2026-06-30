@@ -332,11 +332,11 @@ export default function ResultSheetDetailView({
                 <CardHeader className="p-3 pb-2">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <CardTitle className="flex items-center gap-3 text-lg">
-                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                      <CardTitle className="flex items-start gap-3 text-lg">
+                        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                           {index + 1}
                         </span>
-                        <span>{entry.questionSnapshot.questionText}</span>
+                        <span className="leading-snug">{entry.questionSnapshot.questionText}</span>
                       </CardTitle>
                       <CardDescription className="mt-1">
                         {entry.questionSnapshot.typeId} · {entry.questionSnapshot.points} pts
