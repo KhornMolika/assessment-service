@@ -52,7 +52,7 @@ export default function AddAssessmentQuestionsModal({
 
   useEffect(() => {
     if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setLoading(true);
       setSelectedIds(new Set());
       setSearch("");
@@ -118,7 +118,7 @@ export default function AddAssessmentQuestionsModal({
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold text-primary">Add Questions</h2>
-          {/* eslint-disable-next-line react/no-unescaped-entities */}
+
           <p className="text-sm text-inkd mt-1">
             {topicId 
               ? "Select questions from the assessment's topic to append to this assessment." 

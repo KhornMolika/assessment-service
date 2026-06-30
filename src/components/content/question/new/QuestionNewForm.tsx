@@ -39,6 +39,7 @@ export default function QuestionNewForm() {
 
   // Reset form data when the component mounts to clear Next.js router cache
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData(getInitialFormData());
   }, []);
 
