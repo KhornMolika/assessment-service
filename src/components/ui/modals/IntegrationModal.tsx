@@ -58,6 +58,7 @@ export default function MyPage() {
       if (e.data?.type === "EMBED_READY") {
         iframeRef.current?.contentWindow?.postMessage({
           type: "SYNC_THEME",
+          mode: "light", // set to "dark" for dark mode
           theme: {
             "--primary": "210 100% 50%", // Use your own HSL primary color
             "--radius": "0.5rem"

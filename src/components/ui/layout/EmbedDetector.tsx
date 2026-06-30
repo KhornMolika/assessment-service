@@ -7,9 +7,18 @@ export default function EmbedDetector() {
     // Check if we are inside an iframe
     if (typeof window !== "undefined" && window.self !== window.top) {
       document.body.classList.add("embed-mode");
+      document.documentElement.classList.add("embed-mode");
 
       const handleMessage = (event: MessageEvent) => {
         if (event.data?.type === "SYNC_THEME") {
+          if (event.data.mode) {
+            if (event.data.mode === "dark") {
+              document.documentElement.classList.add("dark");
+            } else {
+              document.documentElement.classList.remove("dark");
+            }
+          }
+
           if (event.data.theme) {
             Object.entries(event.data.theme).forEach(([key, value]) => {
               document.documentElement.style.setProperty(key, value as string);
