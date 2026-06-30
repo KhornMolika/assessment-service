@@ -16,6 +16,7 @@ import { SelfPacedQuiz } from "./self-paced/SelfPacedQuiz";
 import { SelfPacedResult } from "./self-paced/SelfPacedResult";
 import {
   buildQuestionRounds,
+  calculateQuestionScore,
   formatDurationClock,
   getResultReleaseMode,
   isCorrectAnswerResponse,
@@ -70,12 +71,12 @@ export function StartSelfPacedScreen({
   });
 
   const scoreSummary = useMemo(() => {
-    const totalPoints = rounds.reduce((sum, question) => sum + question.points, 0);
-    const earnedPoints = rounds.reduce((sum, question) => {
-      return isCorrectAnswerResponse(question, answers[question.id] ?? null)
-        ? sum + question.points
-        : sum;
+    const totalPoints = rounds.reduce((sum, question) => sum + (question.points || 0), 0);
+    const earnedPointsRaw = rounds.reduce((sum, question) => {
+      return sum + calculateQuestionScore(question, answers[question.id] ?? null);
     }, 0);
+    const earnedPoints = parseFloat(earnedPointsRaw.toFixed(2));
+    
     const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
     const grade =
       assessment.settings?.gradeLabels?.find((band) => percent >= band.minPercent)?.grade ??
