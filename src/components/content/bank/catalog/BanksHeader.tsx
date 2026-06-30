@@ -19,8 +19,9 @@ export default function BanksHeader({
   return (
     <>
       <PageHeaderCard
+        className="catalog-header"
         title="Question Banks"
-        description={`${bankCount} banks · ${totalQuestions} reusable questions`}
+        description={`${bankCount} topic-based banks containing ${totalQuestions} categorized questions.`}
         actions={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
