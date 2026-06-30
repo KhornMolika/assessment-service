@@ -319,3 +319,11 @@ body.embed-mode .workspace-topbar {
 body.embed-mode .workspace-main {
   padding: 0 !important;
 }
+body.embed-mode,
+body.embed-mode .bg-background {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+body.embed-mode .page-header-card {
+  display: none !important;
+}
