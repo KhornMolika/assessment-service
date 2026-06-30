@@ -5,10 +5,35 @@ import { getAssessmentCatalogItemById, getAssessmentDetailPageData } from "@/src
 import { StartSelfPacedScreen } from "@/src/components/assessment/session/SessionScreens";
 import { SessionLoading } from "@/src/components/assessment/session/SessionLoading";
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  let title = "Take Assessment | Assessment Service";
+  let description = "Join and complete a self-paced assessment.";
+  
+  try {
+    const assessment = await getAssessmentCatalogItemById(id);
+    if (assessment) {
+      title = `${assessment.name} | Assessment Service`;
+      description = `Join and complete the ${assessment.name} assessment.`;
+    }
+  } catch (error) {
+    // Fallback to defaults
+  }
+
   return {
-    title: "Take Assessment",
-    description: "Join and complete a self-paced assessment.",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "Assessment Service",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
