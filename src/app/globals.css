@@ -360,7 +360,7 @@ body.embed-mode .embed-stack {
 .dark .bg-zinc-50,
 .dark .bg-gray-50,
 .dark .bg-emerald-50,
-.dark .bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] {
+.dark .bg-\[linear-gradient\(180deg\,\#ffffff_0\%\,\#fbfdfc_100\%\)\] {
   background-color: transparent !important;
   background-image: none !important;
 }
@@ -385,7 +385,7 @@ html.embed-mode.dark .bg-slate-50 {
 .dark .text-slate-700,
 .dark .text-gray-900,
 .dark .text-gray-800,
-.dark .text-[#14352b] {
+.dark .text-\[\#14352b\] {
   color: var(--color-foreground) !important;
 }
 
