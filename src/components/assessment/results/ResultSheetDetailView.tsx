@@ -9,6 +9,8 @@ import { BackButton } from "@/src/components/ui/navigation/BackButton";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
 import { exportResultSheetCsv } from "./results.export";
+import { exportResultSheetPdf } from "./results.export.pdf";
+import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 import { retryAIGrading } from "@/src/api/assessment.api";
 import { getAnswerResponseText, getCorrectAnswerText } from "@/src/lib/session/session.utils";
 import { Button } from "@/src/components/ui/ui/button";
@@ -266,14 +268,32 @@ export default function ResultSheetDetailView({
             <h1 className="mt-4 text-3xl font-bold text-primary">{data.participant.display_name}</h1>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="button"
-              onClick={() => exportResultSheetCsv(data)}
-              className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pl"
+            <ActionMenu
+              trigger={
+                <Button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pl"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Data
+                </Button>
+              }
             >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
+              <button
+                type="button"
+                onClick={() => exportResultSheetCsv(data)}
+                className="flex w-full items-center px-4 py-2 text-sm font-medium text-inkd hover:bg-muted/50 hover:text-primary transition-colors text-left"
+              >
+                Export as CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => exportResultSheetPdf(data)}
+                className="flex w-full items-center px-4 py-2 text-sm font-medium text-inkd hover:bg-muted/50 hover:text-primary transition-colors text-left"
+              >
+                Export as PDF
+              </button>
+            </ActionMenu>
             <BackButton
               href={resolvedBackHref}
               label="Back to results"
