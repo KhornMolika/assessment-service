@@ -319,6 +319,9 @@ body.embed-mode .workspace-topbar {
 body.embed-mode .workspace-main {
   padding: 0 !important;
 }
+html.embed-mode,
+html.embed-mode body,
+html.embed-mode body .bg-background,
 body.embed-mode,
 body.embed-mode .bg-background {
   background: transparent !important;
