@@ -343,3 +343,9 @@ body.embed-mode .embed-transparent-card {
 body:not(.embed-mode) .embed-only-element {
   display: none !important;
 }
+body.embed-mode .embed-hide {
+  display: none !important;
+}
+body.embed-mode .embed-stack {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
