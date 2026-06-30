@@ -21,7 +21,7 @@ export default function AssessmentsHeader({
         title="Assessments"
         description={`${totalAssessments} assessments across draft, live delivery, and completed runs.`}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
             <Button
               type="button"
               onClick={() => setIntegrationOpen(true)}
