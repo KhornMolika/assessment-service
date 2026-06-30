@@ -35,13 +35,13 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          echo "API_URL=https://assessment-backend.molika.app/api/v1" > .env.production
-          echo "API_CLIENT_ID=dummy_id" >> .env.production
-          echo "API_CLIENT_SECRET=dummy_secret" >> .env.production
-          echo "METABASE_SITE_URL=https://metabase.molika.app" >> .env.production
-          echo "METABASE_SECRET_KEY=dummy_key" >> .env.production
-          echo "METABASE_DASHBOARD_ID=2" >> .env.production
+          echo "${{ secrets.ENV }}" > .env.production
           docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }} .
+
+      - name: Copy .env to Compute Engine
+        run: |
+          echo "${{ secrets.ENV }}" > .env.production
+          gcloud compute scp .env.production assessment-service:~/assessment-frontend.env --zone=asia-southeast1-a
 
       - name: Push Docker Image
         run: |
@@ -53,19 +53,10 @@ jobs:
             sudo docker pull docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
             sudo docker stop ${{ env.SERVICE_NAME }} || true
             sudo docker rm ${{ env.SERVICE_NAME }} || true
-            
-            # Write secrets to an env file on the VM
-            echo 'API_URL=https://assessment-backend.molika.app/api/v1' > ./assessment-frontend.env
-            echo 'API_CLIENT_ID=${{ secrets.API_CLIENT_ID }}' >> ./assessment-frontend.env
-            echo 'API_CLIENT_SECRET=${{ secrets.API_CLIENT_SECRET }}' >> ./assessment-frontend.env
-            echo 'METABASE_SITE_URL=https://metabase.molika.app' >> ./assessment-frontend.env
-            echo 'METABASE_SECRET_KEY=${{ secrets.METABASE_SECRET_KEY }}' >> ./assessment-frontend.env
-            echo 'METABASE_DASHBOARD_ID=2' >> ./assessment-frontend.env
-
             sudo docker run -d --name ${{ env.SERVICE_NAME }} \
               --restart unless-stopped \
               --network traefik-public \
-              --env-file ./assessment-frontend.env \
+              --env-file ~/assessment-frontend.env \
               --label 'traefik.enable=true' \
               --label 'traefik.http.routers.frontend.rule=Host(\`assessment-service.molika.app\`)' \
               --label 'traefik.http.routers.frontend.entrypoints=websecure' \
