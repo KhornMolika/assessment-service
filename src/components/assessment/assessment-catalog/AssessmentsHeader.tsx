@@ -46,7 +46,7 @@ export default function AssessmentsHeader({
         componentName="Assessment Dashboard"
         componentExport="AssessmentDashboard"
         description="Embed the Assessment dashboard into your application to allow users to view and manage assessments."
-        embedPath="/embed/assessments"
+        embedPath="/assessments"
       />
     </>
   );
