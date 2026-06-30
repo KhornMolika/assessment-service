@@ -149,7 +149,7 @@ export function QuestionsPageContent() {
         }
       />
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden embed-transparent-card">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <CardTitle>Question catalog</CardTitle>

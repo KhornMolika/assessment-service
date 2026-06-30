@@ -125,7 +125,7 @@ export function BanksPageContent() {
     <div className="space-y-6">
       <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden embed-transparent-card">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <CardTitle>
