@@ -404,17 +404,17 @@ export default function ResultSheetDetailView({
                             </p>
                           </div>
                           {(entry.aiGrading.keyPointsAddressed?.length > 0 || entry.aiGrading.keyPointsMissed?.length > 0) && (
-                            <div className="space-y-2 pt-2 border-t border-white/20">
+                            <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/20">
                               {entry.aiGrading.keyPointsAddressed?.map((point, idx) => (
-                                <div key={`hit-${idx}`} className="flex items-start gap-2">
-                                  <CheckCircle className="h-4 w-4 mt-0.5 text-white shrink-0" />
-                                  <span className="text-xs font-medium text-white/90">{point}</span>
+                                <div key={`hit-${idx}`} className="inline-flex items-center gap-1 rounded-full bg-white/10 pl-1 pr-2 py-0.5 text-[11px] font-medium text-white shadow-sm ring-1 ring-inset ring-white/20">
+                                  <CheckCircle className="h-3.5 w-3.5 opacity-90" />
+                                  {point}
                                 </div>
                               ))}
                               {entry.aiGrading.keyPointsMissed?.map((point, idx) => (
-                                <div key={`miss-${idx}`} className="flex items-start gap-2">
-                                  <XCircle className="h-4 w-4 mt-0.5 text-red-300 shrink-0" />
-                                  <span className="text-xs font-medium text-white/90">{point}</span>
+                                <div key={`miss-${idx}`} className="inline-flex items-center gap-1 rounded-full bg-red-500/20 pl-1 pr-2 py-0.5 text-[11px] font-medium text-red-100 shadow-sm ring-1 ring-inset ring-red-500/30">
+                                  <XCircle className="h-3.5 w-3.5 opacity-80" />
+                                  {point}
                                 </div>
                               ))}
                             </div>
