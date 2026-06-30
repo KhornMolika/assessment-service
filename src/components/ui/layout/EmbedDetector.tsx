@@ -9,10 +9,22 @@ export default function EmbedDetector() {
       document.body.classList.add("embed-mode");
 
       const handleMessage = (event: MessageEvent) => {
-        if (event.data?.type === "SYNC_THEME" && event.data.theme) {
-          Object.entries(event.data.theme).forEach(([key, value]) => {
-            document.documentElement.style.setProperty(key, value as string);
-          });
+        if (event.data?.type === "SYNC_THEME") {
+          if (event.data.theme) {
+            Object.entries(event.data.theme).forEach(([key, value]) => {
+              document.documentElement.style.setProperty(key, value as string);
+            });
+          }
+          
+          if (event.data.css) {
+            let styleEl = document.getElementById("dynamic-embed-css");
+            if (!styleEl) {
+              styleEl = document.createElement("style");
+              styleEl.id = "dynamic-embed-css";
+              document.head.appendChild(styleEl);
+            }
+            styleEl.innerHTML = event.data.css;
+          }
         }
       };
 
