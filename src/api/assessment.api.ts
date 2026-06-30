@@ -656,6 +656,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           { grade: "F", minPercent: 0 },
         ],
         showResults: (["IMMEDIATELY", "MANUAL", "NEVER"].includes(settings.showResults?.toUpperCase() || "") ? settings.showResults?.toUpperCase() : "IMMEDIATELY") as "IMMEDIATELY" | "MANUAL" | "NEVER",
+        enableAiGrading: !settings.manualGradingAIQues,
       },
     };
   } catch (err) {

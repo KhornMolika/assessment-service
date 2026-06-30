@@ -1,4 +1,6 @@
+import * as React from "react";
 import {
+  Check,
   CheckCircle2,
   Clock3,
   ExternalLink,
@@ -433,64 +435,105 @@ export function ShareAnswerSheetPanel({
     }
   };
 
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopyLink = () => {
+    if (!shareUrl) return;
+    navigator.clipboard.writeText(absoluteShareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div
       className={
         compact
           ? "w-full rounded-2xl border border-[#D7E4DA] bg-[#FBFCF7]/90 p-3 shadow-[0_12px_28px_rgba(27,67,50,0.07)] backdrop-blur sm:p-4"
-          : "mx-auto w-full max-w-5xl rounded-2xl border border-[#D7E4DA] bg-white/88 p-4 shadow-[0_14px_34px_rgba(27,67,50,0.08)] backdrop-blur sm:p-5"
+          : "w-full rounded-3xl border border-white/60 bg-gradient-to-b from-white/90 to-[#FBFCF7]/90 p-6 shadow-xl backdrop-blur-md sm:p-8 relative overflow-hidden"
       }
     >
-      <div className="flex items-start justify-between gap-4">
+      {/* Decorative background flare */}
+      {!compact && (
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-300/10 blur-[64px]" />
+      )}
+      
+      <div className="relative z-10 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/50">
-            Share answer sheet
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600/80">
+            Share Answer Sheet
           </p>
-          <h3 className={compact ? "mt-1 text-base font-bold leading-tight text-primary" : "mt-1 text-lg font-bold leading-tight text-primary"}>{title || "Send your result anywhere it helps"}</h3>
-          <p className={compact ? "mt-1 max-w-md text-xs leading-5 text-inkd" : "mt-1.5 max-w-2xl text-sm leading-5 text-inkd"}>
+          <h3 className={compact ? "mt-1 text-base font-bold leading-tight text-primary" : "mt-2 text-2xl font-black leading-tight text-primary tracking-tight"}>{title || "Send your result anywhere it helps"}</h3>
+          <p className={compact ? "mt-1 max-w-md text-xs leading-5 text-inkd" : "mt-2 max-w-2xl text-sm leading-relaxed text-slate-500 font-medium"}>
             {description ||
               "Share the score summary together with the your answer response and the correct answers when they are shown."}
           </p>
         </div>
-        <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary" : "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary"}>
-          <Share2 className="h-4 w-4" />
+        <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#D8F3DC] text-primary" : "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-[#cce8d0] text-emerald-700 shadow-sm border border-emerald-200/50"}>
+          <Share2 className={compact ? "h-4 w-4" : "h-5 w-5"} />
         </div>
       </div>
 
       {enabled ? (
-        <div className={compact ? "mt-3 grid gap-2" : "mt-4 grid gap-2.5 md:grid-cols-3"}>
-          {shareDestinations.map((destination) => (
-            <a
-              key={destination.name}
-              href={getHref(destination.name)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={compact ? "group flex min-h-[3.75rem] items-center gap-2.5 rounded-xl border border-[#DDE6DC] bg-white/72 p-2.5 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm" : "group flex min-h-[5.5rem] items-center gap-3 rounded-2xl border border-[#DDE6DC] bg-[#FBFCF7] p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm"}
-            >
-              <span
-                className={`${compact ? "inline-flex h-8 w-8" : "inline-flex h-10 w-10"} shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-primary/8 ${destination.iconClassName}`}
+        <>
+          <div className={compact ? "mt-4 grid gap-2" : "mt-8 grid gap-4 md:grid-cols-3"}>
+            {shareDestinations.map((destination) => (
+              <a
+                key={destination.name}
+                href={getHref(destination.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={compact ? "group flex min-h-[3.75rem] items-center gap-2.5 rounded-xl border border-[#DDE6DC] bg-white/72 p-2.5 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-sm" : "group flex min-h-[6rem] items-center gap-4 rounded-2xl border border-[#DDE6DC]/80 bg-white/60 p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white hover:shadow-[0_8px_20px_rgba(27,67,50,0.06)]"}
               >
-                {destination.icon}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-bold leading-tight text-primary">{destination.name}</p>
-                  <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary/40 transition group-hover:text-primary" />
+                <span
+                  className={`${compact ? "inline-flex h-8 w-8" : "inline-flex h-12 w-12"} shrink-0 items-center justify-center rounded-xl text-xs font-bold ring-1 ring-primary/8 ${destination.iconClassName}`}
+                >
+                  {destination.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-bold leading-tight text-primary group-hover:text-emerald-700 transition-colors">{destination.name}</p>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-300 transition group-hover:text-emerald-500" />
+                  </div>
+                  <p className={compact ? "mt-0.5 line-clamp-1 text-[11px] leading-4 text-inkd" : "mt-1.5 line-clamp-2 text-xs leading-5 text-slate-500 font-medium"}>{destination.caption}</p>
                 </div>
-                <p className={compact ? "mt-0.5 line-clamp-1 text-[11px] leading-4 text-inkd" : "mt-1 line-clamp-2 text-xs leading-5 text-inkd"}>{destination.caption}</p>
+              </a>
+            ))}
+          </div>
+
+          {!compact && shareUrl && (
+            <div className="mt-6 flex flex-col gap-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Or copy link to share</p>
+              <div className="flex items-center gap-2 rounded-xl border border-[#DDE6DC] bg-white p-1.5 shadow-sm focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500/50 transition-all">
+                <div className="flex-1 overflow-hidden px-3">
+                  <p className="truncate text-sm font-medium text-slate-600 select-all">{absoluteShareUrl}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyLink}
+                  className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-50 px-4 text-sm font-bold text-emerald-600 transition-colors hover:bg-emerald-100 focus:outline-none"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    "Copy Link"
+                  )}
+                </button>
               </div>
-            </a>
-          ))}
-        </div>
+            </div>
+          )}
+        </>
       ) : (
-        <div className="mt-4 rounded-2xl border border-dashed border-[#DDE6DC] bg-[#FBFCF7] p-3 text-sm leading-5 text-inkd">
+        <div className="mt-6 rounded-2xl border border-dashed border-[#DDE6DC] bg-[#FBFCF7]/80 p-5 text-sm font-medium leading-relaxed text-slate-500 text-center">
           Sharing is disabled for this assessment, so participants can review the answer sheet here
           but cannot send it to social channels.
         </div>
       )}
 
-      <div className={compact ? "mt-3 inline-flex items-center gap-2 rounded-full bg-[#EEF6EA] px-2.5 py-1 text-[10px] font-semibold text-primary/65" : "mt-3 inline-flex items-center gap-2 rounded-full bg-[#F3F7EF] px-3 py-1.5 text-[11px] font-semibold text-primary/65"}>
-        <MessageCircleMore className="h-3.5 w-3.5" />
+      <div className={compact ? "mt-3 inline-flex items-center gap-2 rounded-full bg-[#EEF6EA] px-2.5 py-1 text-[10px] font-semibold text-primary/65" : "mt-6 inline-flex items-center gap-2.5 rounded-full bg-slate-100/80 px-4 py-2 text-xs font-bold text-slate-500"}>
+        <MessageCircleMore className="h-4 w-4 text-slate-400" />
         Supported targets: Facebook, Telegram, LinkedIn
       </div>
     </div>

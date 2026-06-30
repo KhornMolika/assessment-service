@@ -36,6 +36,7 @@ export async function createAssessmentAction(topicId: string, data: any) {
       passMark: data.passMark,
       isShuffle: data.shuffleQuestions,
       showResults: data.showResults,
+      manualGradingAIQues: typeof data.enableAiGrading === "boolean" ? !data.enableAiGrading : false,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gradeLabels: data.gradeLabels.map((l: any) => ({ name: l.grade, min: l.minPercent })),
       selectionRules: data.questionSelection === "DYNAMIC" ? {
@@ -110,6 +111,7 @@ export async function updateAssessmentAction(id: string, data: any) {
       passMark: data.passMark,
       isShuffle: data.shuffleQuestions,
       showResults: data.showResults,
+      manualGradingAIQues: typeof data.enableAiGrading === "boolean" ? !data.enableAiGrading : false,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gradeLabels: data.gradeLabels.map((l: any) => ({ name: l.grade, min: l.minPercent })),
       selectionRules: data.questionSelection === "DYNAMIC" ? {
