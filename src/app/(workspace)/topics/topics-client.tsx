@@ -15,7 +15,8 @@ import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import Pagination from "@/src/components/ui/navigation/Pagination";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { toast } from "sonner";
-import { Edit2, Trash2, Eye, Copy } from "lucide-react";
+import { Edit2, Trash2, Eye, Copy, MoreHorizontal } from "lucide-react";
+import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 
 export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -198,43 +199,25 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                           {new Date(topic.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Btn 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => openPreviewModal(topic)} 
-                              title="View topic"
-                              className="h-8 w-8 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
-                            >
-                              <Eye className="h-4.5 w-4.5" />
-                            </Btn>
-                            <Btn 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => openEditModal(topic)} 
-                              title="Edit topic"
-                              className="h-8 w-8 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
-                            >
-                              <Edit2 className="h-4.5 w-4.5" />
-                            </Btn>
-                            <Btn 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => openDuplicateModal(topic)} 
-                              title="Duplicate topic"
-                              className="h-8 w-8 rounded-lg text-primary hover:text-primary hover:bg-primary/5 transition-colors"
-                            >
-                              <Copy className="h-4.5 w-4.5" />
-                            </Btn>
-                            <Btn 
-                              variant="ghost" 
-                              size="icon" 
-                              onClick={() => openDeleteModal(topic.id)} 
-                              title="Delete topic"
-                              className="h-8 w-8 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
-                            >
-                              <Trash2 className="h-4.5 w-4.5" />
-                            </Btn>
+                          <div className="flex items-center justify-end">
+                            <ActionMenu>
+                              <button onClick={() => openPreviewModal(topic)} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left font-medium hover:bg-muted transition-colors">
+                                <Eye className="h-4 w-4 text-blue-600" />
+                                View
+                              </button>
+                              <button onClick={() => openEditModal(topic)} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left font-medium hover:bg-muted transition-colors">
+                                <Edit2 className="h-4 w-4 text-emerald-600" />
+                                Edit
+                              </button>
+                              <button onClick={() => openDuplicateModal(topic)} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left font-medium hover:bg-muted transition-colors">
+                                <Copy className="h-4 w-4 text-primary" />
+                                Duplicate
+                              </button>
+                              <button onClick={() => openDeleteModal(topic.id)} className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-left font-medium hover:bg-red-50 text-red-600 transition-colors">
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </button>
+                            </ActionMenu>
                           </div>
                         </TableCell>
                       </TableRow>
