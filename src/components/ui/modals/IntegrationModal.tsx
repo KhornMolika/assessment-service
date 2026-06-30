@@ -49,7 +49,7 @@ module.exports = {
     const isDev = process.env.NODE_ENV === 'development';
     const remoteUrl = isDev 
       ? 'http://localhost:3000/_next/static/chunks/remoteEntry.js'
-      : 'https://assessment-frontend.molika.app/_next/static/chunks/remoteEntry.js';
+      : 'https://assessment-service.molika.app/_next/static/chunks/remoteEntry.js';
 
     config.plugins.push(
       new NextFederationPlugin({
