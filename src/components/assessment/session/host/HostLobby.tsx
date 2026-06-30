@@ -121,10 +121,10 @@ export function HostLobby({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl shadow-sm ring-1 ring-border/60">
                   <Avatar
-                    size={48}
-                    name={`${participant.id}-${participant.name}`}
-                    variant={getAvatarVariant(`${participant.id}-${participant.name}`)}
-                    colors={getAvatarColors(`${participant.id}-${participant.name}`)}
+                    size={56}
+                    name={participant.name}
+                    variant={getAvatarVariant(participant.name)}
+                    colors={getAvatarColors(participant.name)}
                   />
                 </div>
                 <div className="min-w-0">

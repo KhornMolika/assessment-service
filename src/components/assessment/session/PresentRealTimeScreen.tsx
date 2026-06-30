@@ -573,9 +573,9 @@ export function PresentRealTimeScreen({
                       <div className="mx-auto mt-4 h-16 w-16 overflow-hidden rounded-3xl ring-4 ring-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
                         <Avatar
                           size={64}
-                          name={`${entry.id}-${entry.name}`}
-                          variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                          colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                          name={entry.name}
+                          variant={getAvatarVariant(entry.name)}
+                          colors={getAvatarColors(entry.name)}
                         />
                       </div>
                       <div
@@ -628,9 +628,9 @@ export function PresentRealTimeScreen({
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-2xl">
                         <Avatar
                           size={40}
-                          name={`${entry.id}-${entry.name}`}
-                          variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                          colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                          name={entry.name}
+                          variant={getAvatarVariant(entry.name)}
+                          colors={getAvatarColors(entry.name)}
                         />
                       </div>
                       <p className="truncate text-base font-black">{entry.name}</p>
@@ -802,7 +802,7 @@ export function PresentRealTimeScreen({
                 ) : (
                   <div className="grid grid-cols-1 gap-2.5 2xl:grid-cols-2">
                     {activeParticipants.map((p, index) => {
-                      const colors = getAvatarColors(p.id);
+                      const colors = getAvatarColors(p.name);
                       return (
                         <div
                           key={p.id}
@@ -814,8 +814,8 @@ export function PresentRealTimeScreen({
                           <div className="shrink-0 rounded-full border border-white bg-white p-0.5 shadow-sm">
                             <Avatar
                               size={38}
-                              name={p.id}
-                              variant={getAvatarVariant(p.id)}
+                              name={p.name}
+                              variant={getAvatarVariant(p.name)}
                               colors={colors}
                             />
                           </div>
@@ -990,9 +990,9 @@ export function PresentRealTimeScreen({
                         <div className="h-18 w-18 overflow-hidden rounded-[24px] ring-4 ring-white/15">
                           <Avatar
                             size={72}
-                            name={`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`}
-                            variant={getAvatarVariant(`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`)}
-                            colors={getAvatarColors(`${displayLeaderboard[0].id}-${displayLeaderboard[0].name}`)}
+                            name={displayLeaderboard[0].name}
+                            variant={getAvatarVariant(displayLeaderboard[0].name)}
+                            colors={getAvatarColors(displayLeaderboard[0].name)}
                           />
                         </div>
                         <div className="min-w-0">
@@ -1055,9 +1055,9 @@ export function PresentRealTimeScreen({
                               <div className="h-10 w-10 shrink-0 overflow-hidden rounded-2xl">
                                 <Avatar
                                   size={40}
-                                  name={`${entry.id}-${entry.name}`}
-                                  variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                                  colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                                  name={entry.name}
+                                  variant={getAvatarVariant(entry.name)}
+                                  colors={getAvatarColors(entry.name)}
                                 />
                               </div>
                               <div className="min-w-0">
