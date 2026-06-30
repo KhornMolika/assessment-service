@@ -109,7 +109,7 @@ export function DropdownSelect({
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
       >
         <span className="truncate">{selectedOption?.label}</span>
         <ChevronDown
@@ -159,8 +159,8 @@ export function DropdownSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-indigo-600 ${
-                    value === opt.value ? "bg-slate-50 font-bold text-indigo-600" : "text-slate-600 font-medium"
+                  className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
+                    value === opt.value ? "bg-slate-50 font-bold text-primary" : "text-slate-600 font-medium"
                   }`}
                 >
                   {opt.label}

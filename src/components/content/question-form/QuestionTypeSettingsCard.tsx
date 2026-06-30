@@ -476,7 +476,7 @@ export default function QuestionTypeSettingsCard({
         return (
           <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-purple-100 rounded-lg text-purple-600">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
                 <ListOrdered className="h-5 w-5" />
               </div>
               <div>
@@ -488,16 +488,16 @@ export default function QuestionTypeSettingsCard({
             <div className="space-y-3">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {options.map((opt: any, index: number) => (
-                <div key={opt.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md hover:border-purple-300">
+                <div key={opt.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md hover:border-primary/30">
                   <div className="flex flex-col gap-1">
-                    <button type="button" onClick={() => moveOpt(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                    <button type="button" onClick={() => moveOpt(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-primary disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-primary/5">
                       <ChevronUp className="h-5 w-5 sm:h-6 sm:w-6" />
                     </button>
-                    <button type="button" onClick={() => moveOpt(index, 'down')} disabled={index === options.length - 1} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                    <button type="button" onClick={() => moveOpt(index, 'down')} disabled={index === options.length - 1} className="text-slate-400 hover:text-primary disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-primary/5">
                       <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6" />
                     </button>
                   </div>
-                  <div className="flex h-8 w-8 items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-md text-sm shrink-0">
+                  <div className="flex h-8 w-8 items-center justify-center bg-primary/10 text-primary font-bold rounded-md text-sm shrink-0">
                     {index + 1}
                   </div>
                   <Input
@@ -537,7 +537,7 @@ export default function QuestionTypeSettingsCard({
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onChange("correctAnswers", { sequence: newOpts.map((o:any) => o.id) });
                 }}
-                className="w-full border-dashed border-2 border-slate-300 text-slate-500 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50"
+                className="w-full border-dashed border-2 border-slate-300 text-slate-500 hover:text-primary hover:border-primary/30 hover:bg-primary/5"
               >
                 <Plus className="h-4 w-4 mr-2" /> Add Step
               </Button>
