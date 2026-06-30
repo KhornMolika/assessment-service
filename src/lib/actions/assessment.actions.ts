@@ -12,6 +12,7 @@ export async function createAssessmentAction(topicId: string, data: any) {
       name: data.name,
       type: data.type || "QUIZ",
       description: data.description,
+      status: data.status || "DRAFT",
     };
     const newAssessmentRaw = await apiClient.post<AssessmentCatalogItem | { data: AssessmentCatalogItem }>(`/topics/${topicId}/assessments`, basePayload);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
