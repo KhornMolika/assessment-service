@@ -45,16 +45,21 @@ export function IntegrationModal({
   const configCode = `/** @type {import('next').NextConfig} */
 import type { NextConfig } from 'next';
 
+const isDev = process.env.NODE_ENV === 'development';
+const targetUrl = isDev 
+  ? 'http://localhost:3000' 
+  : 'https://assessment-service.molika.app';
+
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
         source: '/assessments',
-        destination: 'https://assessment-service.molika.app',
+        destination: targetUrl,
       },
       {
         source: '/assessments/:path*',
-        destination: 'https://assessment-service.molika.app/:path*',
+        destination: \`\${targetUrl}/:path*\`,
       },
     ];
   },
