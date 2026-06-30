@@ -332,6 +332,9 @@ body.embed-mode .page-header-card {
   padding-right: 0 !important;
   padding-top: 0 !important;
 }
+body.embed-mode .catalog-header {
+  display: none !important;
+}
 body.embed-mode .embed-transparent-card {
   background: transparent !important;
   border: none !important;

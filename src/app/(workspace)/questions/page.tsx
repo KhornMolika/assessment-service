@@ -133,6 +133,7 @@ export function QuestionsPageContent() {
   return (
     <div className="space-y-6">
       <PageHeaderCard
+        className="catalog-header"
         title="Questions"
         description={`${questions.length} reusable questions ${activeTopic ? `in ${activeTopic.name}` : "across all topics"}.`}
         actions={

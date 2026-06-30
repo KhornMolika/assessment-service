@@ -17,6 +17,7 @@ export default function AssessmentsHeader({
   return (
     <>
       <PageHeaderCard
+        className="catalog-header"
         title="Assessments"
         description={`${totalAssessments} assessments across draft, live delivery, and completed runs.`}
         actions={

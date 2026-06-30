@@ -43,20 +43,42 @@ export function IntegrationModal({
   description = "Embed the Assessment Service directly into your application using a simple iframe.",
   embedPath = "",
 }: IntegrationModalProps) {
-  const usageCode = `export default function MyPage() {
+  const usageCode = `import { useEffect, useRef } from "react";
+
+export default function MyPage() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const isDev = process.env.NODE_ENV === 'development';
   const targetUrl = isDev 
     ? 'http://localhost:3000' 
     : 'https://assessment-service.molika.app';
 
+  useEffect(() => {
+    const handleMessage = (e: MessageEvent) => {
+      // When the iframe is ready, inject our custom theme!
+      if (e.data?.type === "EMBED_READY") {
+        iframeRef.current?.contentWindow?.postMessage({
+          type: "SYNC_THEME",
+          theme: {
+            "--primary": "210 100% 50%", // Use your own HSL primary color
+            "--radius": "0.5rem"
+            // Add any other standard Shadcn UI CSS variables here
+          }
+        }, "*");
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   return (
-    <div className="w-full h-screen flex flex-col p-8">
+    <div className="w-full h-screen flex flex-col p-8 bg-zinc-50">
       <h1 className="text-2xl font-bold mb-4">Integrate ${componentName}</h1>
       
       {/* Simply embed the Assessment Service using an iframe */}
       <iframe 
+        ref={iframeRef}
         src={\`\${targetUrl}${embedPath}\`}
-        className="w-full grow border-0 rounded-xl shadow-sm"
+        className="w-full grow border-0 rounded-xl shadow-sm bg-white"
         title="${componentName} Integration"
       />
     </div>
