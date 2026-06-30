@@ -159,7 +159,7 @@ export function DropdownSelect({
                     onChange(opt.value);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
+                  className={`flex w-full items-center text-left px-4 py-2.5 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
                     value === opt.value ? "bg-slate-50 font-bold text-primary" : "text-slate-600 font-medium"
                   }`}
                 >
