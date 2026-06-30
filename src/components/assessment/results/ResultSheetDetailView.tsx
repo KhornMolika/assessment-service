@@ -329,7 +329,7 @@ export default function ResultSheetDetailView({
 
             return (
               <Card key={entry.id} className="overflow-hidden">
-                <CardHeader className="p-4 pb-2">
+                <CardHeader className="p-3 pb-2">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <CardTitle className="flex items-center gap-3 text-lg">
@@ -338,7 +338,7 @@ export default function ResultSheetDetailView({
                         </span>
                         <span>{entry.questionSnapshot.questionText}</span>
                       </CardTitle>
-                      <CardDescription className="mt-1.5">
+                      <CardDescription className="mt-1">
                         {entry.questionSnapshot.typeId} · {entry.questionSnapshot.points} pts
                       </CardDescription>
                     </div>
@@ -349,7 +349,7 @@ export default function ResultSheetDetailView({
                           type="button"
                           onClick={() => handleRetry(entry.id)}
                           disabled={retryingIds[entry.id]}
-                          className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50" variant="ghost"
+                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted disabled:opacity-50" variant="outline"
                         >
                           <RefreshCw className={`h-4 w-4 ${retryingIds[entry.id] ? "animate-spin" : ""}`} />
                           {retryingIds[entry.id] ? "Retrying..." : "Retry AI"}
@@ -359,7 +359,7 @@ export default function ResultSheetDetailView({
                         <Button
                           type="button"
                           onClick={() => openReviewEditor(entry)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted" variant="secondary"
+                          className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold text-primary transition hover:bg-muted" variant="outline"
                         >
                           <Edit3 className="h-4 w-4" />
                           Edit review
@@ -368,53 +368,53 @@ export default function ResultSheetDetailView({
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3 p-4 pt-0">
-                  <div className="grid gap-3 lg:grid-cols-2">
-                    <div className="rounded-xl bg-muted/40 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Participant response</p>
-                      <p className="mt-1.5 whitespace-pre-wrap text-sm leading-6 text-primary">{formatResponse(entry)}</p>
+                <CardContent className="space-y-3 p-3 pt-0">
+                  <div className="grid gap-2 lg:grid-cols-2">
+                    <div className="rounded-lg bg-muted/40 p-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-inkd">Participant response</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-primary">{formatResponse(entry)}</p>
                     </div>
-                    <div className="rounded-xl bg-muted/40 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Correct answer</p>
-                      <p className="mt-1.5 text-sm leading-6 text-primary">{correctAnswer ?? "Not applicable for manual review"}</p>
+                    <div className="rounded-lg bg-muted/40 p-2.5">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-inkd">Correct answer</p>
+                      <p className="mt-1 text-sm leading-6 text-primary">{correctAnswer ?? "Not applicable for manual review"}</p>
                     </div>
                   </div>
 
                   {entry.aiGrading && (
-                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-white p-4 shadow-sm">
+                    <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-white p-3 shadow-sm">
                       <div className="flex items-center gap-2 text-primary">
-                        <Sparkles className="h-5 w-5" />
-                        <h4 className="font-bold">AI Evaluation Insights</h4>
+                        <Sparkles className="h-4 w-4" />
+                        <h4 className="text-sm font-bold">AI Evaluation Insights</h4>
                         {entry.aiGrading.flagForReview && (
-                          <Badge variant="pending" className="ml-2">Flagged for manual review</Badge>
+                          <Badge variant="pending" className="ml-2 scale-90">Flagged</Badge>
                         )}
                       </div>
-                      <div className="mt-3 grid gap-4 md:grid-cols-[1fr_260px]">
+                      <div className="mt-2 grid gap-3 md:grid-cols-[1fr_240px]">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/60">Reasoning</p>
-                          <p className="mt-2 text-sm leading-relaxed text-primary/90 whitespace-pre-wrap">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary/60">Reasoning</p>
+                          <p className="mt-1 text-sm leading-relaxed text-primary/90 whitespace-pre-wrap">
                             {entry.aiGrading.reasoning ?? "No reasoning provided."}
                           </p>
                         </div>
-                        <div className="space-y-3 rounded-xl bg-primary/50 p-3">
+                        <div className="space-y-2 rounded-xl bg-primary p-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/60">Suggested Score</p>
-                            <p className="mt-1 text-2xl font-bold text-primary">
-                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-primary/60">/ {entry.questionSnapshot.points} pts</span>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">Suggested Score</p>
+                            <p className="mt-0.5 text-2xl font-bold text-white">
+                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-white/70">/ {entry.questionSnapshot.points} pts</span>
                             </p>
                           </div>
                           {(entry.aiGrading.keyPointsAddressed?.length > 0 || entry.aiGrading.keyPointsMissed?.length > 0) && (
-                            <div className="space-y-3 pt-2 border-t border-primary/20">
+                            <div className="space-y-2 pt-2 border-t border-white/20">
                               {entry.aiGrading.keyPointsAddressed?.map((point, idx) => (
                                 <div key={`hit-${idx}`} className="flex items-start gap-2">
-                                  <CheckCircle className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
-                                  <span className="text-xs font-medium text-primary/80">{point}</span>
+                                  <CheckCircle className="h-4 w-4 mt-0.5 text-white shrink-0" />
+                                  <span className="text-xs font-medium text-white/90">{point}</span>
                                 </div>
                               ))}
                               {entry.aiGrading.keyPointsMissed?.map((point, idx) => (
                                 <div key={`miss-${idx}`} className="flex items-start gap-2">
-                                  <XCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
-                                  <span className="text-xs font-medium text-primary/80">{point}</span>
+                                  <XCircle className="h-4 w-4 mt-0.5 text-red-300 shrink-0" />
+                                  <span className="text-xs font-medium text-white/90">{point}</span>
                                 </div>
                               ))}
                             </div>
