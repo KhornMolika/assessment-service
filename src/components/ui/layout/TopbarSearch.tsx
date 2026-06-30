@@ -45,10 +45,6 @@ export function TopbarSearch() {
   }, [inputValue, selectedTopic]);
 
   useEffect(() => {
-    if (!isSearchPage) {
-      return;
-    }
-
     const timeoutId = window.setTimeout(() => {
       const nextParams = new URLSearchParams(searchString);
       const trimmedValue = inputValue.trim();
@@ -57,21 +53,27 @@ export function TopbarSearch() {
         nextParams.set(GLOBAL_SEARCH_PARAM, trimmedValue);
       } else {
         nextParams.delete(GLOBAL_SEARCH_PARAM);
+        // If it's completely empty and we aren't on the search page, don't auto-navigate
+        if (!isSearchPage) return;
       }
 
       const nextHref = buildHref(GLOBAL_SEARCH_PATH, nextParams);
       const currentHref = buildHref(
-        GLOBAL_SEARCH_PATH,
+        isSearchPage ? GLOBAL_SEARCH_PATH : pathname,
         new URLSearchParams(searchString),
       );
 
       if (nextHref !== currentHref) {
-        router.replace(nextHref, { scroll: false });
+        if (!isSearchPage) {
+          router.push(nextHref, { scroll: false });
+        } else {
+          router.replace(nextHref, { scroll: false });
+        }
       }
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
-  }, [inputValue, isSearchPage, router, searchString]);
+  }, [inputValue, isSearchPage, pathname, router, searchString]);
 
   return (
     <form
@@ -79,7 +81,7 @@ export function TopbarSearch() {
       role="search"
       onSubmit={(event) => {
         event.preventDefault();
-        router.refresh();        router.push(searchHref, { scroll: false });
+        router.push(searchHref, { scroll: false });
       }}
     >
       <Label className="relative block">
