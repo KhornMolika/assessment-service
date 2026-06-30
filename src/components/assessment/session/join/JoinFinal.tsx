@@ -5,12 +5,10 @@ import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.util
 export function JoinFinal({
   displayName,
   totalScore,
-  rank = "#4",
   streakCount,
 }: {
   displayName: string;
   totalScore: number;
-  rank?: string;
   streakCount: number;
 }) {
   const avatarSeed = displayName || "Participant";

@@ -91,11 +91,11 @@ export default function QuestionsCatalog({
   });
   const [typeFilter, setTypeFilter] = useState<string>("All Types");
   const [manualBankFilter, setManualBankFilter] = useState<string | null>(null);
-  const [builderCopied, setBuilderCopied] = useState(false);
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
   const [questionPendingDelete, setQuestionPendingDelete] = useState<Question | null>(null);
+  const [integrationOpen, setIntegrationOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
@@ -172,8 +172,6 @@ export default function QuestionsCatalog({
     setQuestions((current) => current.filter((question) => question.id !== questionId));
     setQuestionPendingDelete(null);
   };
-
-  const [integrationOpen, setIntegrationOpen] = useState(false);
 
   const handlePageSizeChange = (size: number) => {
     updateUrl({

@@ -174,6 +174,7 @@ export function SelfPacedResult({
               
               const isPerfect = questionScore === (question.points || 0) && (question.points || 0) > 0;
               const isPartial = questionScore > 0 && questionScore < (question.points || 0);
+              const isCorrect = isCorrectAnswerResponse(question, answerValue);
 
               return (
                 <div key={index} className="flex gap-4">

@@ -30,6 +30,7 @@ import type { HostPhase, LeaderboardEntry, QuestionOption } from '@/src/types/se
 import {
   buildQuestionRounds,
   getCorrectAnswerText,
+  isSubjectiveQuestion,
   normalizeQuestionRendererType,
 } from '@/src/lib/session/session.utils';
 import { Button } from "@/src/components/ui/ui/button";
