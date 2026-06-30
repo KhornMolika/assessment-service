@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
-import "./globals.css";
+import "../globals.css";
 import { Button } from "@/src/components/ui/ui/button";
 
 export default function GlobalError({
@@ -19,10 +19,10 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body className="bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)]">
+      <body className="bg-[linear-gradient(180deg,#F7FAF8_0%,#FFFFFF_30%,#F6FAF7_100%)] dark:bg-card dark:bg-none">
         <main className="mx-auto max-w-5xl space-y-6">
           <title>Application Error | Assessment Service</title>
-          <div className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] p-6 shadow-[0_18px_40px_rgba(20,53,43,0.08)] sm:p-8">
+          <div className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] dark:bg-card dark:bg-none p-6 shadow-[0_18px_40px_rgba(20,53,43,0.08)] sm:p-8">
             <h1 className="text-2xl font-bold tracking-tight text-primary sm:text-3xl">
               Application error
             </h1>

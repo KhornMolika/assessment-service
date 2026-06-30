@@ -151,7 +151,7 @@ export default function AssessmentForm({
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] embed-stack">
-        <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
+        <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] dark:bg-card dark:bg-none shadow-sm">
           <div className="border-b border-border/70 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">

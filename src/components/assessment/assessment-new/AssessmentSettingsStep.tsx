@@ -39,7 +39,7 @@ export default function AssessmentSettingsStep({
         </div>
 
         <Card className="border-emerald-200/80 bg-white shadow-sm">
-          <CardHeader className="rounded-t-2xl border-b border-emerald-100 bg-[linear-gradient(135deg,#f2fbf4_0%,#ffffff_100%)]">
+          <CardHeader className="rounded-t-2xl border-b border-emerald-100 bg-[linear-gradient(135deg,#f2fbf4_0%,#ffffff_100%)] dark:bg-card dark:bg-none">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
                 <Clock3 className="h-5 w-5" />

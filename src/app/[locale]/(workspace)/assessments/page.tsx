@@ -25,6 +25,7 @@ import {
 import { useTopicStore } from "@/src/stores/topic-store";
 import { useSearchParams } from "next/navigation";
 import { useAdminSockets } from "@/src/hooks/useAdminSockets";
+import { useTranslations } from "next-intl";
 
 function getSingleSearchParam(
   value: string | string[] | null | undefined,
@@ -117,6 +118,7 @@ export function AssessmentsPageContent() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [assessments, setAssessments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const t = useTranslations("Assessments");
   
   const updateTick = useAdminSockets();
 
@@ -186,11 +188,10 @@ export function AssessmentsPageContent() {
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle>
-              Assessment catalog {activeTopic ? `(${activeTopic.name})` : ""}
+              {t("catalogTitle")} {activeTopic ? `(${activeTopic.name})` : ""}
             </CardTitle>
             <CardDescription className="hidden sm:block">
-              Track readiness, delivery mode, and performance signals across the
-              workspace.
+              {t("catalogDesc")}
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-3">

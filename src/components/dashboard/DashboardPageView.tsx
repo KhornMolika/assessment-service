@@ -8,17 +8,21 @@ import { Plus, Info } from "lucide-react";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Card } from "@/src/components/ui/ui/card";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 
 export default function DashboardPageView() {
   const t = useTranslations("Dashboard");
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConfigured, setIsConfigured] = useState(true);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     async function fetchMetabaseUrl() {
+      setIsLoading(true);
       try {
-        const res = await fetch("/api/metabase");
+        const metabaseTheme = resolvedTheme === "dark" ? "night" : "transparent";
+        const res = await fetch(`/api/metabase?theme=${metabaseTheme}`);
         if (res.status === 501) {
           setIsConfigured(false);
           return;
@@ -35,7 +39,7 @@ export default function DashboardPageView() {
       }
     }
     fetchMetabaseUrl();
-  }, []);
+  }, [resolvedTheme]);
 
   return (
     <div className="space-y-6 flex flex-col h-full">
@@ -53,7 +57,7 @@ export default function DashboardPageView() {
           <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       ) : iframeUrl ? (
-        <div className="flex-1 w-full min-h-[800px] rounded-xl overflow-hidden border bg-white shadow-sm">
+        <div className="flex-1 w-full min-h-[800px] rounded-xl overflow-hidden border bg-card shadow-sm">
           <iframe
             src={iframeUrl}
             frameBorder="0"

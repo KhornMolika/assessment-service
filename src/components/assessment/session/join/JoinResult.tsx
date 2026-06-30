@@ -35,8 +35,8 @@ export function JoinResult({
         <div
           className={`overflow-hidden rounded-[32px] border shadow-[0_24px_60px_rgba(27,67,50,0.12)] ${
             isSubjective || isCorrect
-              ? "border-[#43AA8B]/25 bg-[linear-gradient(180deg,#FFFEF8_0%,#F0F8F2_100%)] text-primary"
-              : "border-[#F94144]/20 bg-[linear-gradient(180deg,#FFF8F5_0%,#FFEDEC_100%)] text-primary"
+              ? "border-[#43AA8B]/25 bg-[linear-gradient(180deg,#FFFEF8_0%,#F0F8F2_100%)] dark:bg-card dark:bg-none text-primary"
+              : "border-[#F94144]/20 bg-[linear-gradient(180deg,#FFF8F5_0%,#FFEDEC_100%)] dark:bg-card dark:bg-none text-primary"
           }`}
         >
           <div className="border-b border-[#1C5C45]/10 p-6 sm:p-7">

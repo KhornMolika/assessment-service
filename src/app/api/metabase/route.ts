@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const theme = searchParams.get('theme') || 'light';
+  
   const METABASE_SITE_URL = process.env.METABASE_SITE_URL;
   const METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY;
   // Default to Dashboard 2 as we configured the API for it
@@ -24,7 +27,7 @@ export async function GET() {
     };
 
     const token = jwt.sign(payload, METABASE_SECRET_KEY);
-    const iframeUrl = `${METABASE_SITE_URL}/embed/dashboard/${token}#bordered=true&titled=true`;
+    const iframeUrl = `${METABASE_SITE_URL}/embed/dashboard/${token}#theme=${theme}&bordered=true&titled=true`;
 
     return NextResponse.json({ url: iframeUrl });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

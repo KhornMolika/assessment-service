@@ -51,7 +51,7 @@ export default function AssessmentSummaryCard({
 
   return (
     <Card
-      className={`flex flex-col overflow-hidden border-emerald-200 bg-[linear-gradient(180deg,#f5fbf7_0%,#ffffff_70%)] xl:sticky xl:top-6 ${className ?? ""}`}
+      className={`flex flex-col overflow-hidden border-emerald-200 bg-[linear-gradient(180deg,#f5fbf7_0%,#ffffff_70%)] dark:bg-card dark:bg-none xl:sticky xl:top-6 ${className ?? ""}`}
     >
       <CardHeader>
         <CardDescription className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">

@@ -36,7 +36,7 @@ export function PublicResultClient({ data }: { data: AssessmentResultSheetPageDa
   const isPending = scoreSummary.status === "REVIEW_PENDING" || scoreSummary.status === "IN_PROGRESS" || scoreSummary.status === "SUBMITTED";
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[linear-gradient(135deg,#fdfdfd_0%,#f4f9f7_50%,#ebf5f2_100%)] p-4 sm:p-8">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[linear-gradient(135deg,#fdfdfd_0%,#f4f9f7_50%,#ebf5f2_100%)] dark:bg-card dark:bg-none p-4 sm:p-8">
       <div className="w-full max-w-3xl overflow-hidden rounded-[2.5rem] border border-white/50 bg-white/40 p-2 shadow-[0_32px_64px_rgba(20,53,43,0.08)] backdrop-blur-3xl sm:p-3">
         <div className="relative overflow-hidden rounded-[2rem] bg-white p-8 shadow-sm sm:p-12">
           {/* Background decorative elements */}

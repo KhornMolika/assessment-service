@@ -15,7 +15,7 @@ export function JoinFinal({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-lg flex-1 items-center justify-center px-1 sm:px-0">
-      <div className="rt-card-pop w-full rounded-[36px] border border-border bg-[linear-gradient(180deg,#FFFFFF_0%,#F6F3EA_100%)] p-7 text-center shadow-sm sm:p-10">
+      <div className="rt-card-pop w-full rounded-[36px] border border-border bg-[linear-gradient(180deg,#FFFFFF_0%,#F6F3EA_100%)] dark:bg-card dark:bg-none p-7 text-center shadow-sm sm:p-10">
         <div className="inline-flex items-center gap-2 rounded-full bg-[#D8F3DC] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           <Trophy className="h-4 w-4" />
           Final
