@@ -90,8 +90,6 @@ export default function AssessmentsCatalogToolbar({
             onChange={(val) => updateUrl({ status: val === "ALL" ? null : val, page: null })}
           />
         </div>
-
-        
       </div>
     </div>
   );

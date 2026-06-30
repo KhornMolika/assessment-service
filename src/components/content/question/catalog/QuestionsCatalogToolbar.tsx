@@ -26,8 +26,7 @@ export default function QuestionsCatalogToolbar({
   difficultyFilter: string;
 }) {
   const updateUrl = useUrlQueryUpdater();
-  const { inputValue: searchQuery, setInputValue: setSearchQuery } =
-    useDebouncedSearchParam({ key: "query" });
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useDebouncedSearchParam({ key: "query" });
 
   const typeOptions = ["All Types", ...availableTypes].map(t => ({
     value: t,
