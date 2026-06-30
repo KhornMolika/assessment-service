@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const METABASE_SITE_URL = process.env.METABASE_SITE_URL;
-  const METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY;
-  // Default to Dashboard 1, could be configurable via env or param later
-  const METABASE_DASHBOARD_ID = parseInt(process.env.METABASE_DASHBOARD_ID || '1', 10);
+  const METABASE_SITE_URL = process.env.METABASE_SITE_URL || 'https://metabase.molika.app';
+  const METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY || 'SECRET_REMOVED';
+  // Hardcode to Dashboard 2 as we configured the API for it
+  const METABASE_DASHBOARD_ID = 2;
 
   if (!METABASE_SITE_URL || !METABASE_SECRET_KEY) {
     return NextResponse.json(
