@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   const METABASE_SITE_URL = process.env.METABASE_SITE_URL;
   const METABASE_SECRET_KEY = process.env.METABASE_SECRET_KEY;
