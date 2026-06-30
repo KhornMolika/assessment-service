@@ -94,7 +94,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-50 md:translate-x-0
+      className={`workspace-sidebar fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-50 md:translate-x-0
         ${collapsed ? "w-20" : "w-72"}
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
