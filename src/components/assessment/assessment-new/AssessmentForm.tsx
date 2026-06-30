@@ -13,6 +13,7 @@ import AssessmentQuestionStep from "./AssessmentQuestionStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
 import { Button } from "@/src/components/ui/ui/button";
 import { Modal } from "@/src/components/ui/ui/modal";
+import { TopicSelector } from "@/src/components/topic-selector";
 import Link from "next/link";
 import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
 import { toast } from "sonner";
@@ -137,12 +138,15 @@ export default function AssessmentForm({
         description={headerDescription}
         backHref={destination}
         actions={
-          <Link
-            href={destination}
-            className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted bg-white"
-          >
-            Cancel
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <TopicSelector />
+            <Link
+              href={destination}
+              className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted bg-white"
+            >
+              Cancel
+            </Link>
+          </div>
         }
       />
 
