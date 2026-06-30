@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { fetchTopics } from "@/src/actions/topic-actions";
 import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
@@ -10,6 +11,7 @@ export function TopicSelector({ className }: { className?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("Topics");
 
   const { activeTopic, topics, setActiveTopic, setTopics } = useTopicStore();
   const [isFetching, setIsFetching] = useState(topics.length === 0);
@@ -91,7 +93,7 @@ export function TopicSelector({ className }: { className?: string }) {
   }
 
   const topicOptions = [
-    { value: "", label: "All Topics" },
+    { value: "", label: t("allTopics") },
     ...topics
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))

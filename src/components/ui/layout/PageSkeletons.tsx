@@ -21,7 +21,7 @@ function PageHeaderSkeleton({
   hasActions?: boolean;
 }) {
   return (
-    <div className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] p-6 shadow-[0_18px_40px_rgba(20,53,43,0.08)] sm:p-8">
+    <div className="rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(247,250,248,0.96)_100%)] dark:bg-card dark:bg-none p-6 shadow-[0_18px_40px_rgba(20,53,43,0.08)] sm:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 space-y-3">
           <Skeleton className="h-5 w-32" />

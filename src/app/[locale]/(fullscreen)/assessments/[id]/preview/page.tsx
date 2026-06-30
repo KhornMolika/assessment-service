@@ -40,7 +40,7 @@ async function AssessmentPreviewPageContent({
     const previewInstanceKey = `${assessment.id}-${run ?? "initial"}`;
 
     return (
-      <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)]">
+      <main className="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,#d8f3dc,transparent_38%),linear-gradient(180deg,#f7f5f0_0%,#f2ede2_100%)] dark:bg-card dark:bg-none">
         <div className="flex h-[4.5rem] items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6">
           <div className="flex h-10 items-center gap-4">
             <p className="flex h-full items-center text-xs font-bold uppercase tracking-widest text-primary">

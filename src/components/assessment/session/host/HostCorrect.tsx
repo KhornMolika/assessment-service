@@ -33,7 +33,7 @@ export function HostCorrect({
 
       <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
         <div
-          className="grid h-full min-h-80 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5"
+          className="grid h-full min-h-80 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] dark:bg-card dark:bg-none p-4 sm:gap-4 sm:p-5"
           style={{ gridTemplateColumns: `repeat(${currentRound.options?.length || 1}, minmax(0, 1fr))` }}
         >
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

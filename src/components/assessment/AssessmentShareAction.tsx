@@ -186,7 +186,7 @@ export default function AssessmentShareAction({
             </div>
           ) : (
             <div className="mt-6 space-y-5">
-              <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,#F8FCF8_0%,#FFFFFF_100%)] p-5">
+              <div className="rounded-3xl border border-primary/10 bg-[linear-gradient(135deg,#F8FCF8_0%,#FFFFFF_100%)] dark:bg-card dark:bg-none p-5">
                 <div className="inline-flex items-center gap-2 rounded-full bg-primary/8 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">
                   <PlayCircle className="h-4 w-4" />
                   Real-time session

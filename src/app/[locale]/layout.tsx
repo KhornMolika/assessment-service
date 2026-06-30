@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/src/i18n';
 
@@ -25,6 +25,11 @@ export const metadata: Metadata = {
 
 import { Toaster } from 'sonner';
 import EmbedDetector from "@/src/components/ui/layout/EmbedDetector";
+import { ThemeProvider } from "@/src/components/ui/ui/theme-provider";
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
@@ -33,20 +38,25 @@ export default async function RootLayout(props: {
   const params = await props.params;
   const { locale } = params;
 
-  if (!locales.includes(locale as any)) {
+  if (!locales.includes(locale)) {
     notFound();
   }
+
+  // Ensure next-intl knows which locale to use for server components
+  setRequestLocale(locale);
 
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <EmbedDetector />
-          {props.children}
-          <Toaster position="top-center" richColors />
-        </NextIntlClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+          <NextIntlClientProvider messages={messages}>
+            <EmbedDetector />
+            {props.children}
+            <Toaster position="top-center" richColors />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
