@@ -323,7 +323,7 @@ export default function ResultSheetDetailView({
         <div className="mt-5 space-y-3">
           {entries.map((entry, index) => {
             const correctAnswer = formatCorrectAnswer(entry);
-            const isEditable = entry.gradingStatus === "PENDING" || entry.gradingStatus === "MANUAL_REVISED";
+            const isEditable = entry.gradingStatus === "PENDING" || entry.gradingStatus === "MANUAL_REVISED" || entry.gradingStatus === "AI_EVALUATED";
             const maxEntryScore = Number(entry.questionSnapshot.points ?? 0);
             const canEditScore = entry.reviewMode === "edit" && entry.isCorrect === true;
             const canSaveReview = entry.reviewMode === "edit" && entry.isCorrect !== null && !savingIds[entry.id];

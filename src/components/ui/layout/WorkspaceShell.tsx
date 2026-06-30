@@ -7,7 +7,7 @@ import { SidebarProvider } from "@/src/components/ui/layout/SidebarContext";
 import Overlay from "./Overlay";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import EmbedDetector from "./EmbedDetector";
+
 
 export default function WorkspaceShell({ children }: { children: React.ReactNode }) {
   return (
