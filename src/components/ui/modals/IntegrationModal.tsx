@@ -63,10 +63,7 @@ export default function MyPage() {
             "--radius": "0.5rem"
             // Add any other standard Shadcn UI CSS variables here
           },
-          css: `
-            /* Hide specific elements if needed */
-            /* .page-header-card { display: none !important; } */
-          `
+          css: "\\n            /* Hide specific elements if needed */\\n            /* .page-header-card { display: none !important; } */\\n          "
         }, "*");
       }
     };
