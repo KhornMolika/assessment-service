@@ -47,9 +47,9 @@ export function HostWinner({
                     <div className="h-16 w-16 overflow-hidden rounded-3xl ring-2 ring-white/25 shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
                       <Avatar
                         size={64}
-                        name={`${entry.id}-${entry.name}`}
-                        variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                        colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                        name={entry.name}
+                        variant={getAvatarVariant(entry.name)}
+                        colors={getAvatarColors(entry.name)}
                       />
                     </div>
                     <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
