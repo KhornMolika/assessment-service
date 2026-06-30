@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import QuestionDetailsCard from "@/src/components/content/question-form/QuestionDetailsCard";
 import QuestionPreviewCard from "@/src/components/content/question-form/QuestionPreviewCard";
 import QuestionTypeSettingsCard from "@/src/components/content/question-form/QuestionTypeSettingsCard";
@@ -17,26 +17,30 @@ import { useTopicStore } from "@/src/stores/topic-store";
 
 const createFormId = "question-new-form";
 
-
-const initialDefaults = getDefaultOptionsAndAnswers("Single Choice");
-
-const initialFormData: QuestionFormData = {
-  questionText: "",
-  questionType: "Single Choice",
-  bank: "",
-  ownerTopicId: "",
-  points: "1",
-  difficulty: "Easy",
-  options: initialDefaults.options,
-  correctAnswers: initialDefaults.correctAnswers,
-};
-
+function getInitialFormData(): QuestionFormData {
+  const defaults = getDefaultOptionsAndAnswers("Single Choice");
+  return {
+    questionText: "",
+    questionType: "Single Choice",
+    bank: "",
+    ownerTopicId: "",
+    points: "1",
+    difficulty: "Easy",
+    options: defaults.options,
+    correctAnswers: defaults.correctAnswers,
+  };
+}
 
 export default function QuestionNewForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState<QuestionFormData>(initialFormData);
+  const [formData, setFormData] = useState<QuestionFormData>(getInitialFormData());
   const [isPending, startTransition] = useTransition();
   const activeTopic = useTopicStore((s) => s.activeTopic);
+
+  // Reset form data when the component mounts to clear Next.js router cache
+  useEffect(() => {
+    setFormData(getInitialFormData());
+  }, []);
 
   const handleChange = <K extends keyof QuestionFormData>(
     field: K,
