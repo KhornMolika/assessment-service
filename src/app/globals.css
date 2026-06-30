@@ -325,5 +325,15 @@ body.embed-mode .bg-background {
   background-color: transparent !important;
 }
 body.embed-mode .page-header-card {
-  display: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+}
+body.embed-mode .embed-transparent-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }

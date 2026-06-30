@@ -180,7 +180,7 @@ export function AssessmentsPageContent() {
     <div className="space-y-6">
       <AssessmentsHeader totalAssessments={assessments.length} />
 
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden embed-transparent-card">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <CardTitle>
