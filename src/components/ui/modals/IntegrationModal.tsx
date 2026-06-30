@@ -30,6 +30,7 @@ export interface IntegrationModalProps {
   componentName: string;
   componentExport: string;
   description: string;
+  embedPath?: string;
 }
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -40,6 +41,7 @@ export function IntegrationModal({
   onClose,
   componentName = "Assessment Dashboard",
   description = "Embed the Assessment Service directly into your application using a simple iframe.",
+  embedPath = "",
 }: IntegrationModalProps) {
   const usageCode = `export default function MyPage() {
   const isDev = process.env.NODE_ENV === 'development';
@@ -53,7 +55,7 @@ export function IntegrationModal({
       
       {/* Simply embed the Assessment Service using an iframe */}
       <iframe 
-        src={targetUrl}
+        src={\`\${targetUrl}${embedPath}\`}
         className="w-full grow border-0 rounded-xl shadow-sm"
         title="${componentName} Integration"
       />

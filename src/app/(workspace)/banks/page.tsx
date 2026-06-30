@@ -60,7 +60,7 @@ function filterBanks({
   });
 }
 
-function BanksPageContent() {
+export function BanksPageContent({ isEmbed = false }: { isEmbed?: boolean }) {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
@@ -122,8 +122,8 @@ function BanksPageContent() {
   const hasActiveFilters = query.trim().length > 0;
 
   return (
-    <div className="space-y-6">
-      <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />
+    <div className={isEmbed ? "" : "space-y-6"}>
+      {!isEmbed && <BanksHeader bankCount={banks.length} totalQuestions={totalQuestions} />}
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
