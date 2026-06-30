@@ -1,0 +1,29 @@
+{
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "topics": "Topics",
+    "assessments": "Assessments",
+    "banks": "Question Banks",
+    "questions": "Questions",
+    "results": "Results",
+    "overview": "Overview",
+    "setup": "Setup",
+    "answerSheet": "Answer sheet",
+    "catalogBack": "Back to Catalog",
+    "resultBack": "Back to Results",
+    "assessmentCategory": "Assessment",
+    "resultCategory": "Result detail",
+    "workspaceCategory": "WORKSPACE"
+  },
+  "Topbar": {
+    "searchPlaceholder": "Search anything...",
+    "searchHint": "Type to search in real-time. Press Enter to view full results."
+  },
+  "Dashboard": {
+    "notConfigured": "Metabase Not Configured",
+    "notConfiguredDesc": "The dashboard is powered by Metabase, but the connection hasn't been configured yet. Please follow the setup instructions in the documentation to start your local Metabase server and connect it to your database.",
+    "loading": "Loading dashboard...",
+    "error": "Error loading dashboard",
+    "errorDesc": "We couldn't generate a secure URL for the Metabase dashboard."
+  }
+}

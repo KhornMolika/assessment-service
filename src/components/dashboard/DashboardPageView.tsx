@@ -7,8 +7,10 @@ import Link from "next/link";
 import { Plus, Info } from "lucide-react";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Card } from "@/src/components/ui/ui/card";
+import { useTranslations } from "next-intl";
 
 export default function DashboardPageView() {
+  const t = useTranslations("Dashboard");
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConfigured, setIsConfigured] = useState(true);
@@ -41,16 +43,14 @@ export default function DashboardPageView() {
       {!isConfigured ? (
         <Card className="p-8 text-center flex flex-col items-center justify-center min-h-[400px]">
           <Info className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Metabase Not Configured</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("notConfigured")}</h2>
           <p className="text-muted-foreground mb-6 max-w-md">
-            {/* eslint-disable-next-line react/no-unescaped-entities */}
-            The dashboard is powered by Metabase, but the connection hasn't been configured yet.
-            Please follow the setup instructions in the documentation to start your local Metabase server and connect it to your database.
+            {t("notConfiguredDesc")}
           </p>
         </Card>
       ) : isLoading ? (
         <div className="flex-1 min-h-[600px] flex items-center justify-center border rounded-xl bg-muted/20 animate-pulse">
-          <p className="text-muted-foreground">Loading dashboard...</p>
+          <p className="text-muted-foreground">{t("loading")}</p>
         </div>
       ) : iframeUrl ? (
         <div className="flex-1 w-full min-h-[800px] rounded-xl overflow-hidden border bg-white shadow-sm">
@@ -65,8 +65,8 @@ export default function DashboardPageView() {
         </div>
       ) : (
         <StateMessage
-          title="Error loading dashboard"
-          description="We couldn't generate a secure URL for the Metabase dashboard."
+          title={t("error")}
+          description={t("errorDesc")}
         />
       )}
     </div>

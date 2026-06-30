@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ALL_TOPICS_VALUE } from "@/src/utils/topic-utils";
 import { Label } from "@/src/components/ui/ui/label";
 import { Input } from "@/src/components/ui/ui/input";
+import { useTranslations } from "next-intl";
 
 const GLOBAL_SEARCH_PATH = "/search";
 const GLOBAL_SEARCH_PARAM = "search";
@@ -16,6 +17,7 @@ function buildHref(pathname: string, searchParams: URLSearchParams) {
 }
 
 export function TopbarSearch() {
+  const t = useTranslations("Topbar");
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -96,10 +98,10 @@ export function TopbarSearch() {
         type="button"
         onClick={() => setIsOpen(true)}
         className="flex w-full max-w-xl items-center gap-2 rounded-xl border border-border bg-card py-2.5 pl-4 pr-3 text-sm text-inkd transition hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-pm"
-        aria-label="Search assessments, banks, and questions (Cmd+K)"
+        aria-label={t("searchPlaceholder")}
       >
         <Search className="h-4 w-4 text-inkl" />
-        <span className="flex-1 text-left">Search anything...</span>
+        <span className="flex-1 text-left">{t("searchPlaceholder")}</span>
         <kbd className="hidden rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-inkd sm:inline-block">
           ⌘K
         </kbd>
@@ -129,7 +131,7 @@ export function TopbarSearch() {
                 type="search"
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
-                placeholder="Search assessments, banks, and questions..."
+                placeholder={t("searchPlaceholder")}
                 className="flex-1 bg-transparent text-lg text-primary placeholder:text-inkl focus:outline-none"
               />
               <kbd className="hidden rounded bg-muted px-2 py-1 text-xs font-medium text-inkd sm:inline-block">
@@ -139,7 +141,7 @@ export function TopbarSearch() {
             
             {/* Soft hint underneath the search bar */}
             <div className="bg-muted/30 px-4 py-3 text-xs text-inkd">
-              Type to search in real-time. Press Enter to view full results.
+              {t("searchHint")}
             </div>
           </div>
         </div>
