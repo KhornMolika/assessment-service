@@ -3,7 +3,7 @@ import { ShareAnswerSheetPanel } from "../SessionShared";
 import type { QuestionRound } from '@/src/types/session.types';
 import { getAnswerResponseText, isCorrectAnswerResponse, isSubjectiveQuestion, getCorrectAnswerText, normalizeQuestionRendererType, calculateQuestionScore } from '@/src/lib/session/session.utils';
 import { Check, X, Minus, Target } from "lucide-react";
-
+import { ShareModal } from "./ShareModal";
 function AnswerFeedbackRenderer({ question, value }: { question: QuestionRound; value: QuestionRendererValue }) {
   const type = normalizeQuestionRendererType(question.type);
 
@@ -126,9 +126,18 @@ export function SelfPacedResult({
         
         <div className="relative z-10 flex flex-col gap-8">
           <div className="min-w-0">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm">
-              <Target className="h-3.5 w-3.5" />
-              {resultMode === "immediate" ? "Assessment Results" : "Assessment Submitted"}
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-primary shadow-sm">
+                <Target className="h-3.5 w-3.5" />
+                {resultMode === "immediate" ? "Assessment Results" : "Assessment Submitted"}
+              </div>
+              
+              {showSharePanel && (
+                <ShareModal 
+                  title={answerSheetTitle} 
+                  shareUrl={shareUrl} 
+                />
+              )}
             </div>
 
             {resultMode === "immediate" ? (
@@ -166,16 +175,6 @@ export function SelfPacedResult({
             )}
           </div>
 
-          {showSharePanel ? (
-            <div className="w-full mt-4 border-t border-border/50 pt-8">
-              <ShareAnswerSheetPanel
-                enabled={true}
-                title={answerSheetTitle}
-                description="Share your beautiful result card with others."
-                shareUrl={shareUrl}
-              />
-            </div>
-          ) : null}
         </div>
       </div>
 
