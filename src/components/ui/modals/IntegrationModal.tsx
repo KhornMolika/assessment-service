@@ -54,7 +54,7 @@ export default function MyPage() {
 
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      // When the iframe is ready, inject our custom theme!
+      // When the iframe is ready, inject our custom theme and styles!
       if (e.data?.type === "EMBED_READY") {
         iframeRef.current?.contentWindow?.postMessage({
           type: "SYNC_THEME",
@@ -62,7 +62,11 @@ export default function MyPage() {
             "--primary": "210 100% 50%", // Use your own HSL primary color
             "--radius": "0.5rem"
             // Add any other standard Shadcn UI CSS variables here
-          }
+          },
+          css: `
+            /* Hide specific elements if needed */
+            /* .page-header-card { display: none !important; } */
+          `
         }, "*");
       }
     };
