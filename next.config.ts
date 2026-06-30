@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
     },
     turbopackFileSystemCacheForDev: true,
   },
+  serverActions: {
+    // To allow other projects to use the embedded iframe, you MUST whitelist their domains here.
+    // Next.js blocks Cross-Origin Server Actions by default for security (CSRF protection).
+    // allowedOrigins: ["localhost:3001", "my-other-project.com"],
+  },
   outputFileTracingRoot: __dirname,
 
   /**

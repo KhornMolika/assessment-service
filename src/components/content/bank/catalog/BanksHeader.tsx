@@ -45,9 +45,10 @@ export default function BanksHeader({
       <IntegrationModal
         open={integrationOpen}
         onClose={() => setIntegrationOpen(false)}
-        componentName="BankBuilder"
-        componentExport="BankBuilder"
-        description="A complete interface for creating and managing a Question Bank."
+        componentName="Question Banks Library"
+        componentExport="BanksCatalog"
+        description="Embed the Question Banks library into your application to allow users to browse and author assessment content."
+        embedPath="/embed/banks"
       />
     </>
   );

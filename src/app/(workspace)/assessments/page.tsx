@@ -100,7 +100,7 @@ function filterAssessments({
   });
 }
 
-function AssessmentsPageContent() {
+export function AssessmentsPageContent({ isEmbed = false }: { isEmbed?: boolean }) {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const deliveryFilter = parseDeliveryFilter(searchParams.get("delivery"));
@@ -177,8 +177,8 @@ function AssessmentsPageContent() {
     selectionFilter !== "ALL";
 
   return (
-    <div className="space-y-6">
-      <AssessmentsHeader totalAssessments={assessments.length} />
+    <div className={isEmbed ? "" : "space-y-6"}>
+      {!isEmbed && <AssessmentsHeader totalAssessments={assessments.length} />}
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

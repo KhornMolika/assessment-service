@@ -57,7 +57,7 @@ function filterQuestions({
   });
 }
 
-function QuestionsPageContent() {
+export function QuestionsPageContent({ isEmbed = false }: { isEmbed?: boolean }) {
   const searchParams = useSearchParams();
   const query = getSingleSearchParam(searchParams.get("query"));
   const typeFilter = getSingleSearchParam(searchParams.get("type"), "All Types") || "All Types";
@@ -131,23 +131,25 @@ function QuestionsPageContent() {
   const hasActiveFilters = query.trim().length > 0 || typeFilter !== "All Types" || difficultyFilter !== "All Difficulties";
 
   return (
-    <div className="space-y-6">
-      <PageHeaderCard
-        title="Questions"
-        description={`${questions.length} reusable questions ${activeTopic ? `in ${activeTopic.name}` : "across all topics"}.`}
-        actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <QuestionBuilderAction />
-            <Link
-              href="/questions/new"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              New Question
-            </Link>
-          </div>
-        }
-      />
+    <div className={isEmbed ? "" : "space-y-6"}>
+      {!isEmbed && (
+        <PageHeaderCard
+          title="Questions"
+          description={`${questions.length} reusable questions ${activeTopic ? `in ${activeTopic.name}` : "across all topics"}.`}
+          actions={
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <QuestionBuilderAction />
+              <Link
+                href="/questions/new"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                New Question
+              </Link>
+            </div>
+          }
+        />
+      )}
 
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
