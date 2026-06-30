@@ -165,7 +165,7 @@ export default function AssessmentShareAction({
                 </a>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2">
                 <Button
                   type="button"
                   onClick={handleCopy}
@@ -174,13 +174,6 @@ export default function AssessmentShareAction({
                   <Copy className="h-4 w-4" />
                   {copied ? "Copied" : "Copy link"}
                 </Button>
-                <Link
-                  href={previewPath}
-                  onClick={openFreshPreview}
-                  className="inline-flex w-full items-center justify-center rounded-xl border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition hover:bg-primary/5"
-                >
-                  Preview
-                </Link>
               </div>
 
               <Button
