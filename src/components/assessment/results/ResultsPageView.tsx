@@ -14,6 +14,7 @@ import { ResultsFilters } from "./ResultsFilters";
 import { ResultsHeader } from "./ResultsHeader";
 import { ResultsTable } from "./ResultsTable";
 import { exportResultsCsv } from "./results.export";
+import { exportResultsPdf } from "./results.export.pdf";
 import { buildRows } from "./results.utils";
 
 export default function ResultsPageView({
@@ -89,7 +90,10 @@ export default function ResultsPageView({
   return (
     <div>
       <div className="w-full space-y-6">
-        <ResultsHeader onExportCsv={() => exportResultsCsv(filteredResults)} />
+        <ResultsHeader 
+          onExportCsv={() => exportResultsCsv(filteredResults)}
+          onExportPdf={() => exportResultsPdf(filteredResults)}
+        />
 
         <div className="mt-6">
           <ResultsFilters
