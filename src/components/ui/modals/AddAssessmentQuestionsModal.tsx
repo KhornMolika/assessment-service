@@ -51,12 +51,18 @@ export default function AddAssessmentQuestionsModal({
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (open && topicId) {
+    if (open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true);
       setSelectedIds(new Set());
       setSearch("");
-      fetchTopicQuestions(topicId)
+      
+      // If assessment has no topic, fetch all questions
+      const fetchPromise = topicId 
+        ? fetchTopicQuestions(topicId)
+        : import("@/src/actions/question-actions").then(m => m.fetchGlobalQuestions());
+
+      fetchPromise
         .then((res) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const data = Array.isArray(res) ? res : (res as any)?.data || [];
@@ -113,7 +119,11 @@ export default function AddAssessmentQuestionsModal({
         <div>
           <h2 className="text-xl font-bold text-primary">Add Questions</h2>
           {/* eslint-disable-next-line react/no-unescaped-entities */}
-          <p className="text-sm text-inkd mt-1">Select questions from the assessment's topic to append to this assessment.</p>
+          <p className="text-sm text-inkd mt-1">
+            {topicId 
+              ? "Select questions from the assessment's topic to append to this assessment." 
+              : "Select questions from the global bank to append to this assessment."}
+          </p>
         </div>
       </div>
 
@@ -137,7 +147,9 @@ export default function AddAssessmentQuestionsModal({
         ) : filteredQuestions.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center text-inkd pt-12">
             <p>No questions found.</p>
-            {questions.length === 0 && <p className="text-sm mt-1">All available topic questions are already added.</p>}
+            {questions.length === 0 && <p className="text-sm mt-1">
+              {topicId ? "All available topic questions are already added." : "All available questions are already added."}
+            </p>}
           </div>
         ) : (
           <div className="space-y-2">

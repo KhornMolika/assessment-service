@@ -51,7 +51,7 @@ export function PaginationLimitSelect({
                   onChange(opt);
                   setIsOpen(false);
                 }}
-                className={`flex w-full items-center px-3 py-2 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
+                className={`flex w-full items-center text-left px-3 py-2 text-sm transition-colors hover:bg-slate-50 hover:text-primary ${
                   value === opt ? "bg-slate-50 font-semibold text-primary" : "text-ink"
                 }`}
               >
