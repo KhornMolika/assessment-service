@@ -400,7 +400,7 @@ export default function ResultSheetDetailView({
                           <div>
                             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">Suggested Score</p>
                             <p className="mt-0.5 text-2xl font-bold text-white">
-                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-white/70">/ {entry.questionSnapshot.points} pts</span>
+                              {Number((entry.aiGrading.suggestedScore ?? 0).toFixed(2))} <span className="text-base font-normal text-white/70">/ {Number((entry.questionSnapshot.points || 0).toFixed(2))} pts</span>
                             </p>
                           </div>
                           {(entry.aiGrading.keyPointsAddressed?.length > 0 || entry.aiGrading.keyPointsMissed?.length > 0) && (

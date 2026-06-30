@@ -144,7 +144,7 @@ export function SelfPacedResult({
               <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <h2 className="text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
-                    You scored {scoreSummary.earnedPoints} <span className="text-2xl text-primary/50 font-semibold">/ {scoreSummary.totalPoints} pts</span>
+                    You scored {Number(scoreSummary.earnedPoints.toFixed(2))} <span className="text-2xl text-primary/50 font-semibold">/ {Number(scoreSummary.totalPoints.toFixed(2))} pts</span>
                   </h2>
                   <p className="mt-4 max-w-2xl text-lg text-primary/70">
                     {scoreSummary.grade !== "N/A" ? (
@@ -236,7 +236,7 @@ export function SelfPacedResult({
                         </div>
                         <div className="shrink-0 rounded-lg bg-slate-50 px-3 py-1.5 border border-slate-100 text-center sm:text-right">
                           <span className="text-sm font-extrabold text-primary">
-                            {isPending ? '—' : questionScore} <span className="text-xs font-semibold text-primary/50">/ {question.points} pts</span>
+                            {isPending ? '—' : Number(questionScore.toFixed(2))} <span className="text-xs font-semibold text-primary/50">/ {Number((question.points || 0).toFixed(2))} pts</span>
                           </span>
                         </div>
                       </div>
