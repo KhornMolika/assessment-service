@@ -38,54 +38,28 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 export function IntegrationModal({
   open,
   onClose,
-  componentName,
-  componentExport,
-  description,
+  componentName = "Assessment Dashboard",
+  description = "Embed the Assessment Service directly into your application using a simple iframe.",
 }: IntegrationModalProps) {
-  const configCode = `/** @type {import('next').NextConfig} */
-import type { NextConfig } from 'next';
-
-const isDev = process.env.NODE_ENV === 'development';
-const targetUrl = isDev 
-  ? 'http://localhost:3000' 
-  : 'https://assessment-service.molika.app';
-
-const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/assessments',
-        destination: targetUrl,
-      },
-      {
-        source: '/assessments/:path*',
-        destination: \`\${targetUrl}/:path*\`,
-      },
-    ];
-  },
-};
-
-export default nextConfig;`;
-
   const usageCode = `export default function MyPage() {
+  const isDev = process.env.NODE_ENV === 'development';
+  const targetUrl = isDev 
+    ? 'http://localhost:3000' 
+    : 'https://assessment-service.molika.app';
+
   return (
-    <div className="p-8 h-screen flex flex-col">
+    <div className="w-full h-screen flex flex-col p-8">
       <h1 className="text-2xl font-bold mb-4">Integrate ${componentName}</h1>
       
-      {/* 
-        Using Next.js Multi Zones, you can embed the application via an iframe 
-        pointing to the rewritten path, or simply use <Link href="/assessments"> 
-        to navigate the user seamlessly into the zone.
-      */}
+      {/* Simply embed the Assessment Service using an iframe */}
       <iframe 
-        src="/assessments" 
+        src={targetUrl}
         className="w-full grow border-0 rounded-xl shadow-sm"
         title="${componentName} Integration"
       />
     </div>
   );
 }`;
-
 
   return (
     <Modal open={open} onClose={onClose} className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
@@ -114,29 +88,13 @@ export default nextConfig;`;
           <div className="flex items-start gap-3">
             <Info className="mt-0.5 h-4 w-4 text-primary" />
             <div className="text-sm text-primary/80">
-              <strong>Next.js Multi Zones:</strong> The easiest way to securely embed this component. 
-              Requirements: <strong>Next.js</strong> and basic routing configuration.
+              <strong>Iframe Integration:</strong> The easiest and most reliable way to securely embed this component without complex routing configuration.
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-semibold text-sm text-slate-800">1. Webpack / Next.js Configuration</h4>
-          <div className="relative rounded-lg overflow-hidden border border-zinc-800 bg-[#1e1e1e] shadow-lg">
-            <div className="flex items-center px-4 py-2 bg-[#2d2d2d] border-b border-zinc-800/50">
-              <span className="text-xs font-medium text-zinc-400">next.config.ts</span>
-            </div>
-            <CopyButton text={configCode} />
-            <div className="text-[13px] leading-relaxed">
-              <SyntaxHighlighter language="javascript" style={vscDarkPlus} customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}>
-                {configCode}
-              </SyntaxHighlighter>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm text-slate-800">2. Component Usage</h4>
+          <h4 className="font-semibold text-sm text-slate-800">Component Usage</h4>
           <div className="relative rounded-lg overflow-hidden border border-zinc-800 bg-[#1e1e1e] shadow-lg">
             <div className="flex items-center px-4 py-2 bg-[#2d2d2d] border-b border-zinc-800/50">
               <span className="text-xs font-medium text-zinc-400">page.tsx</span>
