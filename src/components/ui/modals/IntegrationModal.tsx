@@ -42,46 +42,43 @@ export function IntegrationModal({
   componentExport,
   description,
 }: IntegrationModalProps) {
-  const configCode = `const { NextFederationPlugin } = require('@module-federation/nextjs-mf');
+  const configCode = `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: '/assessments',
+        destination: 'https://assessment-service.molika.app',
+      },
+      {
+        source: '/assessments/:path*',
+        destination: 'https://assessment-service.molika.app/:path*',
+      },
+    ];
+  },
+};
 
-module.exports = {
-  webpack(config, options) {
-    const isDev = process.env.NODE_ENV === 'development';
-    const remoteUrl = isDev 
-      ? 'http://localhost:3000/_next/static/chunks/remoteEntry.js'
-      : 'https://assessment-service.molika.app/_next/static/chunks/remoteEntry.js';
+export default nextConfig;`;
 
-    config.plugins.push(
-      new NextFederationPlugin({
-        name: 'eLearningHost',
-        remotes: {
-          assessmentService: \`assessmentService@\${remoteUrl}\`,
-        },
-        shared: {
-          react: { singleton: true, requiredVersion: false },
-          'react-dom': { singleton: true, requiredVersion: false },
-        },
-      })
-    );
-    return config;
-  }
-}`;
-
-  const usageCode = `import dynamic from 'next/dynamic';
-
-const ${componentName} = dynamic(
-  () => import('assessmentService/${componentExport}'),
-  { ssr: false }
-);
-
-export default function MyPage() {
+  const usageCode = `export default function MyPage() {
   return (
-    <div className="p-8">
-      {/* The component handles its own data fetching and logic! */}
-      <${componentName} />
+    <div className="p-8 h-screen flex flex-col">
+      <h1 className="text-2xl font-bold mb-4">Integrate ${componentName}</h1>
+      
+      {/* 
+        Using Next.js Multi Zones, you can embed the application via an iframe 
+        pointing to the rewritten path, or simply use <Link href="/assessments"> 
+        to navigate the user seamlessly into the zone.
+      */}
+      <iframe 
+        src="/assessments" 
+        className="w-full grow border-0 rounded-xl shadow-sm"
+        title="${componentName} Integration"
+      />
     </div>
   );
 }`;
+
 
   return (
     <Modal open={open} onClose={onClose} className="max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
@@ -110,8 +107,8 @@ export default function MyPage() {
           <div className="flex items-start gap-3">
             <Info className="mt-0.5 h-4 w-4 text-primary" />
             <div className="text-sm text-primary/80">
-              <strong>Smart Remote:</strong> This component fetches its own data and handles its own state. 
-              Requirements: <strong>Next.js 14+</strong>, <strong>JWT Token</strong> (localStorage/cookies), and <strong>Tailwind CSS</strong>.
+              <strong>Next.js Multi Zones:</strong> The easiest way to securely embed this component. 
+              Requirements: <strong>Next.js</strong> and basic routing configuration.
             </div>
           </div>
         </div>
