@@ -428,7 +428,6 @@ export function EnterRealTimeScreen({
           <JoinFinal
             displayName={displayName}
             totalScore={totalScore}
-            rank={roomState.myRank?.rank ? `#${roomState.myRank.rank}` : "-"}
             streakCount={streakCount}
           />
         ) : null}
