@@ -18,7 +18,7 @@ export async function GET() {
     const payload = {
       resource: { dashboard: METABASE_DASHBOARD_ID },
       params: {
-        // You can add default params here if your dashboard has filters
+        client_id: process.env.API_CLIENT_ID
       },
       exp: Math.round(Date.now() / 1000) + (10 * 60) // 10 minute expiration
     };
