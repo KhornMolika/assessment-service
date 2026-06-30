@@ -8,6 +8,7 @@ export type SidebarNavItem = {
   href: string;
   hrefWithTopic: string;
   icon: LucideIcon;
+  exact?: boolean;
 };
 
 export default function SidebarNavLinks({
@@ -27,17 +28,19 @@ export default function SidebarNavLinks({
   onIntent: (href: string) => void;
   onNavigate: (pathname: string) => void;
 }) {
-  const isActive = (href: string) =>
-    href === "/"
-      ? activePathname === "/"
-      : activePathname === href || activePathname.startsWith(`${href}/`);
+  const isActive = (item: SidebarNavItem) => {
+    if (item.exact || item.href === "/") {
+      return activePathname === item.href;
+    }
+    return activePathname === item.href || activePathname.startsWith(`${item.href}/`);
+  };
   const getPathnameFromHref = (href: string) => href.split("?")[0] || "/";
 
   return (
     <>
       {items.map((item) => {
         const itemPathname = getPathnameFromHref(item.hrefWithTopic);
-        const active = isActive(item.href);
+        const active = isActive(item);
         const pending = optimisticPathname === itemPathname && currentPathname !== itemPathname;
 
         return (

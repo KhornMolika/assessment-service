@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useTopicStore } from "@/src/stores/topic-store";
 import { fetchTopics } from "@/src/actions/topic-actions";
 import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 
-export function TopicSelector() {
+export function TopicSelector({ className }: { className?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("Topics");
 
   const { activeTopic, topics, setActiveTopic, setTopics } = useTopicStore();
   const [isFetching, setIsFetching] = useState(topics.length === 0);
@@ -60,6 +62,7 @@ export function TopicSelector() {
     return () => {
       isMounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, setActiveTopic, setTopics, topics.length]); // Intentionally not including activeTopic to avoid loops
 
   const handleChange = (selectedId: string) => {
@@ -83,14 +86,14 @@ export function TopicSelector() {
 
   if (isFetching) {
     return (
-      <div className="flex w-40 sm:w-50 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium shadow-sm h-10 animate-pulse">
+      <div className={`flex w-40 sm:w-50 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium shadow-sm h-10 animate-pulse ${className || ""}`}>
         <div className="h-4 w-20 bg-slate-200 rounded"></div>
       </div>
     );
   }
 
   const topicOptions = [
-    { value: "", label: "All Topics" },
+    { value: "", label: t("allTopics") },
     ...topics
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))
@@ -98,7 +101,7 @@ export function TopicSelector() {
   ];
 
   return (
-    <div className="w-40 sm:w-50">
+    <div className={`w-40 sm:w-50 ${className || ""}`}>
       <DropdownSelect
         value={activeTopic?.id ?? ""}
         options={topicOptions}

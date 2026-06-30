@@ -25,6 +25,7 @@ export default function DeleteBankModal({
         await deleteQuestionBank(bank.id);
         toast.success("Question bank deleted successfully");
         onConfirm();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to delete bank", {
           description: error.message || "An unexpected error occurred",

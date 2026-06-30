@@ -6,6 +6,7 @@ import { Label } from "@/src/components/ui/ui/label";
 import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import { Textarea } from "@/src/components/ui/ui/textarea";
 import { Input } from "@/src/components/ui/ui/input";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Settings2, Database, FolderTree, Star, Hash, ChevronDown } from "lucide-react";
 
 const questionTypes: QuestionFormType[] = [
@@ -30,7 +31,9 @@ export type QuestionDetailsCardProps = {
 };
 
 export default function QuestionDetailsCard({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   banks,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   topics,
   formData,
   onChange,
@@ -58,7 +61,7 @@ export default function QuestionDetailsCard({
             value={formData.questionText}
             onChange={(event) => onChange("questionText", event.target.value)}
             required
-            className="w-full flex-1 min-h-50 resize-none rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+            className="w-full flex-1 min-h-50 resize-none rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
           />
         </div>
 
@@ -110,7 +113,7 @@ export default function QuestionDetailsCard({
               value={formData.points}
               onChange={(event) => onChange("points", event.target.value)}
               disabled={formData.questionType === "Rating Scale"}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary disabled:opacity-50 disabled:bg-slate-100 disabled:cursor-not-allowed"
             />
           </div>
         </div>

@@ -14,6 +14,7 @@ import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 
 export default function AssessmentBasicInfoStep({
   formData,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   topics,
   onChange,
   originalStatus,
@@ -58,7 +59,7 @@ export default function AssessmentBasicInfoStep({
                 value={formData.name}
                 onChange={(event) => onChange("name", event.target.value)}
                 placeholder="e.g. Compliance Readiness Check"
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
             </div>
             <div className="space-y-2 flex-1 flex flex-col">
@@ -72,7 +73,7 @@ export default function AssessmentBasicInfoStep({
                 }
                 placeholder="Explain the purpose, audience, or release context for this assessment."
                 rows={5}
-                className="w-full flex-1 min-h-30 resize-none rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full flex-1 min-h-30 resize-none rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
             </div>
           </div>

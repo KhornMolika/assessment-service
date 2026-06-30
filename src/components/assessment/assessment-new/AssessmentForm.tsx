@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import type { QuestionBank, Question } from "@/src/types/api";
 import type { Topic } from "@/src/types/topic.types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import AssessmentBasicInfoStep from "./AssessmentBasicInfoStep";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
@@ -12,6 +13,7 @@ import AssessmentQuestionStep from "./AssessmentQuestionStep";
 import AssessmentSummaryCard from "./AssessmentSummaryCard";
 import { Button } from "@/src/components/ui/ui/button";
 import { Modal } from "@/src/components/ui/ui/modal";
+import { TopicSelector } from "@/src/components/topic-selector";
 import Link from "next/link";
 import { useAssessmentForm } from "@/src/hooks/use-assessment-form";
 import { toast } from "sonner";
@@ -50,6 +52,7 @@ export default function AssessmentForm({
     handleAddGradeLabel,
     handleRemoveGradeLabel,
     handleSubmit,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     handlePublish,
     destination,
     activeTopic
@@ -66,6 +69,7 @@ export default function AssessmentForm({
   const invalidQuestions = formData.sessionMode === "REAL_TIME" 
     ? questions.filter(q => formData.selectedQuestionIds.includes(q.id) && (q.type === "ESSAY" || q.type === "SHORT_ANSWER"))
     : [];
+  const isPublishedEdit = mode === "edit" && formData.status === "PUBLISHED";
 
   const onContinueClick = () => {
     if (currentStep === 2) {
@@ -121,7 +125,9 @@ export default function AssessmentForm({
         ? `Duplicate ${formData.name || "Assessment"}`
         : "Create New Assessment";
   const headerDescription =
-    mode === "edit"
+    isPublishedEdit
+      ? "This assessment is published, so only the schedule and time limit can be changed."
+      : mode === "edit"
       ? "Update assessment settings, question strategy, and participant rules."
       : "Configure delivery, choose questions, and shape participant experience before launch.";
 
@@ -132,31 +138,38 @@ export default function AssessmentForm({
         description={headerDescription}
         backHref={destination}
         actions={
-          <Link
-            href={destination}
-            className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted bg-white"
-          >
-            Cancel
-          </Link>
+          <div className="flex shrink-0 items-center gap-3">
+            <TopicSelector className="embed-only-element" />
+            <Link
+              href={destination}
+              className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted bg-white"
+            >
+              Cancel
+            </Link>
+          </div>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] shadow-sm">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] embed-stack">
+        <section className="min-w-0 rounded-2xl border border-border/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfdfc_100%)] dark:bg-card dark:bg-none shadow-sm">
           <div className="border-b border-border/70 px-4 py-4 sm:px-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-1">
                 <h2 className="text-xl font-bold text-[#14352b]">
-                  {mode === "edit"
+                  {isPublishedEdit
+                    ? "Published Schedule"
+                    : mode === "edit"
                     ? "Assessment Setup"
                     : "Build Your Assessment"}
                 </h2>
                 <p className="text-sm text-inkd">
-                  Complete the current section before moving forward.
+                  {isPublishedEdit
+                    ? "Update the time limit, start date, and end date for this published assessment."
+                    : "Complete the current section before moving forward."}
                 </p>
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                Step {currentStep} of 3
+                {isPublishedEdit ? "Schedule only" : `Step ${currentStep} of 3`}
               </div>
             </div>
           </div>
@@ -179,29 +192,12 @@ export default function AssessmentForm({
               </div>
             )}
             
-            {status === "PUBLISHED" && currentStep !== 2 && (
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-md">
-                <div className="flex">
-                  <div className="shrink-0">
-                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-blue-700">
-                      This assessment is published. Core details and questions are locked and cannot be edited. You can only edit settings (Step 2).
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             <form id={formId} onSubmit={handleSubmit} className="min-w-0" onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.target as HTMLElement).tagName === 'INPUT') {
                 e.preventDefault();
               }
             }}>
-              <fieldset disabled={isPending || (!activeTopic && !formData.ownerTopicId) || (status === "PUBLISHED" && currentStep !== 2)}>
+              <fieldset disabled={isPending || (!activeTopic && !formData.ownerTopicId)}>
 
 
               {currentStep === 1 ? (
@@ -218,6 +214,7 @@ export default function AssessmentForm({
                   onGradeLabelChange={handleGradeLabelChange}
                   onAddGradeLabel={handleAddGradeLabel}
                   onRemoveGradeLabel={handleRemoveGradeLabel}
+                  publishedScheduleOnly={isPublishedEdit}
                 />
               ) : (
                 <AssessmentQuestionStep
@@ -240,9 +237,9 @@ export default function AssessmentForm({
               <Button
                 type="button"
                 onClick={handlePrevious}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isPublishedEdit}
                 className={`inline-flex w-full items-center justify-center rounded-xl border px-4 py-3 text-sm font-semibold transition sm:w-auto ${
-                  currentStep === 1
+                  currentStep === 1 || isPublishedEdit
                     ? "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400"
                     : "border-[#C8A246]/40 bg-white text-[#C8A246] hover:bg-[#C8A246]/10"
                 }`}
@@ -250,7 +247,7 @@ export default function AssessmentForm({
                 Previous
               </Button>
               <div className="sm:min-w-52">
-                {currentStep < 3 ? (
+                {currentStep < 3 && !isPublishedEdit ? (
                   <Button
                     type="button"
                     onClick={onContinueClick}
@@ -266,6 +263,7 @@ export default function AssessmentForm({
                 ) : (
                   <Button
                     type="button"
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick={(e) => handleSubmit(e as any)}
                     disabled={isPending || !canContinue}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
@@ -278,7 +276,7 @@ export default function AssessmentForm({
           </div>
         </section>
 
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start embed-hide">
           <div className="rounded-[1.75rem] border border-emerald-200/80 bg-white/90 p-3 shadow-sm backdrop-blur sm:p-4">
             <AssessmentSummaryCard
               formData={formData}
@@ -298,6 +296,7 @@ export default function AssessmentForm({
           {warningType === "CONTAINS_INVALID_QUESTIONS" && "Invalid Questions For Real-Time"}
         </h2>
         <div className="text-sm text-slate-600 mb-6 leading-relaxed">
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
           {warningType === "DEFAULT_SETTINGS" && <p>You haven't selected a start date, end date, or time limit. We will proceed using the default settings configuration (no time limit, always available). Are you sure you want to proceed?</p>}
           {warningType === "PAST_START_DATE" && <p>You have selected a Start Date that is in the past. This means participants will be able to join the assessment immediately. Are you sure you want to proceed?</p>}
           {warningType === "MISSING_START_DATE" && <p>You have selected an End Date but no Start Date. This means the assessment is effectively active immediately until the End Date. Are you sure you want to proceed?</p>}

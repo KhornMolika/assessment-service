@@ -1,5 +1,6 @@
 "use client";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Clock3, Plus, Sparkles, TimerReset, Trash2, ChevronDown } from "lucide-react";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
@@ -14,6 +15,7 @@ export default function AssessmentSettingsStep({
   onGradeLabelChange,
   onAddGradeLabel,
   onRemoveGradeLabel,
+  publishedScheduleOnly = false,
 }: {
   formData: NewAssessmentFormData;
   onChange: <K extends keyof NewAssessmentFormData>(
@@ -27,7 +29,79 @@ export default function AssessmentSettingsStep({
   ) => void;
   onAddGradeLabel: () => void;
   onRemoveGradeLabel: (index: number) => void;
+  publishedScheduleOnly?: boolean;
 }) {
+  if (publishedScheduleOnly) {
+    return (
+      <div className="space-y-5">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-5 py-4 text-sm font-medium leading-relaxed text-emerald-900">
+          This assessment is already published. Core details, participant rules, scoring, and questions are locked; only the schedule below can be updated.
+        </div>
+
+        <Card className="border-emerald-200/80 bg-white shadow-sm">
+          <CardHeader className="rounded-t-2xl border-b border-emerald-100 bg-[linear-gradient(135deg,#f2fbf4_0%,#ffffff_100%)] dark:bg-card dark:bg-none">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
+                <Clock3 className="h-5 w-5" />
+              </span>
+              <div>
+                <CardTitle className="text-lg text-[#14352b]">Published Schedule</CardTitle>
+                <CardDescription>
+                  Adjust when learners can access this assessment.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <Label htmlFor="timeLimitMinutes" className="text-sm font-bold text-slate-800">Time limit (minutes)</Label>
+                <Input
+                  id="timeLimitMinutes"
+                  name="timeLimitMinutes"
+                  type="number"
+                  min={0}
+                  value={formData.timeLimitMinutes}
+                  onChange={(event) => {
+                    const value = Number(event.target.value) || 0;
+                    onChange("timeLimitMinutes", value);
+                    onChange("enableTimeLimit", value > 0);
+                  }}
+                  className="w-full rounded-xl border-emerald-200 px-3 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+                <p className="text-xs text-slate-500">Use 0 if the assessment should stay untimed.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="startsAt" className="text-sm font-bold text-slate-800">Starts at</Label>
+                <Input
+                  id="startsAt"
+                  name="startsAt"
+                  type="datetime-local"
+                  value={formData.startsAt}
+                  onChange={(event) => onChange("startsAt", event.target.value)}
+                  className="w-full rounded-xl border-emerald-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endsAt" className="text-sm font-bold text-slate-800">Ends at</Label>
+                <Input
+                  id="endsAt"
+                  name="endsAt"
+                  type="datetime-local"
+                  value={formData.endsAt}
+                  onChange={(event) => onChange("endsAt", event.target.value)}
+                  className="w-full rounded-xl border-emerald-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 shadow-sm transition-all focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
@@ -42,13 +116,13 @@ export default function AssessmentSettingsStep({
             <button
               type="button"
               onClick={() => onChange("sessionMode", "SELF_PACED")}
-              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 formData.sessionMode === "SELF_PACED"
-                  ? "bg-indigo-50 border-indigo-500 shadow-sm ring-1 ring-indigo-500"
+                  ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary"
                   : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm"
               }`}
             >
-              <TimerReset className={`h-6 w-6 shrink-0 ${formData.sessionMode === "SELF_PACED" ? "text-indigo-700" : "text-slate-500"}`} />
+              <TimerReset className={`h-6 w-6 shrink-0 ${formData.sessionMode === "SELF_PACED" ? "text-primary" : "text-slate-500"}`} />
               <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "SELF_PACED" ? "text-slate-900" : "text-slate-800"}`}>Self Paced</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Participants can enter on their own schedule and complete independently.
@@ -58,13 +132,13 @@ export default function AssessmentSettingsStep({
             <button
               type="button"
               onClick={() => onChange("sessionMode", "REAL_TIME")}
-              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 formData.sessionMode === "REAL_TIME"
-                  ? "bg-indigo-50 border-indigo-500 shadow-sm ring-1 ring-indigo-500"
+                  ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary"
                   : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm"
               }`}
             >
-              <Sparkles className={`h-6 w-6 shrink-0 ${formData.sessionMode === "REAL_TIME" ? "text-indigo-700" : "text-slate-500"}`} />
+              <Sparkles className={`h-6 w-6 shrink-0 ${formData.sessionMode === "REAL_TIME" ? "text-primary" : "text-slate-500"}`} />
               <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.sessionMode === "REAL_TIME" ? "text-slate-900" : "text-slate-800"}`}>Real Time</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Host-led delivery with fixed launch windows and shared timing expectations.
@@ -76,13 +150,13 @@ export default function AssessmentSettingsStep({
             <button
               type="button"
               onClick={() => onChange("questionSelection", "MANUAL")}
-              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 formData.questionSelection === "MANUAL"
-                  ? "bg-indigo-50 border-indigo-500 shadow-sm ring-1 ring-indigo-500"
+                  ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary"
                   : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm"
               }`}
             >
-              <Clock3 className={`h-6 w-6 shrink-0 ${formData.questionSelection === "MANUAL" ? "text-indigo-700" : "text-slate-500"}`} />
+              <Clock3 className={`h-6 w-6 shrink-0 ${formData.questionSelection === "MANUAL" ? "text-primary" : "text-slate-500"}`} />
               <h3 className={`mt-4 text-lg font-bold whitespace-normal leading-tight ${formData.questionSelection === "MANUAL" ? "text-slate-900" : "text-slate-800"}`}>Manual Selection</h3>
               <p className="mt-1 text-sm text-slate-600 whitespace-normal leading-relaxed">
                 Hand-pick the exact questions that will appear in this assessment.
@@ -93,9 +167,9 @@ export default function AssessmentSettingsStep({
               type="button"
               disabled={formData.sessionMode === "REAL_TIME"}
               onClick={() => onChange("questionSelection", "DYNAMIC")}
-              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+              className={`flex w-full flex-col items-start rounded-2xl border p-5 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                 formData.questionSelection === "DYNAMIC"
-                  ? "bg-indigo-50 border-indigo-500 shadow-sm ring-1 ring-indigo-500"
+                  ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary"
                   : formData.sessionMode === "REAL_TIME"
                   ? "border-slate-100 bg-slate-50/50 opacity-50 cursor-not-allowed"
                   : "border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-sm"
@@ -103,7 +177,7 @@ export default function AssessmentSettingsStep({
             >
               <Sparkles className={`h-6 w-6 shrink-0 ${
                 formData.questionSelection === "DYNAMIC" 
-                  ? "text-indigo-700" 
+                  ? "text-primary" 
                   : formData.sessionMode === "REAL_TIME"
                   ? "text-slate-300"
                   : "text-slate-500"
@@ -173,7 +247,7 @@ export default function AssessmentSettingsStep({
                   onChange("timeLimitMinutes", value);
                   onChange("enableTimeLimit", value > 0);
                 }}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
               <p className="text-xs text-slate-500">Use `0` if the assessment should stay untimed.</p>
             </div>
@@ -186,7 +260,7 @@ export default function AssessmentSettingsStep({
                 type="datetime-local"
                 value={formData.startsAt}
                 onChange={(event) => onChange("startsAt", event.target.value)}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
             </div>
 
@@ -198,12 +272,12 @@ export default function AssessmentSettingsStep({
                 type="datetime-local"
                 value={formData.endsAt}
                 onChange={(event) => onChange("endsAt", event.target.value)}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 pl-3 pr-1 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-1">
+          <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -218,7 +292,26 @@ export default function AssessmentSettingsStep({
                   type="checkbox"
                   checked={formData.shuffleQuestions}
                   onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
-                  className="mt-1 h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500/50 cursor-pointer"
+                  className="mt-1 h-5 w-5 rounded text-primary focus:ring-primary/50 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Label htmlFor="enableAiGrading" className="font-bold text-slate-800 cursor-pointer">Enable AI Auto-Grading</Label>
+                  <p className="mt-1 text-sm text-slate-500 whitespace-normal leading-relaxed">
+                    Automatically use AI to review and score subjective questions (Essay/Short Answer).
+                  </p>
+                </div>
+                <Input
+                  id="enableAiGrading"
+                  name="enableAiGrading"
+                  type="checkbox"
+                  checked={formData.enableAiGrading}
+                  onChange={(event) => onChange("enableAiGrading", event.target.checked)}
+                  className="mt-1 h-5 w-5 rounded text-primary focus:ring-primary/50 cursor-pointer"
                 />
               </div>
             </div>
@@ -235,7 +328,7 @@ export default function AssessmentSettingsStep({
                 max={100}
                 value={formData.passMark}
                 onChange={(event) => onChange("passMark", Number(event.target.value) || 0)}
-                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                className="w-full rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
               />
             </div>
 
@@ -284,7 +377,7 @@ export default function AssessmentSettingsStep({
                     onChange={(event) => onGradeLabelChange(index, "grade", event.target.value)}
                     placeholder="Grade label"
                     aria-label={`Grade label ${index + 1}`}
-                    className="rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                    className="rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
                   />
                   <Input
                     id={`grade-minPercent-${index}`}
@@ -298,7 +391,7 @@ export default function AssessmentSettingsStep({
                     }
                     placeholder="Minimum percent"
                     aria-label={`Minimum percent for grade ${index + 1}`}
-                    className="rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm"
+                    className="rounded-xl border-slate-200 px-4 py-3 text-base text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
                   />
                   <Button
                     type="button"

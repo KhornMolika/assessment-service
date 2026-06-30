@@ -14,6 +14,7 @@ export default function QuestionOptionsAndAnswers({ question }: { question: ApiQ
     return (
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-slate-700 mb-4">Options</h4>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {opts.map((opt: any) => {
           const isCorrect = correctIds.includes(opt.id);
           return (
@@ -89,6 +90,7 @@ export default function QuestionOptionsAndAnswers({ question }: { question: ApiQ
       <div className="space-y-2">
         <h4 className="text-sm font-semibold text-slate-700 mb-4">Correct Sequence</h4>
         {sequenceIds.map((id: string, index: number) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const optText = opts.find((o: any) => o.id === id)?.text || id;
           return (
             <div
@@ -114,8 +116,11 @@ export default function QuestionOptionsAndAnswers({ question }: { question: ApiQ
     return (
       <div className="flex flex-col gap-3">
         <h4 className="text-sm font-semibold text-slate-700 mb-2">Matching Pairs</h4>
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {pairs.map((pair: any, index: number) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const leftText = leftSide.find((l: any) => l.id === pair.leftId)?.text || pair.leftId;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const rightText = rightSide.find((r: any) => r.id === pair.rightId)?.text || pair.rightId;
           
           return (
@@ -146,7 +151,7 @@ export default function QuestionOptionsAndAnswers({ question }: { question: ApiQ
     
     // Highlight the template placeholders
     const formattedTemplate = template.replace(/\[blank_\d+\]/g, (match: string) => {
-      return `<span class="bg-indigo-100 text-indigo-700 font-bold px-1 rounded">${match}</span>`;
+      return `<span class="bg-primary/10 text-primary font-bold px-1 rounded">${match}</span>`;
     });
 
     return (

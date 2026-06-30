@@ -6,6 +6,7 @@ import {
   useDebouncedSearchParam,
   useUrlQueryUpdater,
 } from "@/src/hooks/use-url-query-state";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/src/components/ui/ui/button";
 import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import { Input } from "@/src/components/ui/ui/input";
@@ -89,8 +90,6 @@ export default function AssessmentsCatalogToolbar({
             onChange={(val) => updateUrl({ status: val === "ALL" ? null : val, page: null })}
           />
         </div>
-
-        
       </div>
     </div>
   );

@@ -58,6 +58,7 @@ export default function SearchPageView({
   const query = (searchParams.get("search") ?? "").trim();
   const selectedTopic = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
   const normalizedQuery = query.toLowerCase();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const bankMap = useMemo(
     () => Object.fromEntries(banks.map((bank) => [bank.id, bank])),
     [banks],

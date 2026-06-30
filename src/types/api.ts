@@ -60,7 +60,9 @@ export interface Question extends BaseEntity {
   questionText: string;
   difficulty: Difficulty;
   points: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: Record<string, any> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   correctAnswer: Record<string, any> | null;
 }
 
@@ -100,6 +102,7 @@ export interface Assessment extends BaseEntity {
   type: AssessmentType;
   description?: string;
   status: AssessmentStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   settings?: any; // To be typed if needed
 }
 

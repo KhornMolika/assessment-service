@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Copy, Edit, Eye, Trash2, X, Globe, Archive, Play } from "lucide-react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import type {
@@ -17,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/ui/table";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Button } from "@/src/components/ui/ui/button";
 
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
@@ -68,6 +71,7 @@ export default function AssessmentsTable({
 }: {
   assessments: AssessmentCatalogItem[];
 }) {
+  const router = useRouter();
   const [assessmentToDelete, setAssessmentToDelete] =
     useState<AssessmentCatalogItem | null>(null);
   const [assessmentToPublish, setAssessmentToPublish] = useState<AssessmentCatalogItem | null>(null);
@@ -85,6 +89,7 @@ export default function AssessmentsTable({
         } else {
           toast.error(res.error || "Failed to delete assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
@@ -101,10 +106,18 @@ export default function AssessmentsTable({
         } else {
           toast.error(res.error || "Failed to publish assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
     });
+  };
+  const openFreshPreview = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    assessmentId: string,
+  ) => {
+    event.preventDefault();
+    router.push(`/assessments/${assessmentId}/preview?run=${Date.now()}`);
   };
 
   const handleArchive = (id: string) => {
@@ -117,6 +130,7 @@ export default function AssessmentsTable({
         } else {
           toast.error(res.error || "Failed to archive assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
@@ -125,18 +139,18 @@ export default function AssessmentsTable({
 
   return (
     <>
-      <Table className="min-w-280">
+      <Table>
         <TableHeader>
-          <TableRow className="bg-muted/40">
+          <TableRow>
             <TableHead>Assessment</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Mode</TableHead>
-            <TableHead>Time Limit</TableHead>
-            <TableHead>Identity</TableHead>
-            <TableHead>Selection</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead className="text-center">Type</TableHead>
+            <TableHead className="text-center">Mode</TableHead>
+            <TableHead className="text-center">Time Limit</TableHead>
+            <TableHead className="text-center">Identity</TableHead>
+            <TableHead className="text-center">Selection</TableHead>
+            <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-center">Questions</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -146,7 +160,7 @@ export default function AssessmentsTable({
             const actualStatus = assessment.status;
             const actualStartsAt = assessment.settings?.startsAt || assessment.createdAt;
             const actualEndsAt = assessment.settings?.endsAt;
-            const actualNumQuestions = assessment.settings?.numQuestions ?? 0;
+            const actualNumQuestions = assessment.questionCount ?? assessment.settings?.numQuestions ?? 0;
             const actualType = assessment.type || "QUIZ";
             const actualSelection = assessment.settings?.questionSelection || "MANUAL";
             const actualTimeLimit = assessment.settings?.timeLimit;
@@ -168,22 +182,22 @@ export default function AssessmentsTable({
                     </p>
                   </div>
                 </TableCell>
-                <TableCell className="text-inkd capitalize">
+                <TableCell className="text-center text-inkd capitalize">
                   {actualType.toLowerCase()}
                 </TableCell>
-                <TableCell className="text-inkd">
+                <TableCell className="text-center text-inkd">
                   {formatDeliveryMode(actualMode as AssessmentDeliveryMode)}
                 </TableCell>
-                <TableCell className="text-inkd">
+                <TableCell className="text-center text-inkd">
                   {actualTimeLimit ? `${actualTimeLimit} min` : "-"}
                 </TableCell>
-                <TableCell className="text-inkd capitalize">
+                <TableCell className="text-center text-inkd capitalize">
                   {actualIdentity.toLowerCase()}
                 </TableCell>
-                <TableCell className="text-inkd capitalize">
+                <TableCell className="text-center text-inkd capitalize">
                   {actualSelection.toLowerCase()}
                 </TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge variant={getLifecycleBadgeVariant(actualStatus as AssessmentLifecycle)}>
                     {formatLifecycle(actualStatus as AssessmentLifecycle)}
                   </Badge>
@@ -191,7 +205,7 @@ export default function AssessmentsTable({
                 <TableCell className="text-center font-medium text-primary">
                   {actualNumQuestions}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-center">
                   <ActionMenu>
                     {actualStatus === "DRAFT" && (
                       <button
@@ -216,12 +230,14 @@ export default function AssessmentsTable({
                     {actualStatus === "PUBLISHED" && (
                       <>
                         <AssessmentShareAction
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
                           assessment={assessment as any}
                           buttonClassName="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-sky-600 transition hover:bg-sky-50"
                           labelClassName=""
                         />
                         <Link
                           href={`/assessments/${assessment.id}/preview`}
+                          onClick={(event) => openFreshPreview(event, assessment.id)}
                           className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
                         >
                           <Play className="h-4 w-4" /> Preview
@@ -234,30 +250,17 @@ export default function AssessmentsTable({
                     >
                       <Eye className="h-4 w-4" /> View
                     </Link>
-                    {actualStatus === "ARCHIVED" ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toast.error("An archived assessment cannot be edited anymore.", {
-                            id: "edit-blocked-toast",
-                          });
-                        }}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-gray-400 transition hover:bg-gray-50 cursor-not-allowed"
-                      >
-                        <Edit className="h-4 w-4" /> Edit
-                      </button>
-                    ) : (
+                    {actualStatus !== "ARCHIVED" ? (
                       <Link
                         href={`/assessments/${assessment.id}/edit`}
                         className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
                       >
                         <Edit className="h-4 w-4" /> Edit
                       </Link>
-                    )}
+                    ) : null}
                     <Link
                       href={`/assessments/${assessment.id}/duplicate`}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-primary transition hover:bg-primary/5"
                     >
                       <Copy className="h-4 w-4" /> Duplicate
                     </Link>

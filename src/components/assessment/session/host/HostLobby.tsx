@@ -2,8 +2,8 @@ import Avatar from "boring-avatars";
 import { Copy, PlayCircle, QrCode, Radio, Volume2, VolumeX } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { RealtimeParticipant } from '@/src/types/session.types';
-import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 import { Button } from "@/src/components/ui/ui/button";
+import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.utils';
 
 export function HostLobby({
   embedded,
@@ -34,7 +34,7 @@ export function HostLobby({
         embedded ? "2xl:h-full 2xl:grid-cols-[22rem_minmax(0,1fr)]" : "xl:h-full xl:grid-cols-[30rem_minmax(0,1fr)]"
       }`}
     >
-      <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
+      <div className="rt-card-pop rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(180deg,#16352A_0%,#214E3C_100%)] dark:bg-background dark:bg-none p-5 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)]">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
           <QrCode className="h-4 w-4 text-[#95D5B2]" />
           Lobby
@@ -121,10 +121,10 @@ export function HostLobby({
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl shadow-sm ring-1 ring-border/60">
                   <Avatar
-                    size={48}
-                    name={`${participant.id}-${participant.name}`}
-                    variant={getAvatarVariant(`${participant.id}-${participant.name}`)}
-                    colors={getAvatarColors(`${participant.id}-${participant.name}`)}
+                    size={56}
+                    name={participant.name}
+                    variant={getAvatarVariant(participant.name)}
+                    colors={getAvatarColors(participant.name)}
                   />
                 </div>
                 <div className="min-w-0">

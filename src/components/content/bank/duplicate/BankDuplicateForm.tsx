@@ -81,6 +81,7 @@ export default function BankDuplicateForm({
         });
         toast.success("Question bank duplicated successfully");
         router.refresh();        router.push("/banks");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         toast.error("Failed to duplicate bank", {
           description: err.message || "An unexpected error occurred",

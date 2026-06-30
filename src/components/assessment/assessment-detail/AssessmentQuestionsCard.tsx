@@ -167,6 +167,7 @@ export default function AssessmentQuestionsCard({
       open={modalOpen}
       onClose={() => setModalOpen(false)}
       assessmentId={assessment.id}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       topicId={(assessment as any).topic?.id || (assessment as any).topicId || ""}
       existingQuestionIds={questions.map(q => q.question_id || q.id)}
     />

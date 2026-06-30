@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { toast } from "sonner";
-import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive, Play, MonitorPlay, Users } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive, Play, MonitorPlay, Users, BarChart2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { AssessmentDetailRecord } from "@/src/types/assessment-detail.types";
@@ -47,6 +48,7 @@ export default function AssessmentDetailHeader({
         } else {
           toast.error(res.error || "Failed to delete assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
@@ -64,6 +66,7 @@ export default function AssessmentDetailHeader({
         } else {
           toast.error(res.error || "Failed to publish assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
@@ -81,6 +84,7 @@ export default function AssessmentDetailHeader({
         } else {
           toast.error(res.error || "Failed to archive assessment");
         }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         toast.error(e.message || "An unexpected error occurred");
       }
@@ -89,6 +93,11 @@ export default function AssessmentDetailHeader({
 
   const actualTitle = assessment.name || "Untitled";
   const mode = assessment.settings?.mode;
+  const previewPath = `/assessments/${assessment.id}/preview`;
+  const openFreshPreview = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    router.push(`${previewPath}?run=${Date.now()}`);
+  };
 
   return (
     <section>
@@ -98,10 +107,12 @@ export default function AssessmentDetailHeader({
           title="Assessment Details"
           actions={
             <div className="flex items-center gap-3">
+
               {assessment.status === "PUBLISHED" ? (
                 <>
                   <Link
-                    href={`/assessments/${assessment.id}/preview`}
+                    href={previewPath}
+                    onClick={openFreshPreview}
                     className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
                   >
                     <Play className="h-4 w-4" />
@@ -151,29 +162,17 @@ export default function AssessmentDetailHeader({
 
               {showMenu && (
                 <div className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-xl border border-border bg-card shadow-xl">
-                  {assessment.status === "ARCHIVED" ? (
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        toast.error("An archived assessment cannot be edited anymore.", {
-                          id: "edit-blocked-toast",
-                        });
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-gray-400 transition hover:bg-gray-50 cursor-not-allowed"
-                    >
-                      <Edit className="h-4 w-4" /> Edit
-                    </button>
-                  ) : (
+                  {assessment.status !== "ARCHIVED" ? (
                     <Link
                       href={`/assessments/${assessment.id}/edit`}
                       className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
                     >
                       <Edit className="h-4 w-4" /> Edit
                     </Link>
-                  )}
+                  ) : null}
                   <Link
                     href={`/assessments/${assessment.id}/duplicate`}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-primary transition hover:bg-primary/5"
                   >
                     <Copy className="h-4 w-4" /> Duplicate
                   </Link>

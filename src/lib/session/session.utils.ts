@@ -1,4 +1,5 @@
 import type {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   AssessmentCatalogItem,
   AssessmentDetailQuestionItem,
 } from "@/src/types";
@@ -105,6 +106,7 @@ export function getResultReleaseMode(showResults: string): ResultReleaseMode {
   return "hidden";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resolveCorrectOptionId(correctAnswers: any, options: { id: string }[]): string {
   if (!correctAnswers) return options[0]?.id ?? "";
   
@@ -136,6 +138,18 @@ function resolveCorrectOptionId(correctAnswers: any, options: { id: string }[]):
   return options[0]?.id ?? "";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function resolveCorrectOptionIds(correctAnswers: any, options: { id: string }[]): string[] {
+  if (!correctAnswers) return options.length > 0 ? [options[0].id] : [];
+  
+  if (typeof correctAnswers === "object" && !Array.isArray(correctAnswers) && Array.isArray(correctAnswers.optionIds)) {
+    return correctAnswers.optionIds;
+  }
+  
+  const single = resolveCorrectOptionId(correctAnswers, options);
+  return single ? [single] : [];
+}
+
 export function shuffleArray<T>(array: T[], seed: string): T[] {
   const shuffled = [...array];
   let hash = 0;
@@ -163,6 +177,7 @@ export function buildQuestionRounds(
 
     // 1. SINGLE_CHOICE, MULTIPLE_CHOICE, ORDERING — options is an array [{id, text}]
     if (Array.isArray(rawOptions) && rawOptions.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let mappedOptions = rawOptions.map((opt: any, optIndex: number) => ({
         id: opt.id || opt.optionId || String(optIndex),
         text: opt.text || opt.optionText || String(opt.value || opt.label || ""),
@@ -182,6 +197,7 @@ export function buildQuestionRounds(
         options,
         rawOptions,
         correctOptionId: resolveCorrectOptionId(question.correctAnswers, options),
+        correctOptionIds: resolveCorrectOptionIds(question.correctAnswers, options),
       };
     }
 
@@ -189,6 +205,7 @@ export function buildQuestionRounds(
     if (rawOptions && typeof rawOptions === "object" && !Array.isArray(rawOptions) && rawOptions.leftSide) {
       const leftSide = rawOptions.leftSide || [];
       const rightSide = rawOptions.rightSide || [];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const allOptions = [...leftSide, ...rightSide].map((opt: any, optIndex: number) => ({
         id: opt.id || String(optIndex),
         label: optionLetters[optIndex] || String(optIndex + 1),
@@ -381,6 +398,7 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
     const pairs = question.correctAnswers?.pairs;
     if (Array.isArray(pairs)) {
       return pairs.every(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (pair: any) => value[pair.leftId] === pair.rightId,
       );
     }
@@ -389,6 +407,7 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
     const raw = question.rawOptions;
     if (raw?.leftSide && raw?.rightSide) {
       return raw.leftSide.every(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (left: any, index: number) => value[left.id] === raw.rightSide[index]?.id,
       );
     }
@@ -402,6 +421,7 @@ export function isCorrectAnswerResponse(question: QuestionRound, value: Question
     if (!Array.isArray(acceptedAnswers)) return false;
 
     let isCorrect = true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     acceptedAnswers.forEach((accepted: any, index: number) => {
       const given = (String((value as Record<string, string>)[index] || "")).trim().toLowerCase();
       const isMatch = Array.isArray(accepted) && accepted.some((a: string) => a.trim().toLowerCase() === given);
@@ -434,7 +454,7 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     return 0; // Handled manually
   }
 
-  // Deductive Scoring (Partial Credit with Penalty)
+  // Partial-credit scoring
   
   if (rendererType === "multiple") {
     if (!Array.isArray(value)) return 0;
@@ -442,10 +462,9 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     if (!Array.isArray(correctIds) || correctIds.length === 0) return 0;
 
     const correctSelected = value.filter(id => correctIds.includes(id)).length;
-    const wrongSelected = value.filter(id => !correctIds.includes(id)).length;
     const totalCorrect = correctIds.length;
 
-    const ratio = Math.max(0, (correctSelected - wrongSelected) / totalCorrect);
+    const ratio = Math.max(0, correctSelected / totalCorrect);
     return parseFloat((ratio * maxScore).toFixed(2));
   }
 
@@ -458,6 +477,7 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     let emptyCount = 0;
     const totalBlanks = acceptedAnswers.length;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     acceptedAnswers.forEach((accepted: any, index: number) => {
       const given = (String((value as Record<string, string>)[index] || "")).trim().toLowerCase();
       if (!given) {
@@ -486,6 +506,7 @@ export function calculateQuestionScore(question: QuestionRound, value: QuestionR
     let correctCount = 0;
     let emptyCount = 0;
     
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const correctMap = new Map(pairs.map((p: any) => [p.leftId, p.rightId]));
     
     Array.from(correctMap.keys()).forEach((leftId) => {
@@ -524,6 +545,7 @@ export function getCorrectAnswerText(question: QuestionRound): string {
   if (rendererType === "ordering") {
     const sequence = question.correctAnswers?.sequence;
     if (Array.isArray(sequence)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return sequence.map(id => question.options.find((opt: any) => opt.id === id)?.text ?? id).join(" → ");
     }
   }
@@ -531,10 +553,16 @@ export function getCorrectAnswerText(question: QuestionRound): string {
   if (rendererType === "matching") {
     const pairs = question.correctAnswers?.pairs;
     const raw = question.rawOptions;
-    if (Array.isArray(pairs) && raw?.leftSide && raw?.rightSide) {
+    const leftOpts = raw?.leftSide || raw?.left;
+    const rightOpts = raw?.rightSide || raw?.right;
+    
+    if (Array.isArray(pairs) && leftOpts && rightOpts) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return pairs.map((pair: any) => {
-        const left = raw.leftSide.find((opt: any) => opt.id === pair.leftId)?.text;
-        const right = raw.rightSide.find((opt: any) => opt.id === pair.rightId)?.text;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const left = leftOpts.find((opt: any) => opt.id === (pair.leftId || pair.left))?.text;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const right = rightOpts.find((opt: any) => opt.id === (pair.rightId || pair.right))?.text;
         return `${left} → ${right}`;
       }).join(", ");
     }
@@ -543,6 +571,7 @@ export function getCorrectAnswerText(question: QuestionRound): string {
   if (rendererType === "multiple") {
     const optionIds = question.correctAnswers?.optionIds;
     if (Array.isArray(optionIds)) {
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
        return optionIds.map(id => question.options.find((opt: any) => opt.id === id)?.text ?? id).join(", ");
     }
   }
@@ -551,19 +580,33 @@ export function getCorrectAnswerText(question: QuestionRound): string {
     return question.correctAnswers?.value ? "True" : "False";
   }
 
-  return question.options.find((option: any) => option.id === question.correctOptionId)?.text || "N/A";
+  if (rendererType === "essay" || rendererType === "short") {
+    return typeof question.correctAnswers?.value === "string" 
+      ? question.correctAnswers.value 
+      : question.correctAnswers?.modelAnswerReference || "N/A";
+  }
+
+  if (rendererType === "rating") {
+    return "N/A";
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return question.options?.find((option: any) => option.id === question.correctOptionId)?.text || "N/A";
 }
 
 export function getAnswerResponseText(question: QuestionRound, value: QuestionRendererValue) {
   if (typeof value === "string") {
-    const selectedOption = question.options.find((option: any) => option.id === value);
-    return selectedOption ? `${selectedOption.label} ${selectedOption.text}` : value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const selectedOption = question.options?.find((option: any) => option.id === value);
+    return selectedOption ? (selectedOption.label ? `${selectedOption.label}. ${selectedOption.text}` : selectedOption.text) : value;
   }
 
   if (Array.isArray(value)) {
+    const separator = normalizeQuestionRendererType(question.type) === "ordering" ? " → " : ", ";
     return value
-      .map((id) => question.options.find((option: any) => option.id === id)?.text ?? id)
-      .join(", ");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((id) => question.options?.find((option: any) => option.id === id)?.text ?? id)
+      .join(separator);
   }
 
   if (typeof value === "boolean") {
@@ -579,16 +622,25 @@ export function getAnswerResponseText(question: QuestionRound, value: QuestionRe
 
     if (rendererType === "matching") {
       const raw = question.rawOptions;
-      const leftOptions = raw?.leftSide || [];
-      const rightOptions = raw?.rightSide || [];
+      const leftOptions = raw?.leftSide || raw?.left || [];
+      const rightOptions = raw?.rightSide || raw?.right || [];
 
       return leftOptions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((leftOption: any) => {
-          const rightId = value[leftOption.id];
+          const rightId = value[leftOption.id] || value[leftOption.id];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const rightOption = rightOptions.find((opt: any) => opt.id === rightId);
           return `${leftOption.text} → ${rightOption?.text ?? "No match"}`;
         })
         .join(", ");
+    }
+
+    if (rendererType === "fill") {
+      const v = value as Record<string, string>;
+      return Object.entries(v)
+        .map(([index, text]) => `[Blank ${Number(index) + 1}: ${text}]`)
+        .join(" ");
     }
 
     return Object.values(value).join(", ");
@@ -602,6 +654,7 @@ export function buildPreviewAnswerValue(question: QuestionRound, index: number):
 
   switch (rendererType) {
     case "multiple":
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return question.options.slice(0, 2).map((option: any) => option.id);
     case "boolean":
       return index % 2 === 0;

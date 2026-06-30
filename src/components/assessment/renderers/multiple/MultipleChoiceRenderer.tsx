@@ -20,15 +20,18 @@ export function MultipleChoiceRenderer({
 
   return (
     <div className={`grid w-full gap-3 ${question.options.length === 4 ? 'sm:grid-cols-2' : ''}`}>
-      {question.options.map((option: { id: string; label: string; text: string }) => (
-        <QuestionOptionButton
-          key={option.id}
-          option={option}
-          selected={selectedIds.includes(option.id)}
-          disabled={disabled}
-          onClick={() => toggleOption(option.id)}
-        />
-      ))}
+      {question.options.map((option: { id: string; label?: string; text: string }, index: number) => {
+        const defaultLabel = String.fromCharCode(65 + index); // A, B, C, D...
+        return (
+          <QuestionOptionButton
+            key={option.id}
+            option={{ ...option, label: option.label || defaultLabel }}
+            selected={selectedIds.includes(option.id)}
+            disabled={disabled}
+            onClick={() => toggleOption(option.id)}
+          />
+        );
+      })}
     </div>
   );
 }

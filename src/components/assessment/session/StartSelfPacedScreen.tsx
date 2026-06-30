@@ -16,6 +16,7 @@ import { SelfPacedQuiz } from "./self-paced/SelfPacedQuiz";
 import { SelfPacedResult } from "./self-paced/SelfPacedResult";
 import {
   buildQuestionRounds,
+  calculateQuestionScore,
   formatDurationClock,
   getResultReleaseMode,
   isCorrectAnswerResponse,
@@ -41,7 +42,7 @@ export function StartSelfPacedScreen({
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
-  const allowShareAnswerSheet = false;
+  const allowShareAnswerSheet = true;
   const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -53,23 +54,29 @@ export function StartSelfPacedScreen({
   const [remainingSeconds, setRemainingSeconds] = useState(totalTimerSeconds);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [serverResult, setServerResult] = useState<any>(null);
+
 
   const currentQuestion = rounds[questionIndex];
   const confirmationItems = rounds.map((question) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const serverEntry = serverResult?.entries?.find((e: any) => e.assessmentQuestionId === question.id || e.assessmentQuestion?.id === question.id);
     return {
       question,
       answerValue: answers[question.id] ?? null,
+      serverScore: serverEntry ? (serverEntry.scoreAwarded !== null && serverEntry.scoreAwarded !== undefined ? Number(serverEntry.scoreAwarded) : null) : undefined,
+      gradingStatus: serverEntry?.gradingStatus,
     };
   });
 
   const scoreSummary = useMemo(() => {
-    const totalPoints = rounds.reduce((sum, question) => sum + question.points, 0);
-    const earnedPoints = rounds.reduce((sum, question) => {
-      return isCorrectAnswerResponse(question, answers[question.id] ?? null)
-        ? sum + question.points
-        : sum;
+    const totalPoints = rounds.reduce((sum, question) => sum + (question.points || 0), 0);
+    const earnedPointsRaw = rounds.reduce((sum, question) => {
+      return sum + calculateQuestionScore(question, answers[question.id] ?? null);
     }, 0);
+    const earnedPoints = parseFloat(earnedPointsRaw.toFixed(2));
+    
     const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
     const grade =
       assessment.settings?.gradeLabels?.find((band) => percent >= band.minPercent)?.grade ??
@@ -84,7 +91,26 @@ export function StartSelfPacedScreen({
     };
   }, [answers, assessment.settings?.gradeLabels, assessment.settings?.passMark, rounds]);
 
+  const finalScoreSummary = serverResult ? {
+    earnedPoints: serverResult.totalScore ?? scoreSummary.earnedPoints,
+    totalPoints: serverResult.maxScore ?? scoreSummary.totalPoints,
+    grade: serverResult.grade ?? scoreSummary.grade,
+    passed: serverResult.isPassed ?? scoreSummary.passed,
+  } : scoreSummary;
 
+
+
+    // Poll for real-time updates when on the end screen
+  useEffect(() => {
+    if (step !== "end" || !sessionId) return;
+    const interval = setInterval(async () => {
+      const res = await getSessionResult(sessionId);
+      if (res.success) {
+        setServerResult(res.data);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [step, sessionId]);
 
   useEffect(() => {
     if (step !== "quiz" || totalTimerSeconds <= 0 || remainingSeconds <= 0) {
@@ -154,13 +180,21 @@ export function StartSelfPacedScreen({
       return;
     }
 
-    // Get the final result
-    const resultRes = await getSessionResult(sessionId);
+    // Get the final result, polling if it's still being graded by AI
+    let resultRes = await getSessionResult(sessionId);
+    let attempts = 0;
+    while (resultRes.success && resultRes.data?.status === "REQUIRES_REVIEW" && attempts < 10) {
+      // If AI is enabled, the backend processes it. Wait 2 seconds and poll again.
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      resultRes = await getSessionResult(sessionId);
+      attempts++;
+    }
+
     if (resultRes.success) {
       setServerResult(resultRes.data);
     }
 
-    // Ensure a minimum of 1.5s delay for the processing animation UX
+    // Ensure a minimum of 1.5s delay for the processing animation UX if no polling occurred
     const elapsed = Date.now() - startTime;
     if (elapsed < 1500) {
       await new Promise(resolve => setTimeout(resolve, 1500 - elapsed));
@@ -174,6 +208,7 @@ export function StartSelfPacedScreen({
       eyebrow={step === "entry" ? "Self-paced Participant Flow" : ""}
       title={step === "entry" ? assessment.name || "Untitled" : ""}
       description={step === "entry" ? assessment.description! : ""}
+      viewportLocked={step === "quiz"}
       aside={null}
     >
       <div className="flex flex-1 min-h-0 flex-col">
@@ -229,8 +264,9 @@ export function StartSelfPacedScreen({
 
         {step === "end" ? (
           <SelfPacedResult
+            shareUrl={`/public-results/${sessionId}`}
             resultMode={resultMode}
-            scoreSummary={scoreSummary}
+            scoreSummary={finalScoreSummary}
             allowShareAnswerSheet={allowShareAnswerSheet}
             showCorrectAnswers={showCorrectAnswers}
             items={confirmationItems}

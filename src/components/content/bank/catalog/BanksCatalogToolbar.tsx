@@ -3,8 +3,10 @@
 import { Search } from "lucide-react";
 import { useDebouncedSearchParam } from "@/src/hooks/use-url-query-state";
 import { Input } from "@/src/components/ui/ui/input";
+import { useTranslations } from "next-intl";
 
 export default function BanksCatalogToolbar() {
+  const t = useTranslations("Banks");
   const { inputValue: searchQuery, setInputValue: setSearchQuery } =
     useDebouncedSearchParam({ key: "query" });
 
@@ -14,7 +16,7 @@ export default function BanksCatalogToolbar() {
         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-inkl" />
         <Input
           type="text"
-          placeholder="Search banks"
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-pm"

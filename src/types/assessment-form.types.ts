@@ -38,4 +38,5 @@ export interface NewAssessmentFormData {
   shuffleQuestions: boolean;
   gradeLabels: AssessmentGradeLabel[];
   showResults: AssessmentResultReleaseMode;
+  enableAiGrading: boolean;
 }

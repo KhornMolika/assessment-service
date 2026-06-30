@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/src/lib/utils";
 
 export interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -11,9 +12,15 @@ export interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
   ({ className, open, onClose, children, ...props }, ref) => {
-    if (!open) return null;
+    const [mounted, setMounted] = React.useState(false);
 
-    return (
+    React.useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    if (!open || !mounted) return null;
+
+    return createPortal(
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
         onClick={onClose}
@@ -26,7 +33,8 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         >
           {children}
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 );

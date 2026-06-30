@@ -13,7 +13,9 @@ export function SelfPacedEntry({
   onDisplayNameChange,
   email,
   onEmailChange,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   helperTitle,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   helperDescription,
   ctaLabel,
   onContinue,

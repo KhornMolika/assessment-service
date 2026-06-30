@@ -1,6 +1,9 @@
+"use client";
+
 import { ArrowRight, Trophy } from "lucide-react";
 import type { LeaderboardEntry } from '@/src/types/session.types';
 import { Button } from "@/src/components/ui/ui/button";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export function HostLeaderboard({
   leaderboard,
@@ -11,6 +14,8 @@ export function HostLeaderboard({
   isLastQuestion: boolean;
   onNext: () => void;
 }) {
+  const [parent] = useAutoAnimate();
+
   return (
     <div className="flex flex-col gap-5 lg:h-full lg:min-h-0">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -31,16 +36,16 @@ export function HostLeaderboard({
         </Button>
       </div>
 
-      <div className="rt-card-pop flex-1 rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] p-4 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] sm:p-5 lg:min-h-0 lg:p-6">
+      <div className="rt-card-pop flex-1 rounded-[30px] border border-[#1C5C45]/20 bg-[linear-gradient(160deg,#16352A_0%,#214E3C_35%,#277DA1_100%)] dark:bg-background dark:bg-none p-4 text-white shadow-[0_24px_60px_rgba(22,53,42,0.22)] sm:p-5 lg:min-h-0 lg:p-6">
         <div className="rounded-[28px] border border-white/10 bg-white/6 p-4 backdrop-blur-sm sm:p-5 lg:flex lg:h-full lg:min-h-0 lg:flex-col">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Full ranking</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Gap to lead</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Rank</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Participant</p>
+            <p className="ml-auto text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Score</p>
           </div>
 
-          <div className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr">
+          <div ref={parent} className="mt-4 grid gap-4 lg:min-h-0 lg:flex-1 lg:auto-rows-fr">
             {leaderboard.slice(0, 5).map((entry, index) => {
-                  const gapToLead = Math.max(0, leaderboard[0]?.score - entry.score);
                   const rankDelta = entry.previousRank - entry.rank;
 
                   return (
@@ -48,7 +53,7 @@ export function HostLeaderboard({
                       key={entry.id}
                       className={`rounded-[26px] border p-4 lg:flex lg:min-h-23 lg:flex-1 lg:items-center ${
                         index === 0
-                          ? "border-[#FFD166]/35 bg-[linear-gradient(135deg,rgba(249,199,79,0.28)_0%,rgba(255,255,255,0.09)_100%)] shadow-[0_18px_40px_rgba(249,199,79,0.12)]"
+                          ? "border-[#FFD166]/35 bg-[linear-gradient(135deg,rgba(249,199,79,0.28)_0%,rgba(255,255,255,0.09)_100%)] dark:bg-card dark:bg-none shadow-[0_18px_40px_rgba(249,199,79,0.12)]"
                           : "border-white/10 bg-white/5"
                       }`}
                     >
@@ -77,10 +82,7 @@ export function HostLeaderboard({
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold">{entry.score}</p>
-                          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
-                            {gapToLead === 0 ? "Top" : `-${gapToLead}`}
-                          </p>
+                          <p className="text-2xl font-black tabular-nums">{Number(entry.score).toFixed(2).replace(/\.00$/, '')}</p>
                         </div>
                       </div>
                     </div>

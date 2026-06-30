@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Save } from "lucide-react";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { Button } from "@/src/components/ui/ui/button";
+import { TopicSelector } from "@/src/components/topic-selector";
 
 export default function BankEditHeader({ formId }: { formId: string }) {
   return (
@@ -11,6 +12,7 @@ export default function BankEditHeader({ formId }: { formId: string }) {
       description="Refine the bank metadata and review how it will appear before saving your changes."
       actions={
         <div className="flex shrink-0 items-center gap-3">
+          <TopicSelector className="embed-only-element" />
           <Link
             href="/banks"
             className="rounded-lg border border-border px-4 py-2 text-center text-sm font-semibold text-primary transition hover:bg-muted"

@@ -87,6 +87,7 @@ export function mapToApiPayload(formData: QuestionFormData, removeType: boolean 
     payloadCorrectAnswers = { ...payloadCorrectAnswers, keyPointsExpected: cleanedKeywords };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payload: any = {
     questionText: formData.questionText,
     difficulty: formData.difficulty.toUpperCase(),

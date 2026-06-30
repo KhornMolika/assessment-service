@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Input } from "@/src/components/ui/ui/input";
 import type { Question } from "@/src/types/api";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getTypeVariant(type: string) {
   switch (type) {
     case "SINGLE_CHOICE":
@@ -50,12 +51,20 @@ export default function AddAssessmentQuestionsModal({
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (open && topicId) {
+    if (open) {
+
       setLoading(true);
       setSelectedIds(new Set());
       setSearch("");
-      fetchTopicQuestions(topicId)
+      
+      // If assessment has no topic, fetch all questions
+      const fetchPromise = topicId 
+        ? fetchTopicQuestions(topicId)
+        : import("@/src/actions/question-actions").then(m => m.fetchGlobalQuestions());
+
+      fetchPromise
         .then((res) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const data = Array.isArray(res) ? res : (res as any)?.data || [];
           setQuestions(data);
         })
@@ -74,6 +83,7 @@ export default function AddAssessmentQuestionsModal({
   const filteredQuestions = useMemo(() => {
     if (!search.trim()) return availableQuestions;
     return availableQuestions.filter((q) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const qText = q.questionText || (q as any).text || "";
       return qText.toLowerCase().includes(search.trim().toLowerCase());
     });
@@ -108,7 +118,12 @@ export default function AddAssessmentQuestionsModal({
       <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
           <h2 className="text-xl font-bold text-primary">Add Questions</h2>
-          <p className="text-sm text-inkd mt-1">Select questions from the assessment's topic to append to this assessment.</p>
+
+          <p className="text-sm text-inkd mt-1">
+            {topicId 
+              ? "Select questions from the assessment's topic to append to this assessment." 
+              : "Select questions from the global bank to append to this assessment."}
+          </p>
         </div>
       </div>
 
@@ -132,7 +147,9 @@ export default function AddAssessmentQuestionsModal({
         ) : filteredQuestions.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center text-center text-inkd pt-12">
             <p>No questions found.</p>
-            {questions.length === 0 && <p className="text-sm mt-1">All available topic questions are already added.</p>}
+            {questions.length === 0 && <p className="text-sm mt-1">
+              {topicId ? "All available topic questions are already added." : "All available questions are already added."}
+            </p>}
           </div>
         ) : (
           <div className="space-y-2">
@@ -159,6 +176,7 @@ export default function AddAssessmentQuestionsModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-primary line-clamp-2 leading-snug">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {q.questionText || (q as any).text || "Untitled Question"}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-slate-500">

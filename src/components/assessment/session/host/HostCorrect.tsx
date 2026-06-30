@@ -17,7 +17,7 @@ export function HostCorrect({
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#43AA8B_0%,#7FE0C0_100%)] px-3 py-1 text-xs font-semibold text-white shadow-sm">
             <CheckCircle2 className="h-4 w-4" />
-            Correct answer
+            {currentRound.correctOptionIds && currentRound.correctOptionIds.length > 1 ? "Correct answers" : "Correct answer"}
           </div>
           <h2 className="mt-4 max-w-4xl text-2xl font-bold text-primary">{currentRound.question}</h2>
         </div>
@@ -32,12 +32,18 @@ export function HostCorrect({
       </div>
 
       <div className="min-h-0 flex-1 rounded-[30px] border border-border bg-white p-4 shadow-sm sm:p-5">
-        <div className="grid h-full min-h-80 grid-cols-4 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] p-4 sm:gap-4 sm:p-5">
-          {currentRound.options.map((option: any, index: number) => {
+        <div
+          className="grid h-full min-h-80 items-stretch gap-3 rounded-3xl bg-[linear-gradient(180deg,#F8FBF7_0%,#EEF5F1_100%)] dark:bg-card dark:bg-none p-4 sm:gap-4 sm:p-5"
+          style={{ gridTemplateColumns: `repeat(${currentRound.options?.length || 1}, minmax(0, 1fr))` }}
+        >
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {currentRound.options?.map((option: any, index: number) => {
             const distribution = responseDistribution.find((item) => item.optionId === option.id)?.count ?? 0;
             const maxCount = Math.max(...responseDistribution.map((item) => item.count), 1);
             const heightPercent = maxCount > 0 ? Math.max(18, Math.round((distribution / maxCount) * 100)) : 18;
-            const isCorrect = option.id === currentRound.correctOptionId;
+            const isCorrect = currentRound.correctOptionIds 
+              ? currentRound.correctOptionIds.includes(option.id) 
+              : option.id === currentRound.correctOptionId;
             const paletteClassName = [
               "from-[#F94144] to-[#FF6B6F]",
               "from-[#277DA1] to-[#4CC9F0]",

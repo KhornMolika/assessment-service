@@ -11,9 +11,11 @@ import {
   LayoutDashboard,
   Library,
   Tags,
-  TrendingUp,
+  BarChart2,
+  ArrowLeft,
+  Settings,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 ;
 import {
@@ -23,23 +25,21 @@ import {
 import { useSidebar } from "@/src/components/ui/layout/SidebarContext";
 import SidebarNavLinks from "./SidebarNavLinks";
 import { Button } from "@/src/components/ui/ui/button";
+import { useTranslations } from "next-intl";
 
 const workspaceNavigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Topics", href: "/topics", icon: Tags },
-  { name: "Questions", href: "/questions", icon: HelpCircle },
-  { name: "Question Banks", href: "/banks", icon: Library },
-  { name: "Assessments", href: "/assessments", icon: ClipboardList },
-];
-
-const insightsNavigation = [
-  { name: "Results", href: "/results", icon: FileText },
-  { name: "Analytics", href: "/analytics", icon: TrendingUp },
+  { tKey: "dashboard", href: "/", icon: LayoutDashboard },
+  { tKey: "topics", href: "/topics", icon: Tags },
+  { tKey: "questions", href: "/questions", icon: HelpCircle },
+  { tKey: "banks", href: "/banks", icon: Library },
+  { tKey: "assessments", href: "/assessments", icon: ClipboardList },
 ];
 
 export default function Sidebar() {
+  const t = useTranslations("Sidebar");
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [optimisticPathname, setOptimisticPathname] = useState<string | null>(null);
   const { sidebarOpen, setSidebarOpen, collapsed, setCollapsed } = useSidebar();
   const selectedTopic = useSelectedTopic();
@@ -51,18 +51,42 @@ export default function Sidebar() {
     () =>
       workspaceNavigation.map((item) => ({
         ...item,
+        name: t(item.tKey),
         hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
       })),
-    [selectedTopic],
+    [selectedTopic, t],
   );
-  const insightLinks = useMemo(
-    () =>
-      insightsNavigation.map((item) => ({
-        ...item,
-        hrefWithTopic: getHrefWithTopic(item.href, selectedTopic),
-      })),
-    [selectedTopic],
-  );
+  const assessmentMatch = pathname.match(/^\/assessments\/([0-9a-fA-F-]+)(?:\/|$)/);
+  const resultMatch = pathname.match(/^\/results\/([0-9a-fA-F-]+)(?:\/|$)/);
+  const isNewAssessment = pathname.endsWith('/new');
+  const isAssessmentsList = pathname === '/assessments';
+  const assessmentId = assessmentMatch && !isNewAssessment && !isAssessmentsList ? assessmentMatch[1] : null;
+  const resultId = resultMatch ? resultMatch[1] : null;
+  const requestedBackHref = searchParams.get("backHref");
+  const resultBackHref = requestedBackHref?.startsWith("/")
+    ? requestedBackHref
+    : "/assessments";
+
+  const assessmentNavigation = useMemo(() => {
+    if (!assessmentId) return [];
+    return [
+      { name: t("overview"), href: `/assessments/${assessmentId}`, icon: LayoutDashboard, hrefWithTopic: `/assessments/${assessmentId}`, exact: true },
+      { name: t("setup"), href: `/assessments/${assessmentId}/edit`, icon: Settings, hrefWithTopic: `/assessments/${assessmentId}/edit` },
+      { name: t("results"), href: `/assessments/${assessmentId}/reports`, icon: BarChart2, hrefWithTopic: `/assessments/${assessmentId}/reports` },
+    ];
+  }, [assessmentId, t]);
+  const resultNavigation = useMemo(() => {
+    if (!resultId) return [];
+    return [
+      {
+        name: t("answerSheet"),
+        href: `/results/${resultId}`,
+        icon: FileText,
+        hrefWithTopic: `/results/${resultId}`,
+        exact: true,
+      },
+    ];
+  }, [resultId, t]);
 
   const handleNavigation = (nextPathname?: string) => {
     if (nextPathname) {
@@ -73,7 +97,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-50 md:translate-x-0
+      className={`workspace-sidebar fixed inset-y-0 left-0 z-50 flex h-screen shrink-0 flex-col bg-[#1B4332] text-white transition-[transform,width] duration-300 md:sticky md:top-0 md:z-50 md:translate-x-0
         ${collapsed ? "w-20" : "w-72"}
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
@@ -130,35 +154,84 @@ export default function Sidebar() {
         </div>
 
         <div className="flex-1 space-y-6 px-2 py-4">
-          {!collapsed && (
-            <div className="mb-4 px-3 text-xs font-semibold text-white/40">WORKSPACE</div>
+          {assessmentId ? (
+            <>
+              {!collapsed && (
+                <div className="mb-4 px-3">
+                  <Link
+                    href="/assessments"
+                    onClick={() => handleNavigation("/assessments")}
+                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
+                  >
+                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("catalogBack")}
+                  </Link>
+                </div>
+              )}
+              {!collapsed && (
+                <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                  {t("assessmentCategory")}
+                </div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={assessmentNavigation}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
+            </>
+          ) : resultId ? (
+            <>
+              {!collapsed && (
+                <div className="mb-4 px-3">
+                  <Link
+                    href={resultBackHref}
+                    onClick={() => handleNavigation(resultBackHref)}
+                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
+                  >
+                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("resultBack")}
+                  </Link>
+                </div>
+              )}
+              {!collapsed && (
+                <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
+                  {t("resultCategory")}
+                </div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={resultNavigation}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
+            </>
+          ) : (
+            <>
+              {!collapsed && (
+                <div className="mb-4 px-3 text-xs font-semibold uppercase text-white/40">{t("workspaceCategory")}</div>
+              )}
+              <nav className="flex flex-col space-y-1">
+                <SidebarNavLinks
+                  items={workspaceLinks}
+                  collapsed={collapsed}
+                  activePathname={activePathname}
+                  currentPathname={pathname}
+                  optimisticPathname={optimisticPathname}
+                  onIntent={(href) => router.prefetch(href)}
+                  onNavigate={handleNavigation}
+                />
+              </nav>
+            </>
           )}
-          <nav className="flex flex-col space-y-1">
-            <SidebarNavLinks
-              items={workspaceLinks}
-              collapsed={collapsed}
-              activePathname={activePathname}
-              currentPathname={pathname}
-              optimisticPathname={optimisticPathname}
-              onIntent={(href) => router.prefetch(href)}
-              onNavigate={handleNavigation}
-            />
-          </nav>
-
-          {!collapsed && (
-            <div className="mb-4 mt-8 px-3 text-xs font-semibold text-white/40">INSIGHTS</div>
-          )}
-          <nav className="flex flex-col space-y-1">
-            <SidebarNavLinks
-              items={insightLinks}
-              collapsed={collapsed}
-              activePathname={activePathname}
-              currentPathname={pathname}
-              optimisticPathname={optimisticPathname}
-              onIntent={(href) => router.prefetch(href)}
-              onNavigate={handleNavigation}
-            />
-          </nav>
         </div>
       </div>
     </aside>

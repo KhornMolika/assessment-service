@@ -24,8 +24,11 @@ export interface AssessmentDetailQuestionItem {
   question: string;
   type: string;
   points: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   correctAnswers?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawOptions?: any;
 }
 

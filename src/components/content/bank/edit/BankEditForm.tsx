@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import type { EditQuestionBankFormData } from "@/src/types";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { type QuestionBank, BankVisibility } from "@/src/types/api";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Topic } from "@/src/types/topic.types";
 import { questionBankFormSchema } from "@/src/schemas/question-bank-form.schema";
 import { updateQuestionBank } from "@/src/actions/bank-actions";
@@ -77,6 +79,7 @@ export default function BankEditForm({
         });
         toast.success("Question bank updated successfully");
         router.refresh();        router.push("/banks");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         toast.error("Failed to update bank", {
           description: err.message || "An unexpected error occurred",

@@ -7,16 +7,18 @@ import { Button } from "@/src/components/ui/ui/button";
 
 interface ActionMenuProps {
   children: React.ReactNode;
+  trigger?: React.ReactNode;
 }
 
-export function ActionMenu({ children }: ActionMenuProps) {
+export function ActionMenu({ children, trigger }: ActionMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement>(null);
+  const buttonRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, right: 0 });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -64,15 +66,21 @@ export function ActionMenu({ children }: ActionMenuProps) {
 
   return (
     <>
-      <Button
-        ref={buttonRef}
-        onClick={toggleMenu}
-        variant="ghost"
-        className="flex h-8 w-8 items-center justify-center rounded-full p-0 text-primary transition hover:bg-muted/50"
-        aria-label="More actions"
-      >
-        <MoreHorizontal className="h-5 w-5" />
-      </Button>
+      {trigger ? (
+        <div ref={buttonRef as React.RefObject<HTMLDivElement>} onClick={toggleMenu} className="inline-flex cursor-pointer">
+          {trigger}
+        </div>
+      ) : (
+        <Button
+          ref={buttonRef as React.RefObject<HTMLButtonElement>}
+          onClick={toggleMenu}
+          variant="ghost"
+          className="flex h-8 w-8 items-center justify-center rounded-full p-0 text-primary transition hover:bg-muted/50"
+          aria-label="More actions"
+        >
+          <MoreHorizontal className="h-5 w-5" />
+        </Button>
+      )}
 
       {mounted && showMenu && createPortal(
         <div 

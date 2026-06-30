@@ -24,7 +24,7 @@ export function HostReveal({
     <div className="flex flex-col gap-4 lg:h-full lg:min-h-0">
       <div className="grid gap-4 lg:grid-cols-2">
         <div
-          className={`rounded-3xl border border-border bg-[linear-gradient(135deg,#16352A_0%,#24513D_100%)] p-4 text-white shadow-sm ${
+          className={`rounded-3xl border border-border bg-[linear-gradient(135deg,#16352A_0%,#24513D_100%)] dark:bg-background dark:bg-none p-4 text-white shadow-sm ${
             timerSeconds <= 5 ? "rt-timer-critical" : "rt-card-pop"
           }`}
         >
@@ -56,7 +56,7 @@ export function HostReveal({
         </div>
       </div>
 
-      <div className="rt-card-pop flex-1 rounded-[30px] border border-[#FFD166]/55 bg-[linear-gradient(135deg,#FFF6CC_0%,#FFE7B8_42%,#FFF9E1_100%)] p-5 shadow-sm lg:flex lg:min-h-0 lg:flex-col lg:p-6">
+      <div className="rt-card-pop flex-1 rounded-[30px] border border-[#FFD166]/55 bg-[linear-gradient(135deg,#FFF6CC_0%,#FFE7B8_42%,#FFF9E1_100%)] dark:bg-card dark:bg-none p-5 shadow-sm lg:flex lg:min-h-0 lg:flex-col lg:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">

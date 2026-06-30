@@ -8,43 +8,6 @@ import { Badge } from "@/src/components/ui/ui/badge";
 import { ResultsTable } from "../results/ResultsTable";
 import { buildRows } from "../results/results.utils";
 
-function AssessmentReportHeader({
-  data,
-}: {
-  data: AssessmentScopedResultsPageData;
-}) {
-  return (
-    <div className="rounded-[28px] border border-border/70 bg-[linear-gradient(135deg,rgba(255,255,255,0.98)_0%,rgba(241,249,245,0.96)_45%,rgba(231,245,242,0.92)_100%)] p-6 shadow-[0_20px_48px_rgba(20,53,43,0.08)] sm:p-8">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <BackButton
-            href={`/assessments/${data.assessment.id}`}
-            label="Back to assessment"
-            className="px-0 py-0 text-sm font-medium"
-          />
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-inkd/80">
-              Assessment Results
-            </div>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              {data.assessment.name || "Untitled"}
-            </h1>
-            {data.assessment.description ? (
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-inkd sm:text-base">
-                {data.assessment.description}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <Badge variant="secondary">
-          {data.assessment.settings?.mode === "REAL_TIME" ? "Real-time" : "Self-paced"}
-        </Badge>
-      </div>
-    </div>
-  );
-}
-
 export default function AssessmentScopedResultsView({
   data,
 }: {
@@ -68,9 +31,13 @@ export default function AssessmentScopedResultsView({
   return (
     <div>
       <div className="w-full space-y-6">
-        <AssessmentReportHeader data={data} />
+        <BackButton
+          href={`/assessments/${data.assessment.id}`}
+          label="Back to assessment"
+          className="px-0 py-0 text-sm font-medium"
+        />
 
-        <div className="mt-6 rounded-[28px] border border-border/70 bg-white/95 p-4 shadow-[0_18px_44px_rgba(20,53,43,0.08)] sm:p-6">
+        <div className="rounded-[28px] border border-border/70 bg-white/95 p-4 shadow-[0_18px_44px_rgba(20,53,43,0.08)] sm:p-6">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-bold text-primary">Participant Results</h2>
@@ -92,7 +59,10 @@ export default function AssessmentScopedResultsView({
             </div>
           ) : null}
 
-          <ResultsTable rows={rows} />
+          <ResultsTable
+            rows={rows}
+            detailBackHref={`/assessments/${data.assessment.id}/reports`}
+          />
         </div>
       </div>
     </div>

@@ -51,7 +51,7 @@ export default function AssessmentSummaryCard({
 
   return (
     <Card
-      className={`flex flex-col overflow-hidden border-emerald-200 bg-[linear-gradient(180deg,#f5fbf7_0%,#ffffff_70%)] xl:sticky xl:top-6 ${className ?? ""}`}
+      className={`flex flex-col overflow-hidden border-emerald-200 bg-[linear-gradient(180deg,#f5fbf7_0%,#ffffff_70%)] dark:bg-card dark:bg-none xl:sticky xl:top-6 ${className ?? ""}`}
     >
       <CardHeader>
         <CardDescription className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
@@ -90,13 +90,13 @@ export default function AssessmentSummaryCard({
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Participant identity</span>
-            <span className="font-semibold text-primary">
+            <span className="max-w-[60%] text-right font-semibold text-primary">
               {formatParticipantIdentity(formData.participantIdentity)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Question strategy</span>
-            <span className="font-semibold text-primary">
+            <span className="max-w-[60%] text-right font-semibold text-primary">
               {formData.questionSelection === "MANUAL" ? "Manual" : "Dynamic"}
             </span>
           </div>
@@ -108,13 +108,13 @@ export default function AssessmentSummaryCard({
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Time limit</span>
-            <span className="font-semibold text-primary">
+            <span className="max-w-[60%] text-right font-semibold text-primary">
               {formData.enableTimeLimit ? `${formData.timeLimitMinutes} min` : "No limit"}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <span className="text-inkd">Pass mark</span>
-            <span className="font-semibold text-primary">{formData.passMark}%</span>
+            <span className="max-w-[60%] text-right font-semibold text-primary">{formData.passMark}%</span>
           </div>
         </div>
       </CardContent>

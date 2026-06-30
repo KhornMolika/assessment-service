@@ -7,12 +7,14 @@ import { getAvatarColors, getAvatarVariant } from '@/src/lib/session/avatar.util
 export function HostWinner({
   leaderboard,
   assessmentId,
+  embedded,
 }: {
   leaderboard: LeaderboardEntry[];
   assessmentId: string;
+  embedded?: boolean;
 }) {
   return (
-    <div className="rounded-4xl border border-border bg-[radial-gradient(circle_at_top,rgba(249,199,79,0.3),transparent_30%),linear-gradient(180deg,#16352A_0%,#1E4738_55%,#245C47_100%)] p-6 text-white shadow-sm lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:p-8">
+    <div className="rounded-4xl border border-border bg-[radial-gradient(circle_at_top,rgba(249,199,79,0.3),transparent_30%),linear-gradient(180deg,#16352A_0%,#1E4738_55%,#245C47_100%)] dark:bg-background dark:bg-none p-6 text-white shadow-sm lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:p-8">
       <div className="flex flex-col items-center text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
           <Crown className="h-4 w-4 text-[#FFD166]" />
@@ -45,9 +47,9 @@ export function HostWinner({
                     <div className="h-16 w-16 overflow-hidden rounded-3xl ring-2 ring-white/25 shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
                       <Avatar
                         size={64}
-                        name={`${entry.id}-${entry.name}`}
-                        variant={getAvatarVariant(`${entry.id}-${entry.name}`)}
-                        colors={getAvatarColors(`${entry.id}-${entry.name}`)}
+                        name={entry.name}
+                        variant={getAvatarVariant(entry.name)}
+                        colors={getAvatarColors(entry.name)}
                       />
                     </div>
                     <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
@@ -78,7 +80,7 @@ export function HostWinner({
             </p>
 
             <BackButton
-              href={`/assessments/${assessmentId}`}
+              href={embedded ? `/assessments/${assessmentId}/preview` : `/assessments/${assessmentId}`}
               label="Back to assessment"
               fullWidth
               className="mt-6 bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:bg-[linear-gradient(135deg,#F94144_0%,#FF6B6F_100%)] hover:opacity-95"

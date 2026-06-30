@@ -12,6 +12,7 @@ import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import { fetchBankQuestions } from "@/src/actions/bank-actions";
 import { fetchTopicQuestions } from "@/src/actions/question-actions";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapServerQuestion(q: any): Question {
   if (!q) return q;
   return {
@@ -34,7 +35,7 @@ function getQuestionTypeTone(type: string) {
     case "ESSAY":
       return "bg-rose-100 text-rose-700";
     case "MATCHING":
-      return "bg-indigo-100 text-indigo-700";
+      return "bg-primary/10 text-primary";
     case "ORDERING":
       return "bg-fuchsia-100 text-fuchsia-700";
     case "FILL_IN_THE_BLANK":
@@ -90,10 +91,12 @@ export default function AssessmentQuestionStep({
       }).catch(console.error);
     } else if (formData.ownerTopicId) {
       fetchTopicQuestions(formData.ownerTopicId).then((res) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = Array.isArray(res) ? res : ((res as any)?.data || []);
         setBankQuestions(Array.isArray(data) ? data.map(mapServerQuestion) : []);
       }).catch(console.error);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBankQuestions([]);
     }
   }, [formData.selectedBankId, formData.ownerTopicId]);
@@ -276,10 +279,10 @@ export default function AssessmentQuestionStep({
                         key={question.id}
                         type="button"
                         onClick={() => onQuestionToggle(question.id)}
-                        disabled={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME"}
-                        title={question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" ? "REAL_TIME assessments cannot contain ESSAY questions" : undefined}
+                        disabled={(question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME"}
+                        title={(question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME" ? "REAL_TIME assessments cannot contain manual grading questions" : undefined}
                         className={`group relative flex w-full flex-col items-start overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-[#C8A246]/50 focus-visible:ring-offset-2 ${
-                          question.type === "ESSAY" && formData.sessionMode === "REAL_TIME" 
+                          (question.type === "ESSAY" || question.type === "SHORT_ANSWER") && formData.sessionMode === "REAL_TIME" 
                             ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed" 
                             : selected
                               ? "border-[#C8A246] bg-[#faf8f3] shadow-md ring-inset ring-1 ring-[#C8A246]"

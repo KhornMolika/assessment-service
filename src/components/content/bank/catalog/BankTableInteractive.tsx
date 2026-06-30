@@ -15,6 +15,7 @@ import {
 } from "@/src/components/ui/ui/table";
 import DeleteBankModal from "@/src/components/content/bank/DeleteBankModal";
 import { ActionMenu } from "@/src/components/ui/ui/action-menu";
+import { useTranslations } from "next-intl";
 
 function getVisibilityBadgeVariant(visibility: QuestionBank["visibility"]) {
   switch (visibility) {
@@ -53,6 +54,7 @@ export default function BankTableInteractive({
   banks: QuestionBank[];
   onDelete?: (id: string) => void;
 }) {
+  const t = useTranslations("Banks");
   const [items, setItems] = useState(banks);
   const [bankPendingDelete, setBankPendingDelete] = useState<QuestionBank | null>(null);
 
@@ -71,11 +73,11 @@ export default function BankTableInteractive({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-1/3 min-w-50">Bank Name</TableHead>
-            <TableHead className="text-center min-w-25">Questions</TableHead>
-            <TableHead className="min-w-30">Visibility</TableHead>
-            <TableHead className="min-w-30">Created</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="w-1/3 min-w-50">{t("bankName")}</TableHead>
+            <TableHead className="text-center min-w-25">{t("questions")}</TableHead>
+            <TableHead className="min-w-30">{t("visibility")}</TableHead>
+            <TableHead className="min-w-30">{t("created")}</TableHead>
+            <TableHead className="text-right">{t("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -122,26 +124,26 @@ export default function BankTableInteractive({
                       href={`/banks/${bank.id}`}
                       className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50"
                     >
-                      <Eye className="h-4 w-4" /> View
+                      <Eye className="h-4 w-4" /> {t("view")}
                     </Link>
                     <Link
                       href={`/banks/${bank.id}/edit`}
                       className="flex w-full items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50"
                     >
-                      <Edit className="h-4 w-4" /> Edit
+                      <Edit className="h-4 w-4" /> {t("edit")}
                     </Link>
                     <Link
                       href={`/banks/${bank.id}/duplicate`}
-                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-indigo-600 transition hover:bg-indigo-50"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-primary transition hover:bg-primary/5"
                     >
-                      <Copy className="h-4 w-4" /> Duplicate
+                      <Copy className="h-4 w-4" /> {t("duplicate")}
                     </Link>
                     <button
                       type="button"
                       onClick={() => setBankPendingDelete(bank)}
                       className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
                     >
-                      <Trash2 className="h-4 w-4" /> Delete
+                      <Trash2 className="h-4 w-4" /> {t("delete")}
                     </button>
                   </ActionMenu>
                 </TableCell>

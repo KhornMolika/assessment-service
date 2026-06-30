@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, useEffect } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import QuestionsTableInteractive from "./QuestionsTableInteractive";
 import DeleteQuestionModal from "@/src/components/content/question/detail/DeleteQuestionModal";
 import { useSearchParams } from "next/navigation";
@@ -12,11 +13,13 @@ import {
   Plus,
   Search,
   Trash2,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   X,
 } from "lucide-react";
 import type { QuestionBank, Question } from "@/src/types/api";
 import {
   ALL_TOPICS_VALUE,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   questionMatchesTopic,
 } from "@/src/utils/topic-utils";
 import { Badge } from "@/src/components/ui/ui/badge";
@@ -28,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/ui/table";
+import { IntegrationModal } from "@/src/components/ui/modals/IntegrationModal";
 import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { PaginatedCollectionCard } from "@/src/components/ui/data/PaginatedCollectionCard";
@@ -87,11 +91,12 @@ export default function QuestionsCatalog({
   });
   const [typeFilter, setTypeFilter] = useState<string>("All Types");
   const [manualBankFilter, setManualBankFilter] = useState<string | null>(null);
-  const [builderCopied, setBuilderCopied] = useState(false);
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
   const [questions, setQuestions] = useState(initialQuestions);
   const [questionPendingDelete, setQuestionPendingDelete] = useState<Question | null>(null);
+  const [integrationOpen, setIntegrationOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   useEffect(() => {
@@ -116,6 +121,7 @@ export default function QuestionsCatalog({
     return bankMap[bankId]?.name ?? "All Banks";
   }, [bankMap, manualBankFilter, searchParams]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const topicFilter = searchParams.get("topic") ?? ALL_TOPICS_VALUE;
 
   const availableTypes = useMemo(
@@ -167,16 +173,6 @@ export default function QuestionsCatalog({
     setQuestionPendingDelete(null);
   };
 
-  const handleCopyQuestionBuilder = async () => {
-    await navigator.clipboard.writeText(`<QuestionBuilder
-  tenantId="tenant-id"
-  topicId="topic-id"
-  questionId="question-id"
-/>`);
-    setBuilderCopied(true);
-    window.setTimeout(() => setBuilderCopied(false), 1600);
-  };
-
   const handlePageSizeChange = (size: number) => {
     updateUrl({
       pageSize: size === 10 ? null : size,
@@ -193,16 +189,15 @@ export default function QuestionsCatalog({
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
       <PageHeaderCard
         title="Questions"
-        // description={`${questions.length} reusable questions across all topics.`}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
             <Button
               type="button"
-              onClick={() => void handleCopyQuestionBuilder()}
+              onClick={() => setIntegrationOpen(true)}
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto" variant="secondary"
             >
               <Copy className="h-4 w-4" />
-              {builderCopied ? "Copied" : "Question Builder"}
+              Integrate Builder
             </Button>
             <Link
               href="/questions/new"
@@ -213,6 +208,14 @@ export default function QuestionsCatalog({
             </Link>
           </div>
         }
+      />
+      
+      <IntegrationModal
+        open={integrationOpen}
+        onClose={() => setIntegrationOpen(false)}
+        componentName="QuestionBuilder"
+        componentExport="QuestionBuilder"
+        description="The individual builder wizard for authoring new questions."
       />
 
       <PaginatedCollectionCard

@@ -19,12 +19,13 @@ import type { Participant } from "@/src/types/participant.types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import type { AssessmentTopicMap, Topic } from "@/src/types";
 import { getBanks } from "@/src/api/bank.api";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getQuestions } from "@/src/api/question.api";
 import { getTopics } from "@/src/api/topic.api";
 
 import { apiClient } from "@/src/lib/api-client";
 
-const ASSESSMENT_REFERENCE_TIMESTAMP = Date.UTC(2026, 3, 30, 0, 0, 0);
+const ASSESSMENT_REFERENCE_TIMESTAMP = Date.now();
 
 function getStartOfWeek(date: Date) {
   const startOfWeek = new Date(date);
@@ -49,9 +50,12 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
   const endOfWeek = getEndOfWeek(now);
   let assessments: AssessmentCatalogItem[] = [];
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = await apiClient.get<{ data: any[] }>("/assessments?limit=500");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawData = res.data || (res as any) || [];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assessments = rawData.map((a: any) => ({
       id: a.id,
       ownerId: a.ownerId || "admin",
@@ -61,6 +65,7 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
       createdAt: a.createdAt,
       updatedAt: a.updatedAt,
       settings: a.settings || {},
+      questionCount: a.questionCount,
       stats: {
         participantCount: a.settings?.participantCount || 0,
         passRate: a.settings?.passRate || 0,
@@ -111,6 +116,7 @@ export async function getAssessmentCatalogItemById(
     const res = await apiClient.get<{ data: Record<string, unknown> }>(
       `/assessments/${id}`,
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (res.data || res || null) as any as AssessmentCatalogItem | null;
   } catch {
     return null;
@@ -126,13 +132,17 @@ export async function getAssessmentDetailPageData(
     const reportRes = await apiClient.get<{
       data: {
         assessment: Record<string, number>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         participants: any[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         questionBreakdown: any[];
       };
     }>(`/assessments/${id}/report?limit=500`).catch(() => null);
     const questionsRes = await apiClient.get<{ data: Record<string, unknown>[] }>(`/assessments/${id}/questions`).catch(() => null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const assessmentBase = (assessmentRes as any).data || (assessmentRes as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
     const assessment = { ...assessmentBase, settings: { ...assessmentBase.settings, ...settings } };
     const report = reportRes?.data || {
@@ -169,13 +179,16 @@ export async function getAssessmentDetailPageData(
             : 0,
         totalPoints:
           report?.questionBreakdown?.reduce(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (sum: number, q: any) => sum + (q.maxScore || 0),
             0,
           ) || 0,
       }
     };
     // Map Questions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (q: any) => {
         const questionData = q.question && typeof q.question === "object" ? q.question : q;
         return {
@@ -227,7 +240,9 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
         .get<{
           data: {
             assessment: Record<string, number>;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             participants: any[];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             questionBreakdown: any[];
           };
         }>(`/assessments/${a.id}/report`)
@@ -235,9 +250,13 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
     );
     const reports = (await Promise.all(reportsPromises)).filter(Boolean);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allParticipants: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allAnswerSheets: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allQuestions: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allAnswerEntries: any[] = [];
 
     let totalSubmissions = 0;
@@ -313,10 +332,15 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
             : 0,
         totalParticipants: allParticipants.length,
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assessments: assessments as any as AssessmentCatalogItem[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       participants: allParticipants as any as Participant[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       answerSheets: allAnswerSheets as any as AnswerSheet[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       answerEntries: allAnswerEntries as any as AnswerEntry[],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       questions: allQuestions as any as ResultQuestionEntity[],
       topics,
       assessmentTopics,
@@ -347,85 +371,71 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
 export async function getAssessmentResultSheetPageData(
   sheetId: string, // In this new backend, sheetId acts as sessionId
 ): Promise<AssessmentResultSheetPageData | null> {
-  // The backend endpoint `GET /assessments/:assessmentId/sessions/:sessionId/report` requires assessmentId.
-  // We'll need to figure out assessmentId. For now, since the global results page loads all sheets, we can
-  // find the assessmentId by scanning reports, or we assume the UI will be updated to pass assessmentId.
-  // For the sake of this deep integration, we will scan the assessments.
   try {
-    const assessmentsRes = await apiClient.get<{
-      data: Record<string, unknown>[];
-    }>("/assessments?limit=500");
-    let assessments =
-      assessmentsRes.data ||
-      (assessmentsRes as unknown as Record<string, unknown>[]);
+    const reportRes = await apiClient.get<{
+      data: {
+        session: {
+          id: string;
+          assessmentId: string;
+          assessmentTitle: string | null;
+          participantId: string | null;
+          participantName: string | null;
+          participantEmail: string | null;
+          status: string;
+          startedAt: string;
+          submittedAt: string | null;
+          totalScore: number | null;
+          maxScore: number;
+          grade: string | null;
+          isPassed: boolean | null;
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        questions: any[];
+      };
+    }>(`/sessions/${sheetId}/report`);
 
-    // Sort descending and take top 30. We scan recent ones for the session.
-    assessments = assessments
-      .sort(
-        (a, b) =>
-          new Date(String(b.updated_at || 0)).getTime() -
-          new Date(String(a.updated_at || 0)).getTime(),
-      )
-      .slice(0, 30);
-
-    const reportPromises = assessments.map((a) =>
-      apiClient
-        .get<{
-          data: {
-            participantId: string;
-            name: string;
-            email: string;
-            submittedAt: string;
-            duration: number;
-            score: number;
-            isPassed: boolean;
-            questions: any[];
-          };
-        }>(`/assessments/${a.id}/sessions/${sheetId}/report`)
-        .then((res) => ({
-          assessmentId: a.id,
-          report: res.data || (res as any),
-        }))
-        .catch(() => null),
-    );
-
-    const reports = await Promise.all(reportPromises);
-    const targetMatch = reports.find((r) => r != null);
-
-    if (!targetMatch) return null;
-
-    const { assessmentId: targetAssessmentId, report: targetReport } =
-      targetMatch;
-    const assessment = assessments.find(
-      (a: Record<string, unknown>) => a.id === targetAssessmentId,
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const targetReport = (reportRes as any)?.data?.data || (reportRes as any)?.data || reportRes;
+    const session = targetReport.session;
+    if (!session) return null;
 
     // Map the deep session report to the old AnswerSheet / AnswerEntry UI shape
     const participant = {
-      id: targetReport.participantId,
-      assessment_id: String(targetAssessmentId),
-      display_name: targetReport.name || "Anonymous",
-      joined_at: targetReport.submittedAt || new Date().toISOString(),
+      id: session.participantId || "anonymous",
+      assessment_id: session.assessmentId,
+      display_name: session.participantName || "Anonymous",
+      joined_at: session.submittedAt || session.startedAt || new Date().toISOString(),
     } as Participant;
+
+    const hasPendingReview = targetReport.questions.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (q: any) => q.gradingStatus === "PENDING",
+    );
 
     const answerSheet = {
       id: sheetId,
-      assessmentId: String(targetAssessmentId),
-      participantId: targetReport.participantId,
-      status: targetReport.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-      startedAt: new Date(
-        new Date(targetReport.submittedAt || Date.now()).getTime() -
-          (targetReport.duration || 0) * 1000,
-      ).toISOString(),
-      submittedAt: targetReport.submittedAt || null,
-      totalScore: targetReport.score,
-      maxScore: 100,
-      isPassed: targetReport.isPassed,
-      grade: targetReport.isPassed ? "Pass" : "Fail",
+      assessmentId: session.assessmentId,
+      participantId: session.participantId || "anonymous",
+      status: hasPendingReview ? "REVIEW_PENDING" : session.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+      startedAt: session.startedAt,
+      submittedAt: session.submittedAt || null,
+      totalScore: session.totalScore,
+      maxScore: session.maxScore,
+      isPassed: session.isPassed,
+      grade: session.grade,
       shareToken: sheetId,
     } as AnswerSheet;
 
+    const assessment = {
+      id: session.assessmentId,
+      name: session.assessmentTitle || "Untitled assessment",
+      status: "PUBLISHED",
+      createdAt: session.startedAt,
+      updatedAt: session.submittedAt || session.startedAt,
+    } as AssessmentCatalogItem;
+
     const questions = targetReport.questions.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (q: any) =>
         ({
           id: q.assessmentQuestionId,
@@ -435,6 +445,7 @@ export async function getAssessmentResultSheetPageData(
         }) as ResultQuestionEntity,
     );
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const answerEntries = targetReport.questions.map((q: any) => ({
       id: q.entryId || `${sheetId}-${q.assessmentQuestionId}`,
       sheetId: sheetId,
@@ -450,7 +461,7 @@ export async function getAssessmentResultSheetPageData(
       isCorrect: q.isCorrect,
       scoreAwarded: q.scoreAwarded,
       gradingStatus: q.gradingStatus || "AUTOMATIC",
-      ai_grading: q.aiGrading
+      aiGrading: q.aiGrading
         ? {
             suggestedScore: q.aiGrading.suggestedScore,
             reasoning: q.aiGrading.reasoning,
@@ -463,10 +474,11 @@ export async function getAssessmentResultSheetPageData(
     }));
 
     return {
-      assessment: assessment as any,
+      assessment,
       participant,
       answerSheet,
       questions,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       answerEntries: answerEntries as any,
     };
   } catch {
@@ -481,9 +493,10 @@ export async function getAssessmentScopedResultsPageData(
     const [assessmentRes, reportRes, questionsRes] = await Promise.all([
       apiClient.get<{ data: Record<string, unknown> }>(
         `/assessments/${assessmentId}`,
-      ),
+      ).catch(() => null),
       apiClient
         .get<{
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: { assessment: Record<string, number>; participants: any[] };
         }>(`/assessments/${assessmentId}/report`)
         .catch(() => null),
@@ -492,10 +505,15 @@ export async function getAssessmentScopedResultsPageData(
         .catch(() => null),
     ]);
 
-    const assessment = assessmentRes;
-    const report = reportRes?.data || { assessment: {}, participants: [] };
+    if (!assessmentRes) return null;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const assessment = (assessmentRes as any)?.data?.data || (assessmentRes as any)?.data || assessmentRes;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const report = (reportRes as any)?.data?.data || reportRes?.data || (reportRes as any) || { assessment: {}, participants: [] };
 
     const participants = (report.participants || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (p: any) =>
         ({
           id: p.participantId,
@@ -505,27 +523,9 @@ export async function getAssessmentScopedResultsPageData(
         }) as Participant,
     );
 
-    const answerSheets = (report.participants || []).map(
-      (p: any) =>
-        ({
-          id: p.sessionId,
-          assessmentId: String(assessmentId),
-          participantId: p.participantId,
-          status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
-          startedAt: new Date(
-            new Date(p.submittedAt || Date.now()).getTime() -
-              (p.duration || 0) * 1000,
-          ).toISOString(),
-          submittedAt: p.submittedAt || null,
-          totalScore: p.score,
-          maxScore: 100,
-          isPassed: p.isPassed,
-          grade: p.isPassed ? "Pass" : "Fail",
-          shareToken: p.sessionId,
-        }) as AnswerSheet,
-    );
-
-    const questions = ((questionsRes as any)?.data || questionsRes || []).map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const questions = ((questionsRes as any)?.data?.data || (questionsRes as any)?.data || questionsRes || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (q: any) =>
         ({
           id: q.id,
@@ -534,8 +534,35 @@ export async function getAssessmentScopedResultsPageData(
           points: q.points || 5,
         }) as ResultQuestionEntity,
     );
+    const totalQuestionPoints = questions.reduce(
+      (sum: number, question: ResultQuestionEntity) =>
+        sum + Number(question.points || 0),
+      0,
+    );
+
+    const answerSheets = (report.participants || []).map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (p: any) =>
+        ({
+          id: p.sessionId,
+          assessmentId: String(assessmentId),
+          participantId: p.participantId,
+          status: p.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+          startedAt: new Date(
+            new Date(p.submittedAt || Date.now()).getTime() -
+              (p.duration || 0) * 1000,
+          ).toISOString(),
+          submittedAt: p.submittedAt || null,
+          totalScore: p.score,
+          maxScore: totalQuestionPoints,
+          isPassed: p.isPassed,
+          grade: p.grade ?? (p.isPassed ? "Pass" : "Fail"),
+          shareToken: p.sessionId,
+        }) as AnswerSheet,
+    );
 
     return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       assessment: assessment as any, // TODO: map properly if needed by UI
       stats: {
         totalSubmissions: report.assessment.completed || 0,
@@ -572,10 +599,14 @@ export async function getEditAssessmentPageData(id: string): Promise<{
       data: Record<string, unknown>[];
     }>(`/assessments/${id}/questions`).catch(() => null);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const assessment = (assessmentRes as any).data || (assessmentRes as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = (settingsRes as any)?.data || (settingsRes as any) || {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const assignedQs = ((assignedRes as any)?.data ||
       assignedRes ||
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       []) as any[];
 
     const selectedBankId =
@@ -593,6 +624,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         sessionMode: (settings.mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
         questionSelection: settings.questionSelection?.toUpperCase() === "DYNAMIC" ? "DYNAMIC" : "MANUAL",
         selectedBankId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
         totalQuestions: settings.numQuestions || assignedQs.length || 0,
         selectionRules: settings.selectionRules?.distribution
@@ -624,6 +656,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           { grade: "F", minPercent: 0 },
         ],
         showResults: (["IMMEDIATELY", "MANUAL", "NEVER"].includes(settings.showResults?.toUpperCase() || "") ? settings.showResults?.toUpperCase() : "IMMEDIATELY") as "IMMEDIATELY" | "MANUAL" | "NEVER",
+        enableAiGrading: !settings.manualGradingAIQues,
       },
     };
   } catch (err) {

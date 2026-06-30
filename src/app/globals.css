@@ -74,11 +74,27 @@
 :root {
   --radius: 0.5rem;
   --font-size: 16px;
+  --font-heading-family: Georgia, "Times New Roman";
+  --font-sans-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+  --font-khmer-family: "Khmer OS Battambang", "Noto Serif Khmer", serif;
 }
 
 .dark {
+  /* Core dark mode backgrounds */
   --color-background: #0f1512;
+  --color-bg: #0f1512;
+  --color-card: #16221c;
+  --color-muted: #1e2e26;
+  --color-bdr: #2d4a3e;
+
+  /* Core dark mode text */
   --color-foreground: #f5f5f4;
+  --color-ink: #f5f5f4;
+  --color-inkm: #d6d3d1;
+  --color-inkd: #a8a29e;
+  --color-inkl: #78716c;
+
+  /* Semantic UI Colors */
   --color-primary: var(--color-pm);
   --color-primary-foreground: #ffffff;
   --color-secondary: var(--color-sage);
@@ -121,6 +137,7 @@
     background-color: var(--color-sage);
   }
 }
+
 
 @keyframes realtime-pulse {
   0%, 100% {
@@ -284,4 +301,189 @@
   .rt-leaderboard-rise {
     animation: realtime-leaderboard-rise 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
   }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  50% { opacity: 0.8; transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0); }
+}
+
+/* Embed Mode Styles: Hides layout shells when embedded in an iframe */
+body.embed-mode .workspace-sidebar {
+  display: none !important;
+}
+body.embed-mode .workspace-topbar {
+  display: none !important;
+}
+body.embed-mode .workspace-main {
+  padding: 0 !important;
+}
+html.embed-mode,
+html.embed-mode body,
+html.embed-mode body .bg-background,
+body.embed-mode,
+body.embed-mode .bg-background {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+body.embed-mode .page-header-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 0 !important;
+}
+body.embed-mode .catalog-header {
+  display: none !important;
+}
+body.embed-mode .embed-transparent-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body:not(.embed-mode) .embed-only-element {
+  display: none !important;
+}
+body.embed-mode .embed-hide {
+  display: none !important;
+}
+body.embed-mode .embed-stack {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+/* Comprehensive Dark Mode Overrides for Hardcoded Light Classes */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-slate-100,
+.dark .bg-zinc-50,
+.dark .bg-gray-50,
+.dark .bg-emerald-50,
+.dark .bg-\[linear-gradient\(180deg\,\#ffffff_0\%\,\#fbfdfc_100\%\)\] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Remove generic gradient overrides to preserve colorful buttons */
+
+/* For embedded dark mode, let cards blend transparently, but if they need a surface, use a subtle dark color */
+html.embed-mode.dark .bg-white,
+html.embed-mode.dark .bg-slate-50 {
+  background-color: transparent !important;
+}
+
+.dark *:not(button):not(.bg-primary):not([class*="bg-["]) {
+  /* Only apply if we really need to override text, but safer to target text classes */
+}
+
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-\[\#14352b\] {
+  color: var(--color-foreground) !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-emerald-700 {
+  color: var(--color-inkl) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-slate-300,
+.dark .border-emerald-100,
+.dark .border-emerald-200 {
+  border-color: var(--color-border) !important;
+}
+
+/* Comprehensive Dark Mode Overrides for Hardcoded Hex Colors */
+
+/* Light Greens (Success/Accents) */
+.dark .bg-\[\#D8F3DC\],
+.dark .bg-\[\#F4FBF6\] {
+  background-color: rgba(82, 183, 136, 0.15) !important;
+  color: #a7f3d0 !important;
+}
+.dark .text-\[\#95D5B2\] {
+  color: #6ee7b7 !important;
+}
+
+/* Light Yellows (Warnings/Accents) */
+.dark .bg-\[\#FFF6CC\],
+.dark .bg-\[\#FFF1C8\],
+.dark .bg-\[\#FFE08A\],
+.dark .bg-\[\#F1EFE7\],
+.dark .bg-\[\#faf8f3\],
+.dark .bg-\[\#F4F1EA\],
+.dark .bg-\[\#ECE7DD\] {
+  background-color: rgba(217, 119, 6, 0.15) !important;
+  color: #fde68a !important;
+}
+
+/* Light Reds (Danger) */
+.dark .bg-\[\#FFE1DF\] {
+  background-color: rgba(220, 38, 38, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+/* Dark Greens (Primary/Surfaces) */
+.dark .bg-\[\#1B4332\],
+.dark .bg-\[\#16352A\],
+.dark .bg-\[\#113023\],
+.dark .bg-\[\#174735\] {
+  background-color: var(--color-background) !important;
+  border: 1px solid var(--color-border);
+}
+
+/* Specific Text Colors */
+.dark .text-\[\#113023\],
+.dark .text-\[\#14352b\] {
+  color: var(--color-foreground) !important;
+}
+.dark .bg-\[radial-gradient\(circle_at_top\,\#d8f3dc\,transparent_38\%\)\,linear-gradient\(180deg\,\#f7f5f0_0\%\,\#f2ede2_100\%\)\] {
+  background: var(--color-background) !important;
+}
+.dark .text-\[\#9F1C21\] {
+  color: #fca5a5 !important;
+}
+.dark .text-\[\#A85A14\] {
+  color: #fdba74 !important;
+}
+.dark .text-\[\#C8A246\] {
+  color: #fcd34d !important;
+}
+.dark .text-\[\#1877F2\] {
+  color: #60a5fa !important;
+}
+.dark .text-\[\#2CA5E0\] {
+  color: #38bdf8 !important;
+}
+.dark .text-\[\#0A66C2\] {
+  color: #7dd3fc !important;
+}
+
+/* Specific Border Colors */
+.dark .border-\[\#DDE6DC\],
+.dark .border-\[\#52B788\]\/30,
+.dark .border-\[\#FFD166\]\/60 {
+  border-color: var(--color-border) !important;
 }
