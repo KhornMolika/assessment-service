@@ -190,7 +190,7 @@ export default function QuestionsCatalog({
       <PageHeaderCard
         title="Questions"
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
             <Button
               type="button"
               onClick={() => setIntegrationOpen(true)}

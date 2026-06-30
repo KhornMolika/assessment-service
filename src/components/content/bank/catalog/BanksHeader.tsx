@@ -23,7 +23,7 @@ export default function BanksHeader({
         title="Question Banks"
         description={`${bankCount} topic-based banks containing ${totalQuestions} categorized questions.`}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
             <Button
               type="button"
               onClick={() => setIntegrationOpen(true)}
