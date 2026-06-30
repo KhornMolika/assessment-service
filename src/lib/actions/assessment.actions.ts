@@ -62,6 +62,14 @@ export async function createAssessmentAction(topicId: string, data: any) {
       await apiClient.post(`/assessments/${assessmentId}/questions`, payload);
     }
 
+    if (data.status === "PUBLISHED") {
+      await apiClient.post(`/assessments/${assessmentId}/publish`, {});
+      newAssessment.status = "PUBLISHED";
+    } else if (data.status === "ARCHIVED") {
+      await apiClient.post(`/assessments/${assessmentId}/archive`, {});
+      newAssessment.status = "ARCHIVED";
+    }
+
     revalidatePath("/assessments");
     revalidatePath("/search");
     revalidatePath("/");
@@ -145,8 +153,13 @@ export async function updateAssessmentAction(id: string, data: any) {
 
       if (originalStatus === "DRAFT" && data.status === "PUBLISHED") {
         await apiClient.post(`/assessments/${id}/publish`, {});
+        updatedAssessment.status = "PUBLISHED";
       } else if (originalStatus === "PUBLISHED" && data.status === "ARCHIVED") {
         await apiClient.post(`/assessments/${id}/archive`, {});
+        updatedAssessment.status = "ARCHIVED";
+      } else if (originalStatus === "DRAFT" && data.status === "ARCHIVED") {
+        await apiClient.post(`/assessments/${id}/archive`, {});
+        updatedAssessment.status = "ARCHIVED";
       }
     }
 
