@@ -103,10 +103,10 @@ export function PublicResultClient({ data }: { data: AssessmentResultSheetPageDa
                   </svg>
                   <div className="flex flex-col items-center">
                     <span className="text-5xl font-black tracking-tighter text-primary sm:text-6xl">
-                      {scoreSummary.earnedPoints}
+                      {Number(scoreSummary.earnedPoints.toFixed(2))}
                     </span>
                     <span className="mt-1 text-sm font-medium uppercase tracking-[0.1em] text-inkd">
-                      / {scoreSummary.totalPoints} pts
+                      / {Number(scoreSummary.totalPoints.toFixed(2))} pts
                     </span>
                   </div>
                 </div>
