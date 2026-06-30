@@ -144,19 +144,19 @@ export default function QuestionPreviewCard({
               <div
                 key={index}
                 className={`flex items-center gap-3 rounded-xl border-2 px-4 py-1 text-sm font-medium ${
-                  showAnswers ? "border-purple-300 bg-purple-50 text-purple-800" : "border-slate-100 bg-slate-50 text-slate-700"
+                  showAnswers ? "border-primary/30 bg-primary/5 text-primary" : "border-slate-100 bg-slate-50 text-slate-700"
                 }`}
               >
                 {showAnswers ? (
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-purple-500 text-[10px] font-bold text-white shadow-sm">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm">
                     {index + 1}
                   </span>
                 ) : (
                   <div className="flex flex-col gap-1 shrink-0">
-                    <button onClick={() => moveOrderingItem(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                    <button onClick={() => moveOrderingItem(index, 'up')} disabled={index === 0} className="text-slate-400 hover:text-primary disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-primary/5">
                       <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
-                    <button onClick={() => moveOrderingItem(index, 'down')} disabled={index === itemsToRender.length - 1} className="text-slate-400 hover:text-purple-600 disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-purple-50">
+                    <button onClick={() => moveOrderingItem(index, 'down')} disabled={index === itemsToRender.length - 1} className="text-slate-400 hover:text-primary disabled:opacity-30 p-1.5 sm:p-2 transition-colors rounded-md hover:bg-primary/5">
                       <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                   </div>
@@ -384,10 +384,10 @@ export default function QuestionPreviewCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6 pt-0">
-        <div className="p-5 mt-6 rounded-2xl bg-white border border-indigo-100 shadow-sm">
+        <div className="p-5 mt-6 rounded-2xl bg-white border border-primary/10 shadow-sm">
           <div className="mb-4">
             <div className="flex items-start gap-2">
-              <span className="text-sm font-black text-indigo-300 mt-0.5">Q.</span>
+              <span className="text-sm font-black text-primary/30 mt-0.5">Q.</span>
               <p className="flex-1 text-sm font-medium text-slate-800 leading-relaxed">
                 {formData.questionText || <span className="text-slate-400 italic">Your question text will appear here...</span>}
               </p>

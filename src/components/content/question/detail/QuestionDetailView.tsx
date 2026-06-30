@@ -23,7 +23,7 @@ export default function QuestionDetailView({ question }: { question: ApiQuestion
               <CardContent className="pt-6">
                 <div className="mb-6 pb-6 border-b border-slate-100">
                   <div className="flex items-start gap-3">
-                    <span className="text-sm font-black text-indigo-300 mt-0.5">Q.</span>
+                    <span className="text-sm font-black text-primary/30 mt-0.5">Q.</span>
                     <p className="flex-1 text-[15px] font-medium text-slate-800 leading-relaxed whitespace-pre-wrap">
                       {question.questionText}
                     </p>

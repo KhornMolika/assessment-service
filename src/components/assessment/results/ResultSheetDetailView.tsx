@@ -350,7 +350,7 @@ export default function ResultSheetDetailView({
                           type="button"
                           onClick={() => handleRetry(entry.id)}
                           disabled={retryingIds[entry.id]}
-                          className="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-semibold text-purple-700 transition hover:bg-purple-100 disabled:opacity-50" variant="ghost"
+                          className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50" variant="ghost"
                         >
                           <RefreshCw className={`h-4 w-4 ${retryingIds[entry.id] ? "animate-spin" : ""}`} />
                           {retryingIds[entry.id] ? "Retrying..." : "Retry AI"}
@@ -382,8 +382,8 @@ export default function ResultSheetDetailView({
                   </div>
 
                   {entry.aiGrading && (
-                    <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-4 shadow-sm">
-                      <div className="flex items-center gap-2 text-purple-700">
+                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-white p-4 shadow-sm">
+                      <div className="flex items-center gap-2 text-primary">
                         <Sparkles className="h-5 w-5" />
                         <h4 className="font-bold">AI Evaluation Insights</h4>
                         {entry.aiGrading.flagForReview && (
@@ -392,30 +392,30 @@ export default function ResultSheetDetailView({
                       </div>
                       <div className="mt-3 grid gap-4 md:grid-cols-[1fr_260px]">
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Reasoning</p>
-                          <p className="mt-2 text-sm leading-relaxed text-purple-900/90 whitespace-pre-wrap">
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/60">Reasoning</p>
+                          <p className="mt-2 text-sm leading-relaxed text-primary/90 whitespace-pre-wrap">
                             {entry.aiGrading.reasoning ?? "No reasoning provided."}
                           </p>
                         </div>
-                        <div className="space-y-3 rounded-xl bg-purple-100/50 p-3">
+                        <div className="space-y-3 rounded-xl bg-primary/50 p-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-purple-900/60">Suggested Score</p>
-                            <p className="mt-1 text-2xl font-bold text-purple-700">
-                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-purple-900/60">/ {entry.questionSnapshot.points} pts</span>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/60">Suggested Score</p>
+                            <p className="mt-1 text-2xl font-bold text-primary">
+                              {entry.aiGrading.suggestedScore ?? 0} <span className="text-base font-normal text-primary/60">/ {entry.questionSnapshot.points} pts</span>
                             </p>
                           </div>
                           {(entry.aiGrading.keyPointsAddressed?.length > 0 || entry.aiGrading.keyPointsMissed?.length > 0) && (
-                            <div className="space-y-3 pt-2 border-t border-purple-200">
+                            <div className="space-y-3 pt-2 border-t border-primary/20">
                               {entry.aiGrading.keyPointsAddressed?.map((point, idx) => (
                                 <div key={`hit-${idx}`} className="flex items-start gap-2">
                                   <CheckCircle className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
-                                  <span className="text-xs font-medium text-purple-900/80">{point}</span>
+                                  <span className="text-xs font-medium text-primary/80">{point}</span>
                                 </div>
                               ))}
                               {entry.aiGrading.keyPointsMissed?.map((point, idx) => (
                                 <div key={`miss-${idx}`} className="flex items-start gap-2">
                                   <XCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
-                                  <span className="text-xs font-medium text-purple-900/80">{point}</span>
+                                  <span className="text-xs font-medium text-primary/80">{point}</span>
                                 </div>
                               ))}
                             </div>
