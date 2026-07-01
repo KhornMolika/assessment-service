@@ -76,7 +76,7 @@ export function PresentRealTimeScreen({
   const { soundEnabled, setSoundEnabled, prime, playTone } = useRealtimeAudio();
   const [parent] = useAutoAnimate();
 
-  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers, showStoredLeaderboard } = activeSession;
+  const { isConnected, roomState, joinRoom, emitStartQuestion, emitRevealAnswers, showStoredLeaderboard, getServerTime } = activeSession;
 
   const phase = roomState.phase === "active" ? "reveal" : roomState.phase === "results" ? "winner" : roomState.phase as HostPhase;
   const previousPhaseRef = useRef<HostPhase>(phase);
@@ -190,7 +190,7 @@ export function PresentRealTimeScreen({
     if (phase !== "reveal" || !roomState.endTime) return;
     
     const tick = () => {
-      const remaining = Math.max(0, Math.floor((new Date(roomState.endTime!).getTime() - Date.now()) / 1000));
+      const remaining = Math.max(0, Math.floor((new Date(roomState.endTime!).getTime() - getServerTime()) / 1000));
       setTimerSeconds(remaining);
     };
     

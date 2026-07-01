@@ -180,6 +180,11 @@ function parseRealtimeQuestionPayload(data: any) {
 
 export function useRealtimeSession(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
+  const serverTimeOffsetRef = useRef<number>(0);
+
+  const getServerTime = useCallback(() => {
+    return Date.now() + serverTimeOffsetRef.current;
+  }, []);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [roomState, setRoomState] = useState<RoomState>(initialRoomState);
@@ -231,7 +236,10 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
       });
 
       activeSocket.on(RealtimeEvents.NEW_QUESTION, (data) => {
-        // Backend returns: { questionNumber, totalQuestions, q, options, endTime }
+        if (data.serverTime) {
+          serverTimeOffsetRef.current = new Date(data.serverTime).getTime() - Date.now();
+        }
+        // Backend returns: { questionNumber, totalQuestions, q, options, endTime, serverTime }
         const parsedQuestion = parseRealtimeQuestionPayload(data) ?? data;
         setRoomState((prev) => ({ 
           ...prev, 
@@ -247,6 +255,9 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
       });
 
       activeSocket.on(RealtimeEvents.ROOM_STATE, (data) => {
+        if (data.serverTime) {
+          serverTimeOffsetRef.current = new Date(data.serverTime).getTime() - Date.now();
+        }
         const parsedQuestion = parseRealtimeQuestionPayload(data);
         setRoomState((prev) => ({
           ...prev,
@@ -425,6 +436,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
     emitStartQuestion,
     emitRevealAnswers,
     emitSubmitAnswer,
+    getServerTime,
   };
 }
 

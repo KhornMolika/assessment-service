@@ -76,7 +76,7 @@ export function EnterRealTimeScreen({
   const scoreBeforeQuestionRef = useRef(0);
   const totalScoreRef = useRef(0);
 
-  const { isConnected, roomState, joinRoom, emitSubmitAnswer } = activeSession;
+  const { isConnected, roomState, joinRoom, emitSubmitAnswer, getServerTime } = activeSession;
 
   const currentRound = roomState.currentQuestion || rounds[0];
   const phase = roomState.phase;
@@ -132,7 +132,7 @@ export function EnterRealTimeScreen({
     const tick = () => {
       const remaining = Math.max(
         0,
-        Math.floor((new Date(roomState.endTime!).getTime() - Date.now()) / 1000),
+        Math.floor((new Date(roomState.endTime!).getTime() - getServerTime()) / 1000),
       );
       setTimerSeconds(remaining);
     };
