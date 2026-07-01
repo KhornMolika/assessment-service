@@ -259,19 +259,25 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
           serverTimeOffsetRef.current = new Date(data.serverTime).getTime() - Date.now();
         }
         const parsedQuestion = parseRealtimeQuestionPayload(data);
-        setRoomState((prev) => ({
-          ...prev,
-          roomId: data.roomId || prev.roomId,
-          phase: data.phase || prev.phase,
-          participants: data.participants || prev.participants,
-          currentQuestion: parsedQuestion,
-          endTime: data.endTime || null,
-          questionNumber: data.questionNumber || 0,
-          totalQuestions: data.totalQuestions || 0,
-          questionResults: data.questionResults || null,
-          leaderboard: data.leaderboard || prev.leaderboard,
-          pendingLeaderboard: data.phase === "leaderboard" ? data.leaderboard || null : prev.pendingLeaderboard,
-        }));
+        setRoomState((prev) => {
+          let newPhase = data.phase || prev.phase;
+          if (newPhase === "lobby" && joinParamsRef.current?.role === RoomRole.PARTICIPANT) {
+            newPhase = "waiting";
+          }
+          return {
+            ...prev,
+            roomId: data.roomId || prev.roomId,
+            phase: newPhase,
+            participants: data.participants || prev.participants,
+            currentQuestion: parsedQuestion,
+            endTime: data.endTime || null,
+            questionNumber: data.questionNumber || 0,
+            totalQuestions: data.totalQuestions || 0,
+            questionResults: data.questionResults || null,
+            leaderboard: data.leaderboard || prev.leaderboard,
+            pendingLeaderboard: data.phase === "leaderboard" ? data.leaderboard || null : prev.pendingLeaderboard,
+          };
+        });
       });
 
       activeSocket.on(RealtimeEvents.Q_RESULTS, (data) => {
