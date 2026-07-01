@@ -154,19 +154,25 @@ export default function Sidebar() {
         </div>
 
         <div className="flex-1 space-y-6 px-2 py-4">
-          {assessmentId ? (
-            <>
-              {!collapsed && (
-                <div className="mb-4 px-3">
-                  <Link
-                    href="/assessments"
-                    onClick={() => handleNavigation("/assessments")}
-                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
-                  >
-                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("catalogBack")}
-                  </Link>
-                </div>
-              )}
+          <div className="space-y-1">
+            {!collapsed && (
+              <div className="mb-4 px-3 text-xs font-semibold uppercase text-white/40">{t("workspaceCategory")}</div>
+            )}
+            <nav className="flex flex-col space-y-1">
+              <SidebarNavLinks
+                items={workspaceLinks}
+                collapsed={collapsed}
+                activePathname={activePathname}
+                currentPathname={pathname}
+                optimisticPathname={optimisticPathname}
+                onIntent={(href) => router.prefetch(href)}
+                onNavigate={handleNavigation}
+              />
+            </nav>
+          </div>
+
+          {assessmentId && (
+            <div className="space-y-1">
               {!collapsed && (
                 <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
                   {t("assessmentCategory")}
@@ -183,20 +189,11 @@ export default function Sidebar() {
                   onNavigate={handleNavigation}
                 />
               </nav>
-            </>
-          ) : resultId ? (
-            <>
-              {!collapsed && (
-                <div className="mb-4 px-3">
-                  <Link
-                    href={resultBackHref}
-                    onClick={() => handleNavigation(resultBackHref)}
-                    className="flex items-center text-xs font-semibold text-white/70 transition hover:text-white"
-                  >
-                    <ArrowLeft className="mr-2 h-3 w-3" /> {t("resultBack")}
-                  </Link>
-                </div>
-              )}
+            </div>
+          )}
+          
+          {resultId && (
+            <div className="space-y-1">
               {!collapsed && (
                 <div className="mb-4 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-white/40">
                   {t("resultCategory")}
@@ -213,24 +210,7 @@ export default function Sidebar() {
                   onNavigate={handleNavigation}
                 />
               </nav>
-            </>
-          ) : (
-            <>
-              {!collapsed && (
-                <div className="mb-4 px-3 text-xs font-semibold uppercase text-white/40">{t("workspaceCategory")}</div>
-              )}
-              <nav className="flex flex-col space-y-1">
-                <SidebarNavLinks
-                  items={workspaceLinks}
-                  collapsed={collapsed}
-                  activePathname={activePathname}
-                  currentPathname={pathname}
-                  optimisticPathname={optimisticPathname}
-                  onIntent={(href) => router.prefetch(href)}
-                  onNavigate={handleNavigation}
-                />
-              </nav>
-            </>
+            </div>
           )}
         </div>
       </div>
