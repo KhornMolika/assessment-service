@@ -946,7 +946,7 @@ export function PresentRealTimeScreen({
               </Button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
+            <div className="overflow-y-auto rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
               <div className="rounded-[26px] bg-[linear-gradient(135deg,#F8FBF7_0%,#EEF7F1_100%)] dark:bg-card dark:bg-none p-4 sm:p-5">
                 {renderCorrectAnswerPanel()}
               </div>
