@@ -20,25 +20,25 @@ import { Button } from "@/src/components/ui/ui/button";
 const realtimeOptionPalettes = [
   {
     tileClassName:
-      "border-[#F94144]/25 bg-[linear-gradient(135deg,#ff6b6f_0%,#f94144_100%)] text-white shadow-[0_18px_45px_rgba(249,65,68,0.28)]",
+      "border-[#F94144]/25 bg-gradient-to-br from-[#ff6b6f] to-[#f94144] text-white shadow-[0_18px_45px_rgba(249,65,68,0.28)]",
     selectedClassName: "ring-4 ring-[#FFD6D7]",
     badgeClassName: "bg-white/18 text-white",
   },
   {
     tileClassName:
-      "border-[#277DA1]/25 bg-[linear-gradient(135deg,#4cc9f0_0%,#277DA1_100%)] text-white shadow-[0_18px_45px_rgba(39,125,161,0.28)]",
+      "border-[#277DA1]/25 bg-gradient-to-br from-[#4cc9f0] to-[#277DA1] text-white shadow-[0_18px_45px_rgba(39,125,161,0.28)]",
     selectedClassName: "ring-4 ring-[#CFEFFC]",
     badgeClassName: "bg-white/18 text-white",
   },
   {
     tileClassName:
-      "border-[#F9C74F]/25 bg-[linear-gradient(135deg,#ffe08a_0%,#f9c74f_100%)] text-primary shadow-[0_18px_45px_rgba(249,199,79,0.32)]",
+      "border-[#F9C74F]/25 bg-gradient-to-br from-[#ffe08a] to-[#f9c74f] text-primary shadow-[0_18px_45px_rgba(249,199,79,0.32)]",
     selectedClassName: "ring-4 ring-[#FFF1C8]",
     badgeClassName: "bg-white/55 text-primary",
   },
   {
     tileClassName:
-      "border-[#43AA8B]/25 bg-[linear-gradient(135deg,#7fe0c0_0%,#43AA8B_100%)] text-white shadow-[0_18px_45px_rgba(67,170,139,0.28)]",
+      "border-[#43AA8B]/25 bg-gradient-to-br from-[#7fe0c0] to-[#43AA8B] text-white shadow-[0_18px_45px_rgba(67,170,139,0.28)]",
     selectedClassName: "ring-4 ring-[#D8F7EC]",
     badgeClassName: "bg-white/18 text-white",
   },

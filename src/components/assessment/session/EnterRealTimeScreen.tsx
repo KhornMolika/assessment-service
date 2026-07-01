@@ -15,6 +15,7 @@ import { realtimeEvents } from '@/src/lib/session/realtime.events';
 import {
   buildQuestionRounds,
   hasAnswerResponse,
+  normalizeQuestionRendererType,
   requiresParticipantIdentity,
 } from '@/src/lib/session/session.utils';
 import { useRealtimeSession, type RealtimeSessionReturn } from "@/src/hooks/use-realtime-session";
@@ -84,6 +85,10 @@ export function EnterRealTimeScreen({
   const currentPoints = Number.isFinite(Number(currentRound.points))
     ? Number(currentRound.points)
     : 0;
+  const currentRendererType = normalizeQuestionRendererType(currentRound.type);
+  const shouldShowMissingOptions =
+    (currentRendererType === "single" || currentRendererType === "multiple") &&
+    currentRound.options.length === 0;
   const timerProgressPercent = Math.max(
     0,
     Math.min(100, (timerSeconds / QUESTION_DURATION_SECONDS) * 100),
@@ -296,35 +301,7 @@ export function EnterRealTimeScreen({
       description={isLobbyPhase ? assessment.description ?? "" : ""}
       variant={embedded ? "panel" : "page"}
       aside={null}
-      headerAction={
-        phase === "active" ? (
-          <div className="flex flex-col items-end gap-1.5 sm:gap-2">
-            <div
-              className={`shrink-0 rounded-xl sm:rounded-3xl border border-white/15 bg-white/10 px-2.5 py-1.5 sm:px-4 sm:py-2 text-right backdrop-blur ${
-                timerSeconds <= 5 ? "rt-timer-critical text-[#F94144]" : "text-primary/75 bg-primary/5"
-              }`}
-            >
-              <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-                <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
-                  Time left
-                </span>
-                <span className="ml-2 text-lg sm:text-2xl font-black">{timerSeconds}s</span>
-              </div>
-            </div>
-            <div className="rt-progress-shimmer w-full max-w-[200px] h-1.5 sm:h-2 rounded-full bg-primary/10">
-              <div
-                className={`h-full rounded-full transition ${
-                  timerSeconds <= 5
-                    ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
-                    : "bg-[linear-gradient(90deg,#FFD166_0%,#95D5B2_100%)]"
-                }`}
-                style={{ width: `${timerProgressPercent}%` }}
-              />
-            </div>
-          </div>
-        ) : null
-      }
+      headerAction={null}
     >
       <div className="flex flex-1 h-full min-h-0 flex-col">
         {phase === "lobby" ? (
@@ -352,40 +329,54 @@ export function EnterRealTimeScreen({
 
         {phase === "active" ? (
           currentRound ? (
-            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-1 sm:py-4">
-              <div className="rt-card-pop overflow-hidden rounded-[20px] sm:rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
-                <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] dark:bg-background dark:bg-none p-2.5 sm:p-5 text-white">
+            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-2 sm:py-5">
+              <div className="rt-card-pop overflow-hidden rounded-[28px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
+                <div className="border-b border-border/60 bg-gradient-to-br from-[#16352A] to-[#2D6A4F] p-4 sm:p-6 text-white">
                   <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                    <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/80 sm:px-3 sm:text-xs">
                       <Radio className="h-3 w-3 sm:h-4 sm:w-4 text-[#95D5B2]" />
                       Live question
                     </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-white/85">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/12 px-2.5 py-1 text-[10px] font-bold text-white/85 sm:px-3 sm:text-xs">
                       Question {questionNumber} of {totalQuestions}
                     </div>
                   </div>
 
-                  <div className="mt-2 sm:mt-4">
-                    <h2 className="max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-2xl">
+                  <div className="mt-4 sm:mt-5">
+                    <h2 className="max-w-4xl text-2xl font-black leading-tight tracking-tight sm:text-4xl">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {currentRound.question || (currentRound as any).questionText}
                     </h2>
+                    {hasTimedOut ? (
+                      <p className="mt-3 text-sm font-semibold text-white/65">
+                        Time is up. Your answer controls are locked while the host reveals results.
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
-              <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] dark:bg-card dark:bg-none p-3 sm:p-5">
-                <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
-                  <QuestionRenderer
-                    question={currentRound}
-                    value={answerValue}
-                    onChange={selectAnswer}
-                    disabled={submitted || hasTimedOut}
-                  />
+                <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] p-4 sm:p-6">
+                  <div className="rounded-[24px] border border-[#1C5C45]/10 bg-white p-4 shadow-sm sm:p-5" data-flow-event={realtimeEvents.submitAnswer}>
+                    {shouldShowMissingOptions ? (
+                      <div className="rounded-2xl border border-[#FFD166]/60 bg-[#FFF6CC] px-4 py-5 text-center">
+                        <p className="text-base font-black text-primary">Answer choices are not available yet.</p>
+                        <p className="mt-1 text-sm font-semibold text-primary/60">
+                          Please wait for the host to restart this question.
+                        </p>
+                      </div>
+                    ) : (
+                      <QuestionRenderer
+                        question={currentRound}
+                        value={answerValue}
+                        onChange={selectAnswer}
+                        disabled={submitted || hasTimedOut}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mx-auto mt-2 sm:mt-4 w-full max-w-md">
+            <div className="mx-auto mt-3 w-full max-w-md sm:mt-5">
               {submitted ? (
                 <div className="flex items-center justify-center gap-2 rounded-2xl bg-[#113023] px-4 py-3 sm:px-6 sm:py-4 text-center text-sm sm:text-base font-bold text-white shadow-[0_18px_40px_rgba(17,48,35,0.18)]">
                   <CheckCircle2 className="h-5 w-5 text-emerald-300" />
@@ -400,7 +391,7 @@ export function EnterRealTimeScreen({
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={!hasAnswerResponse(currentRound, answerValue)}
+                  disabled={!hasAnswerResponse(currentRound, answerValue) || shouldShowMissingOptions}
                   className="w-full rounded-2xl bg-gradient-to-r from-[#FFD166] to-[#F9C74F] px-4 py-3 sm:px-6 sm:py-4 text-sm sm:text-base font-bold text-[#113023] shadow-lg transition-all hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100"
                 >
                   Submit Answer

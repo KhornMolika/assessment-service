@@ -43,6 +43,141 @@ const initialRoomState: RoomState = {
   pendingLeaderboard: null,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isRecord(value: any): value is Record<string, any> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getNestedOptions(payload: any) {
+  return (
+    payload?.options ??
+    payload?.q?.options ??
+    payload?.q?.rawOptions ??
+    payload?.q?.questionSnapshot?.options ??
+    payload?.questionSnapshot?.options ??
+    payload?.choices ??
+    payload?.q?.choices ??
+    payload?.items ??
+    payload?.q?.items ??
+    payload?.answers ??
+    payload?.q?.answers ??
+    null
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeOption(option: any, index: number) {
+  const fallback = String(index);
+  return {
+    id:
+      option?.id ??
+      option?.optionId ??
+      option?.value ??
+      option?.label ??
+      fallback,
+    text:
+      option?.text ??
+      option?.optionText ??
+      option?.answer ??
+      option?.name ??
+      option?.title ??
+      option?.label ??
+      option?.value ??
+      String(option),
+    label: option?.label || String.fromCharCode(65 + index),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeRealtimeOptions(rawOptions: any, type?: string) {
+  const normalizedType = String(type ?? "").toLowerCase();
+  const parsedOptions = tryParseJson(rawOptions);
+
+  if (Array.isArray(parsedOptions)) {
+    return parsedOptions.map(normalizeOption);
+  }
+
+  if (!isRecord(parsedOptions)) {
+    if (
+      normalizedType.includes("true_false") ||
+      normalizedType.includes("true/false") ||
+      normalizedType.includes("boolean")
+    ) {
+      return [
+        { id: "true", text: "True", label: "A" },
+        { id: "false", text: "False", label: "B" },
+      ];
+    }
+
+    return [];
+  }
+
+  const optionArray =
+    parsedOptions.options ??
+    parsedOptions.choices ??
+    parsedOptions.items ??
+    parsedOptions.answers ??
+    parsedOptions.possibleAnswers;
+  if (Array.isArray(optionArray)) {
+    return optionArray.map(normalizeOption);
+  }
+
+  const leftSide = parsedOptions.leftSide ?? parsedOptions.left ?? parsedOptions.prompts;
+  const rightSide = parsedOptions.rightSide ?? parsedOptions.right ?? parsedOptions.matches;
+  if (Array.isArray(leftSide) || Array.isArray(rightSide)) {
+    return [...(leftSide || []), ...(rightSide || [])].map(normalizeOption);
+  }
+
+  if (
+    normalizedType.includes("true_false") ||
+    normalizedType.includes("true/false") ||
+    normalizedType.includes("boolean")
+  ) {
+    return [
+      { id: "true", text: String(parsedOptions.trueLabel ?? "True"), label: "A" },
+      { id: "false", text: String(parsedOptions.falseLabel ?? "False"), label: "B" },
+    ];
+  }
+
+  return [];
+}
+
+function tryParseJson(value: unknown) {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseRealtimeQuestionPayload(data: any) {
+  const question = data.q ?? data.currentQuestion ?? data.question;
+  if (!question) return null;
+
+  const rawOptions =
+    data.options ??
+    question.options ??
+    question.rawOptions ??
+    question?.question?.options ??
+    question?.question?.rawOptions ??
+    getNestedOptions(data);
+  const parsedOptions = normalizeRealtimeOptions(rawOptions, question.type ?? question?.question?.type ?? data.type);
+
+  return {
+    ...question,
+    id: question.assessmentQuestionId || question.id,
+    question: question.question || question.questionText || "",
+    questionText: question.questionText || question.question || "",
+    points: Number(question.points ?? 0),
+    options: parsedOptions,
+    rawOptions,
+    correctOptionId: "",
+  };
+}
+
 export function useRealtimeSession(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -51,6 +186,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
 
   const socketRef = useRef<Socket | null>(null);
   const joinParamsRef = useRef<{ roomId: string, role: RoomRole, participantId?: string, name?: string } | null>(null);
+  const leaveHandlerRef = useRef<(() => void) | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentQuestionRef = useRef<any>(null);
 
@@ -96,32 +232,7 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
 
       activeSocket.on(RealtimeEvents.NEW_QUESTION, (data) => {
         // Backend returns: { questionNumber, totalQuestions, q, options, endTime }
-        const rawOptions = data.options;
-        const parsedOptions = Array.isArray(rawOptions)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ? rawOptions.map((option: any, index: number) => ({
-              ...option,
-              label: option.label || String.fromCharCode(65 + index),
-            }))
-          : typeof rawOptions === "object" && rawOptions !== null && rawOptions.leftSide
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ? [...(rawOptions.leftSide || []), ...(rawOptions.rightSide || [])].map((opt: any, i: number) => ({
-                ...opt,
-                label: String.fromCharCode(65 + i),
-              }))
-            : [];
-        const parsedQuestion = data.q
-          ? {
-              ...data.q,
-              id: data.q.assessmentQuestionId || data.q.id,
-              question: data.q.question || data.q.questionText || "",
-              questionText: data.q.questionText || data.q.question || "",
-              points: Number(data.q.points ?? 0),
-              options: parsedOptions,
-              rawOptions,
-              correctOptionId: "",
-            }
-          : data;
+        const parsedQuestion = parseRealtimeQuestionPayload(data) ?? data;
         setRoomState((prev) => ({ 
           ...prev, 
           phase: "active", 
@@ -135,6 +246,23 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
         }));
       });
 
+      activeSocket.on(RealtimeEvents.ROOM_STATE, (data) => {
+        const parsedQuestion = parseRealtimeQuestionPayload(data);
+        setRoomState((prev) => ({
+          ...prev,
+          roomId: data.roomId || prev.roomId,
+          phase: data.phase || prev.phase,
+          participants: data.participants || prev.participants,
+          currentQuestion: parsedQuestion,
+          endTime: data.endTime || null,
+          questionNumber: data.questionNumber || 0,
+          totalQuestions: data.totalQuestions || 0,
+          questionResults: data.questionResults || null,
+          leaderboard: data.leaderboard || prev.leaderboard,
+          pendingLeaderboard: data.phase === "leaderboard" ? data.leaderboard || null : prev.pendingLeaderboard,
+        }));
+      });
+
       activeSocket.on(RealtimeEvents.Q_RESULTS, (data) => {
         setRoomState((prev) => ({ ...prev, phase: "correct", questionResults: data }));
       });
@@ -143,7 +271,11 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
         const isHostRankPayload = joinParamsRef.current?.role === RoomRole.HOST;
         setRoomState((prev) => ({
           ...prev,
-          phase: isHostRankPayload ? prev.phase : "leaderboard",
+          phase: isHostRankPayload
+            ? prev.phase === "active"
+              ? "correct"
+              : prev.phase
+            : "leaderboard",
           leaderboard: data.top5,
           pendingLeaderboard: isHostRankPayload ? data.top5 : null,
           myRank: data.myRank ?? prev.myRank,
@@ -169,6 +301,17 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
         toast.error(error.message || "Realtime error occurred");
       });
 
+      const leaveRoom = () => {
+        if (!activeSocket.connected || !joinParamsRef.current) return;
+        activeSocket.emit(RealtimeEvents.LEAVE_ROOM, {
+          roomId: joinParamsRef.current.roomId,
+        });
+      };
+
+      window.addEventListener("pagehide", leaveRoom);
+      window.addEventListener("beforeunload", leaveRoom);
+      leaveHandlerRef.current = leaveRoom;
+
       setSocket(activeSocket);
       socketRef.current = activeSocket;
     }
@@ -177,8 +320,18 @@ export function useRealtimeSession(options?: { enabled?: boolean }) {
 
     return () => {
       if (socketRef.current) {
+        if (joinParamsRef.current) {
+          socketRef.current.emit(RealtimeEvents.LEAVE_ROOM, {
+            roomId: joinParamsRef.current.roomId,
+          });
+        }
         socketRef.current.disconnect();
         socketRef.current = null;
+      }
+      if (leaveHandlerRef.current) {
+        window.removeEventListener("pagehide", leaveHandlerRef.current);
+        window.removeEventListener("beforeunload", leaveHandlerRef.current);
+        leaveHandlerRef.current = null;
       }
     };
   }, [enabled]);

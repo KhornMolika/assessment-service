@@ -2,7 +2,7 @@
 
 import Avatar from "boring-avatars";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -42,7 +42,7 @@ import { toast } from "sonner";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 const QUESTION_DURATION_SECONDS = 30;
-const LEADERBOARD_DURATION_SECONDS = 10;
+const LEADERBOARD_DURATION_SECONDS = 5;
 
 export function PresentRealTimeScreen({
   assessment,
@@ -134,13 +134,16 @@ export function PresentRealTimeScreen({
     initHost();
   }, [externalSession, assessment.id, joinRoom, isConnected, sessionCode]);
 
-  const currentRound = rounds[questionIndex];
+  const displayedQuestionIndex =
+    roomState.questionNumber > 0
+      ? Math.max(0, Math.min(rounds.length - 1, roomState.questionNumber - 1))
+      : questionIndex;
+  const currentRound = rounds[displayedQuestionIndex];
   const activeSessionCode = sessionCode || (roomState.roomId !== assessment.id ? roomState.roomId : undefined);
   const participantPath = activeSessionCode 
     ? `/assessments/${assessment.id}/enter-real-time-assessment?sessionCode=${activeSessionCode}` 
     : `/join`;
   const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
-  const displayPin = activeSessionCode || "......";
   const responseDistribution = useMemo(() => {
     const stats = roomState.questionResults?.stats;
     return Array.isArray(stats)
@@ -151,6 +154,22 @@ export function PresentRealTimeScreen({
       : [];
   }, [roomState.questionResults?.stats]);
   const isLobbyPhase = phase === "lobby";
+  const questionProgressPercent = roomState.endTime
+    ? Math.max(
+        0,
+        Math.min(
+          100,
+          ((QUESTION_DURATION_SECONDS - timerSeconds) / QUESTION_DURATION_SECONDS) * 100,
+        ),
+      )
+    : 0;
+  const leaderboardProgressPercent = Math.max(
+    0,
+    Math.min(
+      100,
+      ((LEADERBOARD_DURATION_SECONDS - leaderboardSeconds) / LEADERBOARD_DURATION_SECONDS) * 100,
+    ),
+  );
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -199,6 +218,7 @@ export function PresentRealTimeScreen({
   }, [
     assessment.id,
     emitRevealAnswers,
+    activeSessionCode,
     phase,
     roomState.currentQuestion?.id,
     roomState.endTime,
@@ -221,7 +241,32 @@ export function PresentRealTimeScreen({
   }, [
     assessment.id,
     emitRevealAnswers,
+    activeSessionCode,
     phase,
+    roomState.currentQuestion?.id,
+    roomState.endTime,
+    timerSeconds,
+  ]);
+
+  useEffect(() => {
+    if (phase !== "reveal" || !roomState.currentQuestion?.id) return;
+    if (autoRevealQuestionRef.current === roomState.currentQuestion.id) return;
+
+    const allParticipantsAnswered =
+      activeParticipants.length > 0 && responseCount >= activeParticipants.length;
+    const timeExpired =
+      Boolean(roomState.endTime && new Date(roomState.endTime).getTime() <= Date.now());
+
+    if (!allParticipantsAnswered && !timeExpired) return;
+
+    autoRevealQuestionRef.current = roomState.currentQuestion.id;
+    emitRevealAnswers(activeSessionCode || undefined);
+  }, [
+    activeParticipants.length,
+    activeSessionCode,
+    emitRevealAnswers,
+    phase,
+    responseCount,
     roomState.currentQuestion?.id,
     roomState.endTime,
     timerSeconds,
@@ -242,11 +287,6 @@ export function PresentRealTimeScreen({
 
     previousPhaseRef.current = phase;
   }, [phase, playTone]);
-
-  useEffect(() => {
-    if (phase !== "leaderboard") return;
-    // Auto-advance removed. Host must manually click "Next".
-  }, [phase]);
 
   useEffect(() => {
     if (phase !== "reveal" || previousTimerRef.current === timerSeconds) {
@@ -285,17 +325,33 @@ export function PresentRealTimeScreen({
   }
 
 
-  function advanceToNextQuestion() {
-    if (questionIndex === rounds.length - 1) {
+  const advanceToNextQuestion = useCallback(() => {
+    if (displayedQuestionIndex === rounds.length - 1) {
       setWinnerView("podium");
       emitStartQuestion();
       return;
     }
-    const nextIndex = questionIndex + 1;
+    const nextIndex = displayedQuestionIndex + 1;
     setQuestionIndex(nextIndex);
     setLeaderboardSeconds(LEADERBOARD_DURATION_SECONDS);
     emitStartQuestion(rounds[nextIndex].id);
-  }
+  }, [displayedQuestionIndex, emitStartQuestion, rounds]);
+
+  useEffect(() => {
+    if (phase !== "leaderboard") return;
+
+    const intervalId = window.setInterval(() => {
+      setLeaderboardSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    const timeoutId = window.setTimeout(() => {
+      advanceToNextQuestion();
+    }, LEADERBOARD_DURATION_SECONDS * 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [advanceToNextQuestion, phase]);
 
 
   async function handleCopyLink() {
@@ -675,14 +731,28 @@ export function PresentRealTimeScreen({
 
   return (
     <>
-      {phase === "leaderboard" && (
-        <div className="fixed inset-x-0 top-0 z-[100] h-1.5 bg-primary/10">
-          <div
-            className="h-full bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)] shadow-[0_0_10px_rgba(82,183,136,0.8)] transition-all duration-1000 ease-linear"
-            style={{
-              width: `${((LEADERBOARD_DURATION_SECONDS - leaderboardSeconds) / LEADERBOARD_DURATION_SECONDS) * 100}%`,
-            }}
-          />
+      {(phase === "reveal" || phase === "leaderboard") && (
+        <div className="fixed inset-x-0 top-0 z-[100] border-b border-[#1C5C45]/10 bg-white/90 shadow-[0_10px_35px_rgba(17,48,35,0.08)] backdrop-blur-md">
+          <div className="h-2 bg-primary/8">
+            <div
+              className={`h-full rounded-r-full shadow-[0_0_18px_rgba(82,183,136,0.45)] transition-all duration-1000 ease-linear ${
+                phase === "reveal"
+                  ? timerSeconds <= 5
+                    ? "bg-[linear-gradient(90deg,#FFD166_0%,#F94144_100%)]"
+                    : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
+                  : "bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)]"
+              }`}
+              style={{
+                width: `${phase === "reveal" ? questionProgressPercent : leaderboardProgressPercent}%`,
+              }}
+            />
+          </div>
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-primary sm:text-xs">
+            <span>{phase === "reveal" ? "Question time" : "Leaderboard spotlight"}</span>
+            <span className="rounded-full bg-primary/8 px-3 py-1 tabular-nums">
+              {phase === "reveal" ? `${timerSeconds}s left` : `Next in ${leaderboardSeconds}s`}
+            </span>
+          </div>
         </div>
       )}
       <ScreenShell
@@ -694,29 +764,17 @@ export function PresentRealTimeScreen({
       aside={null}
       headerAction={
         phase === "reveal" ? (
-          <div className="flex flex-col items-end gap-1.5 sm:gap-2">
-            <div
-              className={`shrink-0 rounded-xl sm:rounded-3xl border border-border bg-white px-2.5 py-1.5 sm:px-4 sm:py-2 text-right shadow-sm ${
-                timerSeconds <= 5 ? "rt-timer-critical text-[#F94144]" : "text-primary"
-              }`}
-            >
-              <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-                <Clock3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.16em]">
-                  {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
-                </span>
-                <span className="ml-2 text-lg sm:text-2xl font-black">{timerSeconds}s</span>
-              </div>
-            </div>
-            <div className="rt-progress-shimmer w-full max-w-[200px] h-1.5 sm:h-2 rounded-full bg-primary/10">
-              <div
-                className={`h-full rounded-full transition ${
-                  timerSeconds <= 5
-                    ? "bg-[linear-gradient(90deg,#FF6B6F_0%,#F94144_100%)]"
-                    : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
-                }`}
-                style={{ width: `${(timerSeconds / QUESTION_DURATION_SECONDS) * 100}%` }}
-              />
+          <div
+            className={`shrink-0 rounded-2xl border bg-white px-3 py-2 text-right shadow-[0_12px_28px_rgba(17,48,35,0.10)] sm:rounded-3xl sm:px-4 ${
+              timerSeconds <= 5 ? "rt-timer-critical border-[#F94144]/25 text-[#F94144]" : "border-[#1C5C45]/12 text-primary"
+            }`}
+          >
+            <div className="flex items-center justify-end gap-2">
+              <Clock3 className="h-4 w-4" />
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] sm:text-xs">
+                {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
+              </span>
+              <span className="ml-1 text-xl font-black tabular-nums sm:text-2xl">{timerSeconds}s</span>
             </div>
           </div>
         ) : null
@@ -879,7 +937,7 @@ export function PresentRealTimeScreen({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/55">
-                    Question {questionIndex + 1} of {rounds.length}
+                    Question {displayedQuestionIndex + 1} of {rounds.length}
                   </p>
                   <h2 className="mt-2 max-w-5xl text-3xl font-bold leading-tight text-primary lg:text-4xl">
                     {currentRound.question}
@@ -986,7 +1044,7 @@ export function PresentRealTimeScreen({
                 onClick={advanceToNextQuestion}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(17,48,35,0.18)] transition hover:bg-[#174735]"
               >
-                {questionIndex === rounds.length - 1 ? "Finish Assessment" : "Next Question"}
+                {displayedQuestionIndex === rounds.length - 1 ? "Finish Assessment" : "Next Question"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>

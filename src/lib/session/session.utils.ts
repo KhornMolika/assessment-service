@@ -171,16 +171,27 @@ export function buildQuestionRounds(
   questions: AssessmentDetailQuestionItem[],
   shuffleOptions: boolean = false,
 ): QuestionRound[] {
-  return questions.map((question, index) => {
+  return questions.map((question) => {
     const optionLetters = ["A", "B", "C", "D", "E", "F", "G", "H"];
-    const rawOptions = question.options;
+    const rawOptions = parseMaybeJson(question.options ?? question.rawOptions);
+    const optionArray = Array.isArray(rawOptions)
+      ? rawOptions
+      : rawOptions && typeof rawOptions === "object" && !Array.isArray(rawOptions)
+        ? (
+            rawOptions.options ||
+            rawOptions.choices ||
+            rawOptions.items ||
+            rawOptions.answers ||
+            rawOptions.possibleAnswers
+          )
+        : null;
 
     // 1. SINGLE_CHOICE, MULTIPLE_CHOICE, ORDERING — options is an array [{id, text}]
-    if (Array.isArray(rawOptions) && rawOptions.length > 0) {
+    if (Array.isArray(optionArray) && optionArray.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let mappedOptions = rawOptions.map((opt: any, optIndex: number) => ({
-        id: opt.id || opt.optionId || String(optIndex),
-        text: opt.text || opt.optionText || String(opt.value || opt.label || ""),
+      let mappedOptions = optionArray.map((opt: any, optIndex: number) => ({
+        id: opt.id || opt.optionId || opt.value || opt.label || String(optIndex),
+        text: opt.text || opt.optionText || opt.answer || opt.name || opt.title || String(opt.value || opt.label || opt),
       }));
 
       if (shuffleOptions) {
@@ -234,20 +245,22 @@ export function buildQuestionRounds(
       };
     }
 
-    // Fallback: no options from API — generate mock options
-    const fallbackOptions = optionLetters.slice(0, 4).map((letter, optionIndex) => ({
-      id: `${question.id}-option-${letter.toLowerCase()}`,
-      label: letter,
-      text: `${letter}. Candidate answer ${optionIndex + 1} for question ${index + 1}`,
-    }));
-
     return {
       ...question,
-      options: fallbackOptions,
+      options: [],
       rawOptions: null,
-      correctOptionId: fallbackOptions[index % fallbackOptions.length]?.id ?? fallbackOptions[0].id,
+      correctOptionId: "",
     };
   });
+}
+
+function parseMaybeJson(value: unknown) {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
 }
 
 export function buildParticipantRoster(): RoomParticipant[] {
