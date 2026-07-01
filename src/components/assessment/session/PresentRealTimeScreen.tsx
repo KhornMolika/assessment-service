@@ -782,9 +782,9 @@ export function PresentRealTimeScreen({
                   data-flow-event={realtimeEvents.startQuestion}
                   onClick={startSession}
                   disabled={!hasParticipants}
-                  className="group relative w-full overflow-hidden rounded-2xl bg-primary px-4 py-4 text-base font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.22)] transition-all hover:scale-[1.02] hover:bg-[#174735] hover:shadow-[0_22px_45px_rgba(17,48,35,0.28)] disabled:cursor-not-allowed disabled:border disabled:border-[#1C5C45]/10 disabled:bg-[linear-gradient(180deg,#F4F1EA_0%,#EAE6DC_100%)] dark:bg-card dark:bg-none disabled:text-primary/45 disabled:shadow-inner disabled:hover:scale-100 2xl:py-5"
+                  className="group relative w-full overflow-hidden rounded-2xl bg-primary px-4 py-4 text-base font-bold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:hover:scale-100 2xl:py-5"
                 >
-                  <div className="absolute inset-0 bg-white/12 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
+                  <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100 group-disabled:hidden" />
                   <PlayCircle className="mr-2 h-6 w-6" />
                   {hasParticipants ? "Start Session Now" : "Waiting for participants"}
                 </Button>
