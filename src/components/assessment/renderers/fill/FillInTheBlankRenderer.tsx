@@ -8,21 +8,26 @@ function isBlankValue(value: QuestionRendererProps["value"]): value is Record<st
 
 export function FillInTheBlankRenderer({ question, value, disabled, onChange }: QuestionRendererProps) {
   const blankValue = isBlankValue(value) ? value : {};
-  const template = question.rawOptions?.template || "";
+  const questionText = question.question || question.questionText || "";
+  const template = question.rawOptions?.template || questionText;
 
-  // Extract blanks from template like "A [blank_1] is... a [blank_2] institution..."
+  // Extract blanks from template like "A [blank_1] is..." or "A {{blank1}} is..."
   const parts = useMemo(() => {
     if (!template) return [];
-    return template.split(/(\[blank_\d+\])/);
+    return template.split(/(\[blank_\d+\]|\{\{blank\d+\}\})/i);
   }, [template]);
 
-  const blankCount = parts.filter((p: string) => /^\[blank_\d+\]$/.test(p)).length;
+  const blankCount = parts.filter((p: string) => /^\[blank_\d+\]$/i.test(p) || /^\{\{blank\d+\}\}$/i.test(p)).length;
 
-  // If no template, fall back to simple inputs
+  // If no template or blanks found, fall back to simple inputs based on expected answers if available, otherwise just 1
   if (!template || blankCount === 0) {
+    const fallbackCount = Array.isArray(question.correctAnswers?.answers) 
+      ? question.correctAnswers.answers.length 
+      : 1;
+      
     return (
       <div className="grid gap-3">
-        {[0, 1].map((index) => (
+        {Array.from({ length: Math.max(1, fallbackCount) }).map((_, index) => (
           <Input
             key={index}
             type="text"
@@ -47,7 +52,7 @@ export function FillInTheBlankRenderer({ question, value, disabled, onChange }: 
     <div className="flex flex-1 flex-col w-full rounded-[24px] border border-border/60 bg-white/70 p-6 shadow-sm backdrop-blur-sm sm:p-8">
       <p className="text-base text-primary sm:text-lg leading-[2.5rem] sm:leading-[3rem]">
         {parts.map((part: string, i: number) => {
-          if (/^\[blank_\d+\]$/.test(part)) {
+          if (/^\[blank_\d+\]$/i.test(part) || /^\{\{blank\d+\}\}$/i.test(part)) {
             const currentIndex = blankIndex++;
             return (
               <Input
