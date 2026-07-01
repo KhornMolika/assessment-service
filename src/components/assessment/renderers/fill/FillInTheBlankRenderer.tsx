@@ -21,13 +21,20 @@ export function FillInTheBlankRenderer({ question, value, disabled, onChange }: 
 
   // If no template or blanks found, fall back to simple inputs based on expected answers if available, otherwise just 1
   if (!template || blankCount === 0) {
-    const fallbackCount = Array.isArray(question.correctAnswers?.answers) 
-      ? question.correctAnswers.answers.length 
-      : 1;
+    const rawCorrect = question.correctAnswers;
+    const acceptedAnswers = Array.isArray(rawCorrect) 
+      ? rawCorrect 
+      : Array.isArray(rawCorrect?.answers) 
+        ? rawCorrect.answers 
+        : rawCorrect && typeof rawCorrect === 'string'
+          ? [rawCorrect]
+          : [];
+          
+    const fallbackCount = Math.max(1, acceptedAnswers.length);
       
     return (
       <div className="grid gap-3">
-        {Array.from({ length: Math.max(1, fallbackCount) }).map((_, index) => (
+        {Array.from({ length: fallbackCount }).map((_, index) => (
           <Input
             key={index}
             type="text"

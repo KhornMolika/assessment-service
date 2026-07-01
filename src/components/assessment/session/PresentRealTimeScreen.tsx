@@ -523,9 +523,14 @@ export function PresentRealTimeScreen({
     }
 
     if (currentRendererType === "fill") {
-      const acceptedAnswers = Array.isArray(currentRound.correctAnswers?.answers)
-        ? currentRound.correctAnswers.answers
-        : [];
+      const rawCorrect = currentRound.correctAnswers;
+      const acceptedAnswers = Array.isArray(rawCorrect) 
+        ? rawCorrect 
+        : Array.isArray(rawCorrect?.answers) 
+          ? rawCorrect.answers 
+          : rawCorrect && typeof rawCorrect === 'string'
+            ? [rawCorrect]
+            : [];
       return (
         <div className="grid gap-3 md:grid-cols-2">
           {acceptedAnswers.map((accepted: string | string[], index: number) => {
