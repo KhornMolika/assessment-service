@@ -15,7 +15,7 @@ import { PageHeaderCard } from "@/src/components/ui/layout/PageHeaderCard";
 import Pagination from "@/src/components/ui/navigation/Pagination";
 import DeleteConfirmModal from "@/src/components/ui/modals/DeleteConfirmModal";
 import { toast } from "sonner";
-import { Edit2, Trash2, Eye, Copy, MoreHorizontal } from "lucide-react";
+import { Edit2, Trash2, Eye, Copy, MoreHorizontal, Plus } from "lucide-react";
 import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 import { useTranslations } from "next-intl";
 
@@ -28,6 +28,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   const itemsPerPage = Number(searchParams.get("pageSize") || "10");
 
   const [topics, setLocalTopics] = useState<Topic[]>(initialTopics);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -67,6 +68,7 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
       toast.success(t("createSuccess"));
       setFormData({ name: "", description: "" });
       setActiveTopic(newTopic);
+      setIsCreateModalOpen(false);
       await refreshTopics();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
@@ -164,17 +166,30 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   return (
     <div className="space-y-6">
       <PageHeaderCard
+        className="catalog-header"
         title={t("title")}
-        description={t("description")}
+        description={t("description", { total: topics.length })}
+        actions={
+          <Btn onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            {t("createTitle") || "New Topic"}
+          </Btn>
+        }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1 space-y-6">
           <Card className="overflow-hidden flex flex-col">
             <CH className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-1">
                 <CT>{t("listTitle")}</CT>
                 <CD>{t("listDesc")}</CD>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Btn onClick={() => setIsCreateModalOpen(true)} className="embed-only-element inline-flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  {t("createTitle") || "New Topic"}
+                </Btn>
               </div>
             </CH>
             <CB className="px-0 pb-0 flex-1">
@@ -245,33 +260,29 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
             )}
           </Card>
         </div>
-
-        <div className="lg:col-span-1">
-          <Card>
-            <CH>
-              <CT>{t("createTitle")}</CT>
-              <CD>{t("createDesc")}</CD>
-            </CH>
-            <CB>
-              <form onSubmit={handleCreateSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t("nameLabel")}</Label>
-                  <Input id="name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder={t("namePlaceholder")} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">{t("descriptionLabel")}</Label>
-                  <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder={t("descPlaceholder")} rows={3} />
-                </div>
-                <div className="pt-2">
-                  <Btn type="submit" className="w-full" disabled={isSaving}>
-                    {isSaving ? t("creatingBtn") : t("createBtn")}
-                  </Btn>
-                </div>
-              </form>
-            </CB>
-          </Card>
-        </div>
       </div>
+
+      {/* Create Modal */}
+      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-slate-900 border-b pb-4">{t("createTitle")}</h2>
+          <form onSubmit={handleCreateSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t("nameLabel")}</Label>
+              <Input id="name" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder={t("namePlaceholder")} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">{t("descriptionLabel")}</Label>
+              <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder={t("descPlaceholder")} rows={3} />
+            </div>
+            <div className="pt-2">
+              <Btn type="submit" className="w-full" disabled={isSaving}>
+                {isSaving ? t("creatingBtn") : t("createBtn")}
+              </Btn>
+            </div>
+          </form>
+        </div>
+      </Modal>
 
       {/* Preview Modal */}
       <Modal open={isPreviewModalOpen} onClose={() => setIsPreviewModalOpen(false)}>

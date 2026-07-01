@@ -30,11 +30,13 @@ export function EnterRealTimeScreen({
   embedded,
   session: externalSession,
   onPreviewParticipantJoined,
+  sessionCode,
 }: {
   assessment: AssessmentCatalogItem;
   embedded?: boolean;
   session?: RealtimeSessionReturn;
   onPreviewParticipantJoined?: (participant: { id: string; name: string }) => void;
+  sessionCode?: string;
 }) {
   const internalSession = useRealtimeSession({ enabled: !externalSession });
   const activeSession = externalSession || internalSession;
@@ -182,7 +184,11 @@ export function EnterRealTimeScreen({
     
     setParticipantId(roomParticipantId);
     onPreviewParticipantJoined?.({ id: roomParticipantId, name: participantName });
-    joinRoom(assessment.id, RoomRole.PARTICIPANT, roomParticipantId, participantName);
+    if (!sessionCode) {
+      toast.error("Missing session PIN code. Cannot join room.");
+      return;
+    }
+    joinRoom(sessionCode, RoomRole.PARTICIPANT, roomParticipantId, participantName);
   }
 
   const [submitted, setSubmitted] = useState(false);

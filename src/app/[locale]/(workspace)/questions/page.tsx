@@ -66,6 +66,7 @@ export function QuestionsPageContent() {
   const difficultyFilter = getSingleSearchParam(searchParams.get("difficulty"), "All Difficulties") || "All Difficulties";
   const currentPage = parsePositiveInteger(searchParams.get("page"), 1);
   const itemsPerPage = parsePositiveInteger(searchParams.get("pageSize"), 10);
+  const isEmbedded = searchParams.get("embedded") === "true";
   
   const activeTopic = useTopicStore((s) => s.activeTopic);
   
@@ -140,16 +141,18 @@ export function QuestionsPageContent() {
         title={t("title")}
         description={activeTopic ? t("descriptionTopic", { total: questions.length, topic: activeTopic.name }) : t("description", { total: questions.length })}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <QuestionBuilderAction />
-            <Link
-              href="/questions/new"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
-            >
-              <Plus className="h-4 w-4" />
-              {t("newQuestion")}
-            </Link>
-          </div>
+          !isEmbedded ? (
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <QuestionBuilderAction />
+              <Link
+                href="/questions/new"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 font-semibold text-white transition hover:bg-pm sm:w-auto"
+              >
+                <Plus className="h-4 w-4" />
+                {t("newQuestion")}
+              </Link>
+            </div>
+          ) : null
         }
       />
 
@@ -160,17 +163,19 @@ export function QuestionsPageContent() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <TopicSelector className="embed-only-element" />
-            <div className="embed-only-element">
-              <QuestionBuilderAction />
-            </div>
-            <Link
-              href="/questions/new"
-              className="embed-only-element inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">{t("newQuestion")}</span>
-              <span className="sm:hidden">{t("new")}</span>
-            </Link>
+            {isEmbedded && (
+              <>
+                <QuestionBuilderAction />
+                <Link
+                  href="/questions/new"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-pm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("newQuestion")}</span>
+                  <span className="sm:hidden">{t("new")}</span>
+                </Link>
+              </>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-6 px-0 pb-0 sm:px-0 sm:pb-0">

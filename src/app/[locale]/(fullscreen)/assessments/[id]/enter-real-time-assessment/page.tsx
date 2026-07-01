@@ -6,27 +6,34 @@ import { SessionLoading } from "@/src/components/assessment/session/SessionLoadi
 
 async function AssessmentEnterRealTimePageContent({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const sessionCode = resolvedSearchParams?.sessionCode as string | undefined;
+
   const assessment = await getAssessmentCatalogItemById(id);
 
   if (!assessment) {
     notFound();
   }
 
-  return <EnterRealTimeScreen assessment={assessment} />;
+  return <EnterRealTimeScreen assessment={assessment} sessionCode={sessionCode} />;
 }
 
 export default function AssessmentEnterRealTimePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   return (
     <Suspense fallback={<SessionLoading />}>
-      <AssessmentEnterRealTimePageContent params={params} />
+      <AssessmentEnterRealTimePageContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }

@@ -49,12 +49,14 @@ export function PresentRealTimeScreen({
   embedded,
   session: externalSession,
   previewParticipants = [],
+  sessionCode,
 }: {
   assessment: AssessmentCatalogItem;
   questions: AssessmentDetailQuestionItem[];
   embedded?: boolean;
   session?: RealtimeSessionReturn;
   previewParticipants?: Array<{ id: string; name: string }>;
+  sessionCode?: string;
 }) {
   const internalSession = useRealtimeSession({ enabled: !externalSession });
   const activeSession = externalSession || internalSession;
@@ -111,21 +113,33 @@ export function PresentRealTimeScreen({
   const hostJoinedRef = useRef(false);
   useEffect(() => {
     if (externalSession || !isConnected || hostJoinedRef.current) return;
+    
     async function initHost() {
-      const res = await startRealtimeSessionHost(assessment.id, { reset: true });
-      if (res.success) {
-        joinRoom(assessment.id, RoomRole.HOST);
+      if (sessionCode) {
+        joinRoom(sessionCode, RoomRole.HOST);
         hostJoinedRef.current = true;
       } else {
-        toast.error("Failed to initialize host session on backend");
+        const res = await startRealtimeSessionHost(assessment.id, { reset: true });
+        if (res.success && res.data?.sessionCode) {
+          // Push the new sessionCode to the URL so refresh works
+          window.history.replaceState(null, '', `?sessionCode=${res.data.sessionCode}`);
+          joinRoom(res.data.sessionCode, RoomRole.HOST);
+          hostJoinedRef.current = true;
+        } else {
+          toast.error("Failed to initialize host session on backend");
+        }
       }
     }
     initHost();
-  }, [externalSession, assessment.id, joinRoom, isConnected]);
+  }, [externalSession, assessment.id, joinRoom, isConnected, sessionCode]);
 
   const currentRound = rounds[questionIndex];
-  const participantPath = `/assessments/${assessment.id}/enter-real-time-assessment`;
+  const activeSessionCode = sessionCode || (roomState.roomId !== assessment.id ? roomState.roomId : undefined);
+  const participantPath = activeSessionCode 
+    ? `/assessments/${assessment.id}/enter-real-time-assessment?sessionCode=${activeSessionCode}` 
+    : `/join`;
   const participantUrl = origin ? `${origin}${participantPath}` : participantPath;
+  const displayPin = activeSessionCode || "......";
   const responseDistribution = useMemo(() => {
     const stats = roomState.questionResults?.stats;
     return Array.isArray(stats)
@@ -177,7 +191,7 @@ export function PresentRealTimeScreen({
         return;
       }
       autoRevealQuestionRef.current = roomState.currentQuestion.id;
-      emitRevealAnswers(assessment.id);
+      emitRevealAnswers(activeSessionCode || undefined);
     }, delay);
 
     return () => window.clearTimeout(timeoutId);
@@ -202,7 +216,7 @@ export function PresentRealTimeScreen({
     if (autoRevealQuestionRef.current === roomState.currentQuestion.id) return;
 
     autoRevealQuestionRef.current = roomState.currentQuestion.id;
-    emitRevealAnswers(assessment.id);
+    emitRevealAnswers(activeSessionCode || undefined);
   }, [
     assessment.id,
     emitRevealAnswers,
@@ -261,7 +275,7 @@ export function PresentRealTimeScreen({
 
   
   function skipToCorrectAnswer() {
-    emitRevealAnswers(assessment.id);
+    emitRevealAnswers(activeSessionCode || undefined);
   }
 
   function showLeaderboard() {

@@ -25,7 +25,7 @@ export default function BanksHeader({
         title={t("title")}
         description={t("description", { bankCount, totalQuestions })}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
               type="button"
               onClick={() => setIntegrationOpen(true)}

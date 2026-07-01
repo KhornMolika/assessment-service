@@ -15,6 +15,7 @@ import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Plus } from "lucide-react";
 import Pagination from "@/src/components/ui/navigation/Pagination";
 import { TopicSelector } from "@/src/components/topic-selector";
+import { Button } from "@/src/components/ui/ui/button";
 import {
   Card,
   CardContent,
@@ -198,7 +199,7 @@ export function AssessmentsPageContent() {
             <TopicSelector className="embed-only-element" />
             <Link
               href="/assessments/new"
-              className="embed-only-element inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-pm"
+              className="embed-only-element inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-pm"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">New Assessment</span>

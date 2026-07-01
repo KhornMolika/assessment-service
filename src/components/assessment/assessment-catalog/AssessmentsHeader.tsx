@@ -23,7 +23,7 @@ export default function AssessmentsHeader({
         title={t("title")}
         description={t("description", { total: totalAssessments })}
         actions={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row embed-only-element">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
               type="button"
               onClick={() => setIntegrationOpen(true)}
