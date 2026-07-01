@@ -8,7 +8,7 @@ function isBlankValue(value: QuestionRendererProps["value"]): value is Record<st
 
 export function FillInTheBlankRenderer({ question, value, disabled, onChange }: QuestionRendererProps) {
   const blankValue = isBlankValue(value) ? value : {};
-  const questionText = question.question || question.questionText || "";
+  const questionText = question.question || "";
   const template = question.rawOptions?.template || questionText;
 
   // Extract blanks from template like "A [blank_1] is..." or "A {{blank1}} is..."

@@ -498,17 +498,28 @@ export function PresentRealTimeScreen({
           ? rawCorrect.pairs
           : [];
       const raw = currentRound.rawOptions;
-      const leftOptions = raw?.leftSide || raw?.left || [];
-      const rightOptions = raw?.rightSide || raw?.right || [];
+      const leftOptions = Array.isArray(raw?.leftSide) ? raw.leftSide : Array.isArray(raw?.left) ? raw.left : [];
+      const rightOptions = Array.isArray(raw?.rightSide) ? raw.rightSide : Array.isArray(raw?.right) ? raw.right : [];
+      
+      const findText = (id: string, fallbackArr: any[]) => {
+        if (!id) return "";
+        // First try currentRound.options
+        const opt = currentRound.options?.find((o: any) => String(o.id) === id || o.text === id);
+        if (opt?.text) return opt.text;
+        // Then try raw options
+        const rawOpt = fallbackArr.find(o => String(o.id) === id || o.text === id);
+        if (rawOpt?.text) return rawOpt.text;
+        return id;
+      };
+
       return (
         <div className="grid gap-3 md:grid-cols-2">
-          {pairs.map((pair: { leftId?: string; left?: string; rightId?: string; right?: string }, index: number) => {
-            const leftId = pair.leftId || pair.left || "";
-            const rightId = pair.rightId || pair.right || "";
-            const leftText =
-              leftOptions.find((option: { id: string; text?: string }) => option.id === leftId)?.text ?? leftId;
-            const rightText =
-              rightOptions.find((option: { id: string; text?: string }) => option.id === rightId)?.text ?? rightId;
+          {pairs.map((pair: any, index: number) => {
+            const leftId = String(pair?.leftId || pair?.left || "");
+            const rightId = String(pair?.rightId || pair?.right || "");
+            
+            const leftText = findText(leftId, leftOptions);
+            const rightText = findText(rightId, rightOptions);
 
             return (
               <div key={`${leftId}-${rightId}-${index}`} className="rounded-[24px] border border-[#95D5B2] bg-white p-4 shadow-sm">
@@ -1014,7 +1025,7 @@ export function PresentRealTimeScreen({
               </Button>
             </div>
 
-            <div className="min-h-0 rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
+            <div className="min-h-0 flex-1 overflow-y-auto rounded-[32px] border border-[#1C5C45]/15 bg-white p-5 shadow-[0_24px_65px_rgba(27,67,50,0.10)]">
               <div className="rounded-[26px] bg-[linear-gradient(135deg,#F8FBF7_0%,#EEF7F1_100%)] dark:bg-card dark:bg-none p-4 sm:p-5">
                 {renderCorrectAnswerPanel()}
               </div>
