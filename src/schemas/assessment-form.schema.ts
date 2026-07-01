@@ -52,13 +52,6 @@ export const assessmentFormSchema = z
     }
 
     if (data.questionSelection === "DYNAMIC") {
-      if (data.selectedBankId.trim().length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["selectedBankId"],
-          message: "Choose a question bank for dynamic question selection.",
-        });
-      }
 
       if (data.totalQuestions <= 0) {
         ctx.addIssue({
