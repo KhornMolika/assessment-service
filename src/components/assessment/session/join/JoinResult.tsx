@@ -31,7 +31,7 @@ export function JoinResult({
 
   return (
     <div className="mx-auto flex h-full w-full max-w-5xl flex-1 items-start py-2 sm:py-4 lg:items-center">
-      <div className="grid w-full gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-center">
+      <div className="grid w-full gap-5 max-w-3xl mx-auto lg:items-center">
         <div
           className={`overflow-hidden rounded-[32px] border shadow-[0_24px_60px_rgba(27,67,50,0.12)] ${
             isSubjective || isCorrect
@@ -108,22 +108,7 @@ export function JoinResult({
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-[30px] border border-border bg-white/90 p-6 shadow-[0_18px_40px_rgba(27,67,50,0.08)]">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/8 text-primary">
-              <Clock3 className="h-5 w-5" />
-            </div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-primary/55">
-              Status
-            </p>
-            <p className="mt-2 text-2xl font-black leading-tight text-primary">
-              Wait for host to advance
-            </p>
-            <p className="mt-3 text-sm leading-6 text-inkd">
-              The next question appears only after the host moves the session forward.
-            </p>
-          </div>
-        </div>
+
       </div>
     </div>
   );
