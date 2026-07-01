@@ -28,6 +28,7 @@ export function RealTimeSimulator({
   const { isConnected, joinRoom, resetRoomState } = hostSession;
   const { resetRoomState: resetParticipantRoomState } = participantSession;
 
+  const [sessionCode, setSessionCode] = useState<string | undefined>();
   // Auto-join as HOST once connected. Preview always resets the room so it
   // starts from the lobby instead of resuming old Redis state.
   const hostJoinedRef = useRef(false);
@@ -38,8 +39,9 @@ export function RealTimeSimulator({
       resetParticipantRoomState();
       setPreviewParticipants([]);
       const res = await startRealtimeSessionHost(assessment.id, { reset: true, preview: true });
-      if (res.success) {
-        joinRoom(assessment.id, RoomRole.HOST);
+      if (res.success && res.data?.sessionCode) {
+        setSessionCode(res.data.sessionCode);
+        joinRoom(res.data.sessionCode, RoomRole.HOST);
         hostJoinedRef.current = true;
       } else {
         toast.error("Failed to initialize host session on backend");
@@ -49,12 +51,12 @@ export function RealTimeSimulator({
   }, [assessment.id, joinRoom, isConnected, resetParticipantRoomState, resetRoomState]);
 
   useEffect(() => {
-    if (viewMode !== "host" || !hostJoinedRef.current || hostSession.roomState.phase !== "lobby") {
+    if (viewMode !== "host" || !hostJoinedRef.current || hostSession.roomState.phase !== "lobby" || !sessionCode) {
       return;
     }
 
-    joinRoom(assessment.id, RoomRole.HOST);
-  }, [assessment.id, hostSession.roomState.phase, joinRoom, viewMode]);
+    joinRoom(sessionCode, RoomRole.HOST);
+  }, [sessionCode, hostSession.roomState.phase, joinRoom, viewMode]);
 
   return (
     <div className="relative flex h-full min-h-[calc(100dvh-9rem)] w-full flex-col overflow-hidden bg-transparent">
@@ -101,6 +103,7 @@ export function RealTimeSimulator({
               embedded
               session={hostSession}
               previewParticipants={previewParticipants}
+              sessionCode={sessionCode}
             />
           </div>
         </div>
@@ -112,6 +115,7 @@ export function RealTimeSimulator({
                assessment={assessment}
                embedded
                session={participantSession}
+               sessionCode={sessionCode}
                onPreviewParticipantJoined={(participant) => {
                  setPreviewParticipants((current) => {
                    if (current.some((item) => item.id === participant.id)) {

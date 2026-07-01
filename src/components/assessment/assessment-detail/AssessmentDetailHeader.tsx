@@ -141,13 +141,6 @@ export default function AssessmentDetailHeader({
                     <MonitorPlay className="h-4 w-4" />
                     Host Session
                   </Link>
-                  <Link
-                    href={`/assessments/${assessment.id}/enter-real-time-assessment`}
-                    className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
-                  >
-                    <Users className="h-4 w-4" />
-                    Join Session
-                  </Link>
                 </>
               )}
               <div className="relative" ref={menuRef}>
