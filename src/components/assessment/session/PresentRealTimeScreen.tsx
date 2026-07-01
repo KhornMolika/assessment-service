@@ -83,7 +83,13 @@ export function PresentRealTimeScreen({
 
   const activeParticipants: Array<{ id: string; name: string }> =
     roomState.participants.length > 0 ? roomState.participants : previewParticipants;
-  const responseCount = roomState.questionResults ? (roomState.questionResults.totalAnswered || 0) : 0;
+  const responseCount = roomState.questionResults
+    ? typeof roomState.questionResults.totalAnswered === "number"
+      ? roomState.questionResults.totalAnswered
+      : Array.isArray(roomState.questionResults.stats)
+        ? roomState.questionResults.stats.reduce((acc: number, s: { count?: number }) => acc + (s.count || 0), 0)
+        : 0
+    : 0;
   
   const leaderboard: LeaderboardEntry[] = Array.isArray(roomState.leaderboard)
     ? roomState.leaderboard
@@ -485,9 +491,12 @@ export function PresentRealTimeScreen({
     }
 
     if (currentRendererType === "matching") {
-      const pairs = Array.isArray(currentRound.correctAnswers?.pairs)
-        ? currentRound.correctAnswers.pairs
-        : [];
+      const rawCorrect = currentRound.correctAnswers;
+      const pairs = Array.isArray(rawCorrect)
+        ? rawCorrect
+        : Array.isArray(rawCorrect?.pairs)
+          ? rawCorrect.pairs
+          : [];
       const raw = currentRound.rawOptions;
       const leftOptions = raw?.leftSide || raw?.left || [];
       const rightOptions = raw?.rightSide || raw?.right || [];
@@ -767,23 +776,7 @@ export function PresentRealTimeScreen({
       variant={embedded ? "panel" : "page"}
       viewportLocked={!embedded}
       aside={null}
-      headerAction={
-        phase === "reveal" ? (
-          <div
-            className={`shrink-0 rounded-2xl border bg-white px-3 py-2 text-right shadow-[0_12px_28px_rgba(17,48,35,0.10)] sm:rounded-3xl sm:px-4 ${
-              timerSeconds <= 5 ? "rt-timer-critical border-[#F94144]/25 text-[#F94144]" : "border-[#1C5C45]/12 text-primary"
-            }`}
-          >
-            <div className="flex items-center justify-end gap-2">
-              <Clock3 className="h-4 w-4" />
-              <span className="text-[10px] font-black uppercase tracking-[0.16em] sm:text-xs">
-                {timerSeconds <= 5 ? "Final countdown" : "Live answering"}
-              </span>
-              <span className="ml-1 text-xl font-black tabular-nums sm:text-2xl">{timerSeconds}s</span>
-            </div>
-          </div>
-        ) : null
-      }
+      headerAction={null}
     >
       <div className="h-full min-h-0">
         {phase === "lobby" ? (
