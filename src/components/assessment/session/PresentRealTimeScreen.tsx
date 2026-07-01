@@ -15,6 +15,7 @@ import {
   Trophy,
   Volume2,
   VolumeX,
+  MonitorPlay,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type {
@@ -301,6 +302,16 @@ export function PresentRealTimeScreen({
     await navigator.clipboard.writeText(participantUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
+  }
+
+  if (!currentRound) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center p-8 text-center text-slate-500 bg-white">
+        <MonitorPlay className="mb-4 h-12 w-12 opacity-20" />
+        <h3 className="mb-2 text-lg font-medium text-slate-900">No questions available</h3>
+        <p className="max-w-md">This assessment has no objective questions to present in a real-time session. Please add some questions first.</p>
+      </div>
+    );
   }
 
   const currentRendererType = normalizeQuestionRendererType(currentRound.type);

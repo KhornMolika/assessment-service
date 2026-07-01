@@ -351,26 +351,27 @@ export function EnterRealTimeScreen({
         ) : null}
 
         {phase === "active" ? (
-          <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-1 sm:py-4">
-            <div className="rt-card-pop overflow-hidden rounded-[20px] sm:rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
-              <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] dark:bg-background dark:bg-none p-2.5 sm:p-5 text-white">
-                <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                  <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
-                    <Radio className="h-3 w-3 sm:h-4 sm:w-4 text-[#95D5B2]" />
-                    Live question
+          currentRound ? (
+            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col overflow-y-auto py-1 sm:py-4">
+              <div className="rt-card-pop overflow-hidden rounded-[20px] sm:rounded-[30px] border border-[#1C5C45]/15 bg-white shadow-[0_24px_70px_rgba(27,67,50,0.10)]">
+                <div className="border-b border-border/60 bg-[linear-gradient(135deg,#16352A_0%,#23513D_58%,#2D6A4F_100%)] dark:bg-background dark:bg-none p-2.5 sm:p-5 text-white">
+                  <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em] text-white/75">
+                      <Radio className="h-3 w-3 sm:h-4 sm:w-4 text-[#95D5B2]" />
+                      Live question
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-white/85">
+                      Question {questionNumber} of {totalQuestions}
+                    </div>
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold text-white/85">
-                    Question {questionNumber} of {totalQuestions}
-                  </div>
-                </div>
 
-                <div className="mt-2 sm:mt-4">
-                  <h2 className="max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-2xl">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {currentRound.question || (currentRound as any).questionText}
-                  </h2>
+                  <div className="mt-2 sm:mt-4">
+                    <h2 className="max-w-3xl text-base font-bold leading-snug tracking-tight sm:text-2xl">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {currentRound.question || (currentRound as any).questionText}
+                    </h2>
+                  </div>
                 </div>
-              </div>
 
               <div className="bg-[linear-gradient(180deg,#FFFEF8_0%,#F7F5F0_100%)] dark:bg-card dark:bg-none p-3 sm:p-5">
                 <div className="w-full" data-flow-event={realtimeEvents.submitAnswer}>
@@ -405,8 +406,16 @@ export function EnterRealTimeScreen({
                   Submit Answer
                 </button>
               )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-1 items-center justify-center h-full">
+              <JoinWaitingState
+                title="Loading question..."
+                description="The next question is being prepared."
+              />
+            </div>
+          )
         ) : null}
 
         {roomState.questionResults && phase !== "active" && phase !== "results" ? (
