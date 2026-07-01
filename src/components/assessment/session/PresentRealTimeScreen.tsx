@@ -677,30 +677,7 @@ export function PresentRealTimeScreen({
 
   return (
     <>
-      {(phase === "reveal" || phase === "leaderboard") && (
-        <div className="fixed inset-x-0 top-0 z-[100] border-b border-[#1C5C45]/10 bg-white/90 shadow-[0_10px_35px_rgba(17,48,35,0.08)] backdrop-blur-md">
-          <div className="h-2 bg-primary/8">
-            <div
-              className={`h-full rounded-r-full shadow-[0_0_18px_rgba(82,183,136,0.45)] transition-all duration-1000 ease-linear ${
-                phase === "reveal"
-                  ? timerSeconds <= 5
-                    ? "bg-[linear-gradient(90deg,#FFD166_0%,#F94144_100%)]"
-                    : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
-                  : "bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)]"
-              }`}
-              style={{
-                width: `${phase === "reveal" ? questionProgressPercent : leaderboardProgressPercent}%`,
-              }}
-            />
-          </div>
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-primary sm:text-xs">
-            <span>{phase === "reveal" ? "Question time" : "Leaderboard spotlight"}</span>
-            <span className="rounded-full bg-primary/8 px-3 py-1 tabular-nums">
-              {phase === "reveal" ? `${timerSeconds}s left` : `Next in ${leaderboardSeconds}s`}
-            </span>
-          </div>
-        </div>
-      )}
+
       <ScreenShell
       eyebrow={isLobbyPhase ? "Real-time Host Flow" : ""}
       title={isLobbyPhase ? assessment.name || "Untitled" : ""}
@@ -710,7 +687,31 @@ export function PresentRealTimeScreen({
       aside={null}
       headerAction={null}
     >
-      <div className="h-full min-h-0">
+      <div className="flex h-full min-h-0 flex-col">
+        {(phase === "reveal" || phase === "leaderboard") && (
+          <div className="mx-auto mb-4 w-full max-w-6xl shrink-0 overflow-hidden rounded-[24px] border border-[#1C5C45]/15 bg-white shadow-sm">
+            <div className="h-2 bg-primary/8">
+              <div
+                className={`h-full rounded-r-full shadow-[0_0_18px_rgba(82,183,136,0.45)] transition-all duration-1000 ease-linear ${
+                  phase === "reveal"
+                    ? timerSeconds <= 5
+                      ? "bg-[linear-gradient(90deg,#FFD166_0%,#F94144_100%)]"
+                      : "bg-[linear-gradient(90deg,#4CC9F0_0%,#7FE0C0_100%)]"
+                    : "bg-[linear-gradient(90deg,#52B788_0%,#FFD166_100%)]"
+                }`}
+                style={{
+                  width: `${phase === "reveal" ? questionProgressPercent : leaderboardProgressPercent}%`,
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3 px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-primary sm:text-xs">
+              <span>{phase === "reveal" ? "Question time" : "Leaderboard spotlight"}</span>
+              <span className="rounded-full bg-primary/8 px-3 py-1 tabular-nums">
+                {phase === "reveal" ? `${timerSeconds}s left` : `Next in ${leaderboardSeconds}s`}
+              </span>
+            </div>
+          </div>
+        )}
         {phase === "lobby" ? (
           <div
             className={`grid h-full min-h-0 gap-4 ${
