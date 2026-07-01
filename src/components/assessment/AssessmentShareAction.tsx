@@ -7,6 +7,7 @@ import { Copy, PlayCircle, QrCode, Share2, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import { Button } from "@/src/components/ui/ui/button";
+import { apiClient } from "@/src/lib/api-client";
 
 function ShareQr({
   value,
@@ -205,13 +206,22 @@ export default function AssessmentShareAction({
                 >
                   Cancel
                 </Button>
-                <Link
-                  href={hostPath}
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await apiClient.post(`/runtime/real-time/${assessment.id}/start?reset=true`, {});
+                    } catch (err) {
+                      console.error("Failed to reset session", err);
+                    }
+                    router.push(hostPath);
+                  }}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-white shadow-[0_18px_36px_rgba(17,48,35,0.18)] transition hover:bg-[#174735]"
                 >
                   <PlayCircle className="h-4 w-4" />
                   Launch
-                </Link>
+                </button>
               </div>
             </div>
           )}

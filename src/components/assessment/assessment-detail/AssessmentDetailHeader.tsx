@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useTransition } from "react";
 import { toast } from "sonner";
+import { apiClient } from "@/src/lib/api-client";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Copy, Edit, MoreHorizontal, Trash2, Globe, Archive, Play, MonitorPlay, Users, BarChart2 } from "lucide-react";
 import Link from "next/link";
@@ -134,13 +135,22 @@ export default function AssessmentDetailHeader({
                 </Link>
               ) : (
                 <>
-                  <Link
-                    href={`/assessments/${assessment.id}/present-real-time-assessment`}
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await apiClient.post(`/runtime/real-time/${assessment.id}/start?reset=true`, {});
+                      } catch (err) {
+                        console.error("Failed to reset session", err);
+                      }
+                      router.push(`/assessments/${assessment.id}/present-real-time-assessment`);
+                    }}
                     className="hover:cursor-pointer inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-muted"
                   >
                     <MonitorPlay className="h-4 w-4" />
                     Host Session
-                  </Link>
+                  </button>
                 </>
               )}
               <div className="relative" ref={menuRef}>
