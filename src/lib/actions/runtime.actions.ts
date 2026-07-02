@@ -15,7 +15,8 @@ export async function getActiveSessionId(assessmentId: string) {
 
 export async function startSelfPacedSession(
   assessmentId: string, 
-  participant?: { name: string; email: string }
+  participant?: { name: string; email: string },
+  options?: { ignoreExistingSession?: boolean },
 ) {
   try {
     let participantId: string | undefined = undefined;
@@ -43,7 +44,7 @@ export async function startSelfPacedSession(
     
     // Check if we already have a session
     const existingSessionId = await getActiveSessionId(assessmentId);
-    if (existingSessionId && !participant?.name) {
+    if (existingSessionId && !participant?.name && !options?.ignoreExistingSession) {
       return { success: true, data: { sessionId: existingSessionId } };
     }
 
@@ -134,4 +135,16 @@ export async function startRealtimeSessionHost(
 
 export async function getRealtimeUrl() {
   return process.env.API_URL?.replace('/api/v1', '');
+}
+
+export async function lookupRealtimeSession(code: string) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await apiClient.get<any>(`/runtime/real-time/sessions/${code}`);
+    return { success: true, data: res.data || res };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error("lookupRealtimeSession error:", error);
+    return { success: false, message: error.response?.data?.message || error.message || "Failed to find session" };
+  }
 }

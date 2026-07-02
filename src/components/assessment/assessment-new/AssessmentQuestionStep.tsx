@@ -19,8 +19,16 @@ function mapServerQuestion(q: any): Question {
     ...q,
     questionText: q.questionText || q.text,
     correctAnswer: q.correctAnswer || q.correctAnswers,
+    difficulty: String(q.difficulty || "MEDIUM").toUpperCase(),
     topicId: q.bankId || q.topicId,
   } as Question;
+}
+
+function normalizeDifficulty(value: unknown) {
+  const normalized = String(value || "").trim().toUpperCase();
+  if (normalized === "EASY") return "Easy";
+  if (normalized === "HARD") return "Hard";
+  return "Medium";
 }
 
 function getQuestionTypeTone(type: string) {
@@ -85,11 +93,11 @@ export default function AssessmentQuestionStep({
   const [bankQuestions, setBankQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
-    if (formData.selectedBankId) {
+    if (formData.dynamicQuestionSource === "bank" && formData.selectedBankId) {
       fetchBankQuestions(formData.selectedBankId).then((data) => {
         setBankQuestions(Array.isArray(data) ? data : []);
       }).catch(console.error);
-    } else if (formData.ownerTopicId) {
+    } else if (formData.dynamicQuestionSource === "topic" && formData.ownerTopicId) {
       fetchTopicQuestions(formData.ownerTopicId).then((res) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data = Array.isArray(res) ? res : ((res as any)?.data || []);
@@ -99,7 +107,7 @@ export default function AssessmentQuestionStep({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setBankQuestions([]);
     }
-  }, [formData.selectedBankId, formData.ownerTopicId]);
+  }, [formData.dynamicQuestionSource, formData.selectedBankId, formData.ownerTopicId]);
 
   const topicBanks = useMemo(() => {
     return banks.filter(
@@ -108,13 +116,16 @@ export default function AssessmentQuestionStep({
   }, [banks, formData.ownerTopicId]);
 
   const baseQuestions = useMemo(() => {
-    if (formData.selectedBankId || formData.ownerTopicId) {
+    if (formData.dynamicQuestionSource === "bank" && formData.selectedBankId) {
+      return bankQuestions;
+    }
+    if (formData.dynamicQuestionSource === "topic" && formData.ownerTopicId) {
       return bankQuestions;
     }
     return questions.filter(
       (q) => String(q.topicId) === String(formData.ownerTopicId) || String(q.topic?.id) === String(formData.ownerTopicId)
     );
-  }, [formData.selectedBankId, bankQuestions, questions, formData.ownerTopicId]);
+  }, [formData.dynamicQuestionSource, formData.selectedBankId, bankQuestions, questions, formData.ownerTopicId]);
 
   const filteredQuestions = baseQuestions.filter((question) => {
     if (difficultyFilter !== "ALL" && question.difficulty !== difficultyFilter) {
@@ -141,6 +152,43 @@ export default function AssessmentQuestionStep({
       }
     }
   }, [formData.sessionMode, formData.selectedQuestionIds, baseQuestions, onChange]);
+
+  useEffect(() => {
+    if (formData.questionSelection !== "DYNAMIC") return;
+    if (baseQuestions.length === 0) return;
+    if (formData.totalQuestions > 0 && formData.totalQuestions !== 10) return;
+
+    const nextTotal = baseQuestions.length;
+    const counts = {
+      Easy: baseQuestions.filter((question) => normalizeDifficulty(question.difficulty) === "Easy").length,
+      Medium: baseQuestions.filter((question) => normalizeDifficulty(question.difficulty) === "Medium").length,
+      Hard: baseQuestions.filter((question) => normalizeDifficulty(question.difficulty) === "Hard").length,
+    };
+    const currentCounts = {
+      Easy: formData.selectionRules.find((rule) => rule.difficulty === "Easy")?.count ?? 0,
+      Medium: formData.selectionRules.find((rule) => rule.difficulty === "Medium")?.count ?? 0,
+      Hard: formData.selectionRules.find((rule) => rule.difficulty === "Hard")?.count ?? 0,
+    };
+    const alreadySynced =
+      formData.totalQuestions === nextTotal &&
+      currentCounts.Easy === counts.Easy &&
+      currentCounts.Medium === counts.Medium &&
+      currentCounts.Hard === counts.Hard;
+
+    if (alreadySynced) return;
+
+    onChange("totalQuestions", nextTotal);
+    onSelectionRuleChange("Easy", counts.Easy);
+    onSelectionRuleChange("Medium", counts.Medium);
+    onSelectionRuleChange("Hard", counts.Hard);
+  }, [
+    baseQuestions,
+    formData.questionSelection,
+    formData.selectionRules,
+    formData.totalQuestions,
+    onChange,
+    onSelectionRuleChange,
+  ]);
 
   return (
     <Card className="border-slate-200/60 shadow-sm bg-white/50 backdrop-blur-sm transition-all hover:shadow-md">
@@ -215,22 +263,44 @@ export default function AssessmentQuestionStep({
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label className="text-sm font-bold text-slate-800">Dynamic source</Label>
+              <DropdownSelect
+                value={formData.dynamicQuestionSource}
+                options={[
+                  { value: "topic", label: "Topic questions" },
+                  { value: "bank", label: "Question bank" },
+                ]}
+                onChange={(val) => onChange("dynamicQuestionSource", val as NewAssessmentFormData["dynamicQuestionSource"])}
+              />
+            </div>
             <div className="space-y-2">
               <Label className="text-sm font-bold text-slate-800">Question bank</Label>
               <DropdownSelect
-                value={formData.selectedBankId || ""}
+                value={formData.dynamicQuestionSource === "bank" ? formData.selectedBankId || "" : ""}
                 options={[
-                  { value: "", label: "Topic Questions" },
+                  { value: "", label: "Select a bank" },
                   ...topicBanks.map((bank) => ({
                     value: bank.id,
                     label: `${bank.name} (${bank.questionCount || 0} questions)`,
                   })),
                 ]}
                 onChange={(val) => onChange("selectedBankId", val)}
+                disabled={formData.dynamicQuestionSource !== "bank"}
                 searchable
                 searchPlaceholder="Search banks..."
               />
+              {formData.dynamicQuestionSource === "topic" ? (
+                <p className="text-xs font-medium text-slate-500">
+                  Dynamic questions will be selected from all questions in this topic. {baseQuestions.length} available.
+                </p>
+              ) : null}
+              {formData.dynamicQuestionSource === "bank" && formData.selectedBankId ? (
+                <p className="text-xs font-medium text-slate-500">
+                  {bankQuestions.length} questions available in this bank.
+                </p>
+              ) : null}
             </div>
             <div className="space-y-2">
               <Label htmlFor="totalQuestions" className="text-sm font-bold text-slate-800">Total questions</Label>

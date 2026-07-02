@@ -56,7 +56,12 @@ export default function AssessmentForm({
     handlePublish,
     destination,
     activeTopic
-  } = useAssessmentForm({ mode, assessmentId, initialFormData });
+  } = useAssessmentForm({
+    mode,
+    assessmentId,
+    initialFormData,
+    fallbackTopicId: topics[0]?.id || "",
+  });
 
   const [warningType, setWarningType] = useState<"DEFAULT_SETTINGS" | "PAST_START_DATE" | "MISSING_START_DATE" | "CONTAINS_INVALID_QUESTIONS" | null>(null);
 
@@ -265,7 +270,7 @@ export default function AssessmentForm({
                     type="button"
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick={(e) => handleSubmit(e as any)}
-                    disabled={isPending || !canContinue}
+                    disabled={isPending}
                     className="inline-flex w-full items-center justify-center rounded-xl bg-[#C8A246] px-4 py-3 text-sm font-bold uppercase tracking-wider text-white transition hover:bg-[#B3903E] shadow-md shadow-[#C8A246]/20 disabled:opacity-70"
                   >
                     {isPending ? "Saving..." : (mode === "edit" ? "Save Changes" : "Save Assessment")}

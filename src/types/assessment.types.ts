@@ -34,5 +34,6 @@ export interface Assessment {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectionRules?: any;
     allowReview?: boolean;
+    isAllowShare?: boolean;
   };
 }

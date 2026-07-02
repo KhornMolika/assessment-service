@@ -10,6 +10,7 @@ export const assessmentFormSchema = z
     participantIdentity: z.enum(["ANONYMOUS", "AUTHENTICATED", "EXTERNAL"]),
     sessionMode: z.enum(["SELF_PACED", "REAL_TIME"]),
     questionSelection: z.enum(["MANUAL", "DYNAMIC"]),
+    dynamicQuestionSource: z.enum(["topic", "bank"]),
     selectedBankId: z.string(),
     selectedQuestionIds: z.array(z.string()),
     totalQuestions: z.number().int(),
@@ -32,6 +33,7 @@ export const assessmentFormSchema = z
       }),
     ),
     showResults: z.enum(["IMMEDIATELY", "MANUAL", "NEVER"]),
+    isAllowShare: z.boolean(),
     enableAiGrading: z.boolean(),
   })
   .superRefine((data, ctx) => {
@@ -52,6 +54,13 @@ export const assessmentFormSchema = z
     }
 
     if (data.questionSelection === "DYNAMIC") {
+      if (data.dynamicQuestionSource === "bank" && data.selectedBankId.trim().length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["selectedBankId"],
+          message: "Select a question bank or switch the dynamic source to topic questions.",
+        });
+      }
 
       if (data.totalQuestions <= 0) {
         ctx.addIssue({

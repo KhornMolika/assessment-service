@@ -1,19 +1,24 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 import type { AssessmentScopedResultsPageData } from "@/src/types/assessment-results.types";
 import { BackButton } from "@/src/components/ui/navigation/BackButton";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { ResultsTable } from "../results/ResultsTable";
 import { buildRows } from "../results/results.utils";
+import type { ResultsRow } from "../results/results.types";
+
+const RESULT_ROW_UPDATE_PREFIX = "assessment-result-row-update:";
 
 export default function AssessmentScopedResultsView({
   data,
 }: {
   data: AssessmentScopedResultsPageData;
 }) {
-  const rows = useMemo(
+  const router = useRouter();
+  const builtRows = useMemo(
     () =>
       buildRows({
         stats: data.stats,
@@ -27,6 +32,90 @@ export default function AssessmentScopedResultsView({
       }),
     [data],
   );
+  const [rows, setRows] = useState<ResultsRow[]>(builtRows);
+
+  const applyPendingRowUpdates = useCallback(() => {
+    const pendingUpdates = builtRows
+      .map((row) => {
+        const raw = sessionStorage.getItem(`${RESULT_ROW_UPDATE_PREFIX}${row.sheetId}`);
+        if (!raw) return null;
+
+        try {
+          return JSON.parse(raw) as {
+            sheetId: string;
+            totalScore: number | null;
+            maxScore: number;
+            grade: string | null;
+            isPassed: boolean | null;
+            status: ResultsRow["answerSheetStatus"];
+          };
+        } catch {
+          sessionStorage.removeItem(`${RESULT_ROW_UPDATE_PREFIX}${row.sheetId}`);
+          return null;
+        }
+      })
+      .filter((update): update is NonNullable<typeof update> => update !== null);
+
+    if (pendingUpdates.length === 0) return;
+
+    setRows((currentRows) =>
+      currentRows.map((row) => {
+        const update = pendingUpdates.find((item) => item.sheetId === row.sheetId);
+        if (!update) return row;
+
+        const percentage =
+          update.totalScore != null && update.maxScore > 0
+            ? Math.round((update.totalScore / update.maxScore) * 100)
+            : null;
+        const evaluationStatus =
+          update.status === "REVIEW_PENDING" ? "PENDING_REVIEW" : "FINAL";
+
+        return {
+          ...row,
+          answerSheetStatus: update.status,
+          totalScore: update.totalScore,
+          maxScore: update.maxScore,
+          percentage,
+          grade: update.grade,
+          outcomeStatus:
+            evaluationStatus === "PENDING_REVIEW"
+              ? "PENDING_REVIEW"
+              : update.isPassed
+                ? "PASSED"
+                : "FAILED",
+          evaluationStatus,
+        };
+      }),
+    );
+  }, [builtRows]);
+
+  useEffect(() => {
+    setRows(builtRows);
+  }, [builtRows]);
+
+  useEffect(() => {
+    applyPendingRowUpdates();
+
+    function handleRowUpdate() {
+      applyPendingRowUpdates();
+    }
+
+    function handlePageShow() {
+      if (document.visibilityState === "hidden") return;
+      router.refresh();
+      applyPendingRowUpdates();
+    }
+
+    window.addEventListener("assessment-result-row-updated", handleRowUpdate);
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("visibilitychange", handlePageShow);
+
+    return () => {
+      window.removeEventListener("assessment-result-row-updated", handleRowUpdate);
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("visibilitychange", handlePageShow);
+    };
+  }, [applyPendingRowUpdates, router]);
 
   return (
     <div>

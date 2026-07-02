@@ -1,11 +1,8 @@
-import Link from "next/link";
-import { Eye } from "lucide-react";
 import { Badge } from "@/src/components/ui/ui/badge";
 import { StateMessage } from "@/src/components/ui/feedback/StateMessage";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/src/components/ui/ui/table";
 import type { ResultsRow } from "./results.types";
 import { getGradeTone, getOutcomeBadge } from "./results.utils";
-import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 
 import { useRouter } from "next/navigation";
 
@@ -62,7 +59,9 @@ export function ResultsTable({
               </div>
             </TableCell>
             <TableCell>
-              {result.percentage == null ? (
+              {result.answerSheetStatus === "IN_PROGRESS" ? (
+                <span className="text-sm font-semibold text-inkd">-</span>
+              ) : result.percentage == null ? (
                 <div className="space-y-1">
                   <div className="h-2 w-32 rounded-full bg-border" />
                   <div className="text-xs text-inkd">Pending review</div>
@@ -89,15 +88,27 @@ export function ResultsTable({
               )}
             </TableCell>
             <TableCell>
-              <span
-                className={`inline-flex min-w-12 items-center justify-center rounded-lg px-3 py-2 text-sm font-bold ${getGradeTone(result.grade)}`}
-              >
-                {result.grade ?? "..."}
-              </span>
+              {result.answerSheetStatus === "IN_PROGRESS" ? (
+                <span className="inline-flex min-w-12 items-center justify-center rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">
+                  -
+                </span>
+              ) : (
+                <span
+                  className={`inline-flex min-w-12 items-center justify-center rounded-lg px-3 py-2 text-sm font-bold ${getGradeTone(result.grade)}`}
+                >
+                  {result.grade ?? "..."}
+                </span>
+              )}
             </TableCell>
             <TableCell>
               <div className="space-y-2">
-                {getOutcomeBadge(result.outcomeStatus)}
+                {result.answerSheetStatus === "IN_PROGRESS" ? (
+                  <Badge variant="secondary" className="text-slate-500">
+                    In Progress
+                  </Badge>
+                ) : (
+                  getOutcomeBadge(result.outcomeStatus)
+                )}
                 {result.evaluationStatus === "PENDING_REVIEW" ? (
                   <div>
                     <Badge variant="pending">Needs manual review</Badge>

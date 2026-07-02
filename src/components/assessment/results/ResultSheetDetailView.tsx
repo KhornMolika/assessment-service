@@ -15,7 +15,7 @@ import { retryAIGrading } from "@/src/api/assessment.api";
 import { getAnswerResponseText, getCorrectAnswerText } from "@/src/lib/session/session.utils";
 import { Button } from "@/src/components/ui/ui/button";
 import { Label } from "@/src/components/ui/ui/label";
-import { Select } from "@/src/components/ui/ui/select";
+import { DropdownSelect } from "@/src/components/ui/ui/dropdown-select";
 import { Input } from "@/src/components/ui/ui/input";
 import { recalculateResultAction, saveManualReviewAction } from "@/src/lib/actions/result-review.actions";
 import { Modal } from "@/src/components/ui/ui/modal";
@@ -37,6 +37,8 @@ type ResultSummary = {
   isPassed: boolean | null;
   status: "IN_PROGRESS" | "SUBMITTED" | "REVIEW_PENDING" | "REVIEWED";
 };
+
+const RESULT_ROW_UPDATE_PREFIX = "assessment-result-row-update:";
 
 function mapSheetStatus(status: string | undefined) {
   if (status === "GRADED") return "REVIEWED";
@@ -225,7 +227,10 @@ export default function ResultSheetDetailView({
 
   async function handleRecalculate() {
     setIsRecalculating(true);
-    const res = await recalculateResultAction(data.answerSheet.id);
+    const res = await recalculateResultAction(
+      data.answerSheet.id,
+      data.answerSheet.assessmentId,
+    );
 
     if (!res.success) {
       setIsRecalculating(false);
@@ -240,13 +245,31 @@ export default function ResultSheetDetailView({
     setIsRecalculating(false);
     const recalculated = res.data;
     if (recalculated) {
-      setSummary({
+      const nextStatus = mapSheetStatus(recalculated.status) ?? summary.status;
+      const nextSummary = {
         totalScore: recalculated.totalScore ?? summary.totalScore,
         maxScore: recalculated.maxScore ?? summary.maxScore,
         grade: recalculated.grade ?? summary.grade,
         isPassed: recalculated.isPassed ?? summary.isPassed,
-        status: mapSheetStatus(recalculated.status) ?? summary.status,
-      });
+        status: nextStatus,
+      } satisfies ResultSummary;
+
+      setSummary(nextSummary);
+      sessionStorage.setItem(
+        `${RESULT_ROW_UPDATE_PREFIX}${data.answerSheet.id}`,
+        JSON.stringify({
+          sheetId: data.answerSheet.id,
+          assessmentId: data.answerSheet.assessmentId,
+          ...nextSummary,
+          updatedAt: Date.now(),
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent("assessment-result-row-updated", {
+          detail: { sheetId: data.answerSheet.id },
+        }),
+      );
+      router.refresh();
     }
     setRecalculateFeedback({
       status: "success",
@@ -313,14 +336,16 @@ export default function ResultSheetDetailView({
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Total score</p>
               <p className="mt-2 text-lg font-bold text-primary">
-                {summary.totalScore ?? totalScore}/{summary.maxScore}
+                {summary.status === "IN_PROGRESS" || summary.status === "REVIEW_PENDING" ? "-" : `${summary.totalScore ?? totalScore}/${summary.maxScore}`}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Grade</p>
-              <p className="mt-2 text-lg font-bold text-primary">{summary.grade ?? "Pending"}</p>
+              <p className="mt-2 text-lg font-bold text-primary">
+                {summary.status === "IN_PROGRESS" || summary.status === "REVIEW_PENDING" ? "-" : (summary.grade ?? "Pending")}
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -472,18 +497,19 @@ export default function ResultSheetDetailView({
                         </span>
                       </Label>
                       <Label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd">Correctness</span>
-                        <Select
+                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-inkd mb-2 block">Correctness</span>
+                        <DropdownSelect
                           value={entry.isCorrect === null ? "null" : entry.isCorrect ? "true" : "false"}
-                          onChange={(event) =>
-                            updateEntryCorrectness(entry, event.target.value)
+                          onChange={(value) =>
+                            updateEntryCorrectness(entry, value)
                           }
-                          className="mt-2 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-primary outline-none transition focus:border-primary"
-                        >
-                          <option value="null">Not set</option>
-                          <option value="true">Correct</option>
-                          <option value="false">Incorrect</option>
-                        </Select>
+                          options={[
+                            { value: "null", label: "Not set" },
+                            { value: "true", label: "Correct" },
+                            { value: "false", label: "Incorrect" }
+                          ]}
+                          className="w-full"
+                        />
                       </Label>
                       <div className="flex items-end">
                         <Button

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { apiClient } from "@/src/lib/api-client";
+import { lookupRealtimeSession } from "@/src/lib/actions/runtime.actions";
 import { Button } from "@/src/components/ui/ui/button";
 import { Input } from "@/src/components/ui/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/ui/card";
@@ -25,21 +25,17 @@ export default function GlobalJoinPage() {
 
     setIsLoading(true);
     try {
-      // Lookup the session
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res = await apiClient.get<any>(`/runtime/real-time/sessions/${code}`);
+      const res = await lookupRealtimeSession(code);
       
-      const sessionData = res.data || res;
-      if (sessionData && sessionData.assessmentId) {
-        toast.success(`Joining ${sessionData.title || 'Assessment'}...`);
+      if (res.success && res.data && res.data.assessmentId) {
+        toast.success(`Joining ${res.data.title || 'Assessment'}...`);
         // Redirect to the assessment's real-time entry page with the sessionCode
-        router.push(`/assessments/${sessionData.assessmentId}/enter-real-time-assessment?sessionCode=${code}`);
+        router.push(`/assessments/${res.data.assessmentId}/enter-real-time-assessment?sessionCode=${code}`);
       } else {
-        toast.error("Invalid session code or session has ended.");
+        toast.error(res.message || "Invalid session code or session has ended.");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to find session. Please check the PIN.");
+      toast.error("Failed to find session. Please check the PIN.");
     } finally {
       setIsLoading(false);
     }

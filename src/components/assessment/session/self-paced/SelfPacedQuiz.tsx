@@ -53,8 +53,8 @@ export function SelfPacedQuiz({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-4 flex-1 sm:justify-end">
-            <div className="hidden h-2 flex-1 max-w-50 overflow-hidden rounded-full bg-muted/60 shadow-inner sm:block">
+          <div className="flex items-center gap-4 sm:justify-end">
+            <div className="hidden h-2 w-32 overflow-hidden rounded-full bg-muted/60 shadow-inner sm:block">
               <div
                 className="h-full rounded-full bg-[linear-gradient(90deg,#4CC9F0_0%,#277DA1_100%)] transition-all duration-500 ease-out"
                 style={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}

@@ -278,43 +278,53 @@ export default function AssessmentSettingsStep({
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Label htmlFor="shuffleQuestions" className="font-bold text-slate-800 cursor-pointer">Shuffle questions</Label>
-                  <p className="mt-1 text-sm text-slate-500 whitespace-normal leading-relaxed">
-                    Randomize the order participants see to reduce predictable answer flow.
-                  </p>
-                </div>
-                <Input
-                  id="shuffleQuestions"
-                  name="shuffleQuestions"
-                  type="checkbox"
-                  checked={formData.shuffleQuestions}
-                  onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
-                  className="mt-1 h-5 w-5 rounded text-primary focus:ring-primary/50 cursor-pointer"
-                />
+            <label
+              htmlFor="shuffleQuestions"
+              className={`flex items-start justify-between gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+                formData.shuffleQuestions 
+                  ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+              }`}
+            >
+              <div>
+                <span className={`font-bold ${formData.shuffleQuestions ? "text-slate-900" : "text-slate-800"}`}>Shuffle questions</span>
+                <p className={`mt-1 text-sm whitespace-normal leading-relaxed ${formData.shuffleQuestions ? "text-slate-700" : "text-slate-500"}`}>
+                  Randomize the order participants see to reduce predictable answer flow.
+                </p>
               </div>
-            </div>
+              <Input
+                id="shuffleQuestions"
+                name="shuffleQuestions"
+                type="checkbox"
+                checked={formData.shuffleQuestions}
+                onChange={(event) => onChange("shuffleQuestions", event.target.checked)}
+                className="mt-1 h-5 w-5 shrink-0 rounded text-primary focus:ring-primary/50 cursor-pointer"
+              />
+            </label>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Label htmlFor="enableAiGrading" className="font-bold text-slate-800 cursor-pointer">Enable AI Auto-Grading</Label>
-                  <p className="mt-1 text-sm text-slate-500 whitespace-normal leading-relaxed">
-                    Automatically use AI to review and score subjective questions (Essay/Short Answer).
-                  </p>
-                </div>
-                <Input
-                  id="enableAiGrading"
-                  name="enableAiGrading"
-                  type="checkbox"
-                  checked={formData.enableAiGrading}
-                  onChange={(event) => onChange("enableAiGrading", event.target.checked)}
-                  className="mt-1 h-5 w-5 rounded text-primary focus:ring-primary/50 cursor-pointer"
-                />
+            <label
+              htmlFor="enableAiGrading"
+              className={`flex items-start justify-between gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+                formData.enableAiGrading
+                  ? "border-primary bg-primary/5 ring-1 ring-primary"
+                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+              }`}
+            >
+              <div>
+                <span className={`font-bold ${formData.enableAiGrading ? "text-slate-900" : "text-slate-800"}`}>Enable AI Auto-Grading</span>
+                <p className={`mt-1 text-sm whitespace-normal leading-relaxed ${formData.enableAiGrading ? "text-slate-700" : "text-slate-500"}`}>
+                  Automatically use AI to review and score subjective questions (Essay/Short Answer).
+                </p>
               </div>
-            </div>
+              <Input
+                id="enableAiGrading"
+                name="enableAiGrading"
+                type="checkbox"
+                checked={formData.enableAiGrading}
+                onChange={(event) => onChange("enableAiGrading", event.target.checked)}
+                className="mt-1 h-5 w-5 shrink-0 rounded text-primary focus:ring-primary/50 cursor-pointer"
+              />
+            </label>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -347,6 +357,33 @@ export default function AssessmentSettingsStep({
               />
             </div>
           </div>
+
+          <label
+            htmlFor="isAllowShare"
+            className={`flex items-start justify-between gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+              formData.showResults === "NEVER"
+                ? "border-slate-100 bg-slate-50/50 opacity-50 cursor-not-allowed"
+                : formData.isAllowShare
+                ? "border-primary bg-primary/5 ring-1 ring-primary"
+                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
+            }`}
+          >
+            <div>
+              <span className={`font-bold ${formData.showResults === "NEVER" ? "text-slate-400" : formData.isAllowShare ? "text-slate-900" : "text-slate-800"}`}>Allow sharing</span>
+              <p className={`mt-1 text-sm whitespace-normal leading-relaxed ${formData.showResults === "NEVER" ? "text-slate-400" : formData.isAllowShare ? "text-slate-700" : "text-slate-500"}`}>
+                Allow participants to share their results publicly.
+              </p>
+            </div>
+            <Input
+              id="isAllowShare"
+              name="isAllowShare"
+              type="checkbox"
+              disabled={formData.showResults === "NEVER"}
+              checked={formData.isAllowShare && formData.showResults !== "NEVER"}
+              onChange={(event) => onChange("isAllowShare", event.target.checked)}
+              className={`mt-1 h-5 w-5 shrink-0 rounded text-primary focus:ring-primary/50 ${formData.showResults === "NEVER" ? "cursor-not-allowed" : "cursor-pointer"}`}
+            />
+          </label>
 
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

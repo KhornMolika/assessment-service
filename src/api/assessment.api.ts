@@ -18,7 +18,6 @@ import type { AnswerSheet } from "@/src/types/answer-sheet.types";
 import type { Participant } from "@/src/types/participant.types";
 import type { NewAssessmentFormData } from "@/src/types/assessment-form.types";
 import type { AssessmentTopicMap, Topic } from "@/src/types";
-import { getBanks } from "@/src/api/bank.api";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getQuestions } from "@/src/api/question.api";
 import { getTopics } from "@/src/api/topic.api";
@@ -45,6 +44,7 @@ function getEndOfWeek(date: Date) {
 }
 
 export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogPageData> {
+  noStore();
   const now = new Date(ASSESSMENT_REFERENCE_TIMESTAMP);
   const startOfWeek = getStartOfWeek(now);
   const endOfWeek = getEndOfWeek(now);
@@ -56,22 +56,29 @@ export async function getAssessmentCatalogPageData(): Promise<AssessmentCatalogP
     const rawData = res.data || (res as any) || [];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    assessments = rawData.map((a: any) => ({
-      id: a.id,
-      ownerId: a.ownerId || "admin",
-      name: a.name,
-      description: a.description,
-      status: a.status,
-      createdAt: a.createdAt,
-      updatedAt: a.updatedAt,
-      settings: a.settings || {},
-      questionCount: a.questionCount,
-      stats: {
-        participantCount: a.settings?.participantCount || 0,
-        passRate: a.settings?.passRate || 0,
-        averageScore: a.settings?.averageScore || 0,
-      }
-    }));
+    assessments = rawData.map((a: any) => {
+      const settings = a.settings || {};
+      const isDynamic = settings.questionSelection === "DYNAMIC";
+
+      return {
+        id: a.id,
+        ownerId: a.ownerId || "admin",
+        name: a.name,
+        description: a.description,
+        status: a.status,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+        settings,
+        questionCount: isDynamic
+          ? Number(settings.numQuestions ?? settings.selectionRules?.total ?? 0)
+          : Number(a.questionCount ?? settings.numQuestions ?? 0),
+        stats: {
+          participantCount: settings.participantCount || 0,
+          passRate: settings.passRate || 0,
+          averageScore: settings.averageScore || 0,
+        },
+      };
+    });
   } catch (e) {
     console.warn(
       "Failed to fetch assessments:",
@@ -218,6 +225,7 @@ export async function getAssessmentDetailPageData(
 // Removed dead mock parsing logic
 
 export async function getAssessmentResultsPageData(): Promise<AssessmentResultsPageData> {
+  noStore();
   try {
     const assessmentsRes = await apiClient.get<{
       data: Record<string, unknown>[];
@@ -290,21 +298,41 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
           } as Participant);
         }
 
+        // Map backend status → frontend answerSheet status
+        // GRADED / SUBMITTED / RECALCULATED / COMPLETED all mean the session is done
+        let mappedStatus: string;
+        if (p.status === "REQUIRES_REVIEW") {
+          mappedStatus = "REVIEW_PENDING";
+        } else if (p.status === "IN_PROGRESS") {
+          mappedStatus = "IN_PROGRESS";
+        } else if (
+          p.status === "GRADED" ||
+          p.status === "SUBMITTED" ||
+          p.status === "RECALCULATED" ||
+          p.status === "COMPLETED"
+        ) {
+          mappedStatus = "REVIEWED";
+        } else {
+          // Any other status: treat as REVIEWED if submittedAt exists, otherwise IN_PROGRESS
+          mappedStatus = p.submittedAt ? "REVIEWED" : "IN_PROGRESS";
+        }
+
+        const participantMaxScore = p.maxScore ?? 100;
         allAnswerSheets.push({
           id: p.sessionId,
           assessmentId: String(assessment.id),
           participantId: p.participantId,
-          status: p.submittedAt ? "COMPLETED" : "IN_PROGRESS",
+          status: mappedStatus,
           startedAt: new Date(
             new Date(p.submittedAt || Date.now()).getTime() -
               (p.duration || 0) * 1000,
           ).toISOString(),
           submittedAt: p.submittedAt || null,
           totalScore: p.score,
-          maxScore: 100, // simplified max score based on percentage or similar
+          maxScore: participantMaxScore,
           isPassed: p.isPassed,
-          grade: p.isPassed ? "Pass" : "Fail",
-          shareToken: p.sessionId, // mock token
+          grade: p.grade ?? (p.isPassed ? "Pass" : p.isPassed === false ? "Fail" : null),
+          shareToken: p.sessionId,
         } as AnswerSheet);
 
         if (p.score != null) {
@@ -368,9 +396,12 @@ export async function getAssessmentResultsPageData(): Promise<AssessmentResultsP
   }
 }
 
+import { unstable_noStore as noStore } from "next/cache";
+
 export async function getAssessmentResultSheetPageData(
   sheetId: string, // In this new backend, sheetId acts as sessionId
 ): Promise<AssessmentResultSheetPageData | null> {
+  noStore();
   try {
     const reportRes = await apiClient.get<{
       data: {
@@ -412,11 +443,21 @@ export async function getAssessmentResultSheetPageData(
       (q: any) => q.gradingStatus === "PENDING",
     );
 
+    // Map backend AnswerSheetStatus to frontend statuses
+    let mappedStatus = "IN_PROGRESS";
+    if (session.status === "REQUIRES_REVIEW" || hasPendingReview) {
+      mappedStatus = "REVIEW_PENDING";
+    } else if (session.status === "GRADED" || session.status === "SUBMITTED") {
+      mappedStatus = "REVIEWED";
+    } else if (session.status === "IN_PROGRESS") {
+      mappedStatus = "IN_PROGRESS";
+    }
+
     const answerSheet = {
       id: sheetId,
       assessmentId: session.assessmentId,
       participantId: session.participantId || "anonymous",
-      status: hasPendingReview ? "REVIEW_PENDING" : session.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+      status: mappedStatus,
       startedAt: session.startedAt,
       submittedAt: session.submittedAt || null,
       totalScore: session.totalScore,
@@ -489,6 +530,7 @@ export async function getAssessmentResultSheetPageData(
 export async function getAssessmentScopedResultsPageData(
   assessmentId: string,
 ): Promise<AssessmentScopedResultsPageData | null> {
+  noStore();
   try {
     const [assessmentRes, reportRes, questionsRes] = await Promise.all([
       apiClient.get<{ data: Record<string, unknown> }>(
@@ -547,7 +589,7 @@ export async function getAssessmentScopedResultsPageData(
           id: p.sessionId,
           assessmentId: String(assessmentId),
           participantId: p.participantId,
-          status: p.submittedAt ? "REVIEWED" : "IN_PROGRESS",
+          status: p.status === "GRADED" || p.status === "SUBMITTED" ? "REVIEWED" : p.status === "REQUIRES_REVIEW" ? "REVIEW_PENDING" : p.status === "IN_PROGRESS" ? "IN_PROGRESS" : (p.submittedAt ? "REVIEWED" : "IN_PROGRESS"),
           startedAt: new Date(
             new Date(p.submittedAt || Date.now()).getTime() -
               (p.duration || 0) * 1000,
@@ -592,7 +634,6 @@ export async function getEditAssessmentPageData(id: string): Promise<{
   initialFormData: NewAssessmentFormData;
 }> {
   try {
-    const banks = await getBanks();
     const assessmentRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}`);
     const settingsRes = await apiClient.get<{ data: Record<string, unknown> }>(`/assessments/${id}/settings`).catch(() => null);
     const assignedRes = await apiClient.get<{
@@ -609,8 +650,10 @@ export async function getEditAssessmentPageData(id: string): Promise<{
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       []) as any[];
 
+    const dynamicQuestionSource =
+      settings.selectionRules?.source === "bank" ? "bank" : "topic";
     const selectedBankId =
-      settings.selectionRules?.bankId || banks[0]?.id || "";
+      dynamicQuestionSource === "bank" ? settings.selectionRules?.bankId || "" : "";
 
     return {
       assessmentId: id,
@@ -623,6 +666,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         participantIdentity: settings.participantIdentity || "EXTERNAL",
         sessionMode: (settings.mode || "").toUpperCase().replace("-", "_") === "REAL_TIME" ? "REAL_TIME" : "SELF_PACED",
         questionSelection: settings.questionSelection?.toUpperCase() === "DYNAMIC" ? "DYNAMIC" : "MANUAL",
+        dynamicQuestionSource,
         selectedBankId,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectedQuestionIds: assignedQs.map((q: any) => q.questionId || q.id),
@@ -630,7 +674,7 @@ export async function getEditAssessmentPageData(id: string): Promise<{
         selectionRules: settings.selectionRules?.distribution
           ? Object.entries(settings.selectionRules.distribution).map(
               ([k, v]) => ({
-                difficulty: k as "Easy" | "Medium" | "Hard",
+                difficulty: (String(k).slice(0, 1).toUpperCase() + String(k).slice(1).toLowerCase()) as "Easy" | "Medium" | "Hard",
                 count: v as number,
               }),
             )
@@ -647,15 +691,16 @@ export async function getEditAssessmentPageData(id: string): Promise<{
           : "",
         passMark: Number(settings.passMark) || 70,
         shuffleQuestions: !!settings.isShuffle,
-        gradeLabels: [
-          { grade: "A", minPercent: 90 },
+        gradeLabels: settings.gradeLabels || [
+          { grade: "A", minPercent: 88 },
           { grade: "B", minPercent: 80 },
           { grade: "C", minPercent: 70 },
           { grade: "D", minPercent: 60 },
           { grade: "E", minPercent: 50 },
-          { grade: "F", minPercent: 0 },
+          { grade: "F", minPercent: 0 }
         ],
         showResults: (["IMMEDIATELY", "MANUAL", "NEVER"].includes(settings.showResults?.toUpperCase() || "") ? settings.showResults?.toUpperCase() : "IMMEDIATELY") as "IMMEDIATELY" | "MANUAL" | "NEVER",
+        isAllowShare: !!settings.isAllowShare,
         enableAiGrading: !settings.manualGradingAIQues,
       },
     };

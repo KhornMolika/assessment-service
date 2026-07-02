@@ -36,12 +36,13 @@ export async function createAssessmentAction(topicId: string, data: any) {
       passMark: data.passMark,
       isShuffle: data.shuffleQuestions,
       showResults: data.showResults,
+      isAllowShare: data.isAllowShare,
       manualGradingAIQues: typeof data.enableAiGrading === "boolean" ? !data.enableAiGrading : false,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gradeLabels: data.gradeLabels.map((l: any) => ({ name: l.grade, min: l.minPercent })),
       selectionRules: data.questionSelection === "DYNAMIC" ? {
-        source: data.selectedBankId ? "bank" : "topic",
-        bankId: data.selectedBankId || undefined,
+        source: data.dynamicQuestionSource === "bank" ? "bank" : "topic",
+        bankId: data.dynamicQuestionSource === "bank" ? data.selectedBankId : undefined,
         total: data.totalQuestions,
         distribution: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,12 +120,13 @@ export async function updateAssessmentAction(id: string, data: any) {
       passMark: data.passMark,
       isShuffle: data.shuffleQuestions,
       showResults: data.showResults,
+      isAllowShare: data.isAllowShare,
       manualGradingAIQues: typeof data.enableAiGrading === "boolean" ? !data.enableAiGrading : false,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gradeLabels: data.gradeLabels.map((l: any) => ({ name: l.grade, min: l.minPercent })),
       selectionRules: data.questionSelection === "DYNAMIC" ? {
-        source: data.selectedBankId ? "bank" : "topic",
-        bankId: data.selectedBankId || undefined,
+        source: data.dynamicQuestionSource === "bank" ? "bank" : "topic",
+        bankId: data.dynamicQuestionSource === "bank" ? data.selectedBankId : undefined,
         total: data.totalQuestions,
         distribution: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

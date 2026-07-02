@@ -6,6 +6,7 @@ import type {
   AssessmentDetailRecord,
 } from "@/src/types";
 import type { QuestionRendererValue } from "../renderers/types";
+import type { QuestionRound } from "@/src/types/session.types";
 import {
   ProcessingAnswersCard,
   ScreenShell,
@@ -19,7 +20,6 @@ import {
   calculateQuestionScore,
   formatDurationClock,
   getResultReleaseMode,
-  isCorrectAnswerResponse,
   requiresParticipantIdentity,
 } from '@/src/lib/session/session.utils';
 import {
@@ -37,17 +37,20 @@ export function StartSelfPacedScreen({
   assessment: AssessmentDetailRecord;
   questions: AssessmentDetailQuestionItem[];
 }) {
-  const rounds = useMemo(() => buildQuestionRounds(questions), [questions]);
+  const initialRounds = useMemo(() => buildQuestionRounds(questions), [questions]);
+  const [sessionRounds, setSessionRounds] = useState<QuestionRound[]>([]);
+  const rounds = sessionRounds.length > 0 ? sessionRounds : initialRounds;
+  const isDynamicAssessment = assessment.settings?.questionSelection === "DYNAMIC";
   const requiresEntry = assessment.settings?.participantIdentity !== "ANONYMOUS";
   const requiresIdentity = requiresParticipantIdentity(assessment.settings?.participantIdentity || "EXTERNAL");
   const resultMode = getResultReleaseMode(assessment.settings?.showResults || "AFTER_SUBMISSION");
   const showCorrectAnswers = assessment.settings?.allowReview ?? false;
-  const allowShareAnswerSheet = true;
+  const allowShareAnswerSheet = assessment.settings?.isAllowShare === true;
   const totalTimerSeconds = Math.max(0, (assessment.settings?.timeLimit ?? 0) * 60);
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<"entry" | "quiz" | "confirm" | "processing" | "end">(
-    requiresEntry ? "entry" : "quiz",
+    requiresEntry || isDynamicAssessment || initialRounds.length === 0 ? "entry" : "quiz",
   );
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, QuestionRendererValue>>({});
@@ -58,7 +61,7 @@ export function StartSelfPacedScreen({
   const [serverResult, setServerResult] = useState<any>(null);
 
 
-  const currentQuestion = rounds[questionIndex];
+  const currentQuestion = rounds[questionIndex] ?? null;
   const confirmationItems = rounds.map((question) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const serverEntry = serverResult?.entries?.find((e: any) => e.assessmentQuestionId === question.id || e.assessmentQuestion?.id === question.id);
@@ -125,6 +128,7 @@ export function StartSelfPacedScreen({
   }, [remainingSeconds, step, totalTimerSeconds]);
 
   function handleSelectAnswer(value: QuestionRendererValue) {
+    if (!currentQuestion) return;
     setAnswers((currentAnswers) => ({
       ...currentAnswers,
       [currentQuestion.id]: value,
@@ -132,6 +136,12 @@ export function StartSelfPacedScreen({
   }
 
   async function handleAdvanceFromQuiz() {
+    if (!currentQuestion) {
+      toast.error("No question is available for this assessment.");
+      setStep("entry");
+      return;
+    }
+
     // Save answer incrementally
     if (sessionId && answers[currentQuestion.id] !== undefined) {
       await saveAnswerIncremental(sessionId, currentQuestion.id, answers[currentQuestion.id]);
@@ -152,10 +162,21 @@ export function StartSelfPacedScreen({
       participantData = { name: displayName, email: email || "" };
     }
     
-    const res = await startSelfPacedSession(assessment.id, participantData);
+    const res = await startSelfPacedSession(assessment.id, participantData, {
+      ignoreExistingSession: isDynamicAssessment,
+    });
     setIsSubmitting(false);
 
     if (res.success && res.data?.sessionId) {
+      const runtimeQuestions = mapRuntimeQuestionsToDetailItems(res.data.questions);
+      if (runtimeQuestions.length > 0) {
+        setSessionRounds(buildQuestionRounds(runtimeQuestions));
+        setQuestionIndex(0);
+        setAnswers({});
+      } else if (initialRounds.length === 0) {
+        toast.error("No questions are available for this assessment.");
+        return;
+      }
       setSessionId(res.data.sessionId);
       setStep("quiz");
     } else {
@@ -165,6 +186,11 @@ export function StartSelfPacedScreen({
 
   async function handleSubmitSession() {
     if (!sessionId) return;
+    if (!currentQuestion) {
+      toast.error("No question is available to submit.");
+      setStep("entry");
+      return;
+    }
     
     // Save the last answer if changed and not saved yet (just to be safe)
     if (answers[currentQuestion.id] !== undefined) {
@@ -229,20 +255,27 @@ export function StartSelfPacedScreen({
         ) : null}
 
         {step === "quiz" ? (
-          <SelfPacedQuiz
-            currentQuestion={currentQuestion}
-            questionIndex={questionIndex}
-            totalQuestions={rounds.length}
-            timeLabel={formatDurationClock(remainingSeconds)}
-            timerProgressPercent={(remainingSeconds / totalTimerSeconds) * 100}
-            showTimer={totalTimerSeconds > 0}
-            answerValue={answers[currentQuestion.id] ?? null}
-            onChange={handleSelectAnswer}
-            onPrevious={() => setQuestionIndex((currentIndex) => Math.max(0, currentIndex - 1))}
-            onNext={handleAdvanceFromQuiz}
-            nextLabel={questionIndex === rounds.length - 1 ? "Review answers" : "Next question"}
-            disablePrevious={questionIndex === 0}
-          />
+          currentQuestion ? (
+            <SelfPacedQuiz
+              currentQuestion={currentQuestion}
+              questionIndex={questionIndex}
+              totalQuestions={rounds.length}
+              timeLabel={formatDurationClock(remainingSeconds)}
+              timerProgressPercent={totalTimerSeconds > 0 ? (remainingSeconds / totalTimerSeconds) * 100 : 0}
+              showTimer={totalTimerSeconds > 0}
+              answerValue={answers[currentQuestion.id] ?? null}
+              onChange={handleSelectAnswer}
+              onPrevious={() => setQuestionIndex((currentIndex) => Math.max(0, currentIndex - 1))}
+              onNext={handleAdvanceFromQuiz}
+              nextLabel={questionIndex === rounds.length - 1 ? "Review answers" : "Next question"}
+              disablePrevious={questionIndex === 0}
+            />
+          ) : (
+            <ProcessingAnswersCard
+              title="No questions available"
+              description="This assessment does not have any questions ready yet. Please ask the host to review the dynamic question source."
+            />
+          )
         ) : null}
 
         {step === "confirm" ? (
@@ -252,6 +285,10 @@ export function StartSelfPacedScreen({
             onBack={() => setStep("quiz")}
             onSubmit={handleSubmitSession}
             submitLabel="Submit answers"
+            onEditQuestion={(index) => {
+              setQuestionIndex(index);
+              setStep("quiz");
+            }}
           />
         ) : null}
 
@@ -277,4 +314,37 @@ export function StartSelfPacedScreen({
       </div>
     </ScreenShell>
   );
+}
+
+function mapRuntimeQuestionsToDetailItems(value: unknown): AssessmentDetailQuestionItem[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.reduce<AssessmentDetailQuestionItem[]>((items, question) => {
+    if (!question || typeof question !== "object") return items;
+
+    const runtimeQuestion = question as {
+      assessmentQuestionId?: string;
+      questionId?: string;
+      type?: string;
+      questionText?: string;
+      points?: number | string;
+      options?: unknown;
+    };
+    const id = runtimeQuestion.assessmentQuestionId || runtimeQuestion.questionId;
+    if (!id || !runtimeQuestion.questionText || !runtimeQuestion.type) {
+      return items;
+    }
+
+    items.push({
+      id,
+      question_id: runtimeQuestion.questionId,
+      question: runtimeQuestion.questionText,
+      type: runtimeQuestion.type,
+      points: Number(runtimeQuestion.points ?? 0),
+      options: runtimeQuestion.options,
+      rawOptions: runtimeQuestion.options,
+    });
+
+    return items;
+  }, []);
 }

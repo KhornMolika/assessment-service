@@ -17,6 +17,7 @@ export function DropdownSelect({
   className,
   searchable = false,
   searchPlaceholder = "Search...",
+  disabled = false,
 }: {
   value: string;
   options: DropdownOption[];
@@ -24,6 +25,7 @@ export function DropdownSelect({
   className?: string;
   searchable?: boolean;
   searchPlaceholder?: string;
+  disabled?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,8 +45,8 @@ export function DropdownSelect({
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        top: rect.bottom + 4,
+        left: rect.left,
         width: rect.width,
       });
     }
@@ -97,6 +99,7 @@ export function DropdownSelect({
   }, [options, searchable, searchQuery]);
 
   const toggleDropdown = () => {
+    if (disabled) return;
     if (!isOpen) {
       updatePosition();
     }
@@ -108,8 +111,12 @@ export function DropdownSelect({
       <button
         ref={buttonRef}
         type="button"
+        disabled={disabled}
         onClick={toggleDropdown}
-        className="flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
+        className={cn(
+          "flex w-full items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50",
+          disabled && "cursor-not-allowed bg-slate-100 text-slate-400 shadow-none",
+        )}
       >
         <span className="truncate">{selectedOption?.label}</span>
         <ChevronDown
@@ -127,7 +134,7 @@ export function DropdownSelect({
             left: position.left, 
             width: position.width 
           }}
-          className="absolute z-[9999] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150"
+          className="fixed z-[9999] flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150"
         >
           {searchable && (
             <div className="border-b border-slate-100 p-2">

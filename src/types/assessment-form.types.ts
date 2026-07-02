@@ -26,6 +26,7 @@ export interface NewAssessmentFormData {
   participantIdentity: "ANONYMOUS" | "AUTHENTICATED" | "EXTERNAL";
   sessionMode: AssessmentDeliveryMode;
   questionSelection: AssessmentQuestionSelectionMode;
+  dynamicQuestionSource: "topic" | "bank";
   selectedBankId: string;
   selectedQuestionIds: string[];
   totalQuestions: number;
@@ -38,5 +39,6 @@ export interface NewAssessmentFormData {
   shuffleQuestions: boolean;
   gradeLabels: AssessmentGradeLabel[];
   showResults: AssessmentResultReleaseMode;
+  isAllowShare: boolean;
   enableAiGrading: boolean;
 }

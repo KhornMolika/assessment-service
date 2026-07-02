@@ -53,20 +53,44 @@ export async function deleteQuestionBank(id: string): Promise<void> {
 export async function fetchTopicBanks(
   topicId: string,
 ): Promise<QuestionBank[]> {
-  const data = await fetchWithAuth(`/topics/${topicId}/banks`);
-  return Array.isArray(data.data) ? data.data : data;
+  try {
+    const data = await fetchWithAuth(`/topics/${topicId}/banks`);
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn(
+      "Failed to fetch topic banks:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
 }
 
 export async function fetchGlobalBanks(): Promise<QuestionBank[]> {
-  const data = await fetchWithAuth(`/banks`);
-  return Array.isArray(data.data) ? data.data : data;
+  try {
+    const data = await fetchWithAuth(`/banks?limit=500`);
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn(
+      "Failed to fetch global banks:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
 }
 
 export async function fetchBankQuestions(bankId: string): Promise<Question[]> {
-  const data = await fetchWithAuth(
-    `/banks/${bankId}/questions?page=1&limit=500`,
-  );
-  return Array.isArray(data.data) ? data.data : data;
+  try {
+    const data = await fetchWithAuth(
+      `/banks/${bankId}/questions?page=1&limit=500`,
+    );
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn(
+      "Failed to fetch bank questions:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
 }
 
 import { revalidatePath } from "next/cache";

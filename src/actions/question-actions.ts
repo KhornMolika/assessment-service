@@ -132,13 +132,29 @@ export async function deleteQuestion(id: string): Promise<void> {
 export async function fetchTopicQuestions(
   topicId: string,
 ): Promise<Question[]> {
-  const data = await fetchWithAuth(
-    `/questions?topicId=${topicId}&page=1&limit=500`,
-  );
-  return Array.isArray(data.data) ? data.data : data;
+  try {
+    const data = await fetchWithAuth(
+      `/topics/${topicId}/questions?page=1&limit=500`,
+    );
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn(
+      "Failed to fetch topic questions:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
 }
 
 export async function fetchGlobalQuestions(): Promise<Question[]> {
-  const data = await fetchWithAuth(`/questions?page=1&limit=500`);
-  return Array.isArray(data.data) ? data.data : data;
+  try {
+    const data = await fetchWithAuth(`/questions?page=1&limit=500`);
+    return Array.isArray(data.data) ? data.data : Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn(
+      "Failed to fetch global questions:",
+      error instanceof Error ? error.message : error,
+    );
+    return [];
+  }
 }

@@ -1,4 +1,4 @@
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { assessmentFormSchema } from "@/src/schemas/assessment-form.schema";
 import type {
@@ -18,6 +18,7 @@ const defaultFormData: NewAssessmentFormData = {
   participantIdentity: "EXTERNAL",
   sessionMode: "SELF_PACED",
   questionSelection: "MANUAL",
+  dynamicQuestionSource: "topic",
   selectedBankId: "",
   selectedQuestionIds: [],
   totalQuestions: 10,
@@ -33,13 +34,15 @@ const defaultFormData: NewAssessmentFormData = {
   passMark: 50,
   shuffleQuestions: true,
   gradeLabels: [
-    { grade: "A", minPercent: 90 },
+    { grade: "A", minPercent: 88 },
     { grade: "B", minPercent: 80 },
     { grade: "C", minPercent: 70 },
     { grade: "D", minPercent: 60 },
+    { grade: "E", minPercent: 50 },
     { grade: "F", minPercent: 0 },
   ],
   showResults: "IMMEDIATELY",
+  isAllowShare: false,
   enableAiGrading: true,
 };
 
@@ -55,8 +58,10 @@ const stepValidationFields: Record<1 | 2 | 3, string[]> = {
     "passMark",
     "gradeLabels",
     "showResults",
+    "isAllowShare",
   ],
   3: [
+    "dynamicQuestionSource",
     "selectedBankId",
     "selectedQuestionIds",
     "totalQuestions",
@@ -68,10 +73,12 @@ export function useAssessmentForm({
   mode = "create",
   assessmentId,
   initialFormData,
+  fallbackTopicId = "",
 }: {
   mode?: "create" | "edit" | "duplicate";
   assessmentId?: string;
   initialFormData?: NewAssessmentFormData;
+  fallbackTopicId?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -82,14 +89,14 @@ export function useAssessmentForm({
   );
   const [questionSearch, setQuestionSearch] = useState("");
   const [formData, setFormData] = useState<NewAssessmentFormData>(
-    initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || "" },
+    initialFormData ?? { ...defaultFormData, ownerTopicId: activeTopic?.id || fallbackTopicId },
   );
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    if (mode === "create" && pathname === "/assessments/new") {
+    if (mode === "create" && pathname.endsWith("/assessments/new")) {
       setCurrentStep(1);
-      setFormData({ ...defaultFormData, ownerTopicId: activeTopic?.id || "" });
+      setFormData({ ...defaultFormData, ownerTopicId: activeTopic?.id || fallbackTopicId });
       setQuestionSearch("");
     } else if (initialFormData) {
       setCurrentStep(mode === "edit" && initialFormData.status === "PUBLISHED" ? 2 : 1);
@@ -103,10 +110,12 @@ export function useAssessmentForm({
     if (mode === "create") {
       setFormData((prev) => {
         const newTopicId = activeTopic?.id || "";
-        if (prev.ownerTopicId !== newTopicId) {
+        const resolvedTopicId = newTopicId || fallbackTopicId;
+        if (prev.ownerTopicId !== resolvedTopicId) {
           return { 
             ...prev, 
-            ownerTopicId: newTopicId,
+            ownerTopicId: resolvedTopicId,
+            dynamicQuestionSource: "topic",
             selectedBankId: "",
             selectedQuestionIds: []
           };
@@ -114,7 +123,7 @@ export function useAssessmentForm({
         return prev;
       });
     }
-  }, [mode, activeTopic?.id]);
+  }, [mode, activeTopic?.id, fallbackTopicId]);
 
   const getStepValidationMessages = (step: 1 | 2 | 3) => {
     const dataToValidate = {
@@ -184,15 +193,26 @@ export function useAssessmentForm({
   ) => {
     setFormData((current) => {
       let nextQuestionSelection = current.questionSelection;
+      let nextDynamicQuestionSource = current.dynamicQuestionSource;
+      let nextSelectedBankId = current.selectedBankId;
       
       // If switching to REAL_TIME, force MANUAL selection
       if (field === "sessionMode" && value === "REAL_TIME") {
         nextQuestionSelection = "MANUAL";
       }
+      if (field === "dynamicQuestionSource") {
+        nextDynamicQuestionSource = value as "topic" | "bank";
+        if (value === "topic") {
+          nextSelectedBankId = "";
+        }
+      }
 
       return {
         ...current,
         [field]: value,
+        dynamicQuestionSource: nextDynamicQuestionSource,
+        selectedBankId:
+          field === "selectedBankId" ? (value as string) : nextSelectedBankId,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         questionSelection: field === "questionSelection" ? (value as any) : nextQuestionSelection,
       };
@@ -285,17 +305,26 @@ export function useAssessmentForm({
 
   const destination = mode === "edit" && assessmentId ? `/assessments/${assessmentId}` : "/assessments";
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
+  const isSubmittingRef = useRef(false);
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
     // Prevent accidental auto-saving when pressing Enter before the final step.
-    // Published assessments are schedule-only edits, so their editable step saves directly.
     if (currentStep < 3 && !isPublishedEdit) {
       return;
     }
 
+    if (mode === "duplicate" && isPending) {
+      return;
+    }
+    
+    if (isPending || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+
     if (!activeTopic && !formData.ownerTopicId) {
       toast.error("Owner topic is required.");
+      isSubmittingRef.current = false;
       return;
     }
     
@@ -308,12 +337,14 @@ export function useAssessmentForm({
       const messages = getPublishedScheduleValidationMessages();
       if (messages.length > 0) {
         messages.forEach((msg) => toast.error(msg));
+        isSubmittingRef.current = false;
         return;
       }
     }
 
     if (!isPublishedEdit && submitData.questionSelection === "MANUAL" && submitData.selectedQuestionIds.length === 0) {
       toast.error("Select at least one question for manual question selection.");
+      isSubmittingRef.current = false;
       return;
     }
     
@@ -326,24 +357,33 @@ export function useAssessmentForm({
         new Set(validationResult.error.issues.map((issue) => issue.message)),
       );
       errorMessages.forEach((msg) => toast.error(msg));
+      isSubmittingRef.current = false;
       return;
     }
 
-    
     startTransition(async () => {
-      let res;
-      if (mode === "edit" && assessmentId) {
-        res = await updateAssessmentAction(assessmentId, submitData);
-      } else {
-        res = await createAssessmentAction(submitData.ownerTopicId || "", submitData);
-      }
-      
-      if (!res.success) {
-        toast.error(res.error || "Failed to save assessment");
-      } else {
-        toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
-        router.refresh();
-        router.push(destination);
+      try {
+        let res;
+        if (mode === "edit" && assessmentId) {
+          res = await updateAssessmentAction(assessmentId, submitData);
+        } else {
+          res = await createAssessmentAction(submitData.ownerTopicId || "", submitData);
+        }
+
+        if (!res.success) {
+          toast.error(res.error || "Failed to save assessment");
+          isSubmittingRef.current = false;
+        } else {
+          toast.success(mode === "edit" ? "Assessment updated successfully!" : "Assessment created successfully!");
+          router.refresh();
+          router.push(destination);
+          // Do not reset ref on success because we are navigating away
+        }
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to save assessment",
+        );
+        isSubmittingRef.current = false;
       }
     });
   };

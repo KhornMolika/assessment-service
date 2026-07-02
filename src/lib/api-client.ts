@@ -13,12 +13,20 @@ const requestCache = new Map<string, Promise<any>>();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { unstable_noStore as noStore } from "next/cache";
+import { getEmbedTokenCookie } from "./server-utils";
 
 /**
  * Authenticates with the backend using the client_credentials grant,
  * deduplicates concurrent requests, and caches the token in memory.
  */
 export async function getAccessToken(): Promise<string> {
+  // 1. Try to use the embed token if the user is in an iframe
+  const embedToken = await getEmbedTokenCookie();
+  if (embedToken) {
+    return embedToken;
+  }
+
+  // 2. Fall back to admin token cache
   if (cachedToken) {
     return cachedToken;
   }

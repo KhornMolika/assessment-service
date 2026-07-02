@@ -23,8 +23,7 @@ export async function saveManualReviewAction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload = (res as any)?.data ?? res;
 
-    revalidatePath(`/results/${sessionId}`);
-    revalidatePath("/results");
+    revalidatePath("/", "layout");
 
     return { success: true, data: payload };
   } catch (error) {
@@ -38,7 +37,7 @@ export async function saveManualReviewAction(
   }
 }
 
-export async function recalculateResultAction(sessionId: string) {
+export async function recalculateResultAction(sessionId: string, assessmentId?: string) {
   try {
     const res = await apiClient.post<{
       sessionId: string;
@@ -54,8 +53,10 @@ export async function recalculateResultAction(sessionId: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload = (res as any)?.data?.data ?? (res as any)?.data ?? res;
 
-    revalidatePath(`/results/${sessionId}`);
-    revalidatePath("/results");
+    if (assessmentId) {
+      revalidatePath(`/assessments/${assessmentId}/reports`);
+    }
+    revalidatePath("/", "layout");
 
     return { success: true, data: payload };
   } catch (error) {

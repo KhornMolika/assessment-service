@@ -160,9 +160,17 @@ export default function AssessmentsTable({
             const actualStatus = assessment.status;
             const actualStartsAt = assessment.settings?.startsAt || assessment.createdAt;
             const actualEndsAt = assessment.settings?.endsAt;
-            const actualNumQuestions = assessment.questionCount ?? assessment.settings?.numQuestions ?? 0;
             const actualType = assessment.type || "QUIZ";
             const actualSelection = assessment.settings?.questionSelection || "MANUAL";
+            const actualNumQuestions =
+              actualSelection === "DYNAMIC"
+                ? Number(
+                    assessment.settings?.numQuestions ??
+                      assessment.settings?.selectionRules?.total ??
+                      assessment.questionCount ??
+                      0,
+                  )
+                : Number(assessment.questionCount ?? assessment.settings?.numQuestions ?? 0);
             const actualTimeLimit = assessment.settings?.timeLimit;
             const actualIdentity = assessment.settings?.participantIdentity || "ANONYMOUS";
             

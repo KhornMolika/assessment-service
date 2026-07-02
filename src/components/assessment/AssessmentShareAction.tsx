@@ -7,7 +7,7 @@ import { Copy, PlayCircle, QrCode, Share2, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import type { AssessmentCatalogItem } from "@/src/types/assessment-catalog.types";
 import { Button } from "@/src/components/ui/ui/button";
-import { apiClient } from "@/src/lib/api-client";
+import { startRealtimeSessionHost } from "@/src/lib/actions/runtime.actions";
 
 function ShareQr({
   value,
@@ -211,7 +211,7 @@ export default function AssessmentShareAction({
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
-                      await apiClient.post(`/runtime/real-time/${assessment.id}/start?reset=true`, {});
+                      await startRealtimeSessionHost(assessment.id, { reset: true });
                     } catch (err) {
                       console.error("Failed to reset session", err);
                     }
