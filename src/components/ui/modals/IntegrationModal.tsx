@@ -119,7 +119,7 @@ const app = express();
 
 app.get('/api/my-backend/get-embed-token', async (req, res) => {
   try {
-    const response = await fetch('https://api.molika.app/api/v1/auth/embed-token', {
+    const response = await fetch('https://assessment-backend.molika.app/api/v1/auth/embed-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -144,7 +144,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('https://api.molika.app/api/v1/auth/embed-token', {
+    const response = await fetch('https://assessment-backend.molika.app/api/v1/auth/embed-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -171,7 +171,7 @@ export class AppController {
   @Get('get-embed-token')
   async getEmbedToken() {
     try {
-      const response = await fetch('https://api.molika.app/api/v1/auth/embed-token', {
+      const response = await fetch('https://assessment-backend.molika.app/api/v1/auth/embed-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -227,7 +227,7 @@ export class AppController {
     '',
     '        try {',
     '            ResponseEntity response = restTemplate.postForEntity(',
-    '                "https://api.molika.app/api/v1/auth/embed-token", entity, Map.class);',
+    '                "https://assessment-backend.molika.app/api/v1/auth/embed-token", entity, Map.class);',
     '            ',
     '            return ResponseEntity.ok(Map.of("token", ((Map)response.getBody()).get("access_token")));',
     '        } catch (Exception e) {',
@@ -246,7 +246,7 @@ app = FastAPI()
 
 @app.get("/api/my-backend/get-embed-token")
 async def get_embed_token():
-    url = "https://api.molika.app/api/v1/auth/embed-token"
+    url = "https://assessment-backend.molika.app/api/v1/auth/embed-token"
     payload = {
         "clientId": os.getenv("ASSESSMENT_CLIENT_ID"),
         "clientSecret": os.getenv("ASSESSMENT_CLIENT_SECRET"),
@@ -268,7 +268,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/my-backend/get-embed-token', function () {
-    $response = Http::post('https://api.molika.app/api/v1/auth/embed-token', [
+    $response = Http::post('https://assessment-backend.molika.app/api/v1/auth/embed-token', [
         'clientId' => env('ASSESSMENT_CLIENT_ID'),
         'clientSecret' => env('ASSESSMENT_CLIENT_SECRET'),
         'origin' => 'https://your-website.com'
@@ -363,7 +363,7 @@ Route::get('/my-backend/get-embed-token', function () {
     '  // ⚠️ WARNING: This approach exposes your Client Secret in the browser.',
     '  // Only use this for internal tools or rapid prototyping.',
     '  useEffect(() => {',
-    '    fetch(\'https://api.molika.app/api/v1/auth/embed-token\', {',
+    '    fetch(\'https://assessment-backend.molika.app/api/v1/auth/embed-token\', {',
     '      method: \'POST\',',
     '      headers: { \'Content-Type\': \'application/json\' },',
     '      body: JSON.stringify({',
@@ -458,7 +458,7 @@ Route::get('/my-backend/get-embed-token', function () {
     '  ngOnInit() {',
     '    // ⚠️ WARNING: This approach exposes your Client Secret in the browser.',
     '    // Only use this for internal tools or rapid prototyping.',
-    '    this.http.post(\'https://api.molika.app/api/v1/auth/embed-token\', {',
+    '    this.http.post(\'https://assessment-backend.molika.app/api/v1/auth/embed-token\', {',
     '      clientId: "YOUR_CLIENT_ID",',
     '      clientSecret: "YOUR_CLIENT_SECRET",',
     '      origin: window.location.origin',
