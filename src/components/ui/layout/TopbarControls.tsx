@@ -28,7 +28,6 @@ export default function TopbarControls() {
     const queryPath = searchString ? `${pathname}?${searchString}` : pathname;
     
     router.replace(
-      // @ts-expect-error next-intl typed routing doesn't easily accept dynamic string query paths
       queryPath,
       { locale: nextLocale }
     );
