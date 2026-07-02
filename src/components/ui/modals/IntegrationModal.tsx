@@ -130,7 +130,7 @@ app.get('/api/my-backend/get-embed-token', async (req, res) => {
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || 'Failed to get token');
+    if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
     // Return the token to your frontend React code
     res.json({ token: data.access_token });
@@ -155,7 +155,7 @@ export async function GET() {
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || 'Failed to get token');
+    if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
     return NextResponse.json({ token: data.access_token });
   } catch (error: any) {
@@ -182,7 +182,7 @@ export class AppController {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error?.message || 'Failed to get token');
+      if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
       return { token: data.access_token };
     } catch (error: any) {
