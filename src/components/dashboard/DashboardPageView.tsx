@@ -60,11 +60,9 @@ export default function DashboardPageView() {
         <div className="flex-1 w-full min-h-[800px] rounded-xl overflow-hidden border bg-card shadow-sm">
           <iframe
             src={iframeUrl}
-            frameBorder="0"
             width="100%"
             height="100%"
-            allowTransparency
-            className="w-full h-full min-h-[800px]"
+            className="w-full h-full min-h-[800px] border-0"
           />
         </div>
       ) : (

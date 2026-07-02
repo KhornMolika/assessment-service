@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Menu } from "lucide-react";
 import { LocaleSwitch } from "@/src/components/ui/ui/locale-switch";
 import { ThemeSwitch } from "@/src/components/ui/ui/theme-switch";
@@ -11,21 +10,28 @@ import { Button } from "@/src/components/ui/ui/button";
 
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/src/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function TopbarControls() {
   const { setSidebarOpen } = useSidebar();
   const currentLocale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const handleLocaleChange = (nextValue: string) => {
     const nextLocale = nextValue.toLowerCase();
     
-    // Clean the pathname just in case usePathname isn't stripping the locale correctly
-    const cleanPath = pathname.replace(/^\/(en|kh)(?=\/|$)/i, '') || '/';
+    // next-intl's usePathname returns path without locale prefix
+    // We just pass it directly. But we must also preserve search parameters.
+    const searchString = searchParams.toString();
+    const queryPath = searchString ? `${pathname}?${searchString}` : pathname;
     
-    // next-intl router handles the locale prefixing automatically
-    router.replace(cleanPath, { locale: nextLocale });
+    router.replace(
+      // @ts-expect-error next-intl typed routing doesn't easily accept dynamic string query paths
+      queryPath,
+      { locale: nextLocale }
+    );
   };
 
   return (
