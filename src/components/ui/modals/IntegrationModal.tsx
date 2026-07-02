@@ -133,7 +133,7 @@ app.get('/api/my-backend/get-embed-token', async (req, res) => {
     if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
     // Return the token to your frontend React code
-    res.json({ token: data.access_token });
+    res.json({ token: data.data ? data.data.access_token : data.access_token });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -157,7 +157,7 @@ export async function GET() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
-    return NextResponse.json({ token: data.access_token });
+    return NextResponse.json({ token: data.data ? data.data.access_token : data.access_token });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -184,7 +184,7 @@ export class AppController {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || data.error || 'Failed to get token');
 
-      return { token: data.access_token };
+      return { token: data.data ? data.data.access_token : data.access_token };
     } catch (error: any) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -377,7 +377,7 @@ Route::get('/my-backend/get-embed-token', function () {
     '        if (!res.ok) throw new Error(data.message || data.error || "Failed to fetch token");',
     '        return data;',
     '      })',
-    '      .then(data => setEmbedToken(data.access_token))',
+    '      .then(data => setEmbedToken(data.data ? data.data.access_token : data.access_token))',
     '      .catch(err => setError(err.message));',
     '  }, []);',
     '',
@@ -464,7 +464,7 @@ Route::get('/my-backend/get-embed-token', function () {
     '      origin: window.location.origin',
     '    }).subscribe({',
     '      next: (data: any) => {',
-    '        const url = \'https://assessment-service.molika.app' + embedPath + '?token=\' + data.access_token;',
+    '        const url = \'https://assessment-service.molika.app' + embedPath + '?token=\' + (data.data ? data.data.access_token : data.access_token);',
     '        this.embedUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));',
     '      },',
     '      error: (err) => console.error(\'Failed to get embed token\', err)',
