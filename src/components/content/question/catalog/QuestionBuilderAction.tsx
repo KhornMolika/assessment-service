@@ -13,7 +13,7 @@ export default function QuestionBuilderAction() {
       <Button
         type="button"
         onClick={() => setIntegrationOpen(true)}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto" variant="secondary"
+        className="embed-hide inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-muted sm:w-auto" variant="secondary"
       >
         <Copy className="h-4 w-4" />
         Integrate Builder
