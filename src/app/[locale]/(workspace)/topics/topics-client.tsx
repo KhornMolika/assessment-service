@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { Edit2, Trash2, Eye, Copy, MoreHorizontal, Plus } from "lucide-react";
 import { ActionMenu } from "@/src/components/ui/ui/action-menu";
 import { useTranslations } from "next-intl";
+import TopicBuilderAction from "@/src/components/content/topic/catalog/TopicBuilderAction";
 
 export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
   const t = useTranslations("Topics");
@@ -170,10 +171,13 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
         title={t("title")}
         description={t("description", { total: topics.length })}
         actions={
-          <Btn onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {t("createTitle") || "New Topic"}
-          </Btn>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <TopicBuilderAction />
+            <Btn onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              {t("createTitle") || "New Topic"}
+            </Btn>
+          </div>
         }
       />
 
@@ -186,10 +190,13 @@ export function TopicsClient({ initialTopics }: { initialTopics: Topic[] }) {
                 <CD>{t("listDesc")}</CD>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Btn onClick={() => setIsCreateModalOpen(true)} className="embed-only-element inline-flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  {t("createTitle") || "New Topic"}
-                </Btn>
+                <div className="embed-only-element flex items-center gap-2">
+                  <TopicBuilderAction />
+                  <Btn onClick={() => setIsCreateModalOpen(true)} className="inline-flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    {t("createTitle") || "New Topic"}
+                  </Btn>
+                </div>
               </div>
             </CH>
             <CB className="px-0 pb-0 flex-1">
